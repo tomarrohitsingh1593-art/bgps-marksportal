@@ -116,7 +116,7 @@
     function loginTeacher() {
         let id = document.getElementById('tid').value.toUpperCase();
         let pass = document.getElementById('tpass').value;
-        if(pass === "bgps123" && mapping[id]) {
+       if (((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id]) {
             currentId = id;
             let myClass = mapping[id];
             document.getElementById('loggedInUser').innerText = id + " | " + (id === "ADMIN" ? "ADMIN" : myClass);

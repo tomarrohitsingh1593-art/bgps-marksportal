@@ -15,7 +15,7 @@
         .school-logo img { width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute; display: none; }
         .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), #e6b800); color: var(--navy); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; transition: 0.2s;}
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(246,201,14,0.4); }
-        .app-shell { display: none; max-width: 1100px; margin: 0 auto; animation: fadeUp .5s ease; }
+        .app-shell { max-width: 1100px; margin: 0 auto; display: none; }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #718096; cursor: pointer; }
         .tab-btn.active { background: var(--gold); color: var(--navy); font-weight: 700; }
@@ -27,13 +27,33 @@
         #studentContainer { max-height: 400px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); padding: 5px; border-radius: 6px; }
         .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .student-row input { width: 80px; padding: 6px; background: var(--dark); border: 1px solid var(--border); color: white; text-align: center; border-radius: 4px; }
-        table { width: 100%; border-collapse: collapse; font-family: 'Inconsolata', monospace; margin-top: 10px; background: var(--card); border-radius: 8px; overflow: hidden; }
+        
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; font-family: 'Inconsolata', monospace; margin-top: 20px; background: var(--card); border-radius: 8px; overflow: hidden; }
         th, td { padding: 10px; border: 1px solid var(--border); text-align: center; font-size: 13px; }
         th { background: var(--mid); color: var(--gold); text-transform: uppercase; }
         .highlight-col { background: rgba(246, 201, 14, 0.05); color: var(--gold); font-weight: bold; }
         .perc-col { background: rgba(99, 179, 237, 0.08); color: var(--blue); font-weight: bold; font-size: 14px; }
         .rank-col { background: rgba(252, 129, 129, 0.08); color: var(--red); font-weight: bold; font-size: 14px; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: none; } }
+        
+        /* Professional Print Header Style */
+        .print-only-header { display: none; text-align: center; color: black; margin-bottom: 25px; border-bottom: 3px double #000; padding-bottom: 15px; }
+        .print-only-header h1 { font-family: 'EB Garamond', serif; font-size: 32px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .print-only-header h3 { font-size: 18px; letter-spacing: 1px; margin-bottom: 10px; color: #333; }
+        .print-only-header p { font-size: 15px; font-weight: bold; font-family: monospace; }
+
+        /* PRINT MEDIA LOGIC */
+        @media print {
+            body { background: white !important; color: black !important; padding: 0; }
+            .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary, style { display: none !important; }
+            .card { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+            .print-only-header { display: block !important; }
+            #printableArea, #printableArea * { visibility: visible; }
+            table { width: 100% !important; border: 2px solid #000 !important; background: white !important; margin-top: 10px !important; }
+            th, td { border: 1px solid #000 !important; color: black !important; padding: 8px !important; }
+            th { background: #f2f2f2 !important; color: black !important; }
+            .highlight-col, .perc-col, .rank-col { background: transparent !important; color: black !important; }
+        }
     </style>
 </head>
 <body>
@@ -52,11 +72,11 @@
 </div>
 
 <div class="app-shell" id="appShell">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;" class="no-print">
         <div style="font-family:'EB Garamond'; color:var(--gold); font-size:22px; font-weight:bold;">BG PUBLIC SCHOOL</div>
         <div id="loggedInUser" style="color:var(--blue); font-size:12px;">User</div>
     </div>
-    <div class="nav-tabs">
+    <div class="nav-tabs no-print">
         <button class="tab-btn active" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
         <button class="tab-btn" id="tab-dash" onclick="switchTab('dash')">Dashboard</button>
         <button class="tab-btn" onclick="location.reload()" style="margin-left:auto; color:var(--red); border:none; background:transparent;">Logout</button>
@@ -100,11 +120,26 @@
     </div>
 
     <div class="card view-section" id="dashView">
-        <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;">
-            <div class="control-group" style="flex:2; margin-bottom:0;"><label>Report Tab</label><select id="tabSelector"></select></div>
-            <button class="btn-primary" onclick="fetchData()" style="flex:1; margin:0; padding:10px;" id="fetchBtn">Fetch Consolidated Marksheet</button>
+        <div id="printableArea">
+            <div id="printHeader" class="print-only-header">
+                <h1>BG PUBLIC SCHOOL</h1>
+                <h3>CONSOLIDATED PROGRESS REPORT SUMMARY</h3>
+                <p id="pDetails">CLASS: -- | EXAM: --</p>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;" class="no-print">
+                <div class="control-group" style="flex:2; margin-bottom:0;"><label>Report Tab</label><select id="tabSelector"></select></div>
+                <button class="btn-primary" onclick="fetchData()" style="flex:1; margin:0; padding:10px;" id="fetchBtn">Fetch</button>
+                <button class="btn-primary" onclick="window.print()" style="flex:1; margin:0; padding:10px; background:#48bb78;">Print Report</button>
+            </div>
+            
+            <div style="overflow-x:auto;">
+                <table id="resTable">
+                    <thead id="tHead"></thead>
+                    <tbody id="tBody"></tbody>
+                </table>
+            </div>
         </div>
-        <div style="overflow-x:auto;"><table id="resTable"><thead id="tHead"></thead><tbody id="tBody"></tbody></table></div>
     </div>
 </div>
 
@@ -116,7 +151,9 @@
     function loginTeacher() {
         let id = document.getElementById('tid').value.toUpperCase();
         let pass = document.getElementById('tpass').value;
-       if (((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id]) {
+        
+        // ADMIN KE LIYE "Admin@1" AUR TEACHERS KE LIYE "bgps123" FIXED
+        if (((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id]) {
             currentId = id;
             let myClass = mapping[id];
             document.getElementById('loggedInUser').innerText = id + " | " + (id === "ADMIN" ? "ADMIN" : myClass);
@@ -180,6 +217,10 @@
         if(!selection) return alert("Please select a report from the dropdown!");
         
         let [selectedClass, selectedExam] = selection.split('|');
+        
+        // Print Summary ke liye header dynamic content update karna
+        document.getElementById('pDetails').innerText = "CLASS: " + selectedClass.toUpperCase() + " | EXAM: " + selectedExam.toUpperCase();
+        
         let fBtn = document.getElementById('fetchBtn');
         fBtn.innerText = "Fetching Master Data...";
         fBtn.style.opacity = "0.7";
@@ -195,71 +236,48 @@
                 return alert("Master sheet is empty or not found!");
             }
 
-            const cIdx = 2; // Class
-            const sIdx = 3; // Subject
-            const eIdx = 4; // Exam Type
-            const rIdx = 6; // Roll No
-            const oIdx = 7; // Marks Obtained
-            const mIdx = 8; // Max Marks
-
-            let students = {};
-            let allSubjects = new Set();
-            let hasData = false;
+            const cIdx = 2; const sIdx = 3; const eIdx = 4; const rIdx = 6; const oIdx = 7; const mIdx = 8;
+            let students = {}; let allSubjects = new Set(); let hasData = false;
 
             for(let i = 1; i < rawData.length; i++) {
-                let row = rawData[i];
-                if (!row) continue;
-
+                let row = rawData[i]; if (!row) continue;
                 let rowClass = String(row[cIdx]).trim();
                 let rowExam = String(row[eIdx]).trim();
 
                 if(rowClass !== selectedClass || rowExam !== selectedExam) continue;
 
                 hasData = true;
-                let roll = String(row[rIdx] || '').trim();
-                if(!roll || roll === '') continue; 
+                let roll = String(row[rIdx] || '').trim(); if(!roll || roll === '') continue; 
                 
                 let sub = String(row[sIdx] || 'UNKNOWN').toUpperCase().trim();
                 let max = Number(row[mIdx]) || 0;
                 let obt = Number(row[oIdx]) || 0;
 
-                if(!students[roll]) {
-                    students[roll] = { subs: {}, totalMax: 0, totalObt: 0 };
-                }
-
-                if(!students[roll].subs[sub]) {
-                    students[roll].subs[sub] = { max: 0, obt: 0 };
-                }
+                if(!students[roll]) { students[roll] = { subs: {}, totalMax: 0, totalObt: 0 }; }
+                if(!students[roll].subs[sub]) { students[roll].subs[sub] = { max: 0, obt: 0 }; }
 
                 students[roll].subs[sub].max += max;
                 students[roll].subs[sub].obt += obt;
-                
                 students[roll].totalMax += max;
                 students[roll].totalObt += obt;
-                
                 allSubjects.add(sub);
             }
 
             if(!hasData) return alert(`No marks found for ${selectedClass} - ${selectedExam}`);
 
             let subsArray = Array.from(allSubjects).sort();
-
-            // FIXED DENSE RANKING LOGIC (1, 2, 2, 3 instead of 1, 2, 2, 4)
             let rolls = Object.keys(students);
             rolls.sort((a,b) => students[b].totalObt - students[a].totalObt);
-            let rankMap = {};
-            let currentRank = 1;
+            let rankMap = {}; let currentRank = 1;
             
             rolls.forEach((r, index) => {
-                if (index > 0 && students[r].totalObt < students[rolls[index-1]].totalObt) {
-                    currentRank++;
-                }
+                if (index > 0 && students[r].totalObt < students[rolls[index-1]].totalObt) { currentRank++; }
                 rankMap[r] = currentRank;
             });
 
             let h = "<tr><th>ROLL NO</th>";
             subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
-            h += "<th class='highlight-col'>MAX (OUT OF)</th><th class='highlight-col'>TOTAL OBTAINED</th><th class='perc-col'>PERCENTAGE</th><th class='rank-col'>RANK</th></tr>";
+            h += "<th class='highlight-col'>MAX MARKS</th><th class='highlight-col'>TOTAL OBTAINED</th><th class='perc-col'>PERCENTAGE</th><th class='rank-col'>RANK</th></tr>";
             document.getElementById('tHead').innerHTML = h;
 
             let b = "";
@@ -268,27 +286,15 @@
             displayRolls.forEach(roll => {
                 let s = students[roll];
                 let p = s.totalMax > 0 ? ((s.totalObt / s.totalMax) * 100).toFixed(2) + "%" : "0%";
-                
                 b += `<tr><td>${roll}</td>`;
-                
-                subsArray.forEach(sub => {
-                    b += `<td>${s.subs[sub] !== undefined ? s.subs[sub].obt : '-'}</td>`;
-                });
-                
-                b += `<td class='highlight-col'>${s.totalMax}</td>`;
-                b += `<td class='highlight-col'>${s.totalObt}</td>`;
-                b += `<td class='perc-col'>${p}</td>`;
-                b += `<td class='rank-col'># ${rankMap[roll]}</td></tr>`;
+                subsArray.forEach(sub => { b += `<td>${s.subs[sub] !== undefined ? s.subs[sub].obt : '-'}</td>`; });
+                b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}</td><td class='rank-col'># ${rankMap[roll]}</td></tr>`;
             });
-            
             document.getElementById('tBody').innerHTML = b;
             
         } catch(e) { 
             alert("Error fetching data. Please ensure you are connected to the internet."); 
-            console.error(e);
-            let fBtn = document.getElementById('fetchBtn');
-            fBtn.innerText = "Fetch Consolidated Marksheet";
-            fBtn.style.opacity = "1";
+            fBtn.innerText = "Fetch Consolidated Marksheet"; fBtn.style.opacity = "1";
         }
     }
 </script>

@@ -15,6 +15,7 @@
         .school-logo img { width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute; display: none; }
         .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), #e6b800); color: var(--navy); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; transition: 0.2s;}
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(246,201,14,0.4); }
+        .btn-primary:disabled { background: #555; color: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
         .app-shell { max-width: 1100px; margin: 0 auto; display: none; }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #718096; cursor: pointer; }
@@ -82,6 +83,7 @@
         <button class="tab-btn" onclick="location.reload()" style="margin-left:auto; color:var(--red); border:none; background:transparent;">Logout</button>
     </div>
 
+    <!-- Entry View Section -->
     <div class="card view-section active" id="entryView">
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
             <div class="control-group"><label>Class</label><select id="class"></select></div>
@@ -119,6 +121,7 @@
         <button class="btn-primary" onclick="submitData()" id="submitBtn">Submit Records</button>
     </div>
 
+    <!-- Dashboard View Section -->
     <div class="card view-section" id="dashView">
         <div id="printableArea">
             <div id="printHeader" class="print-only-header">
@@ -152,7 +155,7 @@
         let id = document.getElementById('tid').value.toUpperCase();
         let pass = document.getElementById('tpass').value;
         
-        // ADMIN KE LIYE "Admin@1" AUR TEACHERS KE LIYE "bgps123" FIXED
+        // ADMIN password is "Admin@1", Teachers password is "bgps123"
         if (((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id]) {
             currentId = id;
             let myClass = mapping[id];
@@ -199,17 +202,39 @@
     async function submitData() {
         let entries = [];
         let sub = document.getElementById('subject').value, exam = document.getElementById('examType').value, comp = document.getElementById('type').value, max = document.getElementById('maxMarks').value, cls = document.getElementById('class').value;
-        if(!sub || !max) return alert("Fill Subject/Max Marks!");
+        
+        if(!sub || !max || !cls) return alert("Please fill Class, Subject and Max Marks!");
+        
         document.querySelectorAll('.m-input').forEach(i => {
-            if(i.value) entries.push({ teacherId: currentId, class: cls, subject: sub, examType: exam, type: comp, maxMarks: max, rollNo: i.dataset.roll, marks: i.value });
+            if(i.value && i.value.trim() !== "") {
+                entries.push({ teacherId: currentId, class: cls, subject: sub, examType: exam, type: comp, maxMarks: max, rollNo: i.dataset.roll, marks: i.value });
+            }
         });
-        const btn = document.getElementById('submitBtn'); btn.innerText = "Saving Data..."; btn.disabled = true;
+        
+        if(entries.length === 0) return alert("No marks entered!");
+
+        const btn = document.getElementById('submitBtn');
+        
+        // Block double clicks
+        if(btn.disabled) return;
+        
+        btn.innerText = "Saving... Please Wait"; 
+        btn.disabled = true;
+
         try {
-            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(entries) });
+            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entries) });
             alert("SUCCESS: Records saved to server!");
+            // Form clear
             document.querySelectorAll('.m-input').forEach(i => i.value = "");
-            btn.innerText = "Submit Records"; btn.disabled = false;
-        } catch(e) { alert("Network Error!"); btn.disabled = false; }
+        } catch(e) { 
+            alert("Network Error! Try again."); 
+        } finally {
+            // Un-block button after 3 seconds
+            setTimeout(() => {
+                btn.innerText = "Submit Records"; 
+                btn.disabled = false;
+            }, 3000);
+        }
     }
 
     async function fetchData() {
@@ -217,34 +242,27 @@
         if(!selection) return alert("Please select a report from the dropdown!");
         
         let [selectedClass, selectedExam] = selection.split('|');
-        
-        // Print Summary ke liye header dynamic content update karna
         document.getElementById('pDetails').innerText = "CLASS: " + selectedClass.toUpperCase() + " | EXAM: " + selectedExam.toUpperCase();
         
         let fBtn = document.getElementById('fetchBtn');
-        fBtn.innerText = "Fetching Master Data...";
-        fBtn.style.opacity = "0.7";
+        fBtn.innerText = "Fetching Data...";
+        fBtn.disabled = true;
 
         try {
             let res = await fetch(WEB_APP_URL + "?tabName=Master");
             let rawData = await res.json();
             
-            fBtn.innerText = "Fetch Consolidated Marksheet";
-            fBtn.style.opacity = "1";
+            fBtn.innerText = "Fetch";
+            fBtn.disabled = false;
 
-            if(!rawData || rawData.error || rawData.length < 2) {
-                return alert("Master sheet is empty or not found!");
-            }
+            if(!rawData || rawData.error || rawData.length < 2) return alert("Sheet is empty or not found!");
 
             const cIdx = 2; const sIdx = 3; const eIdx = 4; const rIdx = 6; const oIdx = 7; const mIdx = 8;
             let students = {}; let allSubjects = new Set(); let hasData = false;
 
             for(let i = 1; i < rawData.length; i++) {
                 let row = rawData[i]; if (!row) continue;
-                let rowClass = String(row[cIdx]).trim();
-                let rowExam = String(row[eIdx]).trim();
-
-                if(rowClass !== selectedClass || rowExam !== selectedExam) continue;
+                if(String(row[cIdx]).trim() !== selectedClass || String(row[eIdx]).trim() !== selectedExam) continue;
 
                 hasData = true;
                 let roll = String(row[rIdx] || '').trim(); if(!roll || roll === '') continue; 
@@ -293,8 +311,8 @@
             document.getElementById('tBody').innerHTML = b;
             
         } catch(e) { 
-            alert("Error fetching data. Please ensure you are connected to the internet."); 
-            fBtn.innerText = "Fetch Consolidated Marksheet"; fBtn.style.opacity = "1";
+            alert("Error fetching data."); 
+            fBtn.innerText = "Fetch"; fBtn.disabled = false;
         }
     }
 </script>

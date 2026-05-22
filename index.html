@@ -16,6 +16,8 @@
         .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), #e6b800); color: var(--navy); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; transition: 0.2s;}
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(246,201,14,0.4); }
         .btn-primary:disabled { background: #555; color: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
+        .btn-small { background: var(--blue); color: var(--navy); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+        
         .app-shell { max-width: 1100px; margin: 0 auto; display: none; }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #718096; cursor: pointer; }
@@ -29,7 +31,7 @@
         .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .student-row input { width: 80px; padding: 6px; background: var(--dark); border: 1px solid var(--border); color: white; text-align: center; border-radius: 4px; }
         
-        /* Analytics Dashboard Styles */
+        /* Analytics */
         .analytics-panel { display: none; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-box { background: var(--mid); border: 1px solid var(--border); padding: 15px; border-radius: 8px; }
         .stat-box h4 { color: var(--gold); margin-bottom: 8px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
@@ -38,35 +40,57 @@
         .text-red { color: var(--red); font-weight: bold; }
         .fail-row { background: rgba(252, 129, 129, 0.15) !important; border-left: 3px solid var(--red) !important; }
 
-        /* Table Styles */
+        /* Tables */
         table { width: 100%; border-collapse: collapse; font-family: 'Inconsolata', monospace; margin-top: 10px; background: var(--card); border-radius: 8px; overflow: hidden; }
         th, td { padding: 10px; border: 1px solid var(--border); text-align: center; font-size: 13px; }
         th { background: var(--mid); color: var(--gold); text-transform: uppercase; }
         .highlight-col { background: rgba(246, 201, 14, 0.05); color: var(--gold); font-weight: bold; }
         .perc-col { background: rgba(99, 179, 237, 0.08); color: var(--blue); font-weight: bold; font-size: 14px; }
-        .rank-col { background: rgba(252, 129, 129, 0.08); font-weight: bold; font-size: 14px; }
         
-        /* Professional Print Style */
-        .print-only-header { display: none; text-align: center; color: black; margin-bottom: 25px; border-bottom: 3px double #000; padding-bottom: 15px; }
-        .print-only-header h1 { font-family: 'EB Garamond', serif; font-size: 32px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
-        .print-only-header h3 { font-size: 18px; letter-spacing: 1px; margin-bottom: 10px; color: #333; }
-        .print-only-header p { font-size: 15px; font-weight: bold; font-family: monospace; }
-
+        /* Individual Report Card (Hidden by default) */
+        #individualReport { display: none; background: white; color: black; padding: 40px; border: 2px solid #000; border-radius: 0; font-family: 'Georgia', serif; }
+        
+        /* ---------------- PRINT CSS ---------------- */
+        .print-only-header { display: none; }
+        
         @media print {
             body { background: white !important; color: black !important; padding: 0; }
-            .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary { display: none !important; }
+            .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary, .app-shell > div:not(.view-section.active) { display: none !important; }
             .card { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
-            .print-only-header { display: block !important; }
-            #printableArea, #printableArea * { visibility: visible; }
-            .analytics-panel { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; border: 1px solid #000 !important; padding: 10px !important; margin-bottom: 20px !important; }
-            .stat-box { background: white !important; border: none !important; border-right: 1px solid #ccc !important; padding: 10px !important; color: black !important; }
-            .stat-box:last-child { border-right: none !important; }
-            .stat-box h4 { color: black !important; border-bottom: 1px solid black !important; }
-            .stat-box div, .stat-box p { color: black !important; font-size: 12px !important; }
-            table { width: 100% !important; border: 2px solid #000 !important; background: white !important; }
-            th, td { border: 1px solid #000 !important; color: black !important; padding: 6px !important; }
-            th { background: #f2f2f2 !important; }
-            .fail-row { background: #ffe6e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            /* Logic to toggle between Consolidated and Individual Print */
+            body.print-cons #printableArea { display: block !important; }
+            body.print-cons #individualReport { display: none !important; }
+            
+            body.print-indv #printableArea { display: none !important; }
+            body.print-indv #individualReport { display: block !important; }
+
+            /* Consolidated Styling */
+            body.print-cons .print-only-header { display: block !important; text-align: center; margin-bottom: 25px; border-bottom: 3px double #000; padding-bottom: 15px; }
+            body.print-cons .print-only-header h1 { font-family: 'EB Garamond', serif; font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+            body.print-cons .analytics-panel { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; border: 1px solid #000 !important; padding: 10px !important; margin-bottom: 20px !important; }
+            body.print-cons .stat-box { background: white !important; border: none !important; border-right: 1px solid #ccc !important; padding: 10px !important; color: black !important; }
+            body.print-cons .stat-box:last-child { border-right: none !important; }
+            body.print-cons .stat-box h4 { color: black !important; border-bottom: 1px solid black !important; }
+            body.print-cons .action-col { display: none !important; }
+            body.print-cons table { width: 100% !important; border: 2px solid #000 !important; background: white !important; }
+            body.print-cons th, body.print-cons td { border: 1px solid #000 !important; color: black !important; padding: 6px !important; }
+            body.print-cons th { background: #f2f2f2 !important; }
+            body.print-cons .fail-row { background: #ffe6e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+            /* Individual Report Styling */
+            body.print-indv #individualReport { border: 5px double #0a1628; height: 95vh; box-sizing: border-box; position: relative; }
+            .ir-header { text-align: center; border-bottom: 3px solid #0a1628; padding-bottom: 15px; margin-bottom: 20px; }
+            .ir-header h1 { font-family: 'EB Garamond', serif; font-size: 36px; margin: 0; color: #0a1628; }
+            .ir-header h3 { font-size: 20px; margin: 5px 0; letter-spacing: 2px; }
+            .ir-details { display: flex; justify-content: space-between; font-size: 18px; margin-bottom: 20px; font-weight: bold; font-family: sans-serif; }
+            .ir-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-family: sans-serif;}
+            .ir-table th, .ir-table td { border: 1px solid #000; padding: 12px; text-align: center; font-size: 16px; color: #000 !important;}
+            .ir-table th { background: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold;}
+            .ir-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; font-size: 18px; font-family: sans-serif;}
+            .ir-box { border: 2px solid #0a1628; padding: 15px; text-align: center; font-weight: bold; background: #f7fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .ir-footer { display: flex; justify-content: space-between; position: absolute; bottom: 40px; left: 40px; right: 40px; font-size: 16px; font-weight: bold; }
+            .sign-line { border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px; }
         }
     </style>
 </head>
@@ -74,10 +98,7 @@
 
 <div class="login-container" id="loginPage" style="max-width:400px; margin: 60px auto;">
     <div class="card">
-        <div class="school-logo">
-            <span class="logo-text">BGPS</span>
-            <img src="https://r2.erweima.ai/i/6f9765270597475d8da97ba987998be2.jpg" id="logoImg" onload="this.style.display='block'">
-        </div>
+        <div class="school-logo"><span class="logo-text">BGPS</span></div>
         <h1 style="text-align:center; color:var(--gold); font-family:'EB Garamond'; font-size:24px; margin-bottom:20px;">BG PUBLIC SCHOOL</h1>
         <div class="control-group"><label>Teacher ID</label><input type="text" id="tid" placeholder="ADMIN, T-4, etc."></div>
         <div class="control-group"><label>Security PIN</label><input type="password" id="tpass" placeholder="bgps123"></div>
@@ -100,13 +121,10 @@
     <div class="card view-section" id="entryView">
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
             <div class="control-group"><label>Class</label><select id="class"></select></div>
-            <div class="control-group">
-                <label>Subject</label>
-                <select id="subject">
-                    <option value="">Select</option><option>English</option><option>English Language</option><option>English Literature</option><option>Hindi</option><option>Maths</option><option>Physics</option><option>Chemistry</option><option>Biology</option><option>History/Civics</option><option>Geography</option><option>Social Studies</option><option>Science</option><option>EVS</option><option>Account</option><option>Business</option><option>Economics</option><option>Computer</option><option>GK</option>
-                </select>
+            <div class="control-group"><label>Subject</label>
+                <select id="subject"><option value="">Select</option><option>English</option><option>Hindi</option><option>Maths</option><option>Physics</option><option>Chemistry</option><option>Biology</option><option>History/Civics</option><option>Geography</option><option>Science</option><option>Computer</option><option>GK</option></select>
             </div>
-            <div class="control-group"><label>Exam</label><select id="examType"><option>Unit Test 1</option><option>Unit Test 2</option><option>Half Yearly</option><option>Unit Test 3</option><option>Annual Exam</option></select></div>
+            <div class="control-group"><label>Exam</label><select id="examType"><option>Unit Test 1</option><option>Half Yearly</option><option>Annual Exam</option></select></div>
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <div class="control-group"><label>Mode</label><select id="type"><option>Written</option><option>Oral</option><option>Practical</option></select></div>
@@ -118,37 +136,25 @@
 
     <!-- Dashboard View Section -->
     <div class="card view-section" id="dashView">
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;" class="no-print">
+            <div class="control-group" style="flex:2; margin-bottom:0;"><label>Select Class & Exam</label><select id="tabSelector"></select></div>
+            <button class="btn-primary" onclick="fetchData()" style="flex:1; margin:0; padding:10px;" id="fetchBtn">Fetch Data</button>
+            <button class="btn-primary" onclick="printConsolidated()" style="flex:1; margin:0; padding:10px; background:var(--green);">Print Consolidated</button>
+        </div>
+
+        <!-- Printable Area 1: Consolidated Sheet -->
         <div id="printableArea">
             <div id="printHeader" class="print-only-header">
                 <h1>BG PUBLIC SCHOOL</h1>
                 <h3>CONSOLIDATED REPORT & ANALYTICS</h3>
                 <p id="pDetails">CLASS: -- | EXAM: --</p>
             </div>
-            
-            <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;" class="no-print">
-                <div class="control-group" style="flex:2; margin-bottom:0;"><label>Select Class & Exam</label><select id="tabSelector"></select></div>
-                <button class="btn-primary" onclick="fetchData()" style="flex:1; margin:0; padding:10px;" id="fetchBtn">Fetch Analytics</button>
-                <button class="btn-primary" onclick="window.print()" style="flex:1; margin:0; padding:10px; background:var(--green);">Print Report</button>
-            </div>
 
-            <!-- Naya Analytics Panel -->
-            <div class="analytics-panel" id="analyticsPanel">
-                <div class="stat-box">
-                    <h4>Overall Result</h4>
-                    <p id="passFailText">Waiting...</p>
-                </div>
-                <div class="stat-box">
-                    <h4>Top 3 Rankers</h4>
-                    <div id="topRankersList">Waiting...</div>
-                </div>
-                <div class="stat-box">
-                    <h4>Class Average</h4>
-                    <div id="subjectAvgsList">Waiting...</div>
-                </div>
-                <div class="stat-box">
-                    <h4>Subjects Submitted</h4>
-                    <p id="submittedSubjectsList" style="color:var(--blue); font-size:12px;">Waiting...</p>
-                </div>
+            <div class="analytics-panel no-print" id="analyticsPanel">
+                <div class="stat-box"><h4>Overall Result</h4><p id="passFailText">Waiting...</p></div>
+                <div class="stat-box"><h4>Top 3 Rankers</h4><div id="topRankersList">Waiting...</div></div>
+                <div class="stat-box"><h4>Class Average</h4><div id="subjectAvgsList">Waiting...</div></div>
             </div>
             
             <div style="overflow-x:auto;">
@@ -158,18 +164,53 @@
                 </table>
             </div>
         </div>
+
+        <!-- Printable Area 2: Individual Report Card -->
+        <div id="individualReport">
+            <div class="ir-header">
+                <h1>BG PUBLIC SCHOOL</h1>
+                <h3>PROGRESS REPORT</h3>
+            </div>
+            <div class="ir-details">
+                <span id="irRoll">Roll No: </span>
+                <span id="irClass">Class: </span>
+                <span id="irExam">Exam: </span>
+            </div>
+            <table class="ir-table">
+                <thead><tr><th>SUBJECT</th><th>MAX MARKS</th><th>MARKS OBTAINED</th></tr></thead>
+                <tbody id="irTableBody"></tbody>
+            </table>
+            <div class="ir-summary">
+                <div class="ir-box" id="irTotal">Total: -- / --</div>
+                <div class="ir-box" id="irPerc">Percentage: --%</div>
+                <div class="ir-box" id="irRank">Class Rank: #--</div>
+                <div class="ir-box" id="irResult">Result: --</div>
+            </div>
+            <div class="ir-footer">
+                <div class="sign-line">Class Teacher</div>
+                <div class="sign-line">Principal</div>
+            </div>
+        </div>
+
     </div>
 </div>
 
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoFAw_Dr-c8Uez79RLT7wbfVZ5xhqUUrFlqkcN5j4FYUsiUaaoYoC4H9tldaoxoGMZ/exec"; 
     const mapping = {"T-1":"Playgroup","T-2":"LKG","T-3":"UKG","T-4":"Class 1","T-5":"Class 2","T-6":"Class 3","T-7":"Class 4","T-8":"Class 5","T-9":"Class 6","T-10":"Class 7","T-11":"Class 8","T-12":"Class 9","T-13":"Class 10","T-14":"Class 11","T-15":"Class 12","ADMIN":"ALL_CLASSES"};
+    
     let currentId = "";
+    
+    // Global variables to store fetched data for individual printing
+    let globalStudents = {};
+    let globalSubsArray = [];
+    let globalRankMap = {};
+    let currentClassView = "";
+    let currentExamView = "";
 
     function loginTeacher() {
         let id = document.getElementById('tid').value.toUpperCase();
         let pass = document.getElementById('tpass').value;
-        
         if (((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id]) {
             currentId = id;
             let myClass = mapping[id];
@@ -177,7 +218,6 @@
             
             const clsSelect = document.getElementById('class');
             const dashSelect = document.getElementById('tabSelector');
-            
             let classesToLoad = id === "ADMIN" ? ["Playgroup", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"] : [myClass];
             
             let clsOptions = id === "ADMIN" ? "<option value=''>Class</option>" : "";
@@ -185,102 +225,74 @@
             
             classesToLoad.forEach(c => {
                 clsOptions += `<option value="${c}">${c}</option>`;
-                ["Unit Test 1", "Unit Test 2", "Half Yearly", "Unit Test 3", "Annual Exam"].forEach(ex => { 
-                    dashOptions += `<option value="${c}|${ex}">${c} - ${ex}</option>`; 
-                });
+                ["Unit Test 1", "Unit Test 2", "Half Yearly", "Unit Test 3", "Annual Exam"].forEach(ex => { dashOptions += `<option value="${c}|${ex}">${c} - ${ex}</option>`; });
             });
-            
-            clsSelect.innerHTML = clsOptions; 
-            dashSelect.innerHTML = dashOptions;
+            clsSelect.innerHTML = clsOptions; dashSelect.innerHTML = dashOptions;
             
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('appShell').style.display = 'block';
             
-            // ADMIN logic: Hide Entry, Show Dash
-            if(id === "ADMIN") {
-                document.getElementById('tab-entry').style.display = 'none';
-                switchTab('dash');
-            } else {
-                generateRows();
-                switchTab('entry');
-            }
-        } else { alert("Login Failed! Incorrect ID or Password."); }
+            if(id === "ADMIN") { document.getElementById('tab-entry').style.display = 'none'; switchTab('dash'); } 
+            else { generateRows(); switchTab('entry'); }
+        } else { alert("Login Failed!"); }
     }
 
     function switchTab(t) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        if(t === 'entry') { 
-            document.getElementById('entryView').classList.add('active'); 
-            document.getElementById('tab-entry').classList.add('active'); 
-        } else { 
-            document.getElementById('dashView').classList.add('active'); 
-            document.getElementById('tab-dash').classList.add('active'); 
-        }
+        if(t === 'entry') { document.getElementById('entryView').classList.add('active'); document.getElementById('tab-entry').classList.add('active'); } 
+        else { document.getElementById('dashView').classList.add('active'); document.getElementById('tab-dash').classList.add('active'); }
     }
 
     function generateRows() {
         let c = document.getElementById('studentContainer'); c.innerHTML = "";
-        for(let i=1; i<=50; i++) {
-            c.innerHTML += `<div class="student-row"><span>Roll No. ${i.toString().padStart(2, '0')}</span><input type="number" class="m-input" data-roll="${i}" placeholder="--"></div>`;
-        }
+        for(let i=1; i<=50; i++) { c.innerHTML += `<div class="student-row"><span>Roll No. ${i.toString().padStart(2, '0')}</span><input type="number" class="m-input" data-roll="${i}" placeholder="--"></div>`; }
     }
 
     async function submitData() {
+        // Submit logic remains the same (Safe with disabled button)
         let entries = [];
         let sub = document.getElementById('subject').value, exam = document.getElementById('examType').value, comp = document.getElementById('type').value, max = document.getElementById('maxMarks').value, cls = document.getElementById('class').value;
-        if(!sub || !max || !cls) return alert("Please fill Class, Subject and Max Marks!");
-        
-        document.querySelectorAll('.m-input').forEach(i => {
-            if(i.value && i.value.trim() !== "") {
-                entries.push({ teacherId: currentId, class: cls, subject: sub, examType: exam, type: comp, maxMarks: max, rollNo: i.dataset.roll, marks: i.value });
-            }
-        });
-        
+        if(!sub || !max || !cls) return alert("Fill Class, Subject, Max Marks!");
+        document.querySelectorAll('.m-input').forEach(i => { if(i.value && i.value.trim() !== "") entries.push({ teacherId: currentId, class: cls, subject: sub, examType: exam, type: comp, maxMarks: max, rollNo: i.dataset.roll, marks: i.value }); });
         if(entries.length === 0) return alert("No marks entered!");
-
         const btn = document.getElementById('submitBtn');
         if(btn.disabled) return;
-        
-        btn.innerText = "Saving... Please Wait"; 
-        btn.disabled = true;
-
+        btn.innerText = "Saving..."; btn.disabled = true;
         try {
             await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entries) });
-            alert("SUCCESS: Records saved!");
-            document.querySelectorAll('.m-input').forEach(i => i.value = "");
-        } catch(e) { 
-            alert("Network Error!"); 
-        } finally {
-            setTimeout(() => { btn.innerText = "Submit Records"; btn.disabled = false; }, 3000);
-        }
+            alert("Saved!"); document.querySelectorAll('.m-input').forEach(i => i.value = "");
+        } catch(e) { alert("Error!"); } 
+        finally { setTimeout(() => { btn.innerText = "Submit Records"; btn.disabled = false; }, 3000); }
     }
 
     async function fetchData() {
         let selection = document.getElementById('tabSelector').value; 
-        if(!selection) return alert("Please select a report!");
-        
+        if(!selection) return alert("Select a report!");
         let [selectedClass, selectedExam] = selection.split('|');
+        
+        currentClassView = selectedClass;
+        currentExamView = selectedExam;
         document.getElementById('pDetails').innerText = "CLASS: " + selectedClass.toUpperCase() + " | EXAM: " + selectedExam.toUpperCase();
         
         let fBtn = document.getElementById('fetchBtn');
-        fBtn.innerText = "Fetching Data..."; fBtn.disabled = true;
+        fBtn.innerText = "Fetching..."; fBtn.disabled = true;
 
         try {
             let res = await fetch(WEB_APP_URL + "?tabName=Master");
             let rawData = await res.json();
             
-            fBtn.innerText = "Fetch Analytics"; fBtn.disabled = false;
-            if(!rawData || rawData.error || rawData.length < 2) return alert("Data not found!");
+            fBtn.innerText = "Fetch Data"; fBtn.disabled = false;
+            if(!rawData || rawData.error || rawData.length < 2) return alert("No data found!");
 
-            const cIdx = 2; const sIdx = 3; const eIdx = 4; const rIdx = 6; const oIdx = 7; const mIdx = 8;
             let students = {}; let allSubjects = new Set(); let hasData = false;
+            const cIdx = 2; const sIdx = 3; const eIdx = 4; const rIdx = 6; const oIdx = 7; const mIdx = 8;
 
             for(let i = 1; i < rawData.length; i++) {
                 let row = rawData[i]; if (!row) continue;
                 if(String(row[cIdx]).trim() !== selectedClass || String(row[eIdx]).trim() !== selectedExam) continue;
                 hasData = true;
-                let roll = String(row[rIdx] || '').trim(); if(!roll || roll === '') continue; 
+                let roll = String(row[rIdx] || '').trim(); if(!roll) continue; 
                 let sub = String(row[sIdx] || 'UNKNOWN').toUpperCase().trim();
                 let max = Number(row[mIdx]) || 0; let obt = Number(row[oIdx]) || 0;
 
@@ -294,59 +306,45 @@
                 allSubjects.add(sub);
             }
 
-            if(!hasData) return alert(`No marks found for ${selectedClass} - ${selectedExam}`);
+            if(!hasData) return alert(`No marks for ${selectedClass} - ${selectedExam}`);
 
             let subsArray = Array.from(allSubjects).sort();
             let rolls = Object.keys(students);
             rolls.sort((a,b) => students[b].totalObt - students[a].totalObt);
             let rankMap = {}; let currentRank = 1;
             
-            // Stats Variables
-            let passCount = 0; let failCount = 0;
-            let subStats = {};
+            let passCount = 0; let failCount = 0; let subStats = {};
             subsArray.forEach(sub => subStats[sub] = { obt: 0, max: 0, count: 0 });
 
             rolls.forEach((r, index) => {
                 if (index > 0 && students[r].totalObt < students[rolls[index-1]].totalObt) currentRank++;
                 rankMap[r] = currentRank;
-                
-                // Pass/Fail check (overall >= 33%)
                 let p_val = (students[r].totalObt / students[r].totalMax) * 100;
                 if(p_val >= 33) passCount++; else failCount++;
-
-                // Subject Averages Calculation
                 subsArray.forEach(sub => {
-                    if(students[r].subs[sub] !== undefined) {
-                        subStats[sub].obt += students[r].subs[sub].obt;
-                        subStats[sub].max += students[r].subs[sub].max;
-                        subStats[sub].count++;
-                    }
+                    if(students[r].subs[sub] !== undefined) { subStats[sub].obt += students[r].subs[sub].obt; subStats[sub].max += students[r].subs[sub].max; subStats[sub].count++; }
                 });
             });
 
-            // 1. Inject Analytics
+            // Store in Globals for Individual Print
+            globalStudents = students;
+            globalSubsArray = subsArray;
+            globalRankMap = rankMap;
+
             document.getElementById('analyticsPanel').style.display = 'grid';
             document.getElementById('passFailText').innerHTML = `<span class="text-green">PASS: ${passCount}</span><br><span class="text-red">FAIL: ${failCount}</span>`;
             
             let topHtml = "";
-            rolls.slice(0, 3).forEach((r, idx) => {
-                let perc = ((students[r].totalObt / students[r].totalMax) * 100).toFixed(1);
-                topHtml += `<div>Rank ${idx+1}: Roll ${r} (${perc}%)</div>`;
-            });
+            rolls.slice(0, 3).forEach((r, idx) => { topHtml += `<div>Rank ${idx+1}: Roll ${r} (${((students[r].totalObt / students[r].totalMax) * 100).toFixed(1)}%)</div>`; });
             document.getElementById('topRankersList').innerHTML = topHtml || "N/A";
 
             let avgHtml = "";
-            subsArray.forEach(sub => {
-                let avg = subStats[sub].count > 0 ? ((subStats[sub].obt / subStats[sub].max) * 100).toFixed(1) : 0;
-                avgHtml += `<div>${sub}: ${avg}%</div>`;
-            });
+            subsArray.forEach(sub => { let avg = subStats[sub].count > 0 ? ((subStats[sub].obt / subStats[sub].max) * 100).toFixed(1) : 0; avgHtml += `<div>${sub}: ${avg}%</div>`; });
             document.getElementById('subjectAvgsList').innerHTML = avgHtml || "N/A";
-            document.getElementById('submittedSubjectsList').innerText = subsArray.join(", ") || "None";
 
-            // 2. Build Table
             let h = "<tr><th>ROLL NO</th>";
             subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
-            h += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBTAINED</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th></tr>";
+            h += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBTAINED</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
             document.getElementById('tHead').innerHTML = h;
 
             let b = "";
@@ -356,22 +354,65 @@
                 let s = students[roll];
                 let rawP = (s.totalObt / s.totalMax) * 100;
                 let p = s.totalMax > 0 ? rawP.toFixed(2) + "%" : "0%";
-                
-                // Fail color logic
                 let isFail = rawP < 33;
                 let rowClass = isFail ? "fail-row" : "";
 
                 b += `<tr class="${rowClass}"><td>${roll}</td>`;
                 subsArray.forEach(sub => { b += `<td>${s.subs[sub] !== undefined ? s.subs[sub].obt : '-'}</td>`; });
                 let failMark = isFail ? "<span style='color:red;'> (F)</span>" : "";
-                b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td></tr>`;
+                b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
+                // Individual Print Button added here
+                b += `<td class='action-col'><button class="btn-small" onclick="printIndividual('${roll}')">Print</button></td></tr>`;
             });
             document.getElementById('tBody').innerHTML = b;
             
-        } catch(e) { 
-            alert("Error fetching data."); 
-            fBtn.innerText = "Fetch Analytics"; fBtn.disabled = false;
+        } catch(e) { alert("Error!"); fBtn.innerText = "Fetch Data"; fBtn.disabled = false; }
+    }
+
+    // Print Logic Functions
+    function printConsolidated() {
+        document.body.classList.add('print-cons');
+        document.body.classList.remove('print-indv');
+        window.print();
+    }
+
+    function printIndividual(roll) {
+        let s = globalStudents[roll];
+        if(!s) return;
+
+        // Fill data into Individual Report Card format
+        document.getElementById('irRoll').innerText = "Roll No: " + roll;
+        document.getElementById('irClass').innerText = "Class: " + currentClassView;
+        document.getElementById('irExam').innerText = "Exam: " + currentExamView;
+
+        let tbody = "";
+        globalSubsArray.forEach(sub => {
+            let marks = s.subs[sub] !== undefined ? s.subs[sub].obt : '-';
+            let max = s.subs[sub] !== undefined ? s.subs[sub].max : '-';
+            tbody += `<tr><td>${sub}</td><td>${max}</td><td>${marks}</td></tr>`;
+        });
+        document.getElementById('irTableBody').innerHTML = tbody;
+
+        let rawP = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;
+        let isFail = rawP < 33;
+
+        document.getElementById('irTotal').innerText = `Total Marks: ${s.totalObt} / ${s.totalMax}`;
+        document.getElementById('irPerc').innerText = `Percentage: ${rawP.toFixed(2)}%`;
+        document.getElementById('irRank').innerText = `Class Rank: #${globalRankMap[roll]}`;
+        
+        let resEl = document.getElementById('irResult');
+        if(isFail) {
+            resEl.innerText = "Result: NEEDS IMPROVEMENT";
+            resEl.style.color = "red";
+        } else {
+            resEl.innerText = "Result: PASSED";
+            resEl.style.color = "green";
         }
+
+        // Trigger Print for Individual
+        document.body.classList.add('print-indv');
+        document.body.classList.remove('print-cons');
+        window.print();
     }
 </script>
 </body>

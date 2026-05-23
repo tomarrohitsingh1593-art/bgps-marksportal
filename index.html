@@ -132,7 +132,28 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
             <div class="control-group"><label>Class</label><select id="class"></select></div>
             <div class="control-group"><label>Subject</label>
-                <select id="subject"><option value="">Select</option><option>English</option><option>Hindi</option><option>Maths</option><option>Physics</option><option>Chemistry</option><option>Biology</option><option>History/Civics</option><option>Geography</option><option>Science</option><option>Computer</option><option>GK</option></select>
+                <!-- PURA SUBJECT LIST WAPAS AA GAYA HAI YAHAN -->
+                <select id="subject">
+                    <option value="">Select</option>
+                    <option>English</option>
+                    <option>English Language</option>
+                    <option>English Literature</option>
+                    <option>Hindi</option>
+                    <option>Maths</option>
+                    <option>Physics</option>
+                    <option>Chemistry</option>
+                    <option>Biology</option>
+                    <option>History/Civics</option>
+                    <option>Geography</option>
+                    <option>Social Studies</option>
+                    <option>Science</option>
+                    <option>EVS</option>
+                    <option>Account</option>
+                    <option>Business</option>
+                    <option>Economics</option>
+                    <option>Computer</option>
+                    <option>GK</option>
+                </select>
             </div>
             <div class="control-group"><label>Exam</label><select id="examType"><option>Unit Test 1</option><option>Half Yearly</option><option>Annual Exam</option></select></div>
         </div>
@@ -318,7 +339,6 @@
 
             let students = {}; let allSubjects = new Set(); let hasData = false;
             
-            // Setting exact column indices from GAS sheet structure
             const cIdx = 2; const sIdx = 3; const eIdx = 4; const tIdx = 5; const rIdx = 6; const oIdx = 7; const mIdx = 8;
 
             for(let i = 1; i < rawData.length; i++) {
@@ -334,13 +354,11 @@
                 if(!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0 };
                 if(!students[roll].subs[sub]) students[roll].subs[sub] = { max: 0, obt: 0, written: '-', oral: '-', practical: '-' };
 
-                // Add to overall subject total and grand total
                 students[roll].subs[sub].max += max;
                 students[roll].subs[sub].obt += obt;
                 students[roll].totalMax += max;
                 students[roll].totalObt += obt;
                 
-                // Segregate marks based on exam mode type
                 if(mode.includes('oral')) {
                     students[roll].subs[sub].oral = students[roll].subs[sub].oral === '-' ? obt : students[roll].subs[sub].oral + obt;
                 } else if(mode.includes('practical')) {

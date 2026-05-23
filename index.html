@@ -12,12 +12,9 @@
         .card { background: var(--dark); padding: 30px; border: 1px solid rgba(246,201,14,.25); border-radius: 16px; box-shadow: 0 32px 80px rgba(0,0,0,.7); margin-bottom: 20px; }
         .school-logo { width: 100px; height: 100px; margin: 0 auto 20px; border-radius: 50%; background: var(--mid); border: 3px solid var(--gold); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
         .logo-text { font-family: 'EB Garamond', serif; font-size: 22px; color: var(--gold); font-weight: bold; }
-        .school-logo img { width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute; display: none; }
         .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), #e6b800); color: var(--navy); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; transition: 0.2s;}
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(246,201,14,0.4); }
-        .btn-primary:disabled { background: #555; color: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
         .btn-small { background: var(--blue); color: var(--navy); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; text-transform: uppercase; }
-        
         .app-shell { max-width: 1100px; margin: 0 auto; display: none; }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #718096; cursor: pointer; }
@@ -30,8 +27,6 @@
         #studentContainer { max-height: 400px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); padding: 5px; border-radius: 6px; }
         .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .student-row input { width: 80px; padding: 6px; background: var(--dark); border: 1px solid var(--border); color: white; text-align: center; border-radius: 4px; }
-        
-        /* Analytics */
         .analytics-panel { display: none; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-box { background: var(--mid); border: 1px solid var(--border); padding: 15px; border-radius: 8px; }
         .stat-box h4 { color: var(--gold); margin-bottom: 8px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
@@ -39,70 +34,37 @@
         .text-green { color: var(--green); font-weight: bold; }
         .text-red { color: var(--red); font-weight: bold; }
         .fail-row { background: rgba(252, 129, 129, 0.15) !important; border-left: 3px solid var(--red) !important; }
-
-        /* Dashboard Tables */
         table { width: 100%; border-collapse: collapse; font-family: 'Inconsolata', monospace; margin-top: 10px; background: var(--card); border-radius: 8px; overflow: hidden; }
         th, td { padding: 10px; border: 1px solid var(--border); text-align: center; font-size: 13px; }
         th { background: var(--mid); color: var(--gold); text-transform: uppercase; }
         .highlight-col { background: rgba(246, 201, 14, 0.05); color: var(--gold); font-weight: bold; }
         .perc-col { background: rgba(99, 179, 237, 0.08); color: var(--blue); font-weight: bold; font-size: 14px; }
-        
-        /* ==========================================
-           INDIVIDUAL REPORT CARD
-           ========================================== */
         #individualReportContainer { display: none; margin-top: 30px; }
         #individualReport { background: #ffffff; color: #000000; padding: 30px; border: 3px solid var(--navy); border-radius: 12px; font-family: 'Georgia', serif; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
         .ir-header { text-align: center; border-bottom: 3px solid var(--navy); padding-bottom: 15px; margin-bottom: 25px; }
-        .ir-header h1 { font-family: 'EB Garamond', serif; font-size: 34px; margin: 0; color: var(--navy); font-weight: bold; text-transform: uppercase; letter-spacing: 1px;}
-        .ir-header h3 { font-size: 18px; margin: 8px 0 0 0; letter-spacing: 2px; color: #b7791f; text-transform: uppercase; font-family: 'Segoe UI', sans-serif;}
-        .ir-details { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 25px; font-weight: bold; font-family: 'Segoe UI', sans-serif; background: #f0f4f8; padding: 15px 20px; border-radius: 8px; border: 1px solid #cbd5e1; color: var(--navy); }
-        .ir-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-family: 'Segoe UI', sans-serif; box-shadow: 0 4px 10px rgba(0,0,0,0.03); background: #ffffff !important; border-radius: 8px; overflow: hidden;}
+        .ir-header h1 { font-family: 'EB Garamond', serif; font-size: 34px; margin: 0; color: var(--navy); font-weight: bold; text-transform: uppercase; }
+        .ir-header h3 { font-size: 18px; margin: 8px 0 0 0; color: #b7791f; text-transform: uppercase; font-family: 'Segoe UI', sans-serif;}
+        .ir-details { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 25px; font-weight: bold; background: #f0f4f8; padding: 15px 20px; border-radius: 8px; color: var(--navy); }
+        .ir-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #ffffff !important; border-radius: 8px; overflow: hidden;}
         .ir-table th, .ir-table td { border: 1px solid #cbd5e1 !important; padding: 14px; text-align: center; }
-        .ir-table th { background: var(--navy) !important; color: var(--gold) !important; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;}
-        .ir-table td { background: #ffffff !important; color: #1e293b !important; font-size: 15px; font-weight: 600; }
-        .ir-table tr:nth-child(even) td { background: #f8fafc !important; } 
-        .ir-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-family: 'Segoe UI', sans-serif; }
-        .ir-box { border: 2px solid #cbd5e1; padding: 18px; text-align: center; font-weight: bold; background: #ffffff; color: var(--navy); font-size: 16px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .ir-table th { background: var(--navy) !important; color: var(--gold) !important; }
+        .ir-table td { color: #1e293b !important; font-weight: 600; }
+        .ir-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .ir-box { border: 2px solid #cbd5e1; padding: 18px; text-align: center; font-weight: bold; background: #ffffff; color: var(--navy); font-size: 16px; border-radius: 8px; }
         .ir-footer { display: flex; justify-content: space-between; margin-top: 50px; font-size: 16px; font-weight: bold; color: var(--navy); }
         .sign-line { border-top: 2px solid var(--navy); width: 200px; text-align: center; padding-top: 8px; }
-
-        /* ---------------- PRINT CSS ---------------- */
-        .print-only-header { display: none; }
         
         @media print {
             body { background: white !important; color: black !important; padding: 0; }
             .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary, .app-shell > div:not(.view-section.active) { display: none !important; }
-            .card { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
-            
             body.print-cons #dashMain { display: block !important; }
             body.print-cons #individualReportContainer { display: none !important; }
-            
             body.print-indv #dashMain { display: none !important; }
             body.print-indv #individualReportContainer { display: block !important; padding: 0 !important; margin: 0 !important; }
-            
-            /* CONSOLIDATED PRINT */
-            body.print-cons .print-only-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-            body.print-cons .print-only-header h1 { font-family: 'EB Garamond', serif; font-size: 28px; font-weight: bold; margin-bottom: 5px; color: black !important;}
-            body.print-cons .print-only-header h3 { font-size: 16px; margin-bottom: 5px; }
-            
-            body.print-cons .analytics-panel { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; border: 1px solid #000 !important; padding: 10px !important; margin-bottom: 20px !important; }
-            body.print-cons .stat-box { background: white !important; border: none !important; border-right: 1px solid #ccc !important; padding: 5px 10px !important; color: black !important; }
-            body.print-cons .stat-box:last-child { border-right: none !important; }
-            body.print-cons .action-col { display: none !important; }
-            
             body.print-cons table { width: 100% !important; border: 2px solid #000 !important; background: white !important; table-layout: fixed !important; }
             body.print-cons th, body.print-cons td { border: 1px solid #000 !important; color: black !important; padding: 4px 2px !important; text-align: center; word-wrap: break-word !important; } 
             body.print-cons th { background: #f2f2f2 !important; font-weight: bold; font-size: 10px !important; }
             body.print-cons td { font-size: 11px !important; }
-            body.print-cons .fail-row { background: #ffe6e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-            /* INDIVIDUAL REPORT PRINT */
-            body.print-indv #individualReport { border: 5px double #0a1628 !important; padding: 40px !important; height: 95vh; box-sizing: border-box; box-shadow: none !important; border-radius: 0 !important;}
-            body.print-indv .ir-details { background: transparent !important; border: 1px solid #000 !important; }
-            body.print-indv .ir-table th, body.print-indv .ir-table td { border: 1px solid #000 !important; }
-            body.print-indv .ir-table th { background: #e2e8f0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            body.print-indv .ir-table tr:nth-child(even) td { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            body.print-indv .ir-box { border: 2px solid #000 !important; }
         }
     </style>
 </head>
@@ -129,15 +91,14 @@
         <button class="tab-btn" onclick="location.reload()" style="margin-left:auto; color:var(--red); border:none; background:transparent;">Logout</button>
     </div>
 
-    <!-- Entry View Section -->
     <div class="card view-section" id="entryView">
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
             <div class="control-group"><label>Class</label><select id="class"></select></div>
             <div class="control-group"><label>Subject</label>
                 <select id="subject">
                     <option value="">Select</option>
-                    <option>English Language</option>
                     <option>English Literature</option>
+                    <option>English Language</option>
                     <option>Hindi</option>
                     <option>Maths</option>
                     <option>Geography</option>
@@ -159,29 +120,18 @@
         <button class="btn-primary" onclick="submitData()" id="submitBtn">Submit Records</button>
     </div>
 
-    <!-- Dashboard View Section -->
     <div class="card view-section" id="dashView">
-        
-        <!-- MAIN DASHBOARD CONTENT -->
         <div id="dashMain">
             <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;" class="no-print">
                 <div class="control-group" style="flex:2; margin-bottom:0;"><label>Select Class & Exam</label><select id="tabSelector"></select></div>
                 <button class="btn-primary" onclick="fetchData()" style="flex:1; margin:0; padding:10px;" id="fetchBtn">Fetch Data</button>
                 <button class="btn-primary" id="btn-print-cons" onclick="printConsolidated()" style="flex:1; margin:0; padding:10px; background:var(--green); display:none;">Print Consolidated</button>
             </div>
-
-            <div id="printHeader" class="print-only-header">
-                <h1>BG PUBLIC SCHOOL</h1>
-                <h3>CONSOLIDATED REPORT & ANALYTICS</h3>
-                <p id="pDetails">CLASS: -- | EXAM: --</p>
-            </div>
-
             <div class="analytics-panel no-print" id="analyticsPanel">
                 <div class="stat-box"><h4>Overall Result</h4><p id="passFailText">Waiting...</p></div>
                 <div class="stat-box"><h4>Top 3 Rankers</h4><div id="topRankersList">Waiting...</div></div>
                 <div class="stat-box"><h4>Class Average</h4><div id="subjectAvgsList">Waiting...</div></div>
             </div>
-            
             <div style="overflow-x:auto;">
                 <table id="resTable">
                     <thead id="tHead"></thead>
@@ -190,7 +140,6 @@
             </div>
         </div>
 
-        <!-- INDIVIDUAL REPORT CARD VIEW -->
         <div id="individualReportContainer">
             <div class="no-print" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                 <h2 style="color:var(--gold); font-family:'EB Garamond';">Student Report Card</h2>
@@ -199,70 +148,26 @@
                     <button class="btn-small" id="btn-print-indv" onclick="executeIndividualPrint()" style="background: var(--green); color: white; padding: 10px 15px; font-size: 14px; display: none;">🖨️ Print Report Card</button>
                 </div>
             </div>
-            
             <div id="individualReport">
-                <div class="ir-header">
-                    <h1>BG PUBLIC SCHOOL</h1>
-                    <h3>PROGRESS REPORT</h3>
-                </div>
-                <div class="ir-details">
-                    <span id="irRoll">Roll No: </span>
-                    <span id="irClass">Class: </span>
-                    <span id="irExam">Exam: </span>
-                </div>
+                <div class="ir-header"><h1>BG PUBLIC SCHOOL</h1><h3>PROGRESS REPORT</h3></div>
+                <div class="ir-details"><span id="irRoll">Roll No: </span><span id="irClass">Class: </span><span id="irExam">Exam: </span></div>
                 <table class="ir-table">
-                    <thead>
-                        <tr>
-                            <th>SUBJECT</th>
-                            <th>WRITTEN</th>
-                            <th>ORAL</th>
-                            <th>PRACTICAL</th>
-                            <th>TOTAL MAX</th>
-                            <th>TOTAL OBTAINED</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>SUBJECT</th><th>WRITTEN</th><th>ORAL</th><th>PRACTICAL</th><th>TOTAL MAX</th><th>TOTAL OBTAINED</th></tr></thead>
                     <tbody id="irTableBody"></tbody>
                 </table>
-                <div class="ir-summary">
-                    <div class="ir-box" id="irTotal">Total: -- / --</div>
-                    <div class="ir-box" id="irPerc">Percentage: --%</div>
-                    <div class="ir-box" id="irRank">Class Rank: #--</div>
-                    <div class="ir-box" id="irResult">Result: --</div>
-                </div>
-                <div class="ir-footer">
-                    <div class="sign-line">Class Teacher</div>
-                    <div class="sign-line">Principal</div>
-                </div>
+                <div class="ir-summary"><div class="ir-box" id="irTotal">Total: -- / --</div><div class="ir-box" id="irPerc">Percentage: --%</div><div class="ir-box" id="irRank">Class Rank: #--</div><div class="ir-box" id="irResult">Result: --</div></div>
+                <div class="ir-footer"><div class="sign-line">Class Teacher</div><div class="sign-line">Principal</div></div>
             </div>
         </div>
-
     </div>
 </div>
 
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoFAw_Dr-c8Uez79RLT7wbfVZ5xhqUUrFlqkcN5j4FYUsiUaaoYoC4H9tldaoxoGMZ/exec"; 
     const mapping = {"T-1":"Playgroup","T-2":"LKG","T-3":"UKG","T-4":"Class 1","T-5":"Class 2","T-6":"Class 3","T-7":"Class 4","T-8":"Class 5","T-9":"Class 6","T-10":"Class 7","T-11":"Class 8","T-12":"Class 9","T-13":"Class 10","T-14":"Class 11","T-15":"Class 12","ADMIN":"ALL_CLASSES"};
+    let globalStudents = {}, globalSubsArray = [], globalRankMap = {}, currentClassView = "", currentExamView = "", currentId = "";
     
-    let currentId = "";
-    let globalStudents = {};
-    let globalSubsArray = [];
-    let globalRankMap = {};
-    let currentClassView = "";
-    let currentExamView = "";
-
-    const customSubjectOrder = [
-        "ENGLISH LANGUAGE", 
-        "ENGLISH LITERATURE", 
-        "HINDI", 
-        "MATHS", 
-        "GEOGRAPHY", 
-        "HISTORY/CIVICS", 
-        "CHEMISTRY", 
-        "BIOLOGY", 
-        "PHYSICS", 
-        "GK/MSC", 
-        "COMPUTER"
-    ];
+    const customSubjectOrder = ["ENGLISH LITERATURE", "ENGLISH LANGUAGE", "HINDI", "MATHS", "GEOGRAPHY", "HISTORY/CIVICS", "CHEMISTRY", "BIOLOGY", "PHYSICS", "GK/MSC", "COMPUTER"];
 
     function loginTeacher() {
         let id = document.getElementById('tid').value.toUpperCase();
@@ -271,36 +176,15 @@
             currentId = id;
             let myClass = mapping[id];
             document.getElementById('loggedInUser').innerText = id + " | " + (id === "ADMIN" ? "SUPER ADMIN" : myClass);
-            
-            const clsSelect = document.getElementById('class');
-            const dashSelect = document.getElementById('tabSelector');
+            const clsSelect = document.getElementById('class'), dashSelect = document.getElementById('tabSelector');
             let classesToLoad = id === "ADMIN" ? ["Playgroup", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"] : [myClass];
-            
-            let clsOptions = id === "ADMIN" ? "<option value=''>Class</option>" : "";
-            let dashOptions = "<option value=''>Select Report</option>";
-            
-            // Fixed exams list for all
+            let clsOptions = id === "ADMIN" ? "<option value=''>Class</option>" : "", dashOptions = "<option value=''>Select Report</option>";
             const allExams = ["Unit Test 1", "Unit Test 2", "Half Yearly", "Unit Test 3", "Annual Exam"];
-
-            classesToLoad.forEach(c => {
-                clsOptions += `<option value="${c}">${c}</option>`;
-                allExams.forEach(ex => { dashOptions += `<option value="${c}|${ex}">${c} - ${ex}</option>`; });
-            });
+            classesToLoad.forEach(c => { clsOptions += `<option value="${c}">${c}</option>`; allExams.forEach(ex => { dashOptions += `<option value="${c}|${ex}">${c} - ${ex}</option>`; }); });
             clsSelect.innerHTML = clsOptions; dashSelect.innerHTML = dashOptions;
-            
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('appShell').style.display = 'block';
-            
-            if(id === "ADMIN") { 
-                document.getElementById('tab-entry').style.display = 'none'; 
-                document.getElementById('btn-print-cons').style.display = 'inline-block'; 
-                switchTab('dash'); 
-            } 
-            else { 
-                document.getElementById('btn-print-cons').style.display = 'none'; 
-                generateRows(); 
-                switchTab('entry'); 
-            }
+            document.getElementById('loginPage').style.display = 'none'; document.getElementById('appShell').style.display = 'block';
+            if(id === "ADMIN") { document.getElementById('tab-entry').style.display = 'none'; document.getElementById('btn-print-cons').style.display = 'inline-block'; switchTab('dash'); } 
+            else { document.getElementById('btn-print-cons').style.display = 'none'; generateRows(); switchTab('entry'); }
         } else { alert("Login Failed!"); }
     }
 
@@ -322,211 +206,64 @@
         if(!sub || !max || !cls) return alert("Fill Class, Subject, Max Marks!");
         document.querySelectorAll('.m-input').forEach(i => { if(i.value && i.value.trim() !== "") entries.push({ teacherId: currentId, class: cls, subject: sub, examType: exam, type: comp, maxMarks: max, rollNo: i.dataset.roll, marks: i.value }); });
         if(entries.length === 0) return alert("No marks entered!");
-        const btn = document.getElementById('submitBtn');
-        if(btn.disabled) return;
+        const btn = document.getElementById('submitBtn'); if(btn.disabled) return;
         btn.innerText = "Saving..."; btn.disabled = true;
-        try {
-            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entries) });
-            alert("Saved!"); document.querySelectorAll('.m-input').forEach(i => i.value = "");
-        } catch(e) { alert("Error!"); } 
-        finally { setTimeout(() => { btn.innerText = "Submit Records"; btn.disabled = false; }, 3000); }
+        try { await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entries) }); alert("Saved!"); document.querySelectorAll('.m-input').forEach(i => i.value = ""); } catch(e) { alert("Error!"); } finally { setTimeout(() => { btn.innerText = "Submit Records"; btn.disabled = false; }, 3000); }
     }
 
     async function fetchData() {
-        let selection = document.getElementById('tabSelector').value; 
-        if(!selection) return alert("Select a report!");
-        let [selectedClass, selectedExam] = selection.split('|');
-        
-        currentClassView = selectedClass;
-        currentExamView = selectedExam;
-        document.getElementById('pDetails').innerText = "CLASS: " + selectedClass.toUpperCase() + " | EXAM: " + selectedExam.toUpperCase();
-        
-        let fBtn = document.getElementById('fetchBtn');
-        fBtn.innerText = "Fetching..."; fBtn.disabled = true;
-
+        let selection = document.getElementById('tabSelector').value; if(!selection) return alert("Select a report!");
+        let [selectedClass, selectedExam] = selection.split('|'); currentClassView = selectedClass; currentExamView = selectedExam;
+        let fBtn = document.getElementById('fetchBtn'); fBtn.innerText = "Fetching..."; fBtn.disabled = true;
         try {
-            let res = await fetch(WEB_APP_URL + "?tabName=Master");
-            let rawData = await res.json();
-            
+            let res = await fetch(WEB_APP_URL + "?tabName=Master"); let rawData = await res.json();
             fBtn.innerText = "Fetch Data"; fBtn.disabled = false;
             if(!rawData || rawData.error || rawData.length < 2) return alert("No data found!");
-
-            let students = {}; let allSubjects = new Set(); let hasData = false;
-            
-            const cIdx = 2; const sIdx = 3; const eIdx = 4; const tIdx = 5; const rIdx = 6; const oIdx = 7; const mIdx = 8;
-
-            for(let i = 1; i < rawData.length; i++) {
-                let row = rawData[i]; if (!row) continue;
-                if(String(row[cIdx]).trim() !== selectedClass || String(row[eIdx]).trim() !== selectedExam) continue;
-                hasData = true;
-                
-                let roll = String(row[rIdx] || '').trim(); if(!roll) continue; 
-                let sub = String(row[sIdx] || 'UNKNOWN').toUpperCase().trim();
-                let mode = String(row[tIdx] || 'Written').trim().toLowerCase();
-                let max = Number(row[mIdx]) || 0; let obt = Number(row[oIdx]) || 0;
-
+            let students = {}, allSubjects = new Set(), hasData = false;
+            const cIdx=2, sIdx=3, eIdx=4, tIdx=5, rIdx=6, oIdx=7, mIdx=8;
+            for(let i=1; i<rawData.length; i++) {
+                let row = rawData[i]; if(!row || String(row[cIdx]).trim() !== selectedClass || String(row[eIdx]).trim() !== selectedExam) continue;
+                hasData = true; let roll = String(row[rIdx] || '').trim(); if(!roll) continue;
+                let sub = String(row[sIdx] || 'UNKNOWN').toUpperCase().trim(); let mode = String(row[tIdx] || 'Written').trim().toLowerCase();
+                let max = Number(row[mIdx]) || 0, obt = Number(row[oIdx]) || 0;
                 if(!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0 };
-                if(!students[roll].subs[sub]) students[roll].subs[sub] = { max: 0, obt: 0, written: '-', oral: '-', practical: '-' };
-
-                students[roll].subs[sub].max += max;
-                students[roll].subs[sub].obt += obt;
-                students[roll].totalMax += max;
-                students[roll].totalObt += obt;
-                
-                if(mode.includes('oral')) {
-                    students[roll].subs[sub].oral = students[roll].subs[sub].oral === '-' ? obt : students[roll].subs[sub].oral + obt;
-                } else if(mode.includes('practical')) {
-                    students[roll].subs[sub].practical = students[roll].subs[sub].practical === '-' ? obt : students[roll].subs[sub].practical + obt;
-                } else {
-                    students[roll].subs[sub].written = students[roll].subs[sub].written === '-' ? obt : students[roll].subs[sub].written + obt;
-                }
-
+                if(!students[roll].subs[sub]) students[roll].subs[sub] = { max:0, obt:0, written:'-', oral:'-', practical:'-' };
+                students[roll].subs[sub].max += max; students[roll].subs[sub].obt += obt; students[roll].totalMax += max; students[roll].totalObt += obt;
+                if(mode.includes('oral')) students[roll].subs[sub].oral = students[roll].subs[sub].oral === '-' ? obt : students[roll].subs[sub].oral + obt;
+                else if(mode.includes('practical')) students[roll].subs[sub].practical = students[roll].subs[sub].practical === '-' ? obt : students[roll].subs[sub].practical + obt;
+                else students[roll].subs[sub].written = students[roll].subs[sub].written === '-' ? obt : students[roll].subs[sub].written + obt;
                 allSubjects.add(sub);
             }
-
-            if(!hasData) return alert(`No marks for ${selectedClass} - ${selectedExam}`);
-
-            let subsArray = Array.from(allSubjects);
-            subsArray.sort((a, b) => {
-                let posA = customSubjectOrder.indexOf(a);
-                let posB = customSubjectOrder.indexOf(b);
-                if (posA === -1) posA = 999; 
-                if (posB === -1) posB = 999;
-                if (posA !== posB) return posA - posB;
-                return a.localeCompare(b); 
-            });
-
-            let rolls = Object.keys(students);
-            rolls.sort((a,b) => students[b].totalObt - students[a].totalObt);
-            let rankMap = {}; let currentRank = 1;
-            
-            let passCount = 0; let failCount = 0; let subStats = {};
-            subsArray.forEach(sub => subStats[sub] = { obt: 0, max: 0, count: 0 });
-
-            rolls.forEach((r, index) => {
-                if (index > 0 && students[r].totalObt < students[rolls[index-1]].totalObt) currentRank++;
-                rankMap[r] = currentRank;
-                let p_val = (students[r].totalObt / students[r].totalMax) * 100;
-                if(p_val >= 33) passCount++; else failCount++;
-                subsArray.forEach(sub => {
-                    if(students[r].subs[sub] !== undefined) { subStats[sub].obt += students[r].subs[sub].obt; subStats[sub].max += students[r].subs[sub].max; subStats[sub].count++; }
-                });
-            });
-
-            globalStudents = students;
-            globalSubsArray = subsArray;
-            globalRankMap = rankMap;
-
-            document.getElementById('analyticsPanel').style.display = 'grid';
-            document.getElementById('passFailText').innerHTML = `<span class="text-green">PASS: ${passCount}</span><br><span class="text-red">FAIL: ${failCount}</span>`;
-            
-            let topHtml = "";
-            rolls.slice(0, 3).forEach((r, idx) => { topHtml += `<div>Rank ${idx+1}: Roll ${r} (${((students[r].totalObt / students[r].totalMax) * 100).toFixed(1)}%)</div>`; });
-            document.getElementById('topRankersList').innerHTML = topHtml || "N/A";
-
-            let avgHtml = "";
-            subsArray.forEach(sub => { let avg = subStats[sub].count > 0 ? ((subStats[sub].obt / subStats[sub].max) * 100).toFixed(1) : 0; avgHtml += `<div>${sub}: ${avg}%</div>`; });
-            document.getElementById('subjectAvgsList').innerHTML = avgHtml || "N/A";
-
-            let h = "<tr><th>ROLL NO</th>";
-            subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
-            h += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBTAINED</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>REPORT</th></tr>";
-            document.getElementById('tHead').innerHTML = h;
-
-            let b = "";
-            let displayRolls = Object.keys(students).sort((a,b) => Number(a) - Number(b));
-            let btnText = currentId === "ADMIN" ? "View / Print" : "View Details";
-
-            displayRolls.forEach(roll => {
-                let s = students[roll];
-                let rawP = (s.totalObt / s.totalMax) * 100;
-                let p = s.totalMax > 0 ? rawP.toFixed(2) + "%" : "0%";
-                let isFail = rawP < 33;
-                let rowClass = isFail ? "fail-row" : "";
-
-                b += `<tr class="${rowClass}"><td>${roll}</td>`;
-                subsArray.forEach(sub => { b += `<td>${s.subs[sub] !== undefined ? s.subs[sub].obt : '-'}</td>`; });
-                let failMark = isFail ? "<span style='color:red;'> (F)</span>" : "";
-                b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
-                b += `<td class='action-col'><button class="btn-small" onclick="viewIndividualReport('${roll}')">${btnText}</button></td></tr>`;
+            if(!hasData) return alert("No marks found!");
+            let subsArray = Array.from(allSubjects).sort((a,b) => { let pA = customSubjectOrder.indexOf(a), pB = customSubjectOrder.indexOf(b); return (pA === -1 ? 999 : pA) - (pB === -1 ? 999 : pB); });
+            globalStudents = students; globalSubsArray = subsArray;
+            let h = "<tr><th>ROLL NO</th>"; subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
+            h += "<th>MAX</th><th>OBT</th><th>%</th><th>RANK</th><th>ACTION</th></tr>"; document.getElementById('tHead').innerHTML = h;
+            let b = "", rolls = Object.keys(students).sort((a,b) => Number(a)-Number(b));
+            rolls.forEach(roll => {
+                let s = students[roll], p = s.totalMax > 0 ? ((s.totalObt/s.totalMax)*100).toFixed(2) + "%" : "0%";
+                b += `<tr class="${(s.totalObt/s.totalMax) < 0.33 ? 'fail-row' : ''}"><td>${roll}</td>`;
+                subsArray.forEach(sub => { b += `<td>${s.subs[sub] ? s.subs[sub].obt : '-'}</td>`; });
+                b += `<td>${s.totalMax}</td><td>${s.totalObt}</td><td>${p}</td><td>#--</td><td><button class="btn-small" onclick="viewIndividualReport('${roll}')">${currentId==="ADMIN"?"View/Print":"View"}</button></td></tr>`;
             });
             document.getElementById('tBody').innerHTML = b;
-            
         } catch(e) { alert("Error!"); fBtn.innerText = "Fetch Data"; fBtn.disabled = false; }
     }
 
-    function printConsolidated() {
-        document.body.classList.add('print-cons');
-        document.body.classList.remove('print-indv');
-        window.print();
-    }
-
     function viewIndividualReport(roll) {
-        let s = globalStudents[roll];
-        if(!s) return;
-
-        document.getElementById('irRoll').innerText = "Roll No: " + roll;
-        document.getElementById('irClass').innerText = "Class: " + currentClassView;
-        document.getElementById('irExam').innerText = "Exam: " + currentExamView;
-
-        let tbody = "";
-        globalSubsArray.forEach(sub => {
-            if(s.subs[sub]) {
-                let w = s.subs[sub].written;
-                let o = s.subs[sub].oral;
-                let p = s.subs[sub].practical;
-                let max = s.subs[sub].max;
-                let obt = s.subs[sub].obt;
-                
-                tbody += `<tr>
-                    <td>${sub}</td>
-                    <td>${w}</td>
-                    <td>${o}</td>
-                    <td>${p}</td>
-                    <td>${max}</td>
-                    <td>${obt}</td>
-                </tr>`;
-            }
-        });
+        let s = globalStudents[roll]; if(!s) return;
+        document.getElementById('irRoll').innerText = "Roll No: " + roll; document.getElementById('irClass').innerText = "Class: " + currentClassView; document.getElementById('irExam').innerText = "Exam: " + currentExamView;
+        let tbody = ""; globalSubsArray.forEach(sub => { if(s.subs[sub]) tbody += `<tr><td>${sub}</td><td>${s.subs[sub].written}</td><td>${s.subs[sub].oral}</td><td>${s.subs[sub].practical}</td><td>${s.subs[sub].max}</td><td>${s.subs[sub].obt}</td></tr>`; });
         document.getElementById('irTableBody').innerHTML = tbody;
-
-        let rawP = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;
-        let isFail = rawP < 33;
-
-        document.getElementById('irTotal').innerText = `Total Marks: ${s.totalObt} / ${s.totalMax}`;
-        document.getElementById('irPerc').innerText = `Percentage: ${rawP.toFixed(2)}%`;
-        document.getElementById('irRank').innerText = `Class Rank: #${globalRankMap[roll]}`;
-        
-        let resEl = document.getElementById('irResult');
-        if(isFail) {
-            resEl.innerText = "Result: NEEDS IMPROVEMENT";
-            resEl.style.color = "#dc2626"; 
-        } else {
-            resEl.innerText = "Result: PASSED";
-            resEl.style.color = "#16a34a"; 
-        }
-
-        document.getElementById('dashMain').style.display = 'none';
-        document.getElementById('individualReportContainer').style.display = 'block';
-
-        if(currentId === "ADMIN") {
-            document.getElementById('btn-print-indv').style.display = 'inline-block';
-        } else {
-            document.getElementById('btn-print-indv').style.display = 'none';
-        }
+        document.getElementById('irTotal').innerText = `Total: ${s.totalObt} / ${s.totalMax}`; document.getElementById('irPerc').innerText = `Percentage: ${((s.totalObt/s.totalMax)*100).toFixed(2)}%`;
+        document.getElementById('irResult').innerText = ((s.totalObt/s.totalMax) < 0.33) ? "Result: FAIL" : "Result: PASSED";
+        document.getElementById('dashMain').style.display = 'none'; document.getElementById('individualReportContainer').style.display = 'block';
+        document.getElementById('btn-print-indv').style.display = currentId === "ADMIN" ? "inline-block" : "none";
     }
 
-    function closeIndividualView() {
-        document.getElementById('dashMain').style.display = 'block';
-        document.getElementById('individualReportContainer').style.display = 'none';
-        document.body.classList.remove('print-indv');
-    }
-
-    function executeIndividualPrint() {
-        document.body.classList.add('print-indv');
-        document.body.classList.remove('print-cons');
-        window.print();
-    }
+    function closeIndividualView() { document.getElementById('dashMain').style.display = 'block'; document.getElementById('individualReportContainer').style.display = 'none'; document.body.classList.remove('print-indv'); }
+    function printConsolidated() { document.body.classList.add('print-cons'); window.print(); document.body.classList.remove('print-cons'); }
+    function executeIndividualPrint() { document.body.classList.add('print-indv'); window.print(); document.body.classList.remove('print-indv'); }
 </script>
 </body>
 </html>

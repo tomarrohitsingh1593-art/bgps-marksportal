@@ -74,33 +74,28 @@
             .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary, .app-shell > div:not(.view-section.active) { display: none !important; }
             .card { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
             
-            /* Logic for switching prints */
             body.print-cons #dashMain { display: block !important; }
             body.print-cons #individualReportContainer { display: none !important; }
             
             body.print-indv #dashMain { display: none !important; }
             body.print-indv #individualReportContainer { display: block !important; padding: 0 !important; margin: 0 !important; }
             
-            /* =========================================
-               CONSOLIDATED PRINT (ORIGINAL CLEAR LOOK)
-               ========================================= */
-            body.print-cons .print-only-header { display: block !important; text-align: center; margin-bottom: 25px; border-bottom: 3px double #000; padding-bottom: 15px; }
-            body.print-cons .print-only-header h1 { font-family: 'EB Garamond', serif; font-size: 32px; font-weight: bold; margin-bottom: 5px; color: black !important;}
-            body.print-cons .print-only-header h3 { font-size: 18px; margin-bottom: 10px; color: #333 !important;}
+            /* CONSOLIDATED SHEET PRINT */
+            body.print-cons .print-only-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            body.print-cons .print-only-header h1 { font-family: 'EB Garamond', serif; font-size: 28px; font-weight: bold; margin-bottom: 5px; color: black !important;}
+            body.print-cons .print-only-header h3 { font-size: 16px; margin-bottom: 5px; }
             
             body.print-cons .analytics-panel { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; border: 1px solid #000 !important; padding: 10px !important; margin-bottom: 20px !important; }
-            body.print-cons .stat-box { background: white !important; border: none !important; border-right: 1px solid #ccc !important; padding: 10px !important; color: black !important; }
+            body.print-cons .stat-box { background: white !important; border: none !important; border-right: 1px solid #ccc !important; padding: 5px 10px !important; color: black !important; }
             body.print-cons .stat-box:last-child { border-right: none !important; }
             body.print-cons .action-col { display: none !important; }
             
             body.print-cons table { width: 100% !important; border: 2px solid #000 !important; background: white !important; }
-            body.print-cons th, body.print-cons td { border: 1px solid #000 !important; color: black !important; padding: 6px !important; } /* Restored pure original padding/font */
+            body.print-cons th, body.print-cons td { border: 1px solid #000 !important; color: black !important; padding: 8px !important; text-align: center; font-size: 12px !important; }
             body.print-cons th { background: #f2f2f2 !important; font-weight: bold; }
             body.print-cons .fail-row { background: #ffe6e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-            /* =========================================
-               INDIVIDUAL REPORT PRINT
-               ========================================= */
+            /* INDIVIDUAL REPORT PRINT */
             body.print-indv #individualReport { border: 5px double #0a1628 !important; padding: 40px !important; height: 95vh; box-sizing: border-box; box-shadow: none !important; border-radius: 0 !important;}
             body.print-indv .ir-details { background: transparent !important; border: 1px solid #000 !important; }
             body.print-indv .ir-table th, body.print-indv .ir-table td { border: 1px solid #000 !important; }
@@ -157,7 +152,7 @@
                     <option>Business</option>
                     <option>Economics</option>
                     <option>Computer</option>
-                    <option>GK</option>
+                    <option>GK/Msc</option>
                 </select>
             </div>
             <div class="control-group"><label>Exam</label><select id="examType"><option>Unit Test 1</option><option>Half Yearly</option><option>Annual Exam</option></select></div>
@@ -260,6 +255,21 @@
     let globalRankMap = {};
     let currentClassView = "";
     let currentExamView = "";
+
+    // NAYA CUSTOM SEQUENCE YAHAN HAI
+    const customSubjectOrder = [
+        "ENGLISH LANGUAGE", 
+        "ENGLISH LITERATURE", 
+        "HINDI", 
+        "MATHS", 
+        "GEOGRAPHY", 
+        "HISTORY/CIVICS", 
+        "CHEMISTRY", 
+        "BIOLOGY", 
+        "PHYSICS", 
+        "GK/MSC", 
+        "COMPUTER"
+    ];
 
     function loginTeacher() {
         let id = document.getElementById('tid').value.toUpperCase();
@@ -380,7 +390,17 @@
 
             if(!hasData) return alert(`No marks for ${selectedClass} - ${selectedExam}`);
 
-            let subsArray = Array.from(allSubjects).sort();
+            // NAYA CUSTOM SORTING LOGIC
+            let subsArray = Array.from(allSubjects);
+            subsArray.sort((a, b) => {
+                let posA = customSubjectOrder.indexOf(a);
+                let posB = customSubjectOrder.indexOf(b);
+                if (posA === -1) posA = 999; // Jo is list mein nahi hai, wo sabse aakhri mein jayega
+                if (posB === -1) posB = 999;
+                if (posA !== posB) return posA - posB;
+                return a.localeCompare(b); // Agar dono ka order same hai, toh Alphabetical
+            });
+
             let rolls = Object.keys(students);
             rolls.sort((a,b) => students[b].totalObt - students[a].totalObt);
             let rankMap = {}; let currentRank = 1;
@@ -485,13 +505,12 @@
         let resEl = document.getElementById('irResult');
         if(isFail) {
             resEl.innerText = "Result: NEEDS IMPROVEMENT";
-            resEl.style.color = "#dc2626"; // Professional Red
+            resEl.style.color = "#dc2626"; 
         } else {
             resEl.innerText = "Result: PASSED";
-            resEl.style.color = "#16a34a"; // Professional Green
+            resEl.style.color = "#16a34a"; 
         }
 
-        // Hides dashboard, shows report
         document.getElementById('dashMain').style.display = 'none';
         document.getElementById('individualReportContainer').style.display = 'block';
 
@@ -503,7 +522,6 @@
     }
 
     function closeIndividualView() {
-        // Hides report, shows dashboard
         document.getElementById('dashMain').style.display = 'block';
         document.getElementById('individualReportContainer').style.display = 'none';
         document.body.classList.remove('print-indv');

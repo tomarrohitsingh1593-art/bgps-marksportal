@@ -6,29 +6,45 @@
     <title>BG PUBLIC SCHOOL | Admin ERP</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600;700&family=Inconsolata:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --navy: #0a1628; --dark: #0e1f3d; --mid: #162d52; --card: #1a3460; --border: rgba(99,179,237,0.18); --gold: #f6c90e; --blue: #63b3ed; --white: #f7fafc; --red: #fc8181; --green: #48bb78;}
+        :root { 
+            --navy: #0a1628; --dark: #0e1f3d; --mid: #162d52; 
+            --card: #1a3460; --border: rgba(99,179,237,0.18); 
+            --gold: #f6c90e; --blue: #63b3ed; --white: #f7fafc; 
+            --red: #fc8181; --green: #48bb78;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Georgia', serif; background: radial-gradient(ellipse at 30% 20%, #0d2137 0%, var(--navy) 60%); color: var(--white); min-height: 100vh; padding: 20px; }
         .card { background: var(--dark); padding: 30px; border: 1px solid rgba(246,201,14,.25); border-radius: 16px; box-shadow: 0 32px 80px rgba(0,0,0,.7); margin-bottom: 20px; }
         .school-logo { width: 100px; height: 100px; margin: 0 auto 20px; border-radius: 50%; background: var(--mid); border: 3px solid var(--gold); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
         .logo-text { font-family: 'EB Garamond', serif; font-size: 22px; color: var(--gold); font-weight: bold; }
+        
         .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), #e6b800); color: var(--navy); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; transition: 0.2s;}
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(246,201,14,0.4); }
         .btn-small { background: var(--blue); color: var(--navy); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+        
         .app-shell { max-width: 1100px; margin: 0 auto; display: none; }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #718096; cursor: pointer; }
         .tab-btn.active { background: var(--gold); color: var(--navy); font-weight: 700; }
         .view-section { display: none; }
         .view-section.active { display: block; }
+        
         .control-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; }
         .control-group label { font-size: 10px; color: var(--blue); text-transform: uppercase; font-weight: 700; }
-        .control-group input, .control-group select { padding: 12px; background: var(--mid); border: 1px solid var(--border); border-radius: 6px; color: white; outline: none; font-family: 'Inconsolata', monospace; }
-        #studentContainer { max-height: 400px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); padding: 5px; border-radius: 6px; }
-        .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .student-row input { width: 80px; padding: 6px; background: var(--dark); border: 1px solid var(--border); color: white; text-align: center; border-radius: 4px; }
-        .fail-row { background: rgba(252, 129, 129, 0.15) !important; border-left: 3px solid var(--red) !important; }
+        .control-group input, .control-group select { padding: 12px; background: var(--mid); border: 1px solid var(--border); border-radius: 6px; color: white; outline: none; font-family: 'Inconsolata', monospace; transition: 0.3s; }
         
+        /* Highlight Error Styles */
+        .input-error { border: 2px solid var(--red) !important; background: rgba(252, 129, 129, 0.15) !important; }
+        #customAlertBox { display: none; padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: bold; text-align: center; font-family: 'Inconsolata', monospace; font-size: 15px; }
+        .alert-error { background: rgba(252, 129, 129, 0.2); border: 1px solid var(--red); color: #ff9999; }
+        .alert-success { background: rgba(72, 187, 120, 0.2); border: 1px solid var(--green); color: #88ff88; }
+        .alert-info { background: rgba(99, 179, 237, 0.2); border: 1px solid var(--blue); color: #99ccff; }
+
+        #studentContainer { max-height: 400px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); padding: 5px; border-radius: 6px; margin-top: 15px;}
+        .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .student-row input { width: 90px; padding: 6px; background: var(--dark); border: 1px solid var(--border); color: white; text-align: center; border-radius: 4px; text-transform: uppercase;}
+        .fail-row { background: rgba(252, 129, 129, 0.15) !important; border-left: 3px solid var(--red) !important; }
+
         .analytics-panel { display: none; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-box { background: var(--mid); border: 1px solid var(--border); padding: 15px; border-radius: 8px; }
         .stat-box h4 { color: var(--gold); margin-bottom: 8px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
@@ -49,20 +65,27 @@
         .ir-header h3 { font-size: 18px; margin: 8px 0 0 0; color: #b7791f; text-transform: uppercase; font-family: 'Segoe UI', sans-serif;}
         .ir-details { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 25px; font-weight: bold; background: #f0f4f8; padding: 15px 20px; border-radius: 8px; color: var(--navy); border: 1px solid #cbd5e1; }
         .ir-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #ffffff !important; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.03);}
-        .ir-table th, .ir-table td { border: 1px solid #cbd5e1 !important; padding: 14px; text-align: center; }
-        .ir-table th { background: var(--navy) !important; color: var(--gold) !important; font-size: 14px; letter-spacing: 1px;}
-        .ir-table td { color: #1e293b !important; font-weight: 600; font-size: 15px;}
+        .ir-table th, .ir-table td { border: 1px solid #cbd5e1 !important; padding: 12px; text-align: center; }
+        .ir-table th { background: var(--navy) !important; color: var(--gold) !important; font-size: 13px; letter-spacing: 1px;}
+        .ir-table td { color: #1e293b !important; font-weight: 600; font-size: 14px;}
         .ir-table tr:nth-child(even) td { background: #f8fafc !important; }
-        .ir-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-family: 'Segoe UI', sans-serif;}
-        .ir-box { border: 2px solid #cbd5e1; padding: 18px; text-align: center; font-weight: bold; background: #ffffff; color: var(--navy); font-size: 16px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .ir-footer { display: flex; justify-content: space-between; margin-top: 50px; font-size: 16px; font-weight: bold; color: var(--navy); }
+        .ir-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; font-family: 'Segoe UI', sans-serif; margin-bottom: 20px;}
+        .ir-box { border: 2px solid #cbd5e1; padding: 15px; text-align: center; font-weight: bold; background: #ffffff; color: var(--navy); font-size: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        
+        /* Print Input Fields */
+        .print-input-group { display: flex; align-items: center; gap: 10px; margin-bottom: 10px;}
+        .print-input-group label { font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 14px;}
+        .print-input { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px; font-size: 14px; font-family: 'Georgia', serif; font-weight: bold; color: var(--navy); flex: 1; outline: none;}
+        
+        .ir-footer { display: flex; justify-content: space-between; margin-top: 40px; font-size: 16px; font-weight: bold; color: var(--navy); }
         .sign-line { border-top: 2px solid var(--navy); width: 200px; text-align: center; padding-top: 8px; }
         
         .print-only-header { display: none; }
 
         @media print {
             body { background: white !important; color: black !important; padding: 0; }
-            .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary, .app-shell > div:not(.view-section.active) { display: none !important; }
+            .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary, .app-shell > div:not(.view-section.active), #customAlertBox { display: none !important; }
+            
             body.print-cons #dashMain { display: block !important; }
             body.print-cons #individualReportContainer { display: none !important; }
             body.print-indv #dashMain { display: none !important; }
@@ -88,17 +111,23 @@
             body.print-indv .ir-table th { background: #e2e8f0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body.print-indv .ir-table tr:nth-child(even) td { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body.print-indv .ir-box { border: 2px solid #000 !important; }
+            
+            /* Make print inputs look like normal text in print */
+            body.print-indv .print-input { border: none !important; background: transparent !important; color: black !important; padding: 0 !important; border-bottom: 1px dotted #000 !important; border-radius: 0 !important; }
         }
     </style>
 </head>
 <body>
+
+    <div id="customAlertBox" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);"></div>
+
     <div class="login-container" id="loginPage" style="max-width:400px; margin: 60px auto;">
         <div class="card">
             <div class="school-logo"><span class="logo-text">BGPS</span></div>
             <h1 style="text-align:center; color:var(--gold); font-family:'EB Garamond'; font-size:24px; margin-bottom:20px;">BG PUBLIC SCHOOL</h1>
             <div class="control-group"><label>Teacher ID</label><input type="text" id="tid" placeholder="ADMIN, T-4, etc."></div>
             <div class="control-group"><label>Security PIN</label><input type="password" id="tpass" placeholder="bgps123"></div>
-            <button class="btn-primary" onclick="loginTeacher()">Login</button>
+            <button class="btn-primary" onclick="loginTeacher(false)">Login</button>
         </div>
     </div>
 
@@ -107,20 +136,29 @@
             <div style="font-family:'EB Garamond'; color:var(--gold); font-size:22px; font-weight:bold;">BG PUBLIC SCHOOL</div>
             <div id="loggedInUser" style="color:var(--blue); font-size:12px;">User</div>
         </div>
+        
         <div class="nav-tabs no-print">
             <button class="tab-btn" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
             <button class="tab-btn" id="tab-dash" onclick="switchTab('dash')">Dashboard</button>
-            <button class="tab-btn" onclick="location.reload()" style="margin-left:auto; color:var(--red); border:none; background:transparent;">Logout</button>
+            <button class="tab-btn" onclick="logout()" style="margin-left:auto; color:var(--red); border:none; background:transparent;">Logout</button>
         </div>
 
         <div class="card view-section" id="entryView">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;" class="no-print">
+                <div style="color:var(--blue); font-size:14px; font-weight:bold;">Total Students in Class:</div>
+                <div style="display:flex; gap:10px;">
+                    <input type="number" id="stuCount" value="50" style="width:70px; padding:6px; background:var(--mid); border:1px solid var(--border); color:white; border-radius:4px; text-align:center;">
+                    <button class="btn-small" onclick="generateRows()" style="background:var(--green); color:white;">Set Roll Nos</button>
+                </div>
+            </div>
+
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
                 <div class="control-group"><label>Class</label><select id="class"></select></div>
                 <div class="control-group"><label>Subject</label>
                     <select id="subject">
                         <option value="">Select</option>
-                        <option>English Literature</option>
                         <option>English Language</option>
+                        <option>English Literature</option>
                         <option>Hindi</option>
                         <option>Maths</option>
                         <option>Geography</option>
@@ -139,7 +177,7 @@
                 <div class="control-group"><label>Max Marks</label><input type="number" id="maxMarks" placeholder="e.g. 80"></div>
             </div>
             <div id="studentContainer"></div>
-            <button class="btn-primary" onclick="submitData()" id="submitBtn">Submit Records</button>
+            <button class="btn-primary" onclick="submitData()" id="submitBtn">Submit / Update Records</button>
         </div>
 
         <div class="card view-section" id="dashView">
@@ -147,7 +185,8 @@
                 <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;" class="no-print">
                     <div class="control-group" style="flex:2; margin-bottom:0;"><label>Select Class & Exam</label><select id="tabSelector"></select></div>
                     <button class="btn-primary" onclick="fetchData()" style="flex:1; margin:0; padding:10px;" id="fetchBtn">Fetch Data</button>
-                    <button class="btn-primary" id="btn-print-cons" onclick="printConsolidated()" style="flex:1; margin:0; padding:10px; background:var(--green); display:none;">Print Consolidated</button>
+                    <button class="btn-primary" onclick="exportToCSV()" style="flex:1; margin:0; padding:10px; background:var(--blue); color:var(--navy);">📥 Download Excel</button>
+                    <button class="btn-primary" id="btn-print-cons" onclick="printConsolidated()" style="flex:1; margin:0; padding:10px; background:var(--green); display:none;">🖨️ Print Report</button>
                 </div>
                 <div id="printHeader" class="print-only-header">
                     <h1>BG PUBLIC SCHOOL</h1>
@@ -176,10 +215,23 @@
                     <div class="ir-header"><h1>BG PUBLIC SCHOOL</h1><h3>PROGRESS REPORT</h3></div>
                     <div class="ir-details"><span id="irRoll">Roll No: </span><span id="irClass">Class: </span><span id="irExam">Exam: </span></div>
                     <table class="ir-table">
-                        <thead><tr><th>SUBJECT</th><th>WRITTEN</th><th>ORAL</th><th>PRACTICAL</th><th>TOTAL MAX</th><th>TOTAL OBTAINED</th></tr></thead>
+                        <thead><tr><th>SUBJECT</th><th>WRITTEN</th><th>ORAL</th><th>PRACTICAL</th><th>MAX MARKS</th><th>OBTAINED</th></tr></thead>
                         <tbody id="irTableBody"></tbody>
                     </table>
-                    <div class="ir-summary"><div class="ir-box" id="irTotal">Total: -- / --</div><div class="ir-box" id="irPerc">Percentage: --%</div><div class="ir-box" id="irRank">Class Rank: #--</div><div class="ir-box" id="irResult">Result: --</div></div>
+                    
+                    <div class="ir-summary">
+                        <div class="ir-box" id="irTotal">Total: -- / --</div>
+                        <div class="ir-box" id="irPerc">Percentage: --%</div>
+                        <div class="ir-box" id="irGrade">Grade: --</div>
+                        <div class="ir-box" id="irRank">Class Rank: #--</div>
+                        <div class="ir-box" id="irResult" style="grid-column: span 2;">Result: --</div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                        <div class="print-input-group"><label>Attendance:</label> <input type="text" class="print-input" value="___ / ___ Days"></div>
+                        <div class="print-input-group"><label>Remarks:</label> <input type="text" class="print-input" value="Good. Keep it up!"></div>
+                    </div>
+
                     <div class="ir-footer"><div class="sign-line">Class Teacher</div><div class="sign-line">Principal</div></div>
                 </div>
             </div>
@@ -187,37 +239,60 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoFAw_Dr-c8Uez79RLT7wbfVZ5xhqUUrFlqkcN5j4FYUsiUaaoYoC4H9tldaoxoGMZ/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6HPyRd2i6SqGmSF9EBQ-NAQIKfOl-VEGWjyHm3tlKD4DbS4nRWQJLn11re-Rk-gg2/exec";
         
+        // Sequence with Language first, then Literature
         const customSubjectOrder = [
-            "ENGLISH LITERATURE", 
-            "ENGLISH LANGUAGE", 
-            "HINDI", 
-            "MATHS", 
-            "GEOGRAPHY", 
-            "HISTORY/CIVICS", 
-            "CHEMISTRY", 
-            "BIOLOGY", 
-            "PHYSICS", 
-            "GK/MSC", 
-            "COMPUTER"
+            "ENGLISH LANGUAGE",
+            "ENGLISH LITERATURE",  
+            "HINDI", "MATHS", "GEOGRAPHY", "HISTORY/CIVICS", "CHEMISTRY", "BIOLOGY", "PHYSICS", "GK/MSC", "COMPUTER"
         ];
         
         const mapping = {"T-1":"Playgroup","T-2":"LKG","T-3":"UKG","T-4":"Class 1","T-5":"Class 2","T-6":"Class 3","T-7":"Class 4","T-8":"Class 5","T-9":"Class 6","T-10":"Class 7","T-11":"Class 8","T-12":"Class 9","T-13":"Class 10","T-14":"Class 11","T-15":"Class 12","ADMIN":"ALL_CLASSES"};
         let globalStudents = {}, globalSubsArray = [], globalRankMap = {}, currentClassView = "", currentExamView = "", currentId = "";
+        let submittedSessionData = new Set();
+        let alertTimeout;
 
-        function loginTeacher() {
+        // Auto Login System (Session Persistence)
+        window.onload = function() {
+            let s_id = localStorage.getItem('bgps_id');
+            let s_pass = localStorage.getItem('bgps_pass');
+            if(s_id && s_pass) {
+                document.getElementById('tid').value = s_id;
+                document.getElementById('tpass').value = s_pass;
+                loginTeacher(true);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('bgps_id');
+            localStorage.removeItem('bgps_pass');
+            location.reload();
+        }
+
+        function showMessage(msg, type) {
+            let box = document.getElementById('customAlertBox');
+            box.innerHTML = msg;
+            box.className = type === 'error' ? 'alert-error' : (type === 'success' ? 'alert-success' : 'alert-info');
+            box.style.display = 'block';
+            clearTimeout(alertTimeout);
+            alertTimeout = setTimeout(() => { box.style.display = 'none'; }, 4000);
+        }
+
+        function loginTeacher(isAuto = false) {
             let id = document.getElementById('tid').value.toUpperCase(); let pass = document.getElementById('tpass').value;
             if (((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id]) {
                 currentId = id; let myClass = mapping[id];
-                document.getElementById('loggedInUser').innerText = id + " | " + (id === "ADMIN" ? "SUPER ADMIN" : myClass);
                 
+                // Save session
+                localStorage.setItem('bgps_id', id); localStorage.setItem('bgps_pass', pass);
+                
+                document.getElementById('loggedInUser').innerText = id + " | " + (id === "ADMIN" ? "SUPER ADMIN" : myClass);
                 const clsSelect = document.getElementById('class'), dashSelect = document.getElementById('tabSelector');
                 let classesToLoad = id === "ADMIN" ? ["Playgroup", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"] : [myClass];
                 
                 let clsOptions = id === "ADMIN" ? "<option value=''>Class</option>" : "";
                 let dashOptions = "<option value=''>Select Report</option>";
-                
                 const allExams = ["Unit Test 1", "Unit Test 2", "Half Yearly", "Unit Test 3", "Annual Exam"];
                 
                 classesToLoad.forEach(c => { 
@@ -228,6 +303,8 @@
                 clsSelect.innerHTML = clsOptions; dashSelect.innerHTML = dashOptions;
                 document.getElementById('loginPage').style.display = 'none'; document.getElementById('appShell').style.display = 'block';
                 
+                if(!isAuto) showMessage("✅ Welcome to BG Public School ERP!", "success");
+
                 if(id === "ADMIN") { 
                     document.getElementById('tab-entry').style.display = 'none'; 
                     document.getElementById('btn-print-cons').style.display = 'inline-block'; 
@@ -237,7 +314,7 @@
                     generateRows(); 
                     switchTab('entry'); 
                 }
-            } else { alert("Login Failed!"); }
+            } else { if(!isAuto) showMessage("❌ Login Failed! ID ya PIN galat hai.", "error"); }
         }
 
         function switchTab(t) {
@@ -247,32 +324,98 @@
             else { document.getElementById('dashView').classList.add('active'); document.getElementById('tab-dash').classList.add('active'); }
         }
 
+        // Dynamic Rows
         function generateRows() {
+            let count = document.getElementById('stuCount').value || 50;
             let c = document.getElementById('studentContainer'); c.innerHTML = "";
-            for(let i=1; i<=50; i++) { c.innerHTML += `<div class="student-row"><span>Roll No. ${i.toString().padStart(2, '0')}</span><input type="number" class="m-input" data-roll="${i}" placeholder="--"></div>`; }
+            for(let i=1; i<=count; i++) { 
+                c.innerHTML += `<div class="student-row"><span>Roll No. ${i.toString().padStart(2, '0')}</span><input type="text" class="m-input" data-roll="${i}" placeholder="-- / AB"></div>`; 
+            }
+            showMessage(`✅ Format generated for ${count} students.`, "info");
         }
+
+        // ABSENT & MAX MARKS Logic
+        document.getElementById('studentContainer').addEventListener('input', function(e) {
+            if(e.target.classList.contains('m-input')) {
+                let maxEl = document.getElementById('maxMarks');
+                let maxStr = maxEl.value;
+                let val = e.target.value.toUpperCase();
+                
+                maxEl.classList.remove('input-error');
+                e.target.classList.remove('input-error');
+
+                if(val === "A" || val === "AB") return; // Allow AB
+                if(val === "") return;
+                
+                if(isNaN(val)) { e.target.value = ""; return; } // Block other texts
+
+                if(!maxStr) {
+                    maxEl.classList.add('input-error');
+                    showMessage("⚠️ Error: Kripya pehle <b>'Max Marks'</b> fill karein!", "error");
+                    e.target.value = ""; maxEl.focus(); return;
+                }
+                
+                let maxVal = parseFloat(maxStr); let enteredVal = parseFloat(val);
+                if(enteredVal > maxVal) {
+                    e.target.classList.add('input-error');
+                    showMessage(`⚠️ Error: Marks <b>${maxVal}</b> se zyada nahi ho sakte!`, "error");
+                    e.target.value = "";
+                } else if (enteredVal < 0) { e.target.value = ""; }
+            }
+        });
 
         async function submitData() {
             let entries = [];
-            let sub = document.getElementById('subject').value, exam = document.getElementById('examType').value, comp = document.getElementById('type').value, max = document.getElementById('maxMarks').value, cls = document.getElementById('class').value;
-            if(!sub || !max || !cls) return alert("Fill Class, Subject, Max Marks!");
+            let subEl = document.getElementById('subject'), maxEl = document.getElementById('maxMarks'), clsEl = document.getElementById('class');
+            let examEl = document.getElementById('examType'), typeEl = document.getElementById('type');
             
-            document.querySelectorAll('.m-input').forEach(i => { if(i.value && i.value.trim() !== "") entries.push({ teacherId: currentId, class: cls, subject: sub, examType: exam, type: comp, maxMarks: max, rollNo: i.dataset.roll, marks: i.value }); });
+            [subEl, maxEl, clsEl].forEach(el => el.classList.remove('input-error'));
+            let hasError = false;
+            if(!clsEl.value) { clsEl.classList.add('input-error'); hasError = true; }
+            if(!subEl.value) { subEl.classList.add('input-error'); hasError = true; }
+            if(!maxEl.value) { maxEl.classList.add('input-error'); hasError = true; }
+
+            if(hasError) return showMessage("⚠️ Kripya laal (red) dabbo wale options pehle fill karein!", "error");
             
-            if(entries.length === 0) return alert("No marks entered!");
-            const btn = document.getElementById('submitBtn'); if(btn.disabled) return;
-            btn.innerText = "Saving..."; btn.disabled = true;
+            let recordKey = `${clsEl.value}_${subEl.value}_${examEl.value}_${typeEl.value}`;
+            
+            // Edit / Overwrite Warning
+            if(submittedSessionData.has(recordKey)) {
+                let conf = confirm("⚠️ DUPLICATE ENTRY ALERT!\nAapne is exam ke marks pehle hi submit kar diye hain.\n\nKya aap in naye marks ko OVERWRITE (Edit) karna chahte hain?");
+                if(!conf) return;
+            }
+            
+            document.querySelectorAll('.m-input').forEach(i => { 
+                let v = i.value.toUpperCase();
+                if(v === "A") v = "AB"; // Auto fix
+                if(v && v.trim() !== "") entries.push({ teacherId: currentId, class: clsEl.value, subject: subEl.value, examType: examEl.value, type: typeEl.value, maxMarks: maxEl.value, rollNo: i.dataset.roll, marks: v }); 
+            });
+            
+            if(entries.length === 0) return showMessage("⚠️ Koi marks enter nahi kiye gaye hain!", "error");
+            
+            const btn = document.getElementById('submitBtn'); btn.innerText = "Saving..."; btn.disabled = true;
             
             try { 
                 await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entries) }); 
-                alert("Saved!"); 
-                document.querySelectorAll('.m-input').forEach(i => i.value = ""); 
-            } catch(e) { alert("Error!"); } 
-            finally { setTimeout(() => { btn.innerText = "Submit Records"; btn.disabled = false; }, 3000); }
+                showMessage("✅ Records Successfully Saved/Updated!", "success"); 
+                submittedSessionData.add(recordKey); 
+                document.querySelectorAll('.m-input').forEach(i => { i.value = ""; i.classList.remove('input-error'); }); 
+            } catch(e) { showMessage("❌ Network Error!", "error"); } 
+            finally { setTimeout(() => { btn.innerText = "Submit / Update Records"; btn.disabled = false; }, 2000); }
+        }
+
+        // Grades Logic
+        function getGrade(p) {
+            if(p >= 91) return "A1"; if(p >= 81) return "A2"; if(p >= 71) return "B1"; 
+            if(p >= 61) return "B2"; if(p >= 51) return "C1"; if(p >= 41) return "C2"; 
+            if(p >= 33) return "D"; return "E (Fail)";
         }
 
         async function fetchData() {
-            let selection = document.getElementById('tabSelector').value; if(!selection) return alert("Select a report!");
+            let selectorEl = document.getElementById('tabSelector'); selectorEl.classList.remove('input-error');
+            let selection = selectorEl.value; 
+            if(!selection) { selectorEl.classList.add('input-error'); return showMessage("⚠️ Kripya pehle Class aur Exam select karein!", "error"); }
+            
             let [selectedClass, selectedExam] = selection.split('|'); currentClassView = selectedClass; currentExamView = selectedExam;
             document.getElementById('pDetails').innerText = "CLASS: " + selectedClass.toUpperCase() + " | EXAM: " + selectedExam.toUpperCase();
             
@@ -280,54 +423,68 @@
             try {
                 let res = await fetch(WEB_APP_URL + "?tabName=Master"); let rawData = await res.json();
                 fBtn.innerText = "Fetch Data"; fBtn.disabled = false;
-                if(!rawData || rawData.error || rawData.length < 2) return alert("No data found!");
+                if(!rawData || rawData.error || rawData.length < 2) return showMessage("ℹ️ Koi data nahi mila is exam ke liye.", "info");
                 
                 let students = {}, allSubjects = new Set(), hasData = false;
                 const cIdx=2, sIdx=3, eIdx=4, tIdx=5, rIdx=6, oIdx=7, mIdx=8;
                 
+                // EDIT OVERRIDE LOGIC (Reads latest entry only)
                 for(let i=1; i<rawData.length; i++) {
                     let row = rawData[i]; if(!row || String(row[cIdx]).trim() !== selectedClass || String(row[eIdx]).trim() !== selectedExam) continue;
                     hasData = true; 
                     let roll = String(row[rIdx] || '').trim(); if(!roll) continue;
                     let sub = String(row[sIdx] || 'UNKNOWN').toUpperCase().trim(); let mode = String(row[tIdx] || 'Written').trim().toLowerCase();
-                    let max = Number(row[mIdx]) || 0, obt = Number(row[oIdx]) || 0;
+                    let max = Number(row[mIdx]) || 0, obtRaw = String(row[oIdx]).trim().toUpperCase();
+                    let obt = (obtRaw === 'AB') ? 'AB' : (Number(obtRaw) || 0);
                     
-                    if(!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0 };
-                    if(!students[roll].subs[sub]) students[roll].subs[sub] = { max:0, obt:0, written:'-', oral:'-', practical:'-' };
+                    if(!students[roll]) students[roll] = { subs: {} };
+                    if(!students[roll].subs[sub]) students[roll].subs[sub] = { written:{o:'-',m:0}, oral:{o:'-',m:0}, practical:{o:'-',m:0} };
                     
-                    students[roll].subs[sub].max += max; students[roll].subs[sub].obt += obt; 
-                    students[roll].totalMax += max; students[roll].totalObt += obt;
-                    
-                    if(mode.includes('oral')) students[roll].subs[sub].oral = students[roll].subs[sub].oral === '-' ? obt : students[roll].subs[sub].oral + obt;
-                    else if(mode.includes('practical')) students[roll].subs[sub].practical = students[roll].subs[sub].practical === '-' ? obt : students[roll].subs[sub].practical + obt;
-                    else students[roll].subs[sub].written = students[roll].subs[sub].written === '-' ? obt : students[roll].subs[sub].written + obt;
-                    
+                    // Overrides previous entries (EDIT FIX)
+                    if(students[roll].subs[sub][mode] !== undefined) {
+                        students[roll].subs[sub][mode] = { o: obt, m: max };
+                    }
                     allSubjects.add(sub);
                 }
                 
-                if(!hasData) return alert(`No marks for ${selectedClass} - ${selectedExam}`);
+                if(!hasData) return showMessage(`ℹ️ ${selectedClass} - ${selectedExam} ka koi data maujood nahi hai.`, "info");
+                
+                // Calculate Totals after applying overrides
+                let rolls = Object.keys(students);
+                rolls.forEach(r => {
+                    let s = students[r]; s.totalMax = 0; s.totalObt = 0;
+                    for(let sub in s.subs) {
+                        s.subs[sub].totMax = 0; s.subs[sub].totObt = 0;
+                        ['written', 'oral', 'practical'].forEach(m => {
+                            let obj = s.subs[sub][m];
+                            s.subs[sub].totMax += obj.m; s.totalMax += obj.m;
+                            if(obj.o !== '-' && obj.o !== 'AB') {
+                                s.subs[sub].totObt += obj.o; s.totalObt += obj.o;
+                            }
+                        });
+                    }
+                });
+
+                showMessage("✅ Data Fetched Successfully!", "success");
                 
                 let subsArray = Array.from(allSubjects);
                 subsArray.sort((a, b) => {
                     let posA = customSubjectOrder.indexOf(a), posB = customSubjectOrder.indexOf(b);
                     if (posA === -1) posA = 999; if (posB === -1) posB = 999;
-                    if (posA !== posB) return posA - posB;
-                    return a.localeCompare(b);
+                    if (posA !== posB) return posA - posB; return a.localeCompare(b);
                 });
                 
-                let rolls = Object.keys(students);
                 rolls.sort((a,b) => students[b].totalObt - students[a].totalObt);
-                let rankMap = {}; let currentRank = 1;
-                let passCount = 0; let failCount = 0; let subStats = {};
+                let rankMap = {}, currentRank = 1, passCount = 0, failCount = 0, subStats = {};
                 
                 subsArray.forEach(sub => subStats[sub] = { obt: 0, max: 0, count: 0 });
                 rolls.forEach((r, index) => {
                     if (index > 0 && students[r].totalObt < students[rolls[index-1]].totalObt) currentRank++;
                     rankMap[r] = currentRank;
-                    let p_val = (students[r].totalObt / students[r].totalMax) * 100;
+                    let p_val = students[r].totalMax > 0 ? (students[r].totalObt / students[r].totalMax) * 100 : 0;
                     if(p_val >= 33) passCount++; else failCount++;
                     subsArray.forEach(sub => {
-                        if(students[r].subs[sub] !== undefined) { subStats[sub].obt += students[r].subs[sub].obt; subStats[sub].max += students[r].subs[sub].max; subStats[sub].count++; }
+                        if(students[r].subs[sub] !== undefined) { subStats[sub].obt += students[r].subs[sub].totObt; subStats[sub].max += students[r].subs[sub].totMax; subStats[sub].count++; }
                     });
                 });
                 
@@ -336,12 +493,10 @@
                 document.getElementById('analyticsPanel').style.display = 'grid';
                 document.getElementById('passFailText').innerHTML = `<span class="text-green">PASS: ${passCount}</span><br><span class="text-red">FAIL: ${failCount}</span>`;
                 
-                let topHtml = "";
-                rolls.slice(0, 3).forEach((r, idx) => { topHtml += `<div>Rank ${idx+1}: Roll ${r} (${((students[r].totalObt / students[r].totalMax) * 100).toFixed(1)}%)</div>`; });
+                let topHtml = ""; rolls.slice(0, 3).forEach((r, idx) => { topHtml += `<div>Rank ${idx+1}: Roll ${r} (${((students[r].totalObt / students[r].totalMax) * 100).toFixed(1)}%)</div>`; });
                 document.getElementById('topRankersList').innerHTML = topHtml || "N/A";
                 
-                let avgHtml = "";
-                subsArray.forEach(sub => { let avg = subStats[sub].count > 0 ? ((subStats[sub].obt / subStats[sub].max) * 100).toFixed(1) : 0; avgHtml += `<div>${sub}: ${avg}%</div>`; });
+                let avgHtml = ""; subsArray.forEach(sub => { let avg = subStats[sub].count > 0 ? ((subStats[sub].obt / subStats[sub].max) * 100).toFixed(1) : 0; avgHtml += `<div>${sub}: ${avg}%</div>`; });
                 document.getElementById('subjectAvgsList').innerHTML = avgHtml || "N/A";
                 
                 let h = "<tr><th>ROLL NO</th>"; subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
@@ -352,28 +507,54 @@
                 let btnText = currentId === "ADMIN" ? "View/Print" : "View";
                 
                 displayRolls.forEach(roll => {
-                    let s = students[roll]; let rawP = (s.totalObt / s.totalMax) * 100;
+                    let s = students[roll]; let rawP = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;
                     let p = s.totalMax > 0 ? rawP.toFixed(2) + "%" : "0%"; let isFail = rawP < 33;
                     
                     b += `<tr class="${isFail ? 'fail-row' : ''}"><td>${roll}</td>`;
-                    subsArray.forEach(sub => { b += `<td>${s.subs[sub] !== undefined ? s.subs[sub].obt : '-'}</td>`; });
+                    subsArray.forEach(sub => { 
+                        let d = s.subs[sub];
+                        let val = d ? (d.totMax > 0 ? d.totObt : (d.written.o==='AB'||d.oral.o==='AB'||d.practical.o==='AB' ? 'AB' : '-')) : '-';
+                        b += `<td>${val}</td>`; 
+                    });
                     let failMark = isFail ? "<span style='color:red;'> (F)</span>" : "";
                     b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
                     b += `<td class='action-col'><button class="btn-small" onclick="viewIndividualReport('${roll}')">${btnText}</button></td></tr>`;
                 });
                 document.getElementById('tBody').innerHTML = b;
-            } catch(e) { alert("Error!"); fBtn.innerText = "Fetch Data"; fBtn.disabled = false; }
+            } catch(e) { showMessage("❌ Network Error: Data Fetch Failed!", "error"); fBtn.innerText = "Fetch Data"; fBtn.disabled = false; }
+        }
+
+        // Export To Excel CSV Function
+        function exportToCSV() {
+            if(!document.getElementById('tHead').innerHTML) return showMessage("⚠️ Kripya pehle data fetch karein!", "error");
+            let csv = []; let rows = document.querySelectorAll("#resTable tr");
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length - 1; j++) row.push(cols[j].innerText.replace(/,/g, ''));
+                csv.push(row.join(","));
+            }
+            let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+            let dl = document.createElement("a"); dl.download = `${currentClassView}_${currentExamView}_Report.csv`;
+            dl.href = window.URL.createObjectURL(csvFile); dl.click();
+            showMessage("✅ Excel File Downloaded!", "success");
         }
 
         function viewIndividualReport(roll) {
             let s = globalStudents[roll]; if(!s) return;
             document.getElementById('irRoll').innerText = "Roll No: " + roll; document.getElementById('irClass').innerText = "Class: " + currentClassView; document.getElementById('irExam').innerText = "Exam: " + currentExamView;
             
-            let tbody = ""; globalSubsArray.forEach(sub => { if(s.subs[sub]) tbody += `<tr><td>${sub}</td><td>${s.subs[sub].written}</td><td>${s.subs[sub].oral}</td><td>${s.subs[sub].practical}</td><td>${s.subs[sub].max}</td><td>${s.subs[sub].obt}</td></tr>`; });
+            let tbody = ""; globalSubsArray.forEach(sub => { 
+                if(s.subs[sub] && s.subs[sub].totMax > 0) {
+                    let d = s.subs[sub];
+                    tbody += `<tr><td>${sub}</td><td>${d.written.o}</td><td>${d.oral.o}</td><td>${d.practical.o}</td><td>${d.totMax}</td><td>${d.written.o==='AB'||d.oral.o==='AB'||d.practical.o==='AB' ? 'AB' : d.totObt}</td></tr>`; 
+                }
+            });
             document.getElementById('irTableBody').innerHTML = tbody;
             
             let rawP = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;
-            document.getElementById('irTotal').innerText = `Total: ${s.totalObt} / ${s.totalMax}`; document.getElementById('irPerc').innerText = `Percentage: ${rawP.toFixed(2)}%`;
+            document.getElementById('irTotal').innerText = `Total Marks: ${s.totalObt} / ${s.totalMax}`; 
+            document.getElementById('irPerc').innerText = `Percentage: ${rawP.toFixed(2)}%`;
+            document.getElementById('irGrade').innerText = `Grade: ${getGrade(rawP)}`;
             document.getElementById('irRank').innerText = `Class Rank: #${globalRankMap[roll]}`;
             
             let resEl = document.getElementById('irResult');

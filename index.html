@@ -371,6 +371,10 @@
       background: rgba(252, 129, 129, 0.13) !important;
     }
 
+    .print-only {
+      display: none;
+    }
+
     @media(max-width: 850px) {
       .grid-3, .grid-4 {
         grid-template-columns: 1fr;
@@ -390,30 +394,223 @@
     }
 
     @media print {
-      body {
-        background: #fff !important;
-        color: #000 !important;
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
       }
 
-      .no-print, #loginPage, .nav-tabs, #customAlertBox {
+      html,
+      body {
+        width: 100%;
+        background: #fff !important;
+        color: #000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-family: Georgia, "Times New Roman", serif !important;
+      }
+
+      body:not(.print-report) * {
+        visibility: hidden !important;
+      }
+
+      body.print-report #loginPage,
+      body.print-report .topbar,
+      body.print-report .nav-tabs,
+      body.print-report .no-print,
+      body.print-report #customAlertBox,
+      body.print-report #entryView,
+      body.print-report #dashView > h2 {
         display: none !important;
       }
 
-      .app-shell, .view-section.active, .card {
+      body.print-report .app-shell,
+      body.print-report #dashView,
+      body.print-report .card,
+      body.print-report .view-section {
         display: block !important;
-        box-shadow: none !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
         background: #fff !important;
         color: #000 !important;
+        box-shadow: none !important;
         border: none !important;
       }
 
-      table, th, td {
+      body.print-report .print-only {
+        display: block !important;
+      }
+
+      #printHeader {
+        text-align: center !important;
+        margin-bottom: 8mm !important;
+        padding-bottom: 4mm !important;
+        border-bottom: 4px double #000 !important;
+      }
+
+      #printHeader h1 {
+        color: #000 !important;
+        font-size: 25pt !important;
+        line-height: 1 !important;
+        margin: 0 0 3mm 0 !important;
+        letter-spacing: 0.5px !important;
+        font-weight: 900 !important;
+      }
+
+      #printHeader h2 {
+        color: #000 !important;
+        font-size: 13pt !important;
+        line-height: 1.15 !important;
+        margin: 0 0 2mm 0 !important;
+        letter-spacing: 0.4px !important;
+        font-weight: 800 !important;
+      }
+
+      #printReportMeta,
+      #printGenerated {
+        font-family: "Courier New", monospace !important;
+        color: #000 !important;
+        font-size: 9pt !important;
+        font-weight: 700 !important;
+        margin-top: 1mm !important;
+      }
+
+      body.print-report #analyticsPanel {
+        display: grid !important;
+        grid-template-columns: 0.9fr 1.1fr 2.2fr !important;
+        gap: 3mm !important;
+        margin: 0 0 6mm 0 !important;
+        padding: 3mm !important;
+        border: 1.5px solid #000 !important;
+        page-break-inside: avoid !important;
+        background: #fff !important;
+      }
+
+      body.print-report .stat-box {
+        background: #fff !important;
+        color: #000 !important;
+        border: none !important;
+        border-right: 1px solid #999 !important;
+        border-radius: 0 !important;
+        padding: 1mm 3mm !important;
+        box-shadow: none !important;
+        min-height: 0 !important;
+      }
+
+      body.print-report .stat-box:last-child {
+        border-right: none !important;
+      }
+
+      body.print-report .stat-box h4 {
+        color: #000 !important;
+        font-size: 9pt !important;
+        margin: 0 0 2mm 0 !important;
+        padding-bottom: 1.2mm !important;
+        border-bottom: 1.5px solid #000 !important;
+        letter-spacing: 0.2px !important;
+      }
+
+      body.print-report .stat-box div,
+      body.print-report .stat-box p {
+        color: #000 !important;
+        font-family: "Courier New", monospace !important;
+        font-size: 7.8pt !important;
+        line-height: 1.25 !important;
+        margin: 0 !important;
+      }
+
+      body.print-report .text-green,
+      body.print-report .text-red {
+        color: #000 !important;
+        font-weight: 900 !important;
+      }
+
+      body.print-report .table-wrap {
+        overflow: visible !important;
+        border: none !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+      }
+
+      body.print-report table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        background: #fff !important;
+        color: #000 !important;
+        font-family: "Courier New", monospace !important;
+        page-break-inside: auto !important;
+      }
+
+      body.print-report thead {
+        display: table-header-group !important;
+      }
+
+      body.print-report tr {
+        page-break-inside: avoid !important;
+      }
+
+      body.print-report th,
+      body.print-report td {
         border: 1px solid #000 !important;
+        color: #000 !important;
+        background: #fff !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+        padding: 2.2mm 1mm !important;
+        font-size: 6.7pt !important;
+        line-height: 1.05 !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+      }
+
+      body.print-report th {
+        background: #f2f2f2 !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+      }
+
+      body.print-report th:first-child,
+      body.print-report td:first-child {
+        width: 9mm !important;
+        font-weight: 900 !important;
+      }
+
+      body.print-report th:nth-last-child(1),
+      body.print-report td:nth-last-child(1) {
+        width: 11mm !important;
+      }
+
+      body.print-report th:nth-last-child(2),
+      body.print-report td:nth-last-child(2),
+      body.print-report th:nth-last-child(3),
+      body.print-report td:nth-last-child(3) {
+        width: 13mm !important;
+        font-weight: 900 !important;
+      }
+
+      body.print-report .fail-row td {
+        background: #f7dddd !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      body.print-report .highlight-col,
+      body.print-report .perc-col {
+        background: #f7f7f7 !important;
         color: #000 !important;
       }
 
-      th {
-        background: #eee !important;
+      body.print-report::after {
+        content: "BG Public School ERP";
+        position: fixed;
+        right: 8mm;
+        bottom: 4mm;
+        font-size: 7pt;
+        color: #555;
+        font-family: "Courier New", monospace;
       }
     }
   </style>
@@ -456,7 +653,7 @@
       <button class="tab-btn active" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
       <button class="tab-btn" id="tab-dash" onclick="switchTab('dash')">Dashboard</button>
       <button class="tab-btn" onclick="exportToCSV()">Download CSV</button>
-      <button class="tab-btn" onclick="window.print()">Print</button>
+      <button class="tab-btn" onclick="printDashboardReport()">Print Report</button>
       <button class="tab-btn danger" onclick="logout()">Logout</button>
     </div>
 
@@ -535,6 +732,13 @@
 
     <div class="card view-section" id="dashView">
       <h2>Dashboard</h2>
+
+      <div id="printHeader" class="print-only">
+        <h1>BG PUBLIC SCHOOL</h1>
+        <h2>CONSOLIDATED REPORT & ANALYTICS</h2>
+        <div id="printReportMeta">CLASS: -- | EXAM: --</div>
+        <div id="printGenerated">Generated: --</div>
+      </div>
 
       <div class="grid-3 no-print">
         <div class="control-group">
@@ -1251,6 +1455,33 @@
       document.getElementById("analyticsPanel").style.display = "none";
       document.getElementById("dashStatus").value = "No data";
     }
+
+    function printDashboardReport() {
+      if (!document.getElementById("tHead").innerHTML) {
+        showMessage("Pehle dashboard mein data fetch karo, phir print report nikalo.", "error");
+        switchTab("dash");
+        return;
+      }
+
+      switchTab("dash");
+
+      document.getElementById("printReportMeta").textContent =
+        "CLASS: " + (currentClassView || "--").toUpperCase() +
+        " | EXAM: " + (currentExamView || "--").toUpperCase();
+
+      document.getElementById("printGenerated").textContent =
+        "Generated: " + new Date().toLocaleString("en-IN");
+
+      document.body.classList.add("print-report");
+
+      setTimeout(function() {
+        window.print();
+      }, 120);
+    }
+
+    window.addEventListener("afterprint", function() {
+      document.body.classList.remove("print-report");
+    });
 
     function exportToCSV() {
       const table = document.getElementById("resTable");

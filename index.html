@@ -375,6 +375,116 @@
       display: none;
     }
 
+
+    .action-col {
+      min-width: 86px;
+    }
+
+    .edit-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .edit-modal-backdrop.active {
+      display: flex;
+    }
+
+    .edit-modal {
+      width: min(720px, 96vw);
+      max-height: 92vh;
+      overflow-y: auto;
+      background: var(--dark);
+      border: 1px solid rgba(246, 201, 14, 0.35);
+      border-radius: 16px;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75);
+      padding: 22px;
+    }
+
+    .edit-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .edit-modal-title {
+      color: var(--gold);
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .edit-modal-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+      font-family: monospace;
+    }
+
+    .modal-close {
+      border: 1px solid rgba(252, 129, 129, 0.45);
+      background: transparent;
+      color: var(--red);
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .edit-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .edit-row-title {
+      color: var(--blue);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .edit-mode-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .edit-mode-card h4 {
+      color: var(--gold);
+      margin-bottom: 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .edit-help {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 10px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+    }
+
     @media(max-width: 850px) {
       .grid-3, .grid-4 {
         grid-template-columns: 1fr;
@@ -419,6 +529,7 @@
       body.print-report .no-print,
       body.print-report #customAlertBox,
       body.print-report #entryView,
+      body.print-report .edit-modal-backdrop,
       body.print-report #dashView > h2 {
         display: none !important;
       }
@@ -591,6 +702,10 @@
         font-weight: 900 !important;
       }
 
+      body.print-report .action-col {
+        display: none !important;
+      }
+
       body.print-report .fail-row td {
         background: #f7dddd !important;
         -webkit-print-color-adjust: exact !important;
@@ -660,7 +775,7 @@
     <div class="card view-section active" id="entryView">
       <h2>Marks Entry</h2>
       <p class="hint">
-        Rule: हर visible roll में marks या <b>AB</b> भरना compulsory है. Blank roll submit नहीं होगा.
+        Rule: every visible roll must contain marks or <b>AB</b>. Blank rows cannot be submitted.
       </p>
 
       <div class="grid-4 no-print">
@@ -781,6 +896,83 @@
         </table>
       </div>
     </div>
+
+    <div id="editMarksModal" class="edit-modal-backdrop">
+      <div class="edit-modal">
+        <div class="edit-modal-header">
+          <div>
+            <div class="edit-modal-title">Edit Marks</div>
+            <div id="editModalMeta" class="edit-modal-subtitle">Class: -- | Exam: -- | Roll: --</div>
+          </div>
+          <button class="modal-close" onclick="closeEditModal()">Close</button>
+        </div>
+
+        <div class="grid-3">
+          <div class="control-group">
+            <label>Roll No</label>
+            <input type="text" id="editRoll" readonly />
+          </div>
+
+          <div class="control-group">
+            <label>Subject</label>
+            <select id="editSubject" onchange="loadEditSubjectValues()"></select>
+          </div>
+
+          <div class="control-group">
+            <label>Class / Exam</label>
+            <input type="text" id="editClassExam" readonly />
+          </div>
+        </div>
+
+        <div class="edit-grid">
+          <div class="edit-mode-card">
+            <h4>Written</h4>
+            <div class="control-group">
+              <label>Marks</label>
+              <input type="text" id="editWrittenMarks" placeholder="Marks or AB" />
+            </div>
+            <div class="control-group">
+              <label>Max Marks</label>
+              <input type="number" id="editWrittenMax" min="0" placeholder="Max marks" />
+            </div>
+          </div>
+
+          <div class="edit-mode-card">
+            <h4>Oral</h4>
+            <div class="control-group">
+              <label>Marks</label>
+              <input type="text" id="editOralMarks" placeholder="Marks or AB" />
+            </div>
+            <div class="control-group">
+              <label>Max Marks</label>
+              <input type="number" id="editOralMax" min="0" placeholder="Max marks" />
+            </div>
+          </div>
+
+          <div class="edit-mode-card">
+            <h4>Practical</h4>
+            <div class="control-group">
+              <label>Marks</label>
+              <input type="text" id="editPracticalMarks" placeholder="Marks or AB" />
+            </div>
+            <div class="control-group">
+              <label>Max Marks</label>
+              <input type="number" id="editPracticalMax" min="0" placeholder="Max marks" />
+            </div>
+          </div>
+        </div>
+
+        <p class="edit-help">
+          Enter marks or AB. If a mode is not applicable, keep both marks and max marks blank.
+          Existing rows will be updated. New mode entries will be added.
+        </p>
+
+        <div class="modal-actions">
+          <button class="btn-small btn-red" onclick="closeEditModal()">Cancel</button>
+          <button class="btn-small btn-green" id="saveEditBtn" onclick="saveEditedMarks()">Save Changes</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -843,6 +1035,7 @@
     let globalStudents = {};
     let globalSubsArray = [];
     let globalRankMap = {};
+    let currentEditingRoll = "";
     let alertTimer = null;
 
     window.addEventListener("DOMContentLoaded", function() {
@@ -866,7 +1059,7 @@
       const pass = document.getElementById("tpass").value.trim();
 
       if (!id || !pass) {
-        showMessage("Teacher ID aur PIN required hain.", "error");
+        showMessage("Teacher ID and PIN are required.", "error");
         return;
       }
 
@@ -875,7 +1068,7 @@
         (id !== "ADMIN" && pass === "bgps123" && teacherClassMap[id]);
 
       if (!valid) {
-        showMessage("Login failed. ID ya PIN galat hai.", "error");
+        showMessage("Login failed. Please check the ID and PIN.", "error");
         return;
       }
 
@@ -955,7 +1148,7 @@
       const container = document.getElementById("studentContainer");
 
       if (!count || count < 1 || count > 250) {
-        showMessage("Roll count 1 se 250 ke beech hona chahiye.", "error");
+        showMessage("Roll count must be between 1 and 250.", "error");
         return;
       }
 
@@ -991,14 +1184,14 @@
       if (!maxVal || maxVal <= 0) {
         maxEl.classList.add("input-error");
         input.value = "";
-        showMessage("Pehle Max Marks fill karo.", "error");
+        showMessage("Please enter Max Marks first.", "error");
         maxEl.focus();
         return;
       }
 
       if (isNaN(Number(val))) {
         input.value = "";
-        showMessage("Marks number ya AB hona chahiye.", "error");
+        showMessage("Marks must be a number or AB.", "error");
         return;
       }
 
@@ -1007,7 +1200,7 @@
       if (num < 0 || num > maxVal) {
         input.classList.add("input-error");
         input.value = "";
-        showMessage("Marks 0 se " + maxVal + " ke beech hone chahiye.", "error");
+        showMessage("Marks must be between 0 and " + maxVal + ".", "error");
       }
     });
 
@@ -1037,7 +1230,7 @@
       if (!maxMarks || maxMarks <= 0) { maxEl.classList.add("input-error"); formError = true; }
 
       if (formError) {
-        showMessage("Class, Subject, Exam, Mode aur Max Marks check karo.", "error");
+        showMessage("Please check Class, Subject, Exam, Mode, and Max Marks.", "error");
         return;
       }
 
@@ -1084,7 +1277,7 @@
       });
 
       if (blankRolls.length > 0) {
-        showMessage("Blank rolls: " + blankRolls.slice(0, 20).join(", ") + ". Marks ya AB enter karo.", "error");
+        showMessage("Blank rolls: " + blankRolls.slice(0, 20).join(", ") + ". Enter marks or AB.", "error");
         return;
       }
 
@@ -1195,7 +1388,7 @@
 
       if (!selector.value) {
         selector.classList.add("input-error");
-        showMessage("Class aur Exam select karo.", "error");
+        showMessage("Please select Class and Exam.", "error");
         return;
       }
 
@@ -1267,7 +1460,7 @@
         }
 
         if (!hasData) {
-          showMessage(selectedClass + " - " + selectedExam + " ka data nahi mila.", "info");
+          showMessage("No data found for " + selectedClass + " - " + selectedExam + ".", "info");
           clearDashboard();
           return;
         }
@@ -1407,7 +1600,7 @@
         header += "<th>" + escapeHtml(sub) + "</th>";
       });
 
-      header += "<th class='highlight-col'>Max</th><th class='highlight-col'>Obt</th><th class='perc-col'>%</th><th>Rank</th></tr>";
+      header += "<th class='highlight-col'>Max</th><th class='highlight-col'>Obt</th><th class='perc-col'>%</th><th>Rank</th><th class='action-col'>Edit</th></tr>";
 
       document.getElementById("tHead").innerHTML = header;
 
@@ -1443,6 +1636,7 @@
         body += "<td class='highlight-col'>" + s.totalObt + "</td>";
         body += "<td class='perc-col'>" + percentRaw.toFixed(2) + "%</td>";
         body += "<td># " + rankMap[roll] + "</td>";
+        body += "<td class='action-col'><button class='btn-small' onclick='openEditModal(" + JSON.stringify(roll) + ")'>Edit</button></td>";
         body += "</tr>";
       });
 
@@ -1456,9 +1650,188 @@
       document.getElementById("dashStatus").value = "No data";
     }
 
+    function openEditModal(roll) {
+      if (!globalStudents[roll]) {
+        showMessage("Student record not found.", "error");
+        return;
+      }
+
+      currentEditingRoll = String(roll);
+
+      const subjectSelect = document.getElementById("editSubject");
+      subjectSelect.innerHTML = "";
+
+      globalSubsArray.forEach(function(subject) {
+        const opt = document.createElement("option");
+        opt.value = subject;
+        opt.textContent = subject;
+        subjectSelect.appendChild(opt);
+      });
+
+      document.getElementById("editRoll").value = currentEditingRoll;
+      document.getElementById("editClassExam").value = currentClassView + " | " + currentExamView;
+      document.getElementById("editModalMeta").textContent =
+        "Class: " + currentClassView + " | Exam: " + currentExamView + " | Roll: " + currentEditingRoll;
+
+      loadEditSubjectValues();
+
+      document.getElementById("editMarksModal").classList.add("active");
+    }
+
+    function closeEditModal() {
+      document.getElementById("editMarksModal").classList.remove("active");
+      currentEditingRoll = "";
+    }
+
+    function loadEditSubjectValues() {
+      const roll = currentEditingRoll;
+      const subject = document.getElementById("editSubject").value;
+
+      const empty = { o: "", m: "" };
+      const student = globalStudents[roll];
+      const subjectData = student && student.subs && student.subs[subject] ? student.subs[subject] : null;
+
+      const written = subjectData ? subjectData.written : empty;
+      const oral = subjectData ? subjectData.oral : empty;
+      const practical = subjectData ? subjectData.practical : empty;
+
+      setEditModeValues("Written", written);
+      setEditModeValues("Oral", oral);
+      setEditModeValues("Practical", practical);
+    }
+
+    function setEditModeValues(modeName, data) {
+      const prefix = modeName.toLowerCase();
+      const marksEl = document.getElementById("edit" + modeName + "Marks");
+      const maxEl = document.getElementById("edit" + modeName + "Max");
+
+      marksEl.classList.remove("input-error");
+      maxEl.classList.remove("input-error");
+
+      marksEl.value = data && data.o !== "-" ? data.o : "";
+      maxEl.value = data && Number(data.m) > 0 ? data.m : "";
+    }
+
+    async function saveEditedMarks() {
+      const roll = currentEditingRoll;
+      const subject = document.getElementById("editSubject").value;
+
+      if (!roll || !subject) {
+        showMessage("Roll number and subject are required.", "error");
+        return;
+      }
+
+      const editEntries = [];
+      const modes = [
+        { type: "Written", marksId: "editWrittenMarks", maxId: "editWrittenMax" },
+        { type: "Oral", marksId: "editOralMarks", maxId: "editOralMax" },
+        { type: "Practical", marksId: "editPracticalMarks", maxId: "editPracticalMax" }
+      ];
+
+      let hasError = false;
+
+      modes.forEach(function(mode) {
+        const marksEl = document.getElementById(mode.marksId);
+        const maxEl = document.getElementById(mode.maxId);
+
+        marksEl.classList.remove("input-error");
+        maxEl.classList.remove("input-error");
+
+        let marks = marksEl.value.trim().toUpperCase();
+        const maxMarks = Number(maxEl.value);
+
+        if (marks === "" && !maxEl.value) {
+          return;
+        }
+
+        if (marks === "" && maxEl.value) {
+          marksEl.classList.add("input-error");
+          hasError = true;
+          return;
+        }
+
+        if (marks !== "" && (!maxMarks || maxMarks <= 0)) {
+          maxEl.classList.add("input-error");
+          hasError = true;
+          return;
+        }
+
+        if (marks === "A") marks = "AB";
+
+        if (marks !== "AB") {
+          const marksNum = Number(marks);
+
+          if (isNaN(marksNum) || marksNum < 0 || marksNum > maxMarks) {
+            marksEl.classList.add("input-error");
+            hasError = true;
+            return;
+          }
+
+          marks = marksNum;
+        }
+
+        editEntries.push({
+          teacherId: currentId || "UNKNOWN",
+          className: currentClassView,
+          subject: subject,
+          examType: currentExamView,
+          type: mode.type,
+          rollNo: roll,
+          marks: marks,
+          maxMarks: maxMarks
+        });
+      });
+
+      if (hasError) {
+        showMessage("Please correct the highlighted fields.", "error");
+        return;
+      }
+
+      if (editEntries.length === 0) {
+        showMessage("No changes were entered.", "error");
+        return;
+      }
+
+      const btn = document.getElementById("saveEditBtn");
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      try {
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({ entries: editEntries })
+        });
+
+        btn.textContent = "Verifying...";
+        await sleep(2000);
+
+        const verified = await verifySavedEntries(editEntries);
+
+        if (!verified.ok) {
+          showMessage("Verification failed. Missing rolls: " + verified.missing.slice(0, 15).join(", "), "error");
+          return;
+        }
+
+        showMessage("Marks updated and verified successfully.", "success");
+        closeEditModal();
+        await fetchData();
+
+      } catch (err) {
+        showMessage("Update failed: " + err.message, "error");
+
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Save Changes";
+      }
+    }
+
     function printDashboardReport() {
       if (!document.getElementById("tHead").innerHTML) {
-        showMessage("Pehle dashboard mein data fetch karo, phir print report nikalo.", "error");
+        showMessage("Fetch dashboard data before printing the report.", "error");
         switchTab("dash");
         return;
       }
@@ -1487,7 +1860,7 @@
       const table = document.getElementById("resTable");
 
       if (!document.getElementById("tHead").innerHTML) {
-        showMessage("Pehle dashboard data fetch karo.", "error");
+        showMessage("Fetch dashboard data first.", "error");
         return;
       }
 

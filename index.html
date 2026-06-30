@@ -68,6 +68,7 @@
         .sign-line { border-top: 2px solid var(--navy); width: 200px; text-align: center; padding-top: 8px; }
         
         .print-only-header { display: none; }
+        .print-analytics-panel { display: none; }
 
         @page {
             size: A4 landscape;
@@ -142,67 +143,75 @@
                 margin: 0 !important;
             }
 
-            /* Keep consolidated analytics visible in print without shrinking the marks table. */
-            body.print-cons #analyticsPanel.analytics-panel {
+            /*
+               Dedicated print-only analytics panel.
+               It is separate from the screen panel, so the generic .no-print rule can never hide it.
+            */
+            body.print-cons #analyticsPanel {
+                display: none !important;
+            }
+
+            body.print-cons #printAnalyticsPanel.print-analytics-panel {
                 display: grid !important;
                 grid-template-columns: 0.72fr 1fr 1.38fr !important;
                 gap: 3mm !important;
                 width: 100% !important;
-                margin: 0 0 5mm 0 !important;
+                margin: 0 0 4mm 0 !important;
                 padding: 0 !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
 
-            body.print-cons #analyticsPanel .stat-box {
+            body.print-cons #printAnalyticsPanel .stat-box {
                 display: block !important;
                 min-width: 0 !important;
+                min-height: 23mm !important;
                 background: #f4f7fb !important;
                 color: #000 !important;
                 border: 1.4px solid #334155 !important;
                 border-radius: 3px !important;
                 box-shadow: none !important;
-                padding: 3mm 3.5mm !important;
+                padding: 2.5mm 3mm !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
 
-            body.print-cons #analyticsPanel .stat-box h4 {
+            body.print-cons #printAnalyticsPanel .stat-box h4 {
                 color: #111827 !important;
                 border-bottom: 1px solid #94a3b8 !important;
-                margin: 0 0 2mm 0 !important;
-                padding: 0 0 1.4mm 0 !important;
+                margin: 0 0 1.5mm 0 !important;
+                padding: 0 0 1.1mm 0 !important;
                 font-family: 'Georgia', serif !important;
-                font-size: 11px !important;
-                line-height: 1.15 !important;
+                font-size: 10.5px !important;
+                line-height: 1.1 !important;
                 font-weight: 900 !important;
+                text-transform: uppercase !important;
             }
 
-            body.print-cons #analyticsPanel .stat-box p,
-            body.print-cons #analyticsPanel .stat-box div {
+            body.print-cons #printAnalyticsPanel .stat-box p,
+            body.print-cons #printAnalyticsPanel .stat-box div {
                 color: #111827 !important;
-                font-size: 10.5px !important;
-                line-height: 1.28 !important;
+                font-size: 10px !important;
+                line-height: 1.22 !important;
                 font-weight: 700 !important;
                 margin: 0 !important;
             }
 
-            body.print-cons #analyticsPanel .text-green {
+            body.print-cons #printAnalyticsPanel .text-green {
                 color: #166534 !important;
                 font-weight: 900 !important;
             }
 
-            body.print-cons #analyticsPanel .text-red {
+            body.print-cons #printAnalyticsPanel .text-red {
                 color: #b91c1c !important;
                 font-weight: 900 !important;
             }
 
-            /* Put subject-highest values in two compact columns in print. */
-            body.print-cons #subjectHighsList {
+            body.print-cons #printSubjectHighsList {
                 display: grid !important;
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                column-gap: 4mm !important;
-                row-gap: 0.7mm !important;
+                column-gap: 3mm !important;
+                row-gap: 0.4mm !important;
             }
 
             body.print-cons table {
@@ -425,6 +434,14 @@
                     <h3>CONSOLIDATED REPORT & ANALYTICS</h3>
                     <p id="pDetails">CLASS: -- | EXAM: --</p>
                 </div>
+
+                <!-- Dedicated print copy: this cannot be hidden by the screen-only .no-print rule. -->
+                <div class="print-analytics-panel" id="printAnalyticsPanel">
+                    <div class="stat-box"><h4>Overall Result</h4><p id="printPassFailText">Waiting...</p></div>
+                    <div class="stat-box"><h4>Top 3 Rankers</h4><div id="printTopRankersList">Waiting...</div></div>
+                    <div class="stat-box"><h4>Highest in Subject</h4><div id="printSubjectHighsList">Waiting...</div></div>
+                </div>
+
                 <div class="analytics-panel no-print" id="analyticsPanel">
                     <div class="stat-box"><h4>Overall Result</h4><p id="passFailText">Waiting...</p></div>
                     <div class="stat-box"><h4>Top 3 Rankers</h4><div id="topRankersList">Waiting...</div></div>
@@ -731,11 +748,30 @@
         }
 
         function closeIndividualView() { document.getElementById('dashMain').style.display = 'block'; document.getElementById('individualReportContainer').style.display = 'none'; document.body.classList.remove('print-indv'); }
+        function syncPrintAnalytics() {
+            const copyHtml = (sourceId, targetId) => {
+                const source = document.getElementById(sourceId);
+                const target = document.getElementById(targetId);
+                if (source && target) target.innerHTML = source.innerHTML;
+            };
+
+            copyHtml('passFailText', 'printPassFailText');
+            copyHtml('topRankersList', 'printTopRankersList');
+            copyHtml('subjectHighsList', 'printSubjectHighsList');
+        }
+
         function printConsolidated() {
+            syncPrintAnalytics();
             document.body.classList.add('print-cons');
+
+            // Force the browser to calculate the print-only panel before opening print preview.
+            const printPanel = document.getElementById('printAnalyticsPanel');
+            if (printPanel) void printPanel.offsetHeight;
+
             window.addEventListener('afterprint', () => {
                 document.body.classList.remove('print-cons');
             }, { once: true });
+
             window.print();
         }
 

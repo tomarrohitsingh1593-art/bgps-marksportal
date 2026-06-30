@@ -136,6 +136,33 @@
         .btn-edit { background:#f6c90e; color:#0a1628; }
         .absent-cell { color:#b91c1c !important; background:#fee2e2 !important; font-weight:900 !important; }
 
+        /* Subject marks are interactive: click/tap to see Written, Oral and Practical breakup. */
+        .mark-detail-cell { cursor:pointer; position:relative; transition:background .16s ease, box-shadow .16s ease, transform .16s ease; }
+        .mark-detail-cell:hover { background:#cfe8ff !important; box-shadow:inset 0 0 0 2px #4f91c8; }
+        .mark-detail-cell:focus-visible { outline:3px solid #f6c90e; outline-offset:-3px; background:#dceeff !important; }
+        .mark-detail-cell:active { transform:scale(.985); }
+        .mark-detail-cell.absent-cell:hover { background:#fecaca !important; }
+        .mark-click-hint { display:none; align-items:center; gap:8px; margin:-2px 0 12px; padding:8px 11px; border:1px solid rgba(144,205,244,.4); border-radius:8px; background:rgba(144,205,244,.10); color:#dbeafe; font-family:'Inconsolata',monospace; font-size:12px; }
+        .mark-click-hint.visible { display:flex; }
+        .mark-click-hint strong { color:#fff; }
+
+        /* Read-only mark breakup modal */
+        .breakdown-modal { width:min(620px, 96vw); background:#f8fbff; color:#102a43; border-radius:16px; border:2px solid #7aa7cf; box-shadow:0 25px 80px rgba(0,0,0,.55); padding:22px; }
+        .breakdown-header { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:8px; }
+        .breakdown-header h2 { color:#12395f; font-family:'EB Garamond',serif; font-size:25px; line-height:1.1; }
+        .breakdown-subtitle { color:#526d82; font-family:'Inconsolata',monospace; font-size:12px; margin-bottom:16px; }
+        .breakdown-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+        .breakdown-card { border:1px solid #b8cee2; background:#fff; border-radius:10px; padding:13px; text-align:center; min-width:0; }
+        .breakdown-card .component-name { color:#315b82; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.35px; margin-bottom:7px; }
+        .breakdown-card .component-score { color:#0f3558; font-family:'Inconsolata',monospace; font-size:19px; font-weight:900; white-space:nowrap; }
+        .breakdown-card.missing { background:#f8fafc; }
+        .breakdown-card.missing .component-score { color:#94a3b8; font-size:13px; white-space:normal; }
+        .breakdown-card.absent { background:#fff1f2; border-color:#fca5a5; }
+        .breakdown-card.absent .component-score { color:#b91c1c; }
+        .breakdown-total { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; padding:13px 15px; border-radius:10px; background:#eaf4ff; border:1px solid #8fb2d2; color:#12395f; font-weight:900; }
+        .breakdown-total strong { font-family:'Inconsolata',monospace; font-size:20px; }
+        .breakdown-note { margin-top:10px; color:#64748b; font-family:'Inconsolata',monospace; font-size:11px; line-height:1.45; }
+
         /* Dashboard student edit modal */
         .modal-overlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(2,12,27,.78); padding:24px; align-items:center; justify-content:center; }
         .modal-overlay.open { display:flex; }
@@ -230,6 +257,11 @@
             .modal-overlay { padding:8px; }
             .modal-actions { display:grid; grid-template-columns:1fr 1fr; }
             .modal-actions .btn-primary, .modal-actions .btn-secondary { width:100% !important; }
+            .breakdown-modal { padding:15px; }
+            .breakdown-grid { grid-template-columns:1fr; }
+            .breakdown-card { display:flex; justify-content:space-between; align-items:center; text-align:left; padding:11px 13px; }
+            .breakdown-card .component-name { margin:0; }
+            .breakdown-card .component-score { font-size:17px; }
         }
 
         @media screen and (max-width: 480px) {
@@ -247,6 +279,10 @@
             .individual-toolbar > div { grid-template-columns:1fr; }
             .edit-table tbody tr { grid-template-columns:1fr; }
             .edit-table tbody td:first-child { grid-column:1; }
+        }
+
+        @media print {
+            .mark-detail-cell { cursor:default !important; transform:none !important; box-shadow:none !important; outline:none !important; }
         }
 
         @page {
@@ -629,6 +665,10 @@
                     <div class="meta-chip">Complete: <strong id="metaComplete">0</strong></div>
                     <div class="meta-chip">Incomplete: <strong id="metaIncomplete">0</strong></div>
                 </div>
+                <div class="mark-click-hint no-print" id="markClickHint">
+                    <span>ⓘ</span>
+                    <span><strong>Tip:</strong> Kisi bhi subject ke marks par click/tap karke Written, Oral aur Practical breakup dekhein.</span>
+                </div>
                 <div class="dashboard-table-wrap">
                     <table id="resTable"><thead id="tHead"></thead><tbody id="tBody"></tbody></table>
                 </div>
@@ -674,6 +714,24 @@
                 <button class="btn-secondary" type="button" onclick="closeStudentEditModal()">Cancel</button>
                 <button class="btn-primary" type="button" id="saveStudentEditBtn" onclick="saveStudentEdits()" style="width:auto; margin:0; padding:11px 20px;">Save Changes</button>
             </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay no-print" id="markBreakdownModal" onclick="handleBreakdownBackdrop(event)">
+        <div class="breakdown-modal" role="dialog" aria-modal="true" aria-labelledby="breakdownTitle">
+            <div class="breakdown-header">
+                <div>
+                    <h2 id="breakdownTitle">Marks Breakup</h2>
+                </div>
+                <button class="modal-close" type="button" onclick="closeMarkBreakdown()">✕ Close</button>
+            </div>
+            <div class="breakdown-subtitle" id="breakdownSubtitle">Roll -- | Class -- | Exam --</div>
+            <div class="breakdown-grid" id="breakdownGrid"></div>
+            <div class="breakdown-total">
+                <span>Subject Total</span>
+                <strong id="breakdownTotal">-- / --</strong>
+            </div>
+            <div class="breakdown-note">Subject total is calculated from the available Written + Oral + Practical components. “Not entered” means that component has no saved record.</div>
         </div>
     </div>
 
@@ -1176,7 +1234,12 @@
 
                     if (!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0, hasAbsent: false };
                     if (!students[roll].subs[subject]) {
-                        students[roll].subs[subject] = { max: 0, obt: 0, written: '-', oral: '-', practical: '-', hasAbsent: false };
+                        students[roll].subs[subject] = {
+                            max: 0, obt: 0,
+                            written: '-', oral: '-', practical: '-',
+                            writtenMax: 0, oralMax: 0, practicalMax: 0,
+                            hasAbsent: false
+                        };
                     }
 
                     const subData = students[roll].subs[subject];
@@ -1188,9 +1251,16 @@
                     students[roll].hasAbsent = students[roll].hasAbsent || absent;
 
                     const componentValue = absent ? 'AB' : obtained;
-                    if (modeLower.includes('oral')) subData.oral = componentValue;
-                    else if (modeLower.includes('practical')) subData.practical = componentValue;
-                    else subData.written = componentValue;
+                    if (modeLower.includes('oral')) {
+                        subData.oral = componentValue;
+                        subData.oralMax += max;
+                    } else if (modeLower.includes('practical')) {
+                        subData.practical = componentValue;
+                        subData.practicalMax += max;
+                    } else {
+                        subData.written = componentValue;
+                        subData.writtenMax += max;
+                    }
 
                     allSubjects.add(subject);
 
@@ -1292,6 +1362,8 @@
                 document.getElementById('metaSubjects').textContent = subjects.length;
                 document.getElementById('metaComplete').textContent = Object.keys(students).length - incompleteCount;
                 document.getElementById('metaIncomplete').textContent = incompleteCount;
+                const markClickHint = document.getElementById('markClickHint');
+                if (markClickHint) markClickHint.classList.add('visible');
 
                 let header = '<tr><th class="roll-col">ROLL NO</th>';
                 subjects.forEach(subject => header += `<th class="subject-col">${subjectHeaderHtml(subject)}</th>`);
@@ -1321,7 +1393,16 @@
                             return;
                         }
                         const absentClass = data.hasAbsent ? 'absent-cell' : '';
-                        body += `<td class="subject-col ${absentClass}" data-label="${escapeHtml(subject)}">${escapeHtml(displaySubjectMark(data))}</td>`;
+                        body += `<td class="subject-col mark-detail-cell ${absentClass}"
+                            data-label="${escapeHtml(subject)}"
+                            data-roll="${escapeHtml(roll)}"
+                            data-subject="${escapeHtml(subject)}"
+                            role="button"
+                            tabindex="0"
+                            title="Click to view Written / Oral / Practical breakup"
+                            aria-label="View ${escapeHtml(subject)} marks breakup for Roll ${escapeHtml(roll)}"
+                            onclick="openMarkBreakdownFromCell(this)"
+                            onkeydown="handleMarkCellKey(event, this)">${escapeHtml(displaySubjectMark(data))}</td>`;
                     });
 
                     const failMark = fail ? "<span style='color:#b91c1c;'> (F)</span>" : '';
@@ -1347,6 +1428,78 @@
             }
         }
 
+        function openMarkBreakdownFromCell(cell) {
+            openMarkBreakdown(cell.dataset.roll, cell.dataset.subject);
+        }
+
+        function handleMarkCellKey(event, cell) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openMarkBreakdownFromCell(cell);
+            }
+        }
+
+        function componentBreakdownCard(label, value, max) {
+            const hasRecord = value !== '-' || Number(max) > 0;
+            if (!hasRecord) {
+                return `
+                    <div class="breakdown-card missing">
+                        <div class="component-name">${escapeHtml(label)}</div>
+                        <div class="component-score">Not entered</div>
+                    </div>`;
+            }
+
+            if (isAbsentValue(value)) {
+                return `
+                    <div class="breakdown-card absent">
+                        <div class="component-name">${escapeHtml(label)}</div>
+                        <div class="component-score">AB / ${Number(max) || '—'}</div>
+                    </div>`;
+            }
+
+            return `
+                <div class="breakdown-card">
+                    <div class="component-name">${escapeHtml(label)}</div>
+                    <div class="component-score">${escapeHtml(value)} / ${Number(max) || '—'}</div>
+                </div>`;
+        }
+
+        function openMarkBreakdown(roll, subject) {
+            const student = globalStudents[roll];
+            const data = student?.subs?.[subject];
+            if (!student || !data) {
+                alert('Marks breakup is not available for this subject.');
+                return;
+            }
+
+            document.getElementById('breakdownTitle').textContent = `${subject} — Roll ${roll}`;
+            document.getElementById('breakdownSubtitle').textContent =
+                `${currentClassView} | ${currentExamView}`;
+
+            document.getElementById('breakdownGrid').innerHTML = [
+                componentBreakdownCard('Written', data.written, data.writtenMax),
+                componentBreakdownCard('Oral', data.oral, data.oralMax),
+                componentBreakdownCard('Practical', data.practical, data.practicalMax)
+            ].join('');
+
+            const totalDisplay = data.hasAbsent && data.obt === 0
+                ? `AB / ${data.max}`
+                : `${data.obt} / ${data.max}${data.hasAbsent ? ' + AB' : ''}`;
+            document.getElementById('breakdownTotal').textContent = totalDisplay;
+
+            document.getElementById('markBreakdownModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMarkBreakdown() {
+            document.getElementById('markBreakdownModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function handleBreakdownBackdrop(event) {
+            if (event.target.id === 'markBreakdownModal') closeMarkBreakdown();
+        }
+
         function viewIndividualReport(roll) {
             const student = globalStudents[roll];
             if (!student) return;
@@ -1356,7 +1509,11 @@
             document.getElementById('irExam').innerText = `Exam: ${currentExamView}`;
 
             document.getElementById('irTableBody').innerHTML = globalSubsArray.map(subject => {
-                const data = student.subs[subject] || { written: '-', oral: '-', practical: '-', max: '-', obt: '-', hasAbsent: false };
+                const data = student.subs[subject] || {
+                    written: '-', oral: '-', practical: '-',
+                    writtenMax: 0, oralMax: 0, practicalMax: 0,
+                    max: '-', obt: '-', hasAbsent: false
+                };
                 const obtainedDisplay = data.hasAbsent ? (data.obt > 0 ? `${data.obt} + AB` : 'AB') : data.obt;
                 return `<tr><td data-label="Subject">${subject}</td><td data-label="Written">${data.written}</td><td data-label="Oral">${data.oral}</td><td data-label="Practical">${data.practical}</td><td data-label="Total Max">${data.max}</td><td data-label="Obtained">${obtainedDisplay}</td></tr>`;
             }).join('');
@@ -1534,6 +1691,15 @@
             ['class', 'subject', 'examType', 'type'].forEach(id => {
                 const element = document.getElementById(id);
                 if (element) element.addEventListener('change', handleEntryContextChange);
+            });
+
+            document.addEventListener('keydown', event => {
+                if (event.key !== 'Escape') return;
+                if (document.getElementById('markBreakdownModal')?.classList.contains('open')) {
+                    closeMarkBreakdown();
+                } else if (document.getElementById('studentEditModal')?.classList.contains('open')) {
+                    closeStudentEditModal();
+                }
             });
         });
     </script>

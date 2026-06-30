@@ -22,7 +22,7 @@
         .btn-small { background: var(--blue); color: var(--navy); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; text-transform: uppercase; }
         .app-shell { max-width: 1100px; margin: 0 auto; display: none; }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #718096; cursor: pointer; }
+        .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #d6e4f2; cursor: pointer; }
         .tab-btn.active { background: var(--gold); color: var(--navy); font-weight: 700; }
         .view-section { display: none; }
         .view-section.active { display: block; }
@@ -70,6 +70,45 @@
         .print-only-header { display: none; }
         .print-analytics-panel { display: none; }
 
+
+        /* Marks-entry absent + edit controls */
+        .entry-actions { display:flex; gap:10px; align-items:center; margin:10px 0 14px; flex-wrap:wrap; }
+        .btn-secondary { padding:11px 16px; background:#dbeafe; color:#12395f; border:1px solid #7aa7cf; border-radius:8px; cursor:pointer; font-weight:800; }
+        .btn-secondary:hover { background:#bfdbfe; }
+        .entry-status { flex:1; min-width:240px; padding:10px 12px; border-radius:8px; background:rgba(144,205,244,.12); border:1px solid rgba(144,205,244,.35); color:#dbeafe; font-family:'Inconsolata', monospace; font-size:12px; }
+        .student-mark-controls { display:flex; align-items:center; gap:12px; }
+        .absent-toggle { display:inline-flex; align-items:center; gap:7px; padding:8px 10px; background:#fff7ed; color:#9a3412; border:1px solid #fdba74; border-radius:6px; cursor:pointer; font-family:'Inconsolata', monospace; font-size:12px; font-weight:900; user-select:none; }
+        .absent-toggle input { width:16px !important; height:16px; margin:0; accent-color:#dc2626; }
+        .student-row.is-absent { background:#fff1f2; border-left:4px solid #dc2626; }
+        .student-row.is-absent .m-input { background:#f1f5f9; color:#94a3b8; }
+        .m-input:disabled { cursor:not-allowed; opacity:.85; }
+        .action-buttons { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+        .btn-edit { background:#f6c90e; color:#0a1628; }
+        .absent-cell { color:#b91c1c !important; background:#fee2e2 !important; font-weight:900 !important; }
+
+        /* Dashboard student edit modal */
+        .modal-overlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(2,12,27,.78); padding:24px; align-items:center; justify-content:center; }
+        .modal-overlay.open { display:flex; }
+        .edit-modal { width:min(900px, 96vw); max-height:90vh; overflow:auto; background:#f8fbff; color:#102a43; border-radius:14px; border:2px solid #7aa7cf; box-shadow:0 25px 80px rgba(0,0,0,.55); padding:22px; }
+        .edit-modal-header { display:flex; justify-content:space-between; gap:15px; align-items:center; margin-bottom:14px; }
+        .edit-modal-header h2 { color:#12395f; font-family:'EB Garamond', serif; }
+        .modal-close { border:none; background:#fee2e2; color:#b91c1c; border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:900; }
+        .edit-table { margin:0; background:white; }
+        .edit-table th { background:#2f5f91; color:white; }
+        .edit-table td { padding:8px; }
+        .edit-table input[type="number"] { width:95px; padding:8px; border:1px solid #7aa7cf; border-radius:6px; text-align:center; font-weight:800; color:#102a43; background:white; }
+        .edit-table input[type="checkbox"] { width:18px; height:18px; accent-color:#dc2626; }
+        .edit-table tr.modal-absent td { background:#fff1f2 !important; }
+        .modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+        .modal-note { font-size:12px; color:#475569; margin-bottom:12px; font-family:'Inconsolata', monospace; }
+
+        @media (max-width: 720px) {
+            .student-mark-controls { gap:7px; }
+            .absent-toggle { padding:7px; }
+            .entry-actions { align-items:stretch; }
+            .entry-status { min-width:100%; }
+        }
+
         @page {
             size: A4 landscape;
             margin: 6mm;
@@ -84,7 +123,7 @@
                 margin: 0 !important;
             }
 
-            .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary,
+            .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary, .modal-overlay,
             .app-shell > div:not(.view-section.active) {
                 display: none !important;
             }
@@ -391,38 +430,21 @@
         <div class="card view-section" id="entryView">
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
                 <div class="control-group"><label>Class</label><select id="class"></select></div>
-                <div class="control-group"><label>Subject</label>
-                    <select id="subject">
-                        <option value="">Select</option>
-                        <option>English</option>
-                        <option>English Literature</option>
-                        <option>English Language</option>
-                        <option>Hindi</option>
-                        <option>Maths</option>
-                        <option>EVS</option>
-                        <option>SST</option>
-                        <option>GK/Moral Science</option>
-                        <option>Computer</option>
-                        <option>Science</option>
-                        <option>Social Studies</option>
-                        <option>Geography</option>
-                        <option>History/Civics</option>
-                        <option>Physics</option>
-                        <option>Chemistry</option>
-                        <option>Biology</option>
-                        <option>Account</option>
-                        <option>Business</option>
-                        <option>Economics</option>
-                    </select>
-                </div>
+                <div class="control-group"><label>Subject</label><select id="subject"><option value="">Select</option></select></div>
                 <div class="control-group"><label>Exam</label><select id="examType"><option>Unit Test 1</option><option>Unit Test 2</option><option>Half Yearly</option><option>Unit Test 3</option><option>Annual Exam</option></select></div>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="control-group"><label>Mode</label><select id="type"><option>Written</option><option>Oral</option><option>Practical</option></select></div>
-                <div class="control-group"><label>Max Marks</label><input type="number" id="maxMarks" placeholder="e.g. 80"></div>
+                <div class="control-group"><label>Max Marks</label><input type="number" min="0.01" step="0.01" id="maxMarks" placeholder="e.g. 80"></div>
             </div>
+
+            <div class="entry-actions">
+                <button class="btn-secondary" type="button" id="loadExistingBtn" onclick="loadExistingMarks(true)">↻ Load / Edit Existing Marks</button>
+                <div class="entry-status" id="entryStatus">Select subject, exam and mode. Use “Load / Edit Existing Marks” before correcting old marks.</div>
+            </div>
+
             <div id="studentContainer"></div>
-            <button class="btn-primary" onclick="submitData()" id="submitBtn">Submit Records</button>
+            <button class="btn-primary" onclick="submitData()" id="submitBtn">Save / Update Records</button>
         </div>
 
         <div class="card view-section" id="dashView">
@@ -477,329 +499,813 @@
         </div>
     </div>
 
+
+    <div class="modal-overlay no-print" id="studentEditModal" onclick="handleModalBackdrop(event)">
+        <div class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+            <div class="edit-modal-header">
+                <h2 id="editModalTitle">Edit Student Marks</h2>
+                <button class="modal-close" type="button" onclick="closeStudentEditModal()">✕ Close</button>
+            </div>
+            <div class="modal-note">Saving here overwrites the matching Class + Subject + Exam + Mode + Roll record. It does not create a second entry.</div>
+            <div style="overflow-x:auto;">
+                <table class="edit-table">
+                    <thead><tr><th>Subject</th><th>Mode</th><th>Max</th><th>Marks</th><th>Absent</th></tr></thead>
+                    <tbody id="editModalBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" type="button" onclick="closeStudentEditModal()">Cancel</button>
+                <button class="btn-primary" type="button" id="saveStudentEditBtn" onclick="saveStudentEdits()" style="width:auto; margin:0; padding:11px 20px;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoFAw_Dr-c8Uez79RLT7wbfVZ5xhqUUrFlqkcN5j4FYUsiUaaoYoC4H9tldaoxoGMZ/exec";
-        
-        // Class 1 to 5 consolidated report sequence:
-        // English, Hindi, Maths, SST, Science, GK/Moral Science, Computer, Total, Percentage, Rank.
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_csBKyvviScR_x5tPRBRmcXMNuz9tpqyrECWYqJxrqKB-jkl7BNw3D9CG23IWPMeb/exec";
+
         const primarySubjectOrder = [
-            "ENGLISH",
-            "HINDI",
-            "MATHS",
-            "SST",
-            "SCIENCE",
-            "GK/MORAL SCIENCE",
-            "COMPUTER"
+            "ENGLISH", "HINDI", "MATHS", "SST", "SCIENCE", "GK/MORAL SCIENCE", "COMPUTER"
         ];
 
-        // Other classes continue to use the complete subject order.
-        const customSubjectOrder = [
-            "ENGLISH",
-            "ENGLISH LITERATURE",
-            "ENGLISH LANGUAGE",
-            "HINDI",
-            "MATHS",
-            "EVS",
-            "SST",
-            "SOCIAL STUDIES",
-            "SCIENCE",
-            "GK/MORAL SCIENCE",
-            "GK/MSC",
-            "GK",
-            "COMPUTER",
-            "GEOGRAPHY",
-            "HISTORY/CIVICS",
-            "PHYSICS",
-            "CHEMISTRY",
-            "BIOLOGY",
-            "ACCOUNT",
-            "BUSINESS",
-            "ECONOMICS"
+        const primarySubjectOptions = [
+            "English", "Hindi", "Maths", "SST", "Science", "GK/Moral Science", "Computer"
         ];
+
+        const allSubjectOptions = [
+            "English", "English Literature", "English Language", "Hindi", "Maths", "EVS", "SST",
+            "GK/Moral Science", "Computer", "Science", "Social Studies", "Geography", "History/Civics",
+            "Physics", "Chemistry", "Biology", "Account", "Business", "Economics"
+        ];
+
+        const customSubjectOrder = [
+            "ENGLISH", "ENGLISH LITERATURE", "ENGLISH LANGUAGE", "HINDI", "MATHS", "EVS", "SST",
+            "SOCIAL STUDIES", "SCIENCE", "GK/MORAL SCIENCE", "GK/MSC", "GK", "COMPUTER",
+            "GEOGRAPHY", "HISTORY/CIVICS", "PHYSICS", "CHEMISTRY", "BIOLOGY", "ACCOUNT", "BUSINESS", "ECONOMICS"
+        ];
+
+        const mapping = {
+            "T-1":"Playgroup", "T-2":"LKG", "T-3":"UKG", "T-4":"Class 1", "T-5":"Class 2",
+            "T-6":"Class 3", "T-7":"Class 4", "T-8":"Class 5", "T-9":"Class 6", "T-10":"Class 7",
+            "T-11":"Class 8", "T-12":"Class 9", "T-13":"Class 10", "T-14":"Class 11", "T-15":"Class 12",
+            "ADMIN":"ALL_CLASSES"
+        };
+
+        let globalStudents = {};
+        let globalSubsArray = [];
+        let globalRankMap = {};
+        let globalStudentRecords = {};
+        let currentClassView = "";
+        let currentExamView = "";
+        let currentId = "";
+        let currentPin = "";
+        let cachedMasterData = null;
+        let entryLoadedKey = "";
+        let editingRoll = "";
 
         function isPrimaryReportClass(className) {
-            return /^Class\s[1-5]$/.test(String(className).trim());
+            return /^Class\s[1-5]$/.test(String(className || "").trim());
         }
 
-        function normalizeSubjectForReport(subject, className) {
-            let value = String(subject || "UNKNOWN").toUpperCase().trim();
-
+        function normalizeSubjectForStorage(subject, className) {
+            let value = String(subject || "UNKNOWN").toUpperCase().trim().replace(/\s+/g, " ");
             if (!isPrimaryReportClass(className)) return value;
 
-            if (value === "ENGLISH LANGUAGE" || value === "ENGLISH LITERATURE") return "ENGLISH";
-            if (value === "MATHEMATICS" || value === "MATH") return "MATHS";
+            if (["ENGLISH LANGUAGE", "ENGLISH LITERATURE"].includes(value)) return "ENGLISH";
+            if (["MATHEMATICS", "MATH"].includes(value)) return "MATHS";
 
-            // Class 1 to 5: EVS/Social/SST records are shown together in the SST column.
-            // If more than one compatible record exists, obtained and maximum marks are added.
             if ([
-                "EVS",
-                "EVS/SOCIAL",
-                "EVS / SOCIAL",
-                "EVS & SOCIAL",
-                "EVS AND SOCIAL",
-                "SOCIAL",
-                "SOCIAL STUDIES",
-                "SOCIAL STUDY",
-                "SOCIAL SCIENCE",
-                "SST",
-                "S.ST",
-                "S.ST.",
-                "S.STUDIES"
+                "EVS", "EVS/SOCIAL", "EVS / SOCIAL", "EVS & SOCIAL", "EVS AND SOCIAL", "SOCIAL",
+                "SOCIAL STUDIES", "SOCIAL STUDY", "SOCIAL SCIENCE", "SST", "S.ST", "S.ST.", "S.STUDIES"
             ].includes(value)) return "SST";
 
-            // Class 1 to 5: all common General Knowledge / Moral Science labels share one column.
-            if ([
-                "GK",
-                "GK/MSC",
-                "GK / MSC",
-                "GK/MSC.",
-                "GK/MORAL SCIENCE",
-                "GK / MORAL SCIENCE",
-                "GENERAL KNOWLEDGE",
-                "GENERAL KNOWLEDGE/MORAL SCIENCE",
-                "MORAL SCIENCE",
-                "MORAL SCIENCE/GK",
-                "MSC",
-                "M.SC",
-                "M.SC.",
-                "G.K.",
-                "G.K"
-            ].includes(value)) return "GK/MORAL SCIENCE";
+            if (["GENERAL SCIENCE", "BASIC SCIENCE", "SCIENCES"].includes(value)) return "SCIENCE";
 
-            if (["GENERAL SCIENCE", "BASIC SCIENCE"].includes(value)) return "SCIENCE";
+            if ([
+                "GK", "G.K", "G.K.", "GENERAL KNOWLEDGE", "GK/MSC", "GK / MSC", "GK-MSC", "GK & MSC",
+                "GK/MORAL SCIENCE", "GK / MORAL SCIENCE", "MORAL SCIENCE", "MORAL SCIENCE/GK", "MSC", "M.SC"
+            ].includes(value)) return "GK/MORAL SCIENCE";
 
             return value;
         }
-        
-        const mapping = {"T-1":"Playgroup","T-2":"LKG","T-3":"UKG","T-4":"Class 1","T-5":"Class 2","T-6":"Class 3","T-7":"Class 4","T-8":"Class 5","T-9":"Class 6","T-10":"Class 7","T-11":"Class 8","T-12":"Class 9","T-13":"Class 10","T-14":"Class 11","T-15":"Class 12","ADMIN":"ALL_CLASSES"};
-        let globalStudents = {}, globalSubsArray = [], globalRankMap = {}, currentClassView = "", currentExamView = "", currentId = "";
 
-        function loginTeacher() {
-            let id = document.getElementById('tid').value.toUpperCase(); let pass = document.getElementById('tpass').value;
-            if (((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id]) {
-                currentId = id; let myClass = mapping[id];
-                document.getElementById('loggedInUser').innerText = id + " | " + (id === "ADMIN" ? "SUPER ADMIN" : myClass);
-                
-                const clsSelect = document.getElementById('class'), dashSelect = document.getElementById('tabSelector');
-                let classesToLoad = id === "ADMIN" ? ["Playgroup", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"] : [myClass];
-                
-                let clsOptions = id === "ADMIN" ? "<option value=''>Class</option>" : "";
-                let dashOptions = "<option value=''>Select Report</option>";
-                
-                const allExams = ["Unit Test 1", "Unit Test 2", "Half Yearly", "Unit Test 3", "Annual Exam"];
-                
-                classesToLoad.forEach(c => { 
-                    clsOptions += `<option value="${c}">${c}</option>`; 
-                    allExams.forEach(ex => { dashOptions += `<option value="${c}|${ex}">${c} - ${ex}</option>`; }); 
-                });
-                
-                clsSelect.innerHTML = clsOptions; dashSelect.innerHTML = dashOptions;
-                document.getElementById('loginPage').style.display = 'none'; document.getElementById('appShell').style.display = 'block';
-                
-                if(id === "ADMIN") { 
-                    document.getElementById('tab-entry').style.display = 'none'; 
-                    document.getElementById('btn-print-cons').style.display = 'inline-block'; 
-                    switchTab('dash'); 
-                } else { 
-                    document.getElementById('btn-print-cons').style.display = 'none'; 
-                    generateRows(); 
-                    switchTab('entry'); 
-                }
-            } else { alert("Login Failed!"); }
+        function normalizeSubjectForReport(subject, className) {
+            return normalizeSubjectForStorage(subject, className);
         }
 
-        function switchTab(t) {
-            document.querySelectorAll('.view-section').forEach(el=>el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
-            if(t === 'entry') { document.getElementById('entryView').classList.add('active'); document.getElementById('tab-entry').classList.add('active'); } 
-            else { document.getElementById('dashView').classList.add('active'); document.getElementById('tab-dash').classList.add('active'); }
+        function normalizeRoll(value) {
+            const raw = String(value ?? "").trim();
+            if (!raw) return "";
+            const number = Number(raw);
+            return Number.isFinite(number) ? String(number) : raw;
+        }
+
+        function isAbsentValue(value) {
+            return ["AB", "ABSENT", "A"].includes(String(value ?? "").trim().toUpperCase());
+        }
+
+        function contextKey() {
+            const cls = document.getElementById('class').value;
+            const sub = normalizeSubjectForStorage(document.getElementById('subject').value, cls);
+            const exam = document.getElementById('examType').value;
+            const mode = document.getElementById('type').value.toUpperCase();
+            return [cls, sub, exam, mode].join('|');
+        }
+
+        function setEntryStatus(message, tone = 'info') {
+            const box = document.getElementById('entryStatus');
+            if (!box) return;
+            box.textContent = message;
+            const styles = {
+                info: ['rgba(144,205,244,.12)', 'rgba(144,205,244,.35)', '#dbeafe'],
+                success: ['rgba(72,187,120,.16)', 'rgba(72,187,120,.45)', '#bbf7d0'],
+                warning: ['rgba(246,201,14,.13)', 'rgba(246,201,14,.45)', '#fef3c7'],
+                error: ['rgba(252,129,129,.14)', 'rgba(252,129,129,.45)', '#fecaca']
+            };
+            const selected = styles[tone] || styles.info;
+            box.style.background = selected[0];
+            box.style.borderColor = selected[1];
+            box.style.color = selected[2];
+        }
+
+        function loginTeacher() {
+            const id = document.getElementById('tid').value.toUpperCase().trim();
+            const pass = document.getElementById('tpass').value;
+
+            if (!(((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id])) {
+                alert("Login Failed!");
+                return;
+            }
+
+            currentId = id;
+            currentPin = pass;
+            const myClass = mapping[id];
+            document.getElementById('loggedInUser').innerText = id + " | " + (id === "ADMIN" ? "SUPER ADMIN" : myClass);
+
+            const clsSelect = document.getElementById('class');
+            const dashSelect = document.getElementById('tabSelector');
+            const classesToLoad = id === "ADMIN"
+                ? ["Playgroup", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"]
+                : [myClass];
+
+            let clsOptions = id === "ADMIN" ? "<option value=''>Class</option>" : "";
+            let dashOptions = "<option value=''>Select Report</option>";
+            const allExams = ["Unit Test 1", "Unit Test 2", "Half Yearly", "Unit Test 3", "Annual Exam"];
+
+            classesToLoad.forEach(cls => {
+                clsOptions += `<option value="${cls}">${cls}</option>`;
+                allExams.forEach(exam => {
+                    dashOptions += `<option value="${cls}|${exam}">${cls} - ${exam}</option>`;
+                });
+            });
+
+            clsSelect.innerHTML = clsOptions;
+            dashSelect.innerHTML = dashOptions;
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('appShell').style.display = 'block';
+
+            generateRows();
+            renderSubjectOptions(clsSelect.value);
+
+            if (id === "ADMIN") {
+                document.getElementById('tab-entry').style.display = 'none';
+                document.getElementById('btn-print-cons').style.display = 'inline-block';
+                switchTab('dash');
+            } else {
+                document.getElementById('btn-print-cons').style.display = 'none';
+                switchTab('entry');
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            if (tab === 'entry') {
+                document.getElementById('entryView').classList.add('active');
+                document.getElementById('tab-entry').classList.add('active');
+            } else {
+                document.getElementById('dashView').classList.add('active');
+                document.getElementById('tab-dash').classList.add('active');
+            }
+        }
+
+        function renderSubjectOptions(className) {
+            const select = document.getElementById('subject');
+            const previous = select.value;
+            const options = isPrimaryReportClass(className) ? primarySubjectOptions : allSubjectOptions;
+            select.innerHTML = '<option value="">Select</option>' + options.map(value => `<option>${value}</option>`).join('');
+            if (options.includes(previous)) select.value = previous;
         }
 
         function generateRows() {
-            let c = document.getElementById('studentContainer'); c.innerHTML = "";
-            for(let i=1; i<=50; i++) { c.innerHTML += `<div class="student-row"><span>Roll No. ${i.toString().padStart(2, '0')}</span><input type="number" class="m-input" data-roll="${i}" placeholder="--"></div>`; }
+            const container = document.getElementById('studentContainer');
+            container.innerHTML = '';
+
+            for (let roll = 1; roll <= 50; roll++) {
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="student-row" data-roll-row="${roll}">
+                        <span>Roll No. ${String(roll).padStart(2, '0')}</span>
+                        <div class="student-mark-controls">
+                            <input type="number" min="0" step="0.01" class="m-input" data-roll="${roll}" placeholder="--">
+                            <label class="absent-toggle" title="Mark this student absent">
+                                <input type="checkbox" class="absent-input" data-roll="${roll}" onchange="toggleAbsent(this)">
+                                <span>Absent</span>
+                            </label>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+
+        function toggleAbsent(checkbox) {
+            const roll = checkbox.dataset.roll;
+            const input = document.querySelector(`.m-input[data-roll="${roll}"]`);
+            const row = document.querySelector(`[data-roll-row="${roll}"]`);
+
+            if (checkbox.checked) {
+                input.value = '';
+                input.disabled = true;
+                row.classList.add('is-absent');
+            } else {
+                input.disabled = false;
+                row.classList.remove('is-absent');
+            }
+        }
+
+        function resetEntryRows() {
+            document.querySelectorAll('.m-input').forEach(input => {
+                input.value = '';
+                input.disabled = false;
+            });
+            document.querySelectorAll('.absent-input').forEach(checkbox => checkbox.checked = false);
+            document.querySelectorAll('[data-roll-row]').forEach(row => row.classList.remove('is-absent'));
+        }
+
+        function handleEntryContextChange(event) {
+            if (event?.target?.id === 'class') renderSubjectOptions(event.target.value);
+            resetEntryRows();
+            entryLoadedKey = '';
+            setEntryStatus('Selection changed. Load existing marks before editing this subject.', 'warning');
+        }
+
+        async function getMasterData(force = false) {
+            if (!force && cachedMasterData) return cachedMasterData;
+            const response = await fetch(`${WEB_APP_URL}?tabName=Master&_=${Date.now()}`);
+            if (!response.ok) throw new Error(`Fetch failed (${response.status})`);
+            const data = await response.json();
+            if (!Array.isArray(data)) throw new Error(data?.error || 'Invalid data received from server.');
+            cachedMasterData = data;
+            return data;
+        }
+
+        async function loadExistingMarks(showMessage = true) {
+            const cls = document.getElementById('class').value;
+            const subjectValue = document.getElementById('subject').value;
+            const exam = document.getElementById('examType').value;
+            const mode = document.getElementById('type').value;
+
+            if (!cls || !subjectValue || !exam || !mode) {
+                alert('Select Class, Subject, Exam and Mode first.');
+                return;
+            }
+
+            const button = document.getElementById('loadExistingBtn');
+            button.disabled = true;
+            button.textContent = 'Loading...';
+            setEntryStatus('Checking existing records...', 'info');
+
+            try {
+                const rawData = await getMasterData(true);
+                resetEntryRows();
+
+                const selectedSubject = normalizeSubjectForStorage(subjectValue, cls);
+                const latestByRoll = new Map();
+                const maxValues = new Set();
+
+                for (let i = 1; i < rawData.length; i++) {
+                    const row = rawData[i];
+                    if (!row) continue;
+
+                    const rowClass = String(row[2] ?? '').trim();
+                    const rowSubject = normalizeSubjectForStorage(row[3], rowClass);
+                    const rowExam = String(row[4] ?? '').trim();
+                    const rowMode = String(row[5] ?? '').trim().toUpperCase();
+                    const roll = normalizeRoll(row[6]);
+
+                    if (rowClass !== cls || rowSubject !== selectedSubject || rowExam !== exam || rowMode !== mode.toUpperCase() || !roll) continue;
+                    latestByRoll.set(roll, row); // Last matching row wins if old duplicates exist.
+                    maxValues.add(Number(row[8]) || 0);
+                }
+
+                latestByRoll.forEach((row, roll) => {
+                    const input = document.querySelector(`.m-input[data-roll="${roll}"]`);
+                    const absent = document.querySelector(`.absent-input[data-roll="${roll}"]`);
+                    if (!input || !absent) return;
+
+                    if (isAbsentValue(row[7])) {
+                        absent.checked = true;
+                        toggleAbsent(absent);
+                    } else {
+                        input.value = String(row[7] ?? '');
+                    }
+                });
+
+                const validMaxValues = [...maxValues].filter(value => value > 0);
+                if (validMaxValues.length === 1) document.getElementById('maxMarks').value = validMaxValues[0];
+
+                entryLoadedKey = contextKey();
+                const count = latestByRoll.size;
+                setEntryStatus(
+                    count ? `${count} existing record(s) loaded. Change values or mark Absent, then Save / Update.` : 'No old records found. New records will be created.',
+                    count ? 'success' : 'info'
+                );
+
+                if (showMessage && validMaxValues.length > 1) {
+                    alert('Warning: old records contain different Max Marks values. Please verify Max Marks before saving.');
+                }
+            } catch (error) {
+                console.error(error);
+                setEntryStatus(`Could not load records: ${error.message}`, 'error');
+                alert(`Could not load existing marks. ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = '↻ Load / Edit Existing Marks';
+            }
+        }
+
+        async function postEntries(entries) {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'upsert', teacherId: currentId, pin: currentPin, entries })
+            });
+
+            const text = await response.text();
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch {
+                throw new Error('Server returned an unreadable response. Redeploy the Apps Script backend.');
+            }
+
+            if (!response.ok || result.ok === false) throw new Error(result.error || 'Save failed.');
+            return result;
         }
 
         async function submitData() {
-            let entries = [];
-            let sub = document.getElementById('subject').value, exam = document.getElementById('examType').value, comp = document.getElementById('type').value, max = document.getElementById('maxMarks').value, cls = document.getElementById('class').value;
-            if(!sub || !max || !cls) return alert("Fill Class, Subject, Max Marks!");
-            
-            document.querySelectorAll('.m-input').forEach(i => { if(i.value && i.value.trim() !== "") entries.push({ teacherId: currentId, class: cls, subject: sub, examType: exam, type: comp, maxMarks: max, rollNo: i.dataset.roll, marks: i.value }); });
-            
-            if(entries.length === 0) return alert("No marks entered!");
-            const btn = document.getElementById('submitBtn'); if(btn.disabled) return;
-            btn.innerText = "Saving..."; btn.disabled = true;
-            
-            try { 
-                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entries) }); 
-                alert("Saved!"); 
-                document.querySelectorAll('.m-input').forEach(i => i.value = ""); 
-            } catch(e) { alert("Error!"); } 
-            finally { setTimeout(() => { btn.innerText = "Submit Records"; btn.disabled = false; }, 3000); }
+            const cls = document.getElementById('class').value;
+            const subjectValue = document.getElementById('subject').value;
+            const exam = document.getElementById('examType').value;
+            const mode = document.getElementById('type').value;
+            const max = Number(document.getElementById('maxMarks').value);
+
+            if (!cls || !subjectValue || !exam || !mode || !Number.isFinite(max) || max <= 0) {
+                alert('Fill Class, Subject, Exam, Mode and valid Max Marks.');
+                return;
+            }
+
+            const entries = [];
+            const errors = [];
+
+            document.querySelectorAll('.m-input').forEach(input => {
+                const roll = input.dataset.roll;
+                const absent = document.querySelector(`.absent-input[data-roll="${roll}"]`).checked;
+                const raw = input.value.trim();
+
+                if (!absent && raw === '') return;
+
+                if (!absent) {
+                    const marks = Number(raw);
+                    if (!Number.isFinite(marks) || marks < 0 || marks > max) {
+                        errors.push(`Roll ${roll}: marks must be between 0 and ${max}.`);
+                        return;
+                    }
+                }
+
+                entries.push({
+                    teacherId: currentId,
+                    class: cls,
+                    subject: normalizeSubjectForStorage(subjectValue, cls),
+                    examType: exam,
+                    type: mode,
+                    maxMarks: max,
+                    rollNo: roll,
+                    marks: absent ? 'AB' : Number(raw),
+                    status: absent ? 'ABSENT' : 'PRESENT'
+                });
+            });
+
+            if (errors.length) {
+                alert(errors.slice(0, 8).join('\n') + (errors.length > 8 ? '\nMore invalid rows exist.' : ''));
+                return;
+            }
+
+            if (!entries.length) {
+                alert('Enter marks or select Absent for at least one student.');
+                return;
+            }
+
+            const button = document.getElementById('submitBtn');
+            if (button.disabled) return;
+            button.disabled = true;
+            button.textContent = 'Saving / Updating...';
+
+            try {
+                const result = await postEntries(entries);
+                cachedMasterData = null;
+                entryLoadedKey = contextKey();
+                setEntryStatus(
+                    `Saved: ${result.inserted || 0} new, ${result.updated || 0} updated, ${result.unchanged || 0} unchanged. Duplicate rows removed: ${result.duplicatesRemoved || 0}.`,
+                    'success'
+                );
+                alert(`Records saved successfully.\nNew: ${result.inserted || 0}\nUpdated: ${result.updated || 0}\nUnchanged: ${result.unchanged || 0}`);
+                await loadExistingMarks(false);
+            } catch (error) {
+                console.error(error);
+                setEntryStatus(`Save failed: ${error.message}`, 'error');
+                alert(`Save failed. ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Save / Update Records';
+            }
+        }
+
+        function recordUniqueKey(cls, subject, exam, mode, roll) {
+            return [
+                String(cls).trim().toUpperCase(),
+                normalizeSubjectForStorage(subject, cls),
+                String(exam).trim().toUpperCase(),
+                String(mode).trim().toUpperCase(),
+                normalizeRoll(roll)
+            ].join('|');
+        }
+
+        function displaySubjectMark(subjectData) {
+            if (!subjectData) return '-';
+            if (subjectData.hasAbsent) return subjectData.obt > 0 ? `${subjectData.obt} + AB` : 'AB';
+            return subjectData.obt;
         }
 
         async function fetchData() {
-            let selection = document.getElementById('tabSelector').value; if(!selection) return alert("Select a report!");
-            let [selectedClass, selectedExam] = selection.split('|'); currentClassView = selectedClass; currentExamView = selectedExam;
-            document.body.classList.toggle('primary-report', isPrimaryReportClass(selectedClass));
-            document.getElementById('pDetails').innerText = "CLASS: " + selectedClass.toUpperCase() + " | EXAM: " + selectedExam.toUpperCase();
-            
-            let fBtn = document.getElementById('fetchBtn'); fBtn.innerText = "Fetching..."; fBtn.disabled = true;
+            const selection = document.getElementById('tabSelector').value;
+            if (!selection) {
+                alert('Select a report!');
+                return;
+            }
+
+            const [selectedClass, selectedExam] = selection.split('|');
+            currentClassView = selectedClass;
+            currentExamView = selectedExam;
+            document.getElementById('pDetails').innerText = `CLASS: ${selectedClass.toUpperCase()} | EXAM: ${selectedExam.toUpperCase()}`;
+
+            const fetchButton = document.getElementById('fetchBtn');
+            fetchButton.textContent = 'Fetching...';
+            fetchButton.disabled = true;
+
             try {
-                let res = await fetch(WEB_APP_URL + "?tabName=Master"); let rawData = await res.json();
-                fBtn.innerText = "Fetch Data"; fBtn.disabled = false;
-                if(!rawData || rawData.error || rawData.length < 2) return alert("No data found!");
-                
-                let students = {}, allSubjects = new Set(), hasData = false;
-                const cIdx=2, sIdx=3, eIdx=4, tIdx=5, rIdx=6, oIdx=7, mIdx=8;
-                
-                for(let i=1; i<rawData.length; i++) {
-                    let row = rawData[i]; if(!row || String(row[cIdx]).trim() !== selectedClass || String(row[eIdx]).trim() !== selectedExam) continue;
-                    let roll = String(row[rIdx] || '').trim(); if(!roll) continue;
-                    let sub = normalizeSubjectForReport(row[sIdx], selectedClass);
-
-                    // Class 1–5 consolidated report contains only these seven fixed subjects.
-                    if (isPrimaryReportClass(selectedClass) && !primarySubjectOrder.includes(sub)) continue;
-
-                    hasData = true;
-                    let mode = String(row[tIdx] || 'Written').trim().toLowerCase();
-                    let max = Number(row[mIdx]) || 0, obt = Number(row[oIdx]) || 0;
-                    
-                    if(!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0 };
-                    if(!students[roll].subs[sub]) students[roll].subs[sub] = { max:0, obt:0, written:'-', oral:'-', practical:'-' };
-                    
-                    students[roll].subs[sub].max += max; students[roll].subs[sub].obt += obt; 
-                    students[roll].totalMax += max; students[roll].totalObt += obt;
-                    
-                    if(mode.includes('oral')) students[roll].subs[sub].oral = students[roll].subs[sub].oral === '-' ? obt : students[roll].subs[sub].oral + obt;
-                    else if(mode.includes('practical')) students[roll].subs[sub].practical = students[roll].subs[sub].practical === '-' ? obt : students[roll].subs[sub].practical + obt;
-                    else students[roll].subs[sub].written = students[roll].subs[sub].written === '-' ? obt : students[roll].subs[sub].written + obt;
-                    
-                    allSubjects.add(sub);
-                }
-                
-                if(!hasData) return alert(`No marks for ${selectedClass} - ${selectedExam}`);
-                
-                let subsArray;
-
-                if (isPrimaryReportClass(selectedClass)) {
-                    // Keep all seven columns visible even when a subject has not been entered yet.
-                    subsArray = [...primarySubjectOrder];
-                } else {
-                    subsArray = Array.from(allSubjects);
-                    subsArray.sort((a, b) => {
-                        let posA = customSubjectOrder.indexOf(a), posB = customSubjectOrder.indexOf(b);
-                        if (posA === -1) posA = 999;
-                        if (posB === -1) posB = 999;
-                        if (posA !== posB) return posA - posB;
-                        return a.localeCompare(b);
-                    });
-                }
-                
-                let rolls = Object.keys(students);
-                rolls.sort((a,b) => students[b].totalObt - students[a].totalObt);
-                let rankMap = {}; let currentRank = 1;
-                let passCount = 0; let failCount = 0; 
-                let subStats = {};
-                
-                subsArray.forEach(sub => subStats[sub] = { highest: 0, max: 0 });
-                
-                rolls.forEach((r, index) => {
-                    if (index > 0 && students[r].totalObt < students[rolls[index-1]].totalObt) currentRank++;
-                    rankMap[r] = currentRank;
-                    let p_val = (students[r].totalObt / students[r].totalMax) * 100;
-                    if(p_val >= 33) passCount++; else failCount++;
-                    subsArray.forEach(sub => {
-                        if(students[r].subs[sub] !== undefined) { 
-                            if(students[r].subs[sub].obt > subStats[sub].highest) {
-                                subStats[sub].highest = students[r].subs[sub].obt;
-                            }
-                            subStats[sub].max = students[r].subs[sub].max;
-                        }
-                    });
-                });
-                
-                globalStudents = students; globalSubsArray = subsArray; globalRankMap = rankMap;
-                
-                document.getElementById('analyticsPanel').style.display = 'grid';
-                document.getElementById('passFailText').innerHTML = `<span class="text-green">PASS: ${passCount}</span><br><span class="text-red">FAIL: ${failCount}</span>`;
-                
-                let topHtml = "";
-                rolls.slice(0, 3).forEach((r, idx) => { topHtml += `<div>Rank ${idx+1}: Roll ${r} (${((students[r].totalObt / students[r].totalMax) * 100).toFixed(1)}%)</div>`; });
-                document.getElementById('topRankersList').innerHTML = topHtml || "N/A";
-                
-                let highHtml = "";
-                subsArray.forEach(sub => {
-                    highHtml += `<div>${sub}: ${subStats[sub].highest} / ${subStats[sub].max}</div>`;
-                });
-                document.getElementById('subjectHighsList').innerHTML = highHtml || "N/A";
-                
-                let h = "<tr><th>ROLL NO</th>";
-                subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
-
-                if (isPrimaryReportClass(selectedClass)) {
-                    h += "<th class='highlight-col'>TOTAL</th><th class='perc-col'>PERCENTAGE</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
-                } else {
-                    h += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBT</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
+                const rawData = await getMasterData(true);
+                if (!rawData || rawData.length < 2) {
+                    alert('No data found!');
+                    return;
                 }
 
-                document.getElementById('tHead').innerHTML = h;
-                
-                let b = ""; let displayRolls = Object.keys(students).sort((a,b) => Number(a) - Number(b));
-                let btnText = currentId === "ADMIN" ? "View/Print" : "View";
-                
-                displayRolls.forEach(roll => {
-                    let s = students[roll]; let rawP = (s.totalObt / s.totalMax) * 100;
-                    let p = s.totalMax > 0 ? rawP.toFixed(2) + "%" : "0%"; let isFail = rawP < 33;
-                    
-                    b += `<tr class="${isFail ? 'fail-row' : ''}"><td>${roll}</td>`;
-                    subsArray.forEach(sub => { b += `<td>${s.subs[sub] !== undefined ? s.subs[sub].obt : '-'}</td>`; });
-                    let failMark = isFail ? "<span style='color:#b91c1c;'> (F)</span>" : "";
+                const cIdx = 2, sIdx = 3, eIdx = 4, tIdx = 5, rIdx = 6, oIdx = 7, mIdx = 8;
+                const latestRecords = new Map();
 
-                    if (isPrimaryReportClass(selectedClass)) {
-                        b += `<td class='highlight-col'>${s.totalObt} / ${s.totalMax}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
-                    } else {
-                        b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
+                // De-duplicate old sheet rows in the browser too: the latest matching row is used.
+                for (let i = 1; i < rawData.length; i++) {
+                    const row = rawData[i];
+                    if (!row || String(row[cIdx] ?? '').trim() !== selectedClass || String(row[eIdx] ?? '').trim() !== selectedExam) continue;
+                    const roll = normalizeRoll(row[rIdx]);
+                    if (!roll) continue;
+                    const key = recordUniqueKey(selectedClass, row[sIdx], selectedExam, row[tIdx], roll);
+                    latestRecords.set(key, { row, sourceIndex: i });
+                }
+
+                const students = {};
+                const allSubjects = new Set();
+                const studentRecords = {};
+
+                latestRecords.forEach(({ row }) => {
+                    const roll = normalizeRoll(row[rIdx]);
+                    const subject = normalizeSubjectForReport(row[sIdx], selectedClass);
+                    if (isPrimaryReportClass(selectedClass) && !primarySubjectOrder.includes(subject)) return;
+
+                    const mode = String(row[tIdx] || 'Written').trim();
+                    const modeLower = mode.toLowerCase();
+                    const rawMark = row[oIdx];
+                    const absent = isAbsentValue(rawMark);
+                    const max = Number(row[mIdx]) || 0;
+                    const obtained = absent ? 0 : (Number(rawMark) || 0);
+
+                    if (!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0, hasAbsent: false };
+                    if (!students[roll].subs[subject]) {
+                        students[roll].subs[subject] = { max: 0, obt: 0, written: '-', oral: '-', practical: '-', hasAbsent: false };
                     }
 
-                    b += `<td class='action-col'><button class="btn-small" onclick="viewIndividualReport('${roll}')">${btnText}</button></td></tr>`;
+                    const subData = students[roll].subs[subject];
+                    subData.max += max;
+                    subData.obt += obtained;
+                    subData.hasAbsent = subData.hasAbsent || absent;
+                    students[roll].totalMax += max;
+                    students[roll].totalObt += obtained;
+                    students[roll].hasAbsent = students[roll].hasAbsent || absent;
+
+                    const componentValue = absent ? 'AB' : obtained;
+                    if (modeLower.includes('oral')) subData.oral = componentValue;
+                    else if (modeLower.includes('practical')) subData.practical = componentValue;
+                    else subData.written = componentValue;
+
+                    allSubjects.add(subject);
+
+                    if (!studentRecords[roll]) studentRecords[roll] = {};
+                    const editKey = `${subject}|${mode.toUpperCase()}`;
+                    studentRecords[roll][editKey] = {
+                        subject,
+                        mode,
+                        max,
+                        marks: absent ? 'AB' : obtained,
+                        absent
+                    };
                 });
-                document.getElementById('tBody').innerHTML = b;
-            } catch(e) { alert("Error!"); fBtn.innerText = "Fetch Data"; fBtn.disabled = false; }
+
+                if (!Object.keys(students).length) {
+                    alert(`No marks for ${selectedClass} - ${selectedExam}`);
+                    return;
+                }
+
+                let subjects;
+                if (isPrimaryReportClass(selectedClass)) {
+                    subjects = [...primarySubjectOrder];
+                } else {
+                    subjects = [...allSubjects].sort((a, b) => {
+                        let posA = customSubjectOrder.indexOf(a);
+                        let posB = customSubjectOrder.indexOf(b);
+                        if (posA === -1) posA = 999;
+                        if (posB === -1) posB = 999;
+                        return posA !== posB ? posA - posB : a.localeCompare(b);
+                    });
+                }
+
+                const rankedRolls = Object.keys(students).sort((a, b) => {
+                    const pa = students[a].totalMax > 0 ? students[a].totalObt / students[a].totalMax : 0;
+                    const pb = students[b].totalMax > 0 ? students[b].totalObt / students[b].totalMax : 0;
+                    return pb - pa || students[b].totalObt - students[a].totalObt;
+                });
+
+                const rankMap = {};
+                let lastPercentage = null;
+                let currentRank = 0;
+                let passCount = 0;
+                let failCount = 0;
+                const subjectStats = {};
+                subjects.forEach(subject => subjectStats[subject] = { highest: 0, max: 0 });
+
+                rankedRolls.forEach((roll, index) => {
+                    const student = students[roll];
+                    const percentage = student.totalMax > 0 ? (student.totalObt / student.totalMax) * 100 : 0;
+                    if (lastPercentage === null || Math.abs(percentage - lastPercentage) > 0.000001) currentRank = index + 1;
+                    rankMap[roll] = currentRank;
+                    lastPercentage = percentage;
+
+                    if (percentage >= 33) passCount++; else failCount++;
+                    subjects.forEach(subject => {
+                        const data = student.subs[subject];
+                        if (!data) return;
+                        subjectStats[subject].highest = Math.max(subjectStats[subject].highest, data.obt);
+                        subjectStats[subject].max = Math.max(subjectStats[subject].max, data.max);
+                    });
+                });
+
+                globalStudents = students;
+                globalSubsArray = subjects;
+                globalRankMap = rankMap;
+                globalStudentRecords = studentRecords;
+
+                document.getElementById('analyticsPanel').style.display = 'grid';
+                document.getElementById('passFailText').innerHTML = `<span class="text-green">PASS: ${passCount}</span><br><span class="text-red">FAIL: ${failCount}</span>`;
+
+                document.getElementById('topRankersList').innerHTML = rankedRolls.slice(0, 3).map(roll => {
+                    const percentage = students[roll].totalMax > 0 ? (students[roll].totalObt / students[roll].totalMax) * 100 : 0;
+                    return `<div>Rank ${rankMap[roll]}: Roll ${roll} (${percentage.toFixed(1)}%)</div>`;
+                }).join('') || 'N/A';
+
+                document.getElementById('subjectHighsList').innerHTML = subjects.map(subject =>
+                    `<div>${subject}: ${subjectStats[subject].highest} / ${subjectStats[subject].max}</div>`
+                ).join('') || 'N/A';
+
+                let header = '<tr><th>ROLL NO</th>';
+                subjects.forEach(subject => header += `<th>${subject}</th>`);
+                if (isPrimaryReportClass(selectedClass)) {
+                    header += "<th class='highlight-col'>TOTAL</th><th class='perc-col'>PERCENTAGE</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
+                } else {
+                    header += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBT</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
+                }
+                document.getElementById('tHead').innerHTML = header;
+
+                const displayRolls = Object.keys(students).sort((a, b) => Number(a) - Number(b));
+                const viewText = currentId === 'ADMIN' ? 'View/Print' : 'View';
+                let body = '';
+
+                displayRolls.forEach(roll => {
+                    const student = students[roll];
+                    const percentageValue = student.totalMax > 0 ? (student.totalObt / student.totalMax) * 100 : 0;
+                    const percentage = `${percentageValue.toFixed(2)}%`;
+                    const fail = percentageValue < 33;
+
+                    body += `<tr class="${fail ? 'fail-row' : ''}"><td>${roll}</td>`;
+                    subjects.forEach(subject => {
+                        const data = student.subs[subject];
+                        const absentClass = data?.hasAbsent ? 'absent-cell' : '';
+                        body += `<td class="${absentClass}">${displaySubjectMark(data)}</td>`;
+                    });
+
+                    const failMark = fail ? "<span style='color:#b91c1c;'> (F)</span>" : '';
+                    if (isPrimaryReportClass(selectedClass)) {
+                        body += `<td class="highlight-col">${student.totalObt} / ${student.totalMax}</td><td class="perc-col">${percentage}${failMark}</td><td class="rank-col"># ${rankMap[roll]}</td>`;
+                    } else {
+                        body += `<td class="highlight-col">${student.totalMax}</td><td class="highlight-col">${student.totalObt}</td><td class="perc-col">${percentage}${failMark}</td><td class="rank-col"># ${rankMap[roll]}</td>`;
+                    }
+
+                    body += `<td class="action-col"><div class="action-buttons">
+                        <button class="btn-small" onclick="viewIndividualReport('${roll}')">${viewText}</button>
+                        <button class="btn-small btn-edit" onclick="openStudentEditModal('${roll}')">Edit</button>
+                    </div></td></tr>`;
+                });
+
+                document.getElementById('tBody').innerHTML = body;
+            } catch (error) {
+                console.error(error);
+                alert(`Error loading report: ${error.message}`);
+            } finally {
+                fetchButton.textContent = 'Fetch Data';
+                fetchButton.disabled = false;
+            }
         }
 
         function viewIndividualReport(roll) {
-            let s = globalStudents[roll]; if(!s) return;
-            document.getElementById('irRoll').innerText = "Roll No: " + roll; document.getElementById('irClass').innerText = "Class: " + currentClassView; document.getElementById('irExam').innerText = "Exam: " + currentExamView;
-            
-            let tbody = "";
-            globalSubsArray.forEach(sub => {
-                let subjectData = s.subs[sub] || { written: '-', oral: '-', practical: '-', max: 0, obt: 0 };
-                tbody += `<tr><td>${sub}</td><td>${subjectData.written}</td><td>${subjectData.oral}</td><td>${subjectData.practical}</td><td>${s.subs[sub] ? subjectData.max : '-'}</td><td>${s.subs[sub] ? subjectData.obt : '-'}</td></tr>`;
-            });
-            document.getElementById('irTableBody').innerHTML = tbody;
-            
-            let rawP = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;
-            document.getElementById('irTotal').innerText = `Total: ${s.totalObt} / ${s.totalMax}`; document.getElementById('irPerc').innerText = `Percentage: ${rawP.toFixed(2)}%`;
+            const student = globalStudents[roll];
+            if (!student) return;
+
+            document.getElementById('irRoll').innerText = `Roll No: ${roll}`;
+            document.getElementById('irClass').innerText = `Class: ${currentClassView}`;
+            document.getElementById('irExam').innerText = `Exam: ${currentExamView}`;
+
+            document.getElementById('irTableBody').innerHTML = globalSubsArray.map(subject => {
+                const data = student.subs[subject] || { written: '-', oral: '-', practical: '-', max: '-', obt: '-', hasAbsent: false };
+                const obtainedDisplay = data.hasAbsent ? (data.obt > 0 ? `${data.obt} + AB` : 'AB') : data.obt;
+                return `<tr><td>${subject}</td><td>${data.written}</td><td>${data.oral}</td><td>${data.practical}</td><td>${data.max}</td><td>${obtainedDisplay}</td></tr>`;
+            }).join('');
+
+            const percentage = student.totalMax > 0 ? (student.totalObt / student.totalMax) * 100 : 0;
+            document.getElementById('irTotal').innerText = `Total: ${student.totalObt} / ${student.totalMax}`;
+            document.getElementById('irPerc').innerText = `Percentage: ${percentage.toFixed(2)}%`;
             document.getElementById('irRank').innerText = `Class Rank: #${globalRankMap[roll]}`;
-            
-            let resEl = document.getElementById('irResult');
-            if(rawP < 33) { resEl.innerText = "Result: NEEDS IMPROVEMENT"; resEl.style.color = "#dc2626"; } 
-            else { resEl.innerText = "Result: PASSED"; resEl.style.color = "#16a34a"; }
-            
-            document.getElementById('dashMain').style.display = 'none'; document.getElementById('individualReportContainer').style.display = 'block';
-            document.getElementById('btn-print-indv').style.display = currentId === "ADMIN" ? "inline-block" : "none";
+
+            const result = document.getElementById('irResult');
+            if (percentage < 33) {
+                result.innerText = 'Result: NEEDS IMPROVEMENT';
+                result.style.color = '#dc2626';
+            } else {
+                result.innerText = 'Result: PASSED';
+                result.style.color = '#16a34a';
+            }
+
+            document.getElementById('dashMain').style.display = 'none';
+            document.getElementById('individualReportContainer').style.display = 'block';
+            document.getElementById('btn-print-indv').style.display = currentId === 'ADMIN' ? 'inline-block' : 'none';
         }
 
-        function closeIndividualView() { document.getElementById('dashMain').style.display = 'block'; document.getElementById('individualReportContainer').style.display = 'none'; document.body.classList.remove('print-indv'); }
+        function closeIndividualView() {
+            document.getElementById('dashMain').style.display = 'block';
+            document.getElementById('individualReportContainer').style.display = 'none';
+            document.body.classList.remove('print-indv');
+        }
+
+        function subjectSortPosition(subject) {
+            const primary = primarySubjectOrder.indexOf(subject);
+            if (primary !== -1) return primary;
+            const full = customSubjectOrder.indexOf(subject);
+            return full === -1 ? 999 : full;
+        }
+
+        function openStudentEditModal(roll) {
+            const records = Object.values(globalStudentRecords[roll] || {}).sort((a, b) =>
+                subjectSortPosition(a.subject) - subjectSortPosition(b.subject) || a.mode.localeCompare(b.mode)
+            );
+
+            if (!records.length) {
+                alert('No editable records found for this student.');
+                return;
+            }
+
+            editingRoll = roll;
+            document.getElementById('editModalTitle').textContent = `Edit Marks — Roll ${roll} | ${currentClassView} | ${currentExamView}`;
+            document.getElementById('editModalBody').innerHTML = records.map((record, index) => `
+                <tr data-edit-index="${index}" data-subject="${record.subject}" data-mode="${record.mode}" class="${record.absent ? 'modal-absent' : ''}">
+                    <td>${record.subject}</td>
+                    <td>${record.mode}</td>
+                    <td><input type="number" min="0.01" step="0.01" class="edit-max" value="${record.max}"></td>
+                    <td><input type="number" min="0" step="0.01" class="edit-mark" value="${record.absent ? '' : record.marks}" ${record.absent ? 'disabled' : ''}></td>
+                    <td><input type="checkbox" class="edit-absent" ${record.absent ? 'checked' : ''} onchange="toggleModalAbsent(this)"></td>
+                </tr>
+            `).join('');
+
+            document.getElementById('studentEditModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function toggleModalAbsent(checkbox) {
+            const row = checkbox.closest('tr');
+            const marksInput = row.querySelector('.edit-mark');
+            if (checkbox.checked) {
+                marksInput.value = '';
+                marksInput.disabled = true;
+                row.classList.add('modal-absent');
+            } else {
+                marksInput.disabled = false;
+                row.classList.remove('modal-absent');
+            }
+        }
+
+        function closeStudentEditModal() {
+            document.getElementById('studentEditModal').classList.remove('open');
+            document.body.style.overflow = '';
+            editingRoll = '';
+        }
+
+        function handleModalBackdrop(event) {
+            if (event.target.id === 'studentEditModal') closeStudentEditModal();
+        }
+
+        async function saveStudentEdits() {
+            const rows = [...document.querySelectorAll('#editModalBody tr')];
+            const entries = [];
+            const errors = [];
+
+            rows.forEach(row => {
+                const subject = row.dataset.subject;
+                const mode = row.dataset.mode;
+                const max = Number(row.querySelector('.edit-max').value);
+                const absent = row.querySelector('.edit-absent').checked;
+                const raw = row.querySelector('.edit-mark').value.trim();
+
+                if (!Number.isFinite(max) || max <= 0) {
+                    errors.push(`${subject} (${mode}): invalid Max Marks.`);
+                    return;
+                }
+
+                if (!absent) {
+                    const marks = Number(raw);
+                    if (raw === '' || !Number.isFinite(marks) || marks < 0 || marks > max) {
+                        errors.push(`${subject} (${mode}): marks must be between 0 and ${max}.`);
+                        return;
+                    }
+                }
+
+                entries.push({
+                    teacherId: currentId,
+                    class: currentClassView,
+                    subject,
+                    examType: currentExamView,
+                    type: mode,
+                    maxMarks: max,
+                    rollNo: editingRoll,
+                    marks: absent ? 'AB' : Number(raw),
+                    status: absent ? 'ABSENT' : 'PRESENT'
+                });
+            });
+
+            if (errors.length) {
+                alert(errors.join('\n'));
+                return;
+            }
+
+            const button = document.getElementById('saveStudentEditBtn');
+            button.disabled = true;
+            button.textContent = 'Saving...';
+
+            try {
+                const result = await postEntries(entries);
+                cachedMasterData = null;
+                alert(`Changes saved. Updated: ${result.updated || 0}, New: ${result.inserted || 0}`);
+                closeStudentEditModal();
+                await fetchData();
+            } catch (error) {
+                console.error(error);
+                alert(`Could not save changes. ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Save Changes';
+            }
+        }
+
         function syncPrintAnalytics() {
             const copyHtml = (sourceId, targetId) => {
                 const source = document.getElementById(sourceId);
                 const target = document.getElementById(targetId);
                 if (source && target) target.innerHTML = source.innerHTML;
             };
-
             copyHtml('passFailText', 'printPassFailText');
             copyHtml('topRankersList', 'printTopRankersList');
             copyHtml('subjectHighsList', 'printSubjectHighsList');
@@ -808,25 +1314,24 @@
         function printConsolidated() {
             syncPrintAnalytics();
             document.body.classList.add('print-cons');
-
-            // Force the browser to calculate the print-only panel before opening print preview.
             const printPanel = document.getElementById('printAnalyticsPanel');
             if (printPanel) void printPanel.offsetHeight;
-
-            window.addEventListener('afterprint', () => {
-                document.body.classList.remove('print-cons');
-            }, { once: true });
-
+            window.addEventListener('afterprint', () => document.body.classList.remove('print-cons'), { once: true });
             window.print();
         }
 
         function executeIndividualPrint() {
             document.body.classList.add('print-indv');
-            window.addEventListener('afterprint', () => {
-                document.body.classList.remove('print-indv');
-            }, { once: true });
+            window.addEventListener('afterprint', () => document.body.classList.remove('print-indv'), { once: true });
             window.print();
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ['class', 'subject', 'examType', 'type'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.addEventListener('change', handleEntryContextChange);
+            });
+        });
     </script>
 </body>
 </html>

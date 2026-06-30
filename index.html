@@ -666,6 +666,161 @@
             }
         }
 
+
+        /* FINAL A4 PRINT BALANCE FIX
+           - prevents left/right clipping for non-primary classes
+           - fits up to 35 students on one A4 landscape page
+           - keeps Rank, Percentage, Max and Obtained visible
+        */
+        @page {
+            size: A4 landscape;
+            margin: 4mm;
+        }
+
+        @media print {
+            body.print-cons .dashboard-table-wrap {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: visible !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+            }
+
+            body.print-cons #resTable {
+                display: table !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                table-layout: fixed !important;
+                border-collapse: collapse !important;
+                margin: 0 !important;
+            }
+
+            /* Remove every screen-only fixed/minimum column width before printing. */
+            body.print-cons #resTable th,
+            body.print-cons #resTable td,
+            body.print-cons #resTable .roll-col,
+            body.print-cons #resTable .subject-col,
+            body.print-cons #resTable .summary-col,
+            body.print-cons #resTable .percentage-col,
+            body.print-cons #resTable .rank-col {
+                min-width: 0 !important;
+                max-width: none !important;
+                box-sizing: border-box !important;
+                position: static !important;
+                box-shadow: none !important;
+            }
+
+            /* Generic reports (Playgroup/LKG/UKG/Class 6-12): reserve compact summary columns;
+               remaining width is shared equally by the subject columns. */
+            body.print-cons:not(.primary-report) #resTable .roll-col { width: 5.5% !important; }
+            body.print-cons:not(.primary-report) #resTable .summary-col { width: 5.5% !important; }
+            body.print-cons:not(.primary-report) #resTable .percentage-col { width: 7.5% !important; }
+            body.print-cons:not(.primary-report) #resTable .rank-col { width: 6% !important; }
+            body.print-cons:not(.primary-report) #resTable .subject-col { width: auto !important; }
+
+            body.print-cons #resTable th:first-child,
+            body.print-cons #resTable td:first-child {
+                border-left: 1px solid #000 !important;
+            }
+
+            body.print-cons #resTable th:last-child:not(.action-col),
+            body.print-cons #resTable td:last-child:not(.action-col),
+            body.print-cons #resTable .rank-col {
+                border-right: 1px solid #000 !important;
+            }
+
+            /* Compact one-page mode is enabled by JavaScript only when the report has <= 35 rows. */
+            body.print-cons.print-fit-one .print-only-header {
+                margin: 0 0 1.4mm 0 !important;
+                padding-bottom: 1mm !important;
+                border-bottom-width: 1.2px !important;
+            }
+
+            body.print-cons.print-fit-one .print-only-header h1 {
+                font-size: 18px !important;
+                line-height: 1 !important;
+                margin: 0 !important;
+            }
+
+            body.print-cons.print-fit-one .print-only-header h3 {
+                font-size: 10px !important;
+                line-height: 1 !important;
+                margin: 1px 0 !important;
+            }
+
+            body.print-cons.print-fit-one .print-only-header p {
+                font-size: 8.5px !important;
+                line-height: 1 !important;
+                margin: 0 !important;
+            }
+
+            body.print-cons.print-fit-one #printAnalyticsPanel.print-analytics-panel {
+                grid-template-columns: .72fr 1fr 1.45fr !important;
+                gap: 1.4mm !important;
+                margin: 0 0 1.5mm 0 !important;
+            }
+
+            body.print-cons.print-fit-one #printAnalyticsPanel .stat-box {
+                min-height: 11mm !important;
+                padding: .9mm 1.3mm !important;
+                border-width: 1px !important;
+            }
+
+            body.print-cons.print-fit-one #printAnalyticsPanel .stat-box h4 {
+                font-size: 7.5px !important;
+                line-height: 1 !important;
+                margin: 0 0 .45mm 0 !important;
+                padding: 0 0 .35mm 0 !important;
+            }
+
+            body.print-cons.print-fit-one #printAnalyticsPanel .stat-box p,
+            body.print-cons.print-fit-one #printAnalyticsPanel .stat-box div {
+                font-size: 7.4px !important;
+                line-height: 1.05 !important;
+            }
+
+            body.print-cons.print-fit-one #printSubjectHighsList {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                column-gap: 1.4mm !important;
+                row-gap: .15mm !important;
+            }
+
+            body.print-cons.print-fit-one #resTable th {
+                height: auto !important;
+                padding: 2px 1.5px !important;
+                font-size: 8.6px !important;
+                line-height: 1 !important;
+                white-space: normal !important;
+            }
+
+            body.print-cons.print-fit-one #resTable td {
+                height: auto !important;
+                padding: 2px 1.5px !important;
+                font-size: 9.5px !important;
+                line-height: 1 !important;
+                white-space: nowrap !important;
+            }
+
+            body.print-cons.print-fit-one #resTable tr {
+                height: auto !important;
+                min-height: 0 !important;
+            }
+
+            /* Primary classes keep their fixed 11-column print order and exact 100% width. */
+            body.primary-report.print-cons #resTable th:nth-child(1),
+            body.primary-report.print-cons #resTable td:nth-child(1) { width: 6% !important; }
+            body.primary-report.print-cons #resTable th:nth-child(n+2):nth-child(-n+8),
+            body.primary-report.print-cons #resTable td:nth-child(n+2):nth-child(-n+8) { width: 8.5% !important; }
+            body.primary-report.print-cons #resTable th:nth-child(9),
+            body.primary-report.print-cons #resTable td:nth-child(9) { width: 13.5% !important; }
+            body.primary-report.print-cons #resTable th:nth-child(10),
+            body.primary-report.print-cons #resTable td:nth-child(10) { width: 12% !important; }
+            body.primary-report.print-cons #resTable th:nth-child(11),
+            body.primary-report.print-cons #resTable td:nth-child(11) { width: 9% !important; }
+        }
+
     </style>
 </head>
 <body>
@@ -1750,10 +1905,18 @@
 
         function printConsolidated() {
             syncPrintAnalytics();
+
+            const rowCount = document.querySelectorAll('#tBody tr').length;
             document.body.classList.add('print-cons');
+            document.body.classList.toggle('print-fit-one', rowCount > 0 && rowCount <= 35);
+
             const printPanel = document.getElementById('printAnalyticsPanel');
             if (printPanel) void printPanel.offsetHeight;
-            window.addEventListener('afterprint', () => document.body.classList.remove('print-cons'), { once: true });
+
+            window.addEventListener('afterprint', () => {
+                document.body.classList.remove('print-cons', 'print-fit-one');
+            }, { once: true });
+
             window.print();
         }
 

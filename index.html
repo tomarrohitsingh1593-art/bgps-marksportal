@@ -142,8 +142,68 @@
                 margin: 0 !important;
             }
 
-            /* Analytics cards are intentionally not printed. This leaves more room for readable marks. */
-            body.print-cons .analytics-panel { display: none !important; }
+            /* Keep consolidated analytics visible in print without shrinking the marks table. */
+            body.print-cons #analyticsPanel.analytics-panel {
+                display: grid !important;
+                grid-template-columns: 0.72fr 1fr 1.38fr !important;
+                gap: 3mm !important;
+                width: 100% !important;
+                margin: 0 0 5mm 0 !important;
+                padding: 0 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            body.print-cons #analyticsPanel .stat-box {
+                display: block !important;
+                min-width: 0 !important;
+                background: #f4f7fb !important;
+                color: #000 !important;
+                border: 1.4px solid #334155 !important;
+                border-radius: 3px !important;
+                box-shadow: none !important;
+                padding: 3mm 3.5mm !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body.print-cons #analyticsPanel .stat-box h4 {
+                color: #111827 !important;
+                border-bottom: 1px solid #94a3b8 !important;
+                margin: 0 0 2mm 0 !important;
+                padding: 0 0 1.4mm 0 !important;
+                font-family: 'Georgia', serif !important;
+                font-size: 11px !important;
+                line-height: 1.15 !important;
+                font-weight: 900 !important;
+            }
+
+            body.print-cons #analyticsPanel .stat-box p,
+            body.print-cons #analyticsPanel .stat-box div {
+                color: #111827 !important;
+                font-size: 10.5px !important;
+                line-height: 1.28 !important;
+                font-weight: 700 !important;
+                margin: 0 !important;
+            }
+
+            body.print-cons #analyticsPanel .text-green {
+                color: #166534 !important;
+                font-weight: 900 !important;
+            }
+
+            body.print-cons #analyticsPanel .text-red {
+                color: #b91c1c !important;
+                font-weight: 900 !important;
+            }
+
+            /* Put subject-highest values in two compact columns in print. */
+            body.print-cons #subjectHighsList {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                column-gap: 4mm !important;
+                row-gap: 0.7mm !important;
+            }
 
             body.print-cons table {
                 width: 100% !important;

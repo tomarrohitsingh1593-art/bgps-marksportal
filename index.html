@@ -590,6 +590,82 @@
             }
             body.print-indv .ir-box { border: 2px solid #000 !important; }
         }
+
+
+        /* FINAL PRINT FIX: remove screen row heights while printing.
+           This keeps A4 landscape readable and allows many more students per page. */
+        @media print {
+            body.print-cons .print-only-header {
+                margin-bottom: 3mm !important;
+                padding-bottom: 2mm !important;
+            }
+
+            body.print-cons #printAnalyticsPanel.print-analytics-panel {
+                gap: 2mm !important;
+                margin-bottom: 3mm !important;
+            }
+
+            body.print-cons #printAnalyticsPanel .stat-box {
+                min-height: 16mm !important;
+                padding: 1.7mm 2.2mm !important;
+            }
+
+            body.print-cons #printAnalyticsPanel .stat-box h4 {
+                margin-bottom: 0.8mm !important;
+                padding-bottom: 0.7mm !important;
+                font-size: 9.5px !important;
+            }
+
+            body.print-cons #printAnalyticsPanel .stat-box p,
+            body.print-cons #printAnalyticsPanel .stat-box div {
+                font-size: 9px !important;
+                line-height: 1.12 !important;
+            }
+
+            /* Screen CSS had 62px header and 48px body rows. Reset those for print. */
+            body.print-cons #resTable th,
+            body.print-cons #resTable td {
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+            }
+
+            body.print-cons #resTable th {
+                padding: 3.2px 2px !important;
+                font-size: 10px !important;
+                line-height: 1.08 !important;
+                white-space: normal !important;
+            }
+
+            body.print-cons #resTable td {
+                padding: 3.2px 2px !important;
+                font-size: 11px !important;
+                line-height: 1.08 !important;
+            }
+
+            body.primary-report.print-cons #resTable th {
+                padding: 3.5px 2px !important;
+                font-size: 10.5px !important;
+            }
+
+            body.primary-report.print-cons #resTable td {
+                padding: 3.5px 2px !important;
+                font-size: 11.5px !important;
+            }
+
+            /* Keep headings repeated, but do not force oversized rows. */
+            body.print-cons #resTable thead {
+                display: table-header-group !important;
+            }
+
+            body.print-cons #resTable tr {
+                height: auto !important;
+                min-height: 0 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+        }
+
     </style>
 </head>
 <body>

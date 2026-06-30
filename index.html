@@ -20,7 +20,7 @@
         .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), #e6b800); color: var(--navy); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; transition: 0.2s;}
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(246,201,14,0.4); }
         .btn-small { background: var(--blue); color: var(--navy); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; text-transform: uppercase; }
-        .app-shell { max-width: 1100px; margin: 0 auto; display: none; }
+        .app-shell { width: 100%; max-width: 1440px; margin: 0 auto; display: none; }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #d6e4f2; cursor: pointer; }
         .tab-btn.active { background: var(--gold); color: var(--navy); font-weight: 700; }
@@ -35,10 +35,15 @@
         .fail-row td { background: #ffe8e8 !important; color: #7f1d1d !important; }
         .fail-row { border-left: 4px solid #dc2626 !important; }
         
-        .analytics-panel { display: none; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: var(--mid); border: 1px solid var(--border); padding: 15px; border-radius: 8px; }
+        .analytics-panel { display: none; grid-template-columns: minmax(190px,.72fr) minmax(250px,1fr) minmax(390px,1.45fr); gap: 15px; margin-bottom: 14px; align-items: stretch; }
+        .stat-box { background: var(--mid); border: 1px solid var(--border); padding: 15px; border-radius: 10px; min-width: 0; }
         .stat-box h4 { color: var(--gold); margin-bottom: 8px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
         .stat-box div, .stat-box p { font-size: 14px; color: var(--white); font-family: 'Inconsolata', monospace; margin-bottom: 3px; }
+        #subjectHighsList { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:3px 14px; }
+        .report-meta { display:none; grid-template-columns:repeat(4,minmax(120px,1fr)); gap:8px; margin:-2px 0 14px; }
+        .report-meta.visible { display:grid; }
+        .meta-chip { background:rgba(234,244,255,.10); border:1px solid rgba(169,199,227,.35); border-radius:8px; padding:8px 10px; font-family:'Inconsolata',monospace; font-size:12px; color:#dbeafe; }
+        .meta-chip strong { color:#fff; }
         .text-green { color: var(--green); font-weight: bold; }
         .text-red { color: var(--red); font-weight: bold; }
 
@@ -50,6 +55,38 @@
         .highlight-col { background: #fff5bf !important; color: #6b4f00 !important; font-weight: 900; }
         .perc-col { background: #d9f2ff !important; color: #075985 !important; font-weight: 900; font-size: 14px; }
         .rank-col { background: #ede9fe !important; color: #5b21b6 !important; font-weight: 900; }
+
+        /* Professional dashboard table: equal subject columns, fixed summary columns, sticky Roll and Action. */
+        .dashboard-table-wrap { width:100%; overflow:auto; border:1px solid #6f9cc5; border-radius:10px; background:#f8fbff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.35); scrollbar-gutter:stable; }
+        #resTable { width:max-content; min-width:100%; table-layout:fixed; margin:0; border-radius:0; overflow:visible; }
+        #resTable th, #resTable td { box-sizing:border-box; vertical-align:middle; }
+        #resTable th { height:58px; padding:7px 5px; line-height:1.12; white-space:normal; overflow-wrap:anywhere; word-break:normal; }
+        #resTable td { height:48px; padding:7px 5px; white-space:nowrap; }
+        #resTable .subject-col { width:104px; min-width:104px; max-width:104px; }
+        #resTable .roll-col { width:76px; min-width:76px; max-width:76px; position:sticky; left:0; z-index:4; box-shadow:2px 0 0 rgba(69,112,151,.45); }
+        #resTable th.roll-col { z-index:7; background:#244f7c; }
+        #resTable td.roll-col { background:#f8fbff; }
+        #resTable tbody tr:nth-child(even) td.roll-col { background:#eaf4ff; }
+        #resTable .summary-col { width:78px; min-width:78px; max-width:78px; }
+        #resTable .percentage-col { width:94px; min-width:94px; max-width:94px; }
+        #resTable .rank-col { width:72px; min-width:72px; max-width:72px; }
+        #resTable .action-col { width:118px; min-width:118px; max-width:118px; position:sticky; right:0; z-index:4; box-shadow:-2px 0 0 rgba(69,112,151,.45); background:#eef6ff !important; }
+        #resTable th.action-col { z-index:7; background:#244f7c !important; color:#fff !important; }
+        #resTable tbody tr:nth-child(even) td.action-col { background:#e2effb !important; }
+        #resTable tbody tr:hover td:not(.highlight-col):not(.perc-col):not(.rank-col):not(.absent-cell) { background:#dceeff; }
+        #resTable tbody tr:hover td.roll-col { background:#dceeff; }
+        #resTable .subject-header { display:flex; align-items:center; justify-content:center; min-height:40px; width:100%; }
+        #resTable .missing-cell { background:#fff7ed !important; color:#9a3412 !important; font-size:10px; letter-spacing:.2px; }
+        #resTable tr.incomplete-row td { border-top-color:#f59e0b; border-bottom-color:#f59e0b; }
+        #resTable tr.incomplete-row td.roll-col { border-left:4px solid #f59e0b; }
+        .action-buttons { display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:nowrap; }
+        #resTable .btn-small { padding:6px 8px; min-width:45px; font-size:10px; }
+
+        @media (max-width: 1000px) {
+            .analytics-panel { grid-template-columns:1fr; }
+            #subjectHighsList { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .report-meta { grid-template-columns:repeat(2,minmax(120px,1fr)); }
+        }
 
         #individualReportContainer { display: none; margin-top: 30px; }
         #individualReport { background: #ffffff; color: #000000; padding: 30px; border: 3px solid var(--navy); border-radius: 12px; font-family: 'Georgia', serif; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
@@ -82,7 +119,7 @@
         .student-row.is-absent { background:#fff1f2; border-left:4px solid #dc2626; }
         .student-row.is-absent .m-input { background:#f1f5f9; color:#94a3b8; }
         .m-input:disabled { cursor:not-allowed; opacity:.85; }
-        .action-buttons { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+        .action-buttons { display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:nowrap; }
         .btn-edit { background:#f6c90e; color:#0a1628; }
         .absent-cell { color:#b91c1c !important; background:#fee2e2 !important; font-weight:900 !important; }
 
@@ -318,7 +355,18 @@
 
             /* Only the Action button is removed in print. Rank must always remain visible. */
             body.print-cons .action-col { display: none !important; }
+            body.print-cons #resTable .roll-col,
+            body.print-cons #resTable .action-col { position:static !important; box-shadow:none !important; }
             body.primary-report.print-cons .rank-col { display: table-cell !important; }
+
+            /* Class 6–12 reports have more subjects: keep full names readable without browser auto-shrinking. */
+            body.wide-report.print-cons #resTable th { font-size:8.5px !important; padding:4px 2px !important; white-space:normal !important; line-height:1.05 !important; }
+            body.wide-report.print-cons #resTable td { font-size:9.5px !important; padding:4px 2px !important; white-space:nowrap !important; }
+            body.wide-report.print-cons #resTable .subject-col,
+            body.wide-report.print-cons #resTable .summary-col,
+            body.wide-report.print-cons #resTable .percentage-col,
+            body.wide-report.print-cons #resTable .rank-col,
+            body.wide-report.print-cons #resTable .roll-col { width:auto !important; min-width:0 !important; max-width:none !important; }
 
             /*
                Class 1–5 A4 landscape print order:
@@ -472,7 +520,13 @@
                     <div class="stat-box"><h4>Top 3 Rankers</h4><div id="topRankersList">Waiting...</div></div>
                     <div class="stat-box"><h4>Highest in Subject</h4><div id="subjectHighsList">Waiting...</div></div>
                 </div>
-                <div style="overflow-x:auto;">
+                <div class="report-meta no-print" id="reportMeta">
+                    <div class="meta-chip">Students: <strong id="metaStudents">0</strong></div>
+                    <div class="meta-chip">Subjects: <strong id="metaSubjects">0</strong></div>
+                    <div class="meta-chip">Complete: <strong id="metaComplete">0</strong></div>
+                    <div class="meta-chip">Incomplete: <strong id="metaIncomplete">0</strong></div>
+                </div>
+                <div class="dashboard-table-wrap">
                     <table id="resTable"><thead id="tHead"></thead><tbody id="tBody"></tbody></table>
                 </div>
             </div>
@@ -521,7 +575,26 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_csBKyvviScR_x5tPRBRmcXMNuz9tpqyrECWYqJxrqKB-jkl7BNw3D9CG23IWPMeb/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoFAw_Dr-c8Uez79RLT7wbfVZ5xhqUUrFlqkcN5j4FYUsiUaaoYoC4H9tldaoxoGMZ/exec";
+
+        const PASS_PERCENT = 33;
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            })[character]);
+        }
+
+        function subjectHeaderHtml(subject) {
+            const safe = escapeHtml(subject);
+            const wrapped = safe
+                .replace('ENGLISH LITERATURE', 'ENGLISH<br>LITERATURE')
+                .replace('ENGLISH LANGUAGE', 'ENGLISH<br>LANGUAGE')
+                .replace('HISTORY/CIVICS', 'HISTORY /<br>CIVICS')
+                .replace('GK/MORAL SCIENCE', 'GK / MORAL<br>SCIENCE')
+                .replace('SOCIAL STUDIES', 'SOCIAL<br>STUDIES');
+            return `<span class="subject-header" title="${safe}">${wrapped}</span>`;
+        }
 
         const primarySubjectOrder = [
             "ENGLISH", "HINDI", "MATHS", "SST", "SCIENCE", "GK/MORAL SCIENCE", "COMPUTER"
@@ -1047,6 +1120,13 @@
                     });
                 }
 
+                // Data completeness audit: highlight missing subject entries without changing the school's existing rank/result logic.
+                Object.keys(students).forEach(roll => {
+                    const student = students[roll];
+                    student.missingSubjects = subjects.filter(subject => !student.subs[subject] || student.subs[subject].max <= 0);
+                    student.isComplete = student.missingSubjects.length === 0;
+                });
+
                 const rankedRolls = Object.keys(students).sort((a, b) => {
                     const pa = students[a].totalMax > 0 ? students[a].totalObt / students[a].totalMax : 0;
                     const pb = students[b].totalMax > 0 ? students[b].totalObt / students[b].totalMax : 0;
@@ -1058,6 +1138,7 @@
                 let currentRank = 0;
                 let passCount = 0;
                 let failCount = 0;
+                const incompleteCount = Object.keys(students).filter(roll => !students[roll].isComplete).length;
                 const subjectStats = {};
                 subjects.forEach(subject => subjectStats[subject] = { highest: 0, max: 0 });
 
@@ -1068,7 +1149,7 @@
                     rankMap[roll] = currentRank;
                     lastPercentage = percentage;
 
-                    if (percentage >= 33) passCount++; else failCount++;
+                    if (percentage >= PASS_PERCENT) passCount++; else failCount++;
                     subjects.forEach(subject => {
                         const data = student.subs[subject];
                         if (!data) return;
@@ -1082,54 +1163,74 @@
                 globalRankMap = rankMap;
                 globalStudentRecords = studentRecords;
 
+                const primaryReport = isPrimaryReportClass(selectedClass);
+                document.body.classList.toggle('primary-report', primaryReport);
+                document.body.classList.toggle('wide-report', !primaryReport && subjects.length >= 8);
+
                 document.getElementById('analyticsPanel').style.display = 'grid';
-                document.getElementById('passFailText').innerHTML = `<span class="text-green">PASS: ${passCount}</span><br><span class="text-red">FAIL: ${failCount}</span>`;
+                document.getElementById('passFailText').innerHTML =
+                    `<span style="color:#dbeafe;font-weight:900;">STUDENTS: ${Object.keys(students).length}</span><br>` +
+                    `<span class="text-green">PASS: ${passCount}</span><br>` +
+                    `<span class="text-red">FAIL: ${failCount}</span>` +
+                    (incompleteCount ? `<br><span style="color:#fcd34d;font-weight:900;">INCOMPLETE DATA: ${incompleteCount}</span>` : '');
 
                 document.getElementById('topRankersList').innerHTML = rankedRolls.slice(0, 3).map(roll => {
                     const percentage = students[roll].totalMax > 0 ? (students[roll].totalObt / students[roll].totalMax) * 100 : 0;
-                    return `<div>Rank ${rankMap[roll]}: Roll ${roll} (${percentage.toFixed(1)}%)</div>`;
+                    return `<div>Rank ${rankMap[roll]}: Roll ${escapeHtml(roll)} (${percentage.toFixed(1)}%)</div>`;
                 }).join('') || 'N/A';
 
                 document.getElementById('subjectHighsList').innerHTML = subjects.map(subject =>
-                    `<div>${subject}: ${subjectStats[subject].highest} / ${subjectStats[subject].max}</div>`
+                    `<div>${escapeHtml(subject)}: ${subjectStats[subject].highest} / ${subjectStats[subject].max}</div>`
                 ).join('') || 'N/A';
 
-                let header = '<tr><th>ROLL NO</th>';
-                subjects.forEach(subject => header += `<th>${subject}</th>`);
-                if (isPrimaryReportClass(selectedClass)) {
-                    header += "<th class='highlight-col'>TOTAL</th><th class='perc-col'>PERCENTAGE</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
+                const reportMeta = document.getElementById('reportMeta');
+                reportMeta.classList.add('visible');
+                document.getElementById('metaStudents').textContent = Object.keys(students).length;
+                document.getElementById('metaSubjects').textContent = subjects.length;
+                document.getElementById('metaComplete').textContent = Object.keys(students).length - incompleteCount;
+                document.getElementById('metaIncomplete').textContent = incompleteCount;
+
+                let header = '<tr><th class="roll-col">ROLL NO</th>';
+                subjects.forEach(subject => header += `<th class="subject-col">${subjectHeaderHtml(subject)}</th>`);
+                if (primaryReport) {
+                    header += "<th class='highlight-col summary-col'>TOTAL</th><th class='perc-col percentage-col'>PERCENTAGE</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
                 } else {
-                    header += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBT</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
+                    header += "<th class='highlight-col summary-col'>MAX</th><th class='highlight-col summary-col'>OBT</th><th class='perc-col percentage-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
                 }
                 document.getElementById('tHead').innerHTML = header;
 
                 const displayRolls = Object.keys(students).sort((a, b) => Number(a) - Number(b));
-                const viewText = currentId === 'ADMIN' ? 'View/Print' : 'View';
                 let body = '';
 
                 displayRolls.forEach(roll => {
                     const student = students[roll];
                     const percentageValue = student.totalMax > 0 ? (student.totalObt / student.totalMax) * 100 : 0;
                     const percentage = `${percentageValue.toFixed(2)}%`;
-                    const fail = percentageValue < 33;
+                    const fail = percentageValue < PASS_PERCENT;
+                    const incomplete = !student.isComplete;
+                    const rowClass = incomplete ? 'incomplete-row' : (fail ? 'fail-row' : '');
 
-                    body += `<tr class="${fail ? 'fail-row' : ''}"><td>${roll}</td>`;
+                    body += `<tr class="${rowClass}"><td class="roll-col">${escapeHtml(roll)}</td>`;
                     subjects.forEach(subject => {
                         const data = student.subs[subject];
-                        const absentClass = data?.hasAbsent ? 'absent-cell' : '';
-                        body += `<td class="${absentClass}">${displaySubjectMark(data)}</td>`;
+                        if (!data || data.max <= 0) {
+                            body += '<td class="subject-col missing-cell" title="Marks not entered">MISSING</td>';
+                            return;
+                        }
+                        const absentClass = data.hasAbsent ? 'absent-cell' : '';
+                        body += `<td class="subject-col ${absentClass}">${escapeHtml(displaySubjectMark(data))}</td>`;
                     });
 
                     const failMark = fail ? "<span style='color:#b91c1c;'> (F)</span>" : '';
-                    if (isPrimaryReportClass(selectedClass)) {
-                        body += `<td class="highlight-col">${student.totalObt} / ${student.totalMax}</td><td class="perc-col">${percentage}${failMark}</td><td class="rank-col"># ${rankMap[roll]}</td>`;
+                    if (primaryReport) {
+                        body += `<td class="highlight-col summary-col">${student.totalObt} / ${student.totalMax}</td><td class="perc-col percentage-col">${percentage}${failMark}</td><td class="rank-col"># ${rankMap[roll]}</td>`;
                     } else {
-                        body += `<td class="highlight-col">${student.totalMax}</td><td class="highlight-col">${student.totalObt}</td><td class="perc-col">${percentage}${failMark}</td><td class="rank-col"># ${rankMap[roll]}</td>`;
+                        body += `<td class="highlight-col summary-col">${student.totalMax}</td><td class="highlight-col summary-col">${student.totalObt}</td><td class="perc-col percentage-col">${percentage}${failMark}</td><td class="rank-col"># ${rankMap[roll]}</td>`;
                     }
 
                     body += `<td class="action-col"><div class="action-buttons">
-                        <button class="btn-small" onclick="viewIndividualReport('${roll}')">${viewText}</button>
-                        <button class="btn-small btn-edit" onclick="openStudentEditModal('${roll}')">Edit</button>
+                        <button class="btn-small" onclick="viewIndividualReport('${escapeHtml(roll)}')">View</button>
+                        <button class="btn-small btn-edit" onclick="openStudentEditModal('${escapeHtml(roll)}')">Edit</button>
                     </div></td></tr>`;
                 });
 
@@ -1163,7 +1264,7 @@
             document.getElementById('irRank').innerText = `Class Rank: #${globalRankMap[roll]}`;
 
             const result = document.getElementById('irResult');
-            if (percentage < 33) {
+            if (percentage < PASS_PERCENT) {
                 result.innerText = 'Result: NEEDS IMPROVEMENT';
                 result.style.color = '#dc2626';
             } else {

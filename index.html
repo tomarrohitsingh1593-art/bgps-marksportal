@@ -7,14 +7,14 @@
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600;700&family=Inconsolata:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --navy: #0a1628; --dark: #0e1f3d; --mid: #162d52; 
-            --card: #1a3460; --border: rgba(99,179,237,0.18); 
-            --gold: #f6c90e; --blue: #63b3ed; --white: #f7fafc; 
+            --navy: #0a1628; --dark: #16355b; --mid: #2f5f91; 
+            --card: #eaf4ff; --border: rgba(148, 184, 218, 0.55); 
+            --gold: #f6c90e; --blue: #90cdf4; --white: #f7fafc; 
             --red: #fc8181; --green: #48bb78;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Georgia', serif; background: radial-gradient(ellipse at 30% 20%, #0d2137 0%, var(--navy) 60%); color: var(--white); min-height: 100vh; padding: 20px; }
-        .card { background: var(--dark); padding: 30px; border: 1px solid rgba(246,201,14,.25); border-radius: 16px; box-shadow: 0 32px 80px rgba(0,0,0,.7); margin-bottom: 20px; }
+        body { font-family: 'Georgia', serif; background: radial-gradient(ellipse at 30% 20%, #234d75 0%, #102a46 62%, #0a1628 100%); color: var(--white); min-height: 100vh; padding: 20px; }
+        .card { background: rgba(22, 53, 91, 0.96); padding: 30px; border: 1px solid rgba(246,201,14,.28); border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,.45); margin-bottom: 20px; }
         .school-logo { width: 100px; height: 100px; margin: 0 auto 20px; border-radius: 50%; background: var(--mid); border: 3px solid var(--gold); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
         .logo-text { font-family: 'EB Garamond', serif; font-size: 22px; color: var(--gold); font-weight: bold; }
         .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), #e6b800); color: var(--navy); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; transition: 0.2s;}
@@ -29,10 +29,11 @@
         .control-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; }
         .control-group label { font-size: 10px; color: var(--blue); text-transform: uppercase; font-weight: 700; }
         .control-group input, .control-group select { padding: 12px; background: var(--mid); border: 1px solid var(--border); border-radius: 6px; color: white; outline: none; font-family: 'Inconsolata', monospace; }
-        #studentContainer { max-height: 400px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); padding: 5px; border-radius: 6px; }
-        .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .student-row input { width: 80px; padding: 6px; background: var(--dark); border: 1px solid var(--border); color: white; text-align: center; border-radius: 4px; }
-        .fail-row { background: rgba(252, 129, 129, 0.15) !important; border-left: 3px solid var(--red) !important; }
+        #studentContainer { max-height: 400px; overflow-y: auto; background: #eaf4ff; color: #102a43; border: 1px solid #a9c7e3; padding: 5px; border-radius: 8px; }
+        .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #c9dceb; font-weight: 700; }
+        .student-row input { width: 80px; padding: 8px; background: #ffffff; border: 2px solid #7aa7cf; color: #0a1628; text-align: center; border-radius: 6px; font-size: 15px; font-weight: 800; }
+        .fail-row td { background: #ffe8e8 !important; color: #7f1d1d !important; }
+        .fail-row { border-left: 4px solid #dc2626 !important; }
         
         .analytics-panel { display: none; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-box { background: var(--mid); border: 1px solid var(--border); padding: 15px; border-radius: 8px; }
@@ -41,11 +42,14 @@
         .text-green { color: var(--green); font-weight: bold; }
         .text-red { color: var(--red); font-weight: bold; }
 
-        table { width: 100%; border-collapse: collapse; font-family: 'Inconsolata', monospace; margin-top: 10px; background: var(--card); border-radius: 8px; overflow: hidden; }
-        th, td { padding: 10px; border: 1px solid var(--border); text-align: center; font-size: 13px; }
-        th { background: var(--mid); color: var(--gold); text-transform: uppercase; }
-        .highlight-col { background: rgba(246, 201, 14, 0.05); color: var(--gold); font-weight: bold; }
-        .perc-col { background: rgba(99, 179, 237, 0.08); color: var(--blue); font-weight: bold; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; font-family: 'Inconsolata', monospace; margin-top: 10px; background: #f8fbff; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 10px; border: 1px solid #b8cee2; text-align: center; font-size: 13px; }
+        td { background: #f8fbff; color: #102a43; font-weight: 800; }
+        tbody tr:nth-child(even) td { background: #eaf4ff; }
+        th { background: #2f5f91; color: #ffffff; text-transform: uppercase; font-weight: 800; }
+        .highlight-col { background: #fff5bf !important; color: #6b4f00 !important; font-weight: 900; }
+        .perc-col { background: #d9f2ff !important; color: #075985 !important; font-weight: 900; font-size: 14px; }
+        .rank-col { background: #ede9fe !important; color: #5b21b6 !important; font-weight: 900; }
 
         #individualReportContainer { display: none; margin-top: 30px; }
         #individualReport { background: #ffffff; color: #000000; padding: 30px; border: 3px solid var(--navy); border-radius: 12px; font-family: 'Georgia', serif; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
@@ -201,27 +205,54 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoFAw_Dr-c8Uez79RLT7wbfVZ5xhqUUrFlqkcN5j4FYUsiUaaoYoC4H9tldaoxoGMZ/exec";
         
-        // Sequence requested by user: English, Hindi, Maths, EVS, GK, Computer... then rest of subjects.
+        // Class 1 to 5 report sequence is fixed exactly as requested.
+        const primarySubjectOrder = [
+            "ENGLISH",
+            "HINDI",
+            "MATHS",
+            "EVS",
+            "GK",
+            "COMPUTER"
+        ];
+
+        // Other classes continue to use the complete subject order.
         const customSubjectOrder = [
             "ENGLISH",
-            "ENGLISH LITERATURE", 
-            "ENGLISH LANGUAGE", 
-            "HINDI", 
-            "MATHS", 
+            "ENGLISH LITERATURE",
+            "ENGLISH LANGUAGE",
+            "HINDI",
+            "MATHS",
             "EVS",
-            "GK/MSC", 
+            "GK/MSC",
+            "GK",
             "COMPUTER",
             "SCIENCE",
             "SOCIAL STUDIES",
-            "GEOGRAPHY", 
-            "HISTORY/CIVICS", 
+            "GEOGRAPHY",
+            "HISTORY/CIVICS",
             "PHYSICS",
-            "CHEMISTRY", 
-            "BIOLOGY", 
+            "CHEMISTRY",
+            "BIOLOGY",
             "ACCOUNT",
             "BUSINESS",
             "ECONOMICS"
         ];
+
+        function isPrimaryReportClass(className) {
+            return /^Class\s[1-5]$/.test(String(className).trim());
+        }
+
+        function normalizeSubjectForReport(subject, className) {
+            let value = String(subject || "UNKNOWN").toUpperCase().trim();
+
+            if (!isPrimaryReportClass(className)) return value;
+
+            if (value === "ENGLISH LANGUAGE" || value === "ENGLISH LITERATURE") return "ENGLISH";
+            if (["GK/MSC", "GK / MSC", "GK/MSC.", "GENERAL KNOWLEDGE", "G.K.", "G.K"].includes(value)) return "GK";
+            if (value === "MATHEMATICS" || value === "MATH") return "MATHS";
+
+            return value;
+        }
         
         const mapping = {"T-1":"Playgroup","T-2":"LKG","T-3":"UKG","T-4":"Class 1","T-5":"Class 2","T-6":"Class 3","T-7":"Class 4","T-8":"Class 5","T-9":"Class 6","T-10":"Class 7","T-11":"Class 8","T-12":"Class 9","T-13":"Class 10","T-14":"Class 11","T-15":"Class 12","ADMIN":"ALL_CLASSES"};
         let globalStudents = {}, globalSubsArray = [], globalRankMap = {}, currentClassView = "", currentExamView = "", currentId = "";
@@ -307,9 +338,14 @@
                 
                 for(let i=1; i<rawData.length; i++) {
                     let row = rawData[i]; if(!row || String(row[cIdx]).trim() !== selectedClass || String(row[eIdx]).trim() !== selectedExam) continue;
-                    hasData = true; 
                     let roll = String(row[rIdx] || '').trim(); if(!roll) continue;
-                    let sub = String(row[sIdx] || 'UNKNOWN').toUpperCase().trim(); let mode = String(row[tIdx] || 'Written').trim().toLowerCase();
+                    let sub = normalizeSubjectForReport(row[sIdx], selectedClass);
+
+                    // Class 1–5 consolidated report contains only these six subjects.
+                    if (isPrimaryReportClass(selectedClass) && !primarySubjectOrder.includes(sub)) continue;
+
+                    hasData = true;
+                    let mode = String(row[tIdx] || 'Written').trim().toLowerCase();
                     let max = Number(row[mIdx]) || 0, obt = Number(row[oIdx]) || 0;
                     
                     if(!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0 };
@@ -327,13 +363,21 @@
                 
                 if(!hasData) return alert(`No marks for ${selectedClass} - ${selectedExam}`);
                 
-                let subsArray = Array.from(allSubjects);
-                subsArray.sort((a, b) => {
-                    let posA = customSubjectOrder.indexOf(a), posB = customSubjectOrder.indexOf(b);
-                    if (posA === -1) posA = 999; if (posB === -1) posB = 999;
-                    if (posA !== posB) return posA - posB;
-                    return a.localeCompare(b);
-                });
+                let subsArray;
+
+                if (isPrimaryReportClass(selectedClass)) {
+                    // Keep all six columns visible even when a subject has not been entered yet.
+                    subsArray = [...primarySubjectOrder];
+                } else {
+                    subsArray = Array.from(allSubjects);
+                    subsArray.sort((a, b) => {
+                        let posA = customSubjectOrder.indexOf(a), posB = customSubjectOrder.indexOf(b);
+                        if (posA === -1) posA = 999;
+                        if (posB === -1) posB = 999;
+                        if (posA !== posB) return posA - posB;
+                        return a.localeCompare(b);
+                    });
+                }
                 
                 let rolls = Object.keys(students);
                 rolls.sort((a,b) => students[b].totalObt - students[a].totalObt);
@@ -368,13 +412,20 @@
                 document.getElementById('topRankersList').innerHTML = topHtml || "N/A";
                 
                 let highHtml = "";
-                subsArray.forEach(sub => { 
-                    highHtml += `<div>${sub}: ${subStats[sub].highest} / ${subStats[sub].max}</div>`; 
+                subsArray.forEach(sub => {
+                    highHtml += `<div>${sub}: ${subStats[sub].highest} / ${subStats[sub].max}</div>`;
                 });
                 document.getElementById('subjectHighsList').innerHTML = highHtml || "N/A";
                 
-                let h = "<tr><th>ROLL NO</th>"; subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
-                h += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBT</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>"; 
+                let h = "<tr><th>ROLL NO</th>";
+                subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
+
+                if (isPrimaryReportClass(selectedClass)) {
+                    h += "<th class='highlight-col'>TOTAL</th><th class='perc-col'>PERCENTAGE</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
+                } else {
+                    h += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBT</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
+                }
+
                 document.getElementById('tHead').innerHTML = h;
                 
                 let b = ""; let displayRolls = Object.keys(students).sort((a,b) => Number(a) - Number(b));
@@ -386,8 +437,14 @@
                     
                     b += `<tr class="${isFail ? 'fail-row' : ''}"><td>${roll}</td>`;
                     subsArray.forEach(sub => { b += `<td>${s.subs[sub] !== undefined ? s.subs[sub].obt : '-'}</td>`; });
-                    let failMark = isFail ? "<span style='color:red;'> (F)</span>" : "";
-                    b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
+                    let failMark = isFail ? "<span style='color:#b91c1c;'> (F)</span>" : "";
+
+                    if (isPrimaryReportClass(selectedClass)) {
+                        b += `<td class='highlight-col'>${s.totalObt} / ${s.totalMax}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
+                    } else {
+                        b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
+                    }
+
                     b += `<td class='action-col'><button class="btn-small" onclick="viewIndividualReport('${roll}')">${btnText}</button></td></tr>`;
                 });
                 document.getElementById('tBody').innerHTML = b;
@@ -398,7 +455,11 @@
             let s = globalStudents[roll]; if(!s) return;
             document.getElementById('irRoll').innerText = "Roll No: " + roll; document.getElementById('irClass').innerText = "Class: " + currentClassView; document.getElementById('irExam').innerText = "Exam: " + currentExamView;
             
-            let tbody = ""; globalSubsArray.forEach(sub => { if(s.subs[sub]) tbody += `<tr><td>${sub}</td><td>${s.subs[sub].written}</td><td>${s.subs[sub].oral}</td><td>${s.subs[sub].practical}</td><td>${s.subs[sub].max}</td><td>${s.subs[sub].obt}</td></tr>`; });
+            let tbody = "";
+            globalSubsArray.forEach(sub => {
+                let subjectData = s.subs[sub] || { written: '-', oral: '-', practical: '-', max: 0, obt: 0 };
+                tbody += `<tr><td>${sub}</td><td>${subjectData.written}</td><td>${subjectData.oral}</td><td>${subjectData.practical}</td><td>${s.subs[sub] ? subjectData.max : '-'}</td><td>${s.subs[sub] ? subjectData.obt : '-'}</td></tr>`;
+            });
             document.getElementById('irTableBody').innerHTML = tbody;
             
             let rawP = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;

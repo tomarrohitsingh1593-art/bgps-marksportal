@@ -283,34 +283,26 @@
 
             /*
                Class 1–5 A4 landscape print order:
-               Roll No, English, Hindi, Maths, EVS, GK, Computer, Total, Percentage, Rank.
+               Roll No, English, Hindi, Maths, SST, Science, GK/Moral Science,
+               Computer, Total, Percentage, Rank.
                Widths total exactly 100%, so the browser does not need to shrink the table.
             */
             body.primary-report.print-cons th:nth-child(1),
             body.primary-report.print-cons td:nth-child(1) {
-                width: 7% !important;
+                width: 6% !important;
             }
 
-            body.primary-report.print-cons th:nth-child(n+2):nth-child(-n+7),
-            body.primary-report.print-cons td:nth-child(n+2):nth-child(-n+7) {
-                width: 9.5% !important;
-            }
-
-            body.primary-report.print-cons th:nth-child(8),
-            body.primary-report.print-cons td:nth-child(8) {
-                display: table-cell !important;
-                width: 14% !important;
-                background: #fff5bf !important;
-                font-weight: 900 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            /* Seven subject columns: English through Computer. */
+            body.primary-report.print-cons th:nth-child(n+2):nth-child(-n+8),
+            body.primary-report.print-cons td:nth-child(n+2):nth-child(-n+8) {
+                width: 8.5% !important;
             }
 
             body.primary-report.print-cons th:nth-child(9),
             body.primary-report.print-cons td:nth-child(9) {
                 display: table-cell !important;
-                width: 13% !important;
-                background: #d9f2ff !important;
+                width: 13.5% !important;
+                background: #fff5bf !important;
                 font-weight: 900 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
@@ -318,6 +310,16 @@
 
             body.primary-report.print-cons th:nth-child(10),
             body.primary-report.print-cons td:nth-child(10) {
+                display: table-cell !important;
+                width: 12% !important;
+                background: #d9f2ff !important;
+                font-weight: 900 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body.primary-report.print-cons th:nth-child(11),
+            body.primary-report.print-cons td:nth-child(11) {
                 display: table-cell !important;
                 width: 9% !important;
                 background: #ede9fe !important;
@@ -398,7 +400,8 @@
                         <option>Hindi</option>
                         <option>Maths</option>
                         <option>EVS</option>
-                        <option>GK/Msc</option>
+                        <option>SST</option>
+                        <option>GK/Moral Science</option>
                         <option>Computer</option>
                         <option>Science</option>
                         <option>Social Studies</option>
@@ -477,13 +480,15 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoFAw_Dr-c8Uez79RLT7wbfVZ5xhqUUrFlqkcN5j4FYUsiUaaoYoC4H9tldaoxoGMZ/exec";
         
-        // Class 1 to 5 consolidated report sequence: English, Hindi, Maths, EVS, GK, Computer, Total, Percentage, Rank.
+        // Class 1 to 5 consolidated report sequence:
+        // English, Hindi, Maths, SST, Science, GK/Moral Science, Computer, Total, Percentage, Rank.
         const primarySubjectOrder = [
             "ENGLISH",
             "HINDI",
             "MATHS",
-            "EVS",
-            "GK",
+            "SST",
+            "SCIENCE",
+            "GK/MORAL SCIENCE",
             "COMPUTER"
         ];
 
@@ -495,11 +500,13 @@
             "HINDI",
             "MATHS",
             "EVS",
+            "SST",
+            "SOCIAL STUDIES",
+            "SCIENCE",
+            "GK/MORAL SCIENCE",
             "GK/MSC",
             "GK",
             "COMPUTER",
-            "SCIENCE",
-            "SOCIAL STUDIES",
             "GEOGRAPHY",
             "HISTORY/CIVICS",
             "PHYSICS",
@@ -520,12 +527,12 @@
             if (!isPrimaryReportClass(className)) return value;
 
             if (value === "ENGLISH LANGUAGE" || value === "ENGLISH LITERATURE") return "ENGLISH";
-            if (["GK/MSC", "GK / MSC", "GK/MSC.", "GENERAL KNOWLEDGE", "G.K.", "G.K"].includes(value)) return "GK";
             if (value === "MATHEMATICS" || value === "MATH") return "MATHS";
 
-            // Class 1 to 5: EVS and Social/SST records are shown together in the EVS column.
-            // If both EVS and Social marks exist for the same student, their obtained and max marks are added.
+            // Class 1 to 5: EVS/Social/SST records are shown together in the SST column.
+            // If more than one compatible record exists, obtained and maximum marks are added.
             if ([
+                "EVS",
                 "EVS/SOCIAL",
                 "EVS / SOCIAL",
                 "EVS & SOCIAL",
@@ -538,7 +545,28 @@
                 "S.ST",
                 "S.ST.",
                 "S.STUDIES"
-            ].includes(value)) return "EVS";
+            ].includes(value)) return "SST";
+
+            // Class 1 to 5: all common General Knowledge / Moral Science labels share one column.
+            if ([
+                "GK",
+                "GK/MSC",
+                "GK / MSC",
+                "GK/MSC.",
+                "GK/MORAL SCIENCE",
+                "GK / MORAL SCIENCE",
+                "GENERAL KNOWLEDGE",
+                "GENERAL KNOWLEDGE/MORAL SCIENCE",
+                "MORAL SCIENCE",
+                "MORAL SCIENCE/GK",
+                "MSC",
+                "M.SC",
+                "M.SC.",
+                "G.K.",
+                "G.K"
+            ].includes(value)) return "GK/MORAL SCIENCE";
+
+            if (["GENERAL SCIENCE", "BASIC SCIENCE"].includes(value)) return "SCIENCE";
 
             return value;
         }
@@ -631,7 +659,7 @@
                     let roll = String(row[rIdx] || '').trim(); if(!roll) continue;
                     let sub = normalizeSubjectForReport(row[sIdx], selectedClass);
 
-                    // Class 1–5 consolidated report contains only these six subjects.
+                    // Class 1–5 consolidated report contains only these seven fixed subjects.
                     if (isPrimaryReportClass(selectedClass) && !primarySubjectOrder.includes(sub)) continue;
 
                     hasData = true;
@@ -656,7 +684,7 @@
                 let subsArray;
 
                 if (isPrimaryReportClass(selectedClass)) {
-                    // Keep all six columns visible even when a subject has not been entered yet.
+                    // Keep all seven columns visible even when a subject has not been entered yet.
                     subsArray = [...primarySubjectOrder];
                 } else {
                     subsArray = Array.from(allSubjects);

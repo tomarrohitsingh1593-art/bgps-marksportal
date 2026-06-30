@@ -1,1927 +1,421 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>BG PUBLIC SCHOOL | Marks ERP</title>
-
-  <style>
-    :root {
-      --navy: #0a1628;
-      --dark: #0e1f3d;
-      --mid: #162d52;
-      --card: #1a3460;
-      --border: rgba(99, 179, 237, 0.22);
-      --gold: #f6c90e;
-      --blue: #63b3ed;
-      --white: #f7fafc;
-      --red: #fc8181;
-      --green: #48bb78;
-      --muted: #a0aec0;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Georgia, serif;
-      background: radial-gradient(ellipse at 30% 20%, #0d2137 0%, var(--navy) 60%);
-      color: var(--white);
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .card {
-      background: var(--dark);
-      padding: 24px;
-      border: 1px solid rgba(246, 201, 14, 0.25);
-      border-radius: 16px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-      margin-bottom: 20px;
-    }
-
-    .school-logo {
-      width: 92px;
-      height: 92px;
-      margin: 0 auto 18px;
-      border-radius: 50%;
-      background: var(--mid);
-      border: 3px solid var(--gold);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gold);
-      font-weight: 800;
-      font-size: 22px;
-      letter-spacing: 1px;
-    }
-
-    h1, h2, h3 {
-      color: var(--gold);
-    }
-
-    .login-container {
-      max-width: 420px;
-      margin: 60px auto;
-    }
-
-    .app-shell {
-      max-width: 1180px;
-      margin: 0 auto;
-      display: none;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .school-title {
-      color: var(--gold);
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: 0.8px;
-    }
-
-    .user-badge {
-      color: var(--blue);
-      font-family: monospace;
-      font-size: 13px;
-      text-align: right;
-    }
-
-    .nav-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .tab-btn {
-      padding: 10px 15px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    .tab-btn.active {
-      background: var(--gold);
-      color: var(--navy);
-    }
-
-    .tab-btn.danger {
-      margin-left: auto;
-      color: var(--red);
-      background: transparent;
-      border-color: rgba(252, 129, 129, 0.35);
-    }
-
-    .view-section {
-      display: none;
-    }
-
-    .view-section.active {
-      display: block;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 14px;
-    }
-
-    .control-group label {
-      font-size: 11px;
-      color: var(--blue);
-      text-transform: uppercase;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-
-    .control-group input,
-    .control-group select {
-      padding: 12px;
-      background: var(--mid);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: white;
-      outline: none;
-      font-family: monospace;
-      width: 100%;
-    }
-
-    .btn-primary {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--gold), #e6b800);
-      color: var(--navy);
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 800;
-      text-transform: uppercase;
-      margin-top: 10px;
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .btn-small {
-      background: var(--blue);
-      color: var(--navy);
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 800;
-      font-size: 12px;
-    }
-
-    .btn-green {
-      background: var(--green);
-      color: #fff;
-    }
-
-    .btn-red {
-      background: var(--red);
-      color: #fff;
-    }
-
-    .input-error {
-      border: 2px solid var(--red) !important;
-      background: rgba(252, 129, 129, 0.15) !important;
-    }
-
-    #customAlertBox {
-      display: none;
-      position: fixed;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      min-width: 310px;
-      max-width: 92vw;
-      padding: 14px 18px;
-      border-radius: 10px;
-      font-weight: 800;
-      text-align: center;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.5);
-    }
-
-    .alert-error {
-      background: rgba(252, 129, 129, 0.96);
-      border: 1px solid var(--red);
-      color: white;
-    }
-
-    .alert-success {
-      background: rgba(72, 187, 120, 0.96);
-      border: 1px solid var(--green);
-      color: white;
-    }
-
-    .alert-info {
-      background: rgba(99, 179, 237, 0.96);
-      border: 1px solid var(--blue);
-      color: var(--navy);
-    }
-
-    #studentContainer {
-      max-height: 440px;
-      overflow-y: auto;
-      background: var(--card);
-      border: 1px solid var(--border);
-      padding: 6px;
-      border-radius: 10px;
-      margin-top: 12px;
-    }
-
-    .student-row {
-      display: grid;
-      grid-template-columns: 110px 1fr 130px;
-      gap: 10px;
-      align-items: center;
-      padding: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .student-row span {
-      color: #dbeafe;
-      font-size: 14px;
-    }
-
-    .student-row input {
-      padding: 8px;
-      background: var(--dark);
-      border: 1px solid var(--border);
-      color: white;
-      text-align: center;
-      border-radius: 6px;
-      text-transform: uppercase;
-      font-family: monospace;
-    }
-
-    .hint {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      margin: 8px 0 12px;
-    }
-
-    .analytics-panel {
-      display: none;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-      margin: 15px 0;
-    }
-
-    .stat-box {
-      background: var(--mid);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-    }
-
-    .stat-box h4 {
-      color: var(--gold);
-      font-size: 12px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .stat-box div,
-    .stat-box p {
-      font-family: monospace;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .text-green { color: var(--green); font-weight: 900; }
-    .text-red { color: var(--red); font-weight: 900; }
-
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--card);
-      font-family: monospace;
-    }
-
-    th, td {
-      padding: 10px;
-      border: 1px solid var(--border);
-      text-align: center;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    th {
-      background: var(--mid);
-      color: var(--gold);
-      text-transform: uppercase;
-    }
-
-    .highlight-col {
-      background: rgba(246, 201, 14, 0.07);
-      color: var(--gold);
-      font-weight: bold;
-    }
-
-    .perc-col {
-      background: rgba(99, 179, 237, 0.09);
-      color: var(--blue);
-      font-weight: bold;
-    }
-
-    .fail-row {
-      background: rgba(252, 129, 129, 0.13) !important;
-    }
-
-    .print-only {
-      display: none;
-    }
-
-
-    .action-col {
-      min-width: 86px;
-    }
-
-    .edit-modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      z-index: 10000;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-
-    .edit-modal-backdrop.active {
-      display: flex;
-    }
-
-    .edit-modal {
-      width: min(720px, 96vw);
-      max-height: 92vh;
-      overflow-y: auto;
-      background: var(--dark);
-      border: 1px solid rgba(246, 201, 14, 0.35);
-      border-radius: 16px;
-      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75);
-      padding: 22px;
-    }
-
-    .edit-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-    }
-
-    .edit-modal-title {
-      color: var(--gold);
-      font-size: 20px;
-      font-weight: 900;
-    }
-
-    .edit-modal-subtitle {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 4px;
-      font-family: monospace;
-    }
-
-    .modal-close {
-      border: 1px solid rgba(252, 129, 129, 0.45);
-      background: transparent;
-      color: var(--red);
-      padding: 7px 10px;
-      border-radius: 8px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .edit-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .edit-row-title {
-      color: var(--blue);
-      font-size: 12px;
-      text-transform: uppercase;
-      font-weight: 900;
-      margin-bottom: 5px;
-    }
-
-    .edit-mode-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    .edit-mode-card h4 {
-      color: var(--gold);
-      margin-bottom: 10px;
-      font-size: 14px;
-      text-transform: uppercase;
-    }
-
-    .edit-help {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
-      margin-top: 10px;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .modal-actions button {
-      flex: 1;
-    }
-
-    @media(max-width: 850px) {
-      .grid-3, .grid-4 {
-        grid-template-columns: 1fr;
-      }
-
-      .student-row {
-        grid-template-columns: 90px 1fr 110px;
-      }
-
-      .tab-btn.danger {
-        margin-left: 0;
-      }
-
-      .card {
-        padding: 16px;
-      }
-    }
-
-    @media print {
-      @page {
-        size: A4 landscape;
-        margin: 8mm;
-      }
-
-      html,
-      body {
-        width: 100%;
-        background: #fff !important;
-        color: #000 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        font-family: Georgia, "Times New Roman", serif !important;
-      }
-
-      body:not(.print-report) * {
-        visibility: hidden !important;
-      }
-
-      body.print-report #loginPage,
-      body.print-report .topbar,
-      body.print-report .nav-tabs,
-      body.print-report .no-print,
-      body.print-report #customAlertBox,
-      body.print-report #entryView,
-      body.print-report .edit-modal-backdrop,
-      body.print-report #dashView > h2 {
-        display: none !important;
-      }
-
-      body.print-report .app-shell,
-      body.print-report #dashView,
-      body.print-report .card,
-      body.print-report .view-section {
-        display: block !important;
-        width: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #fff !important;
-        color: #000 !important;
-        box-shadow: none !important;
-        border: none !important;
-      }
-
-      body.print-report .print-only {
-        display: block !important;
-      }
-
-      #printHeader {
-        text-align: center !important;
-        margin-bottom: 8mm !important;
-        padding-bottom: 4mm !important;
-        border-bottom: 4px double #000 !important;
-      }
-
-      #printHeader h1 {
-        color: #000 !important;
-        font-size: 25pt !important;
-        line-height: 1 !important;
-        margin: 0 0 3mm 0 !important;
-        letter-spacing: 0.5px !important;
-        font-weight: 900 !important;
-      }
-
-      #printHeader h2 {
-        color: #000 !important;
-        font-size: 13pt !important;
-        line-height: 1.15 !important;
-        margin: 0 0 2mm 0 !important;
-        letter-spacing: 0.4px !important;
-        font-weight: 800 !important;
-      }
-
-      #printReportMeta,
-      #printGenerated {
-        font-family: "Courier New", monospace !important;
-        color: #000 !important;
-        font-size: 9pt !important;
-        font-weight: 700 !important;
-        margin-top: 1mm !important;
-      }
-
-      body.print-report #analyticsPanel {
-        display: grid !important;
-        grid-template-columns: 0.9fr 1.1fr 2.2fr !important;
-        gap: 3mm !important;
-        margin: 0 0 6mm 0 !important;
-        padding: 3mm !important;
-        border: 1.5px solid #000 !important;
-        page-break-inside: avoid !important;
-        background: #fff !important;
-      }
-
-      body.print-report .stat-box {
-        background: #fff !important;
-        color: #000 !important;
-        border: none !important;
-        border-right: 1px solid #999 !important;
-        border-radius: 0 !important;
-        padding: 1mm 3mm !important;
-        box-shadow: none !important;
-        min-height: 0 !important;
-      }
-
-      body.print-report .stat-box:last-child {
-        border-right: none !important;
-      }
-
-      body.print-report .stat-box h4 {
-        color: #000 !important;
-        font-size: 9pt !important;
-        margin: 0 0 2mm 0 !important;
-        padding-bottom: 1.2mm !important;
-        border-bottom: 1.5px solid #000 !important;
-        letter-spacing: 0.2px !important;
-      }
-
-      body.print-report .stat-box div,
-      body.print-report .stat-box p {
-        color: #000 !important;
-        font-family: "Courier New", monospace !important;
-        font-size: 7.8pt !important;
-        line-height: 1.25 !important;
-        margin: 0 !important;
-      }
-
-      body.print-report .text-green,
-      body.print-report .text-red {
-        color: #000 !important;
-        font-weight: 900 !important;
-      }
-
-      body.print-report .table-wrap {
-        overflow: visible !important;
-        border: none !important;
-        border-radius: 0 !important;
-        width: 100% !important;
-      }
-
-      body.print-report table {
-        width: 100% !important;
-        table-layout: fixed !important;
-        border-collapse: collapse !important;
-        background: #fff !important;
-        color: #000 !important;
-        font-family: "Courier New", monospace !important;
-        page-break-inside: auto !important;
-      }
-
-      body.print-report thead {
-        display: table-header-group !important;
-      }
-
-      body.print-report tr {
-        page-break-inside: avoid !important;
-      }
-
-      body.print-report th,
-      body.print-report td {
-        border: 1px solid #000 !important;
-        color: #000 !important;
-        background: #fff !important;
-        text-align: center !important;
-        vertical-align: middle !important;
-        padding: 2.2mm 1mm !important;
-        font-size: 6.7pt !important;
-        line-height: 1.05 !important;
-        white-space: normal !important;
-        word-break: break-word !important;
-        overflow-wrap: anywhere !important;
-      }
-
-      body.print-report th {
-        background: #f2f2f2 !important;
-        font-weight: 900 !important;
-        text-transform: uppercase !important;
-      }
-
-      body.print-report th:first-child,
-      body.print-report td:first-child {
-        width: 9mm !important;
-        font-weight: 900 !important;
-      }
-
-      body.print-report th:nth-last-child(1),
-      body.print-report td:nth-last-child(1) {
-        width: 11mm !important;
-      }
-
-      body.print-report th:nth-last-child(2),
-      body.print-report td:nth-last-child(2),
-      body.print-report th:nth-last-child(3),
-      body.print-report td:nth-last-child(3) {
-        width: 13mm !important;
-        font-weight: 900 !important;
-      }
-
-      body.print-report .action-col {
-        display: none !important;
-      }
-
-      body.print-report .fail-row td {
-        background: #f7dddd !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
-      body.print-report .highlight-col,
-      body.print-report .perc-col {
-        background: #f7f7f7 !important;
-        color: #000 !important;
-      }
-
-      body.print-report::after {
-        content: "BG Public School ERP";
-        position: fixed;
-        right: 8mm;
-        bottom: 4mm;
-        font-size: 7pt;
-        color: #555;
-        font-family: "Courier New", monospace;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG PUBLIC SCHOOL | Admin ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600;700&family=Inconsolata:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --navy: #0a1628; --dark: #0e1f3d; --mid: #162d52; 
+            --card: #1a3460; --border: rgba(99,179,237,0.18); 
+            --gold: #f6c90e; --blue: #63b3ed; --white: #f7fafc; 
+            --red: #fc8181; --green: #48bb78;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Georgia', serif; background: radial-gradient(ellipse at 30% 20%, #0d2137 0%, var(--navy) 60%); color: var(--white); min-height: 100vh; padding: 20px; }
+        .card { background: var(--dark); padding: 30px; border: 1px solid rgba(246,201,14,.25); border-radius: 16px; box-shadow: 0 32px 80px rgba(0,0,0,.7); margin-bottom: 20px; }
+        .school-logo { width: 100px; height: 100px; margin: 0 auto 20px; border-radius: 50%; background: var(--mid); border: 3px solid var(--gold); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+        .logo-text { font-family: 'EB Garamond', serif; font-size: 22px; color: var(--gold); font-weight: bold; }
+        .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), #e6b800); color: var(--navy); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; transition: 0.2s;}
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(246,201,14,0.4); }
+        .btn-small { background: var(--blue); color: var(--navy); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+        .app-shell { max-width: 1100px; margin: 0 auto; display: none; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #718096; cursor: pointer; }
+        .tab-btn.active { background: var(--gold); color: var(--navy); font-weight: 700; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .control-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; }
+        .control-group label { font-size: 10px; color: var(--blue); text-transform: uppercase; font-weight: 700; }
+        .control-group input, .control-group select { padding: 12px; background: var(--mid); border: 1px solid var(--border); border-radius: 6px; color: white; outline: none; font-family: 'Inconsolata', monospace; }
+        #studentContainer { max-height: 400px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); padding: 5px; border-radius: 6px; }
+        .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .student-row input { width: 80px; padding: 6px; background: var(--dark); border: 1px solid var(--border); color: white; text-align: center; border-radius: 4px; }
+        .fail-row { background: rgba(252, 129, 129, 0.15) !important; border-left: 3px solid var(--red) !important; }
+        
+        .analytics-panel { display: none; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: var(--mid); border: 1px solid var(--border); padding: 15px; border-radius: 8px; }
+        .stat-box h4 { color: var(--gold); margin-bottom: 8px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .stat-box div, .stat-box p { font-size: 14px; color: var(--white); font-family: 'Inconsolata', monospace; margin-bottom: 3px; }
+        .text-green { color: var(--green); font-weight: bold; }
+        .text-red { color: var(--red); font-weight: bold; }
+
+        table { width: 100%; border-collapse: collapse; font-family: 'Inconsolata', monospace; margin-top: 10px; background: var(--card); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 10px; border: 1px solid var(--border); text-align: center; font-size: 13px; }
+        th { background: var(--mid); color: var(--gold); text-transform: uppercase; }
+        .highlight-col { background: rgba(246, 201, 14, 0.05); color: var(--gold); font-weight: bold; }
+        .perc-col { background: rgba(99, 179, 237, 0.08); color: var(--blue); font-weight: bold; font-size: 14px; }
+
+        #individualReportContainer { display: none; margin-top: 30px; }
+        #individualReport { background: #ffffff; color: #000000; padding: 30px; border: 3px solid var(--navy); border-radius: 12px; font-family: 'Georgia', serif; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
+        .ir-header { text-align: center; border-bottom: 3px solid var(--navy); padding-bottom: 15px; margin-bottom: 25px; }
+        .ir-header h1 { font-family: 'EB Garamond', serif; font-size: 34px; margin: 0; color: var(--navy); font-weight: bold; text-transform: uppercase; }
+        .ir-header h3 { font-size: 18px; margin: 8px 0 0 0; color: #b7791f; text-transform: uppercase; font-family: 'Segoe UI', sans-serif;}
+        .ir-details { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 25px; font-weight: bold; background: #f0f4f8; padding: 15px 20px; border-radius: 8px; color: var(--navy); border: 1px solid #cbd5e1; }
+        .ir-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #ffffff !important; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.03);}
+        .ir-table th, .ir-table td { border: 1px solid #cbd5e1 !important; padding: 14px; text-align: center; }
+        .ir-table th { background: var(--navy) !important; color: var(--gold) !important; font-size: 14px; letter-spacing: 1px;}
+        .ir-table td { color: #1e293b !important; font-weight: 600; font-size: 15px;}
+        .ir-table tr:nth-child(even) td { background: #f8fafc !important; }
+        .ir-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-family: 'Segoe UI', sans-serif;}
+        .ir-box { border: 2px solid #cbd5e1; padding: 18px; text-align: center; font-weight: bold; background: #ffffff; color: var(--navy); font-size: 16px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .ir-footer { display: flex; justify-content: space-between; margin-top: 50px; font-size: 16px; font-weight: bold; color: var(--navy); }
+        .sign-line { border-top: 2px solid var(--navy); width: 200px; text-align: center; padding-top: 8px; }
+        
+        .print-only-header { display: none; }
+
+        @media print {
+            body { background: white !important; color: black !important; padding: 0; }
+            .no-print, .login-container, .nav-tabs, #loggedInUser, .btn-primary, .app-shell > div:not(.view-section.active) { display: none !important; }
+            body.print-cons #dashMain { display: block !important; }
+            body.print-cons #individualReportContainer { display: none !important; }
+            body.print-indv #dashMain { display: none !important; }
+            body.print-indv #individualReportContainer { display: block !important; padding: 0 !important; margin: 0 !important; }
+            
+            body.print-cons .print-only-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            body.print-cons .print-only-header h1 { font-family: 'EB Garamond', serif; font-size: 28px; font-weight: bold; margin-bottom: 5px; color: black !important;}
+            body.print-cons .print-only-header h3 { font-size: 16px; margin-bottom: 5px; }
+            body.print-cons .analytics-panel { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; border: 1px solid #000 !important; padding: 10px !important; margin-bottom: 20px !important; }
+            body.print-cons .stat-box { background: white !important; border: none !important; border-right: 1px solid #ccc !important; padding: 5px 10px !important; color: black !important; }
+            body.print-cons .stat-box:last-child { border-right: none !important; }
+            body.print-cons .action-col { display: none !important; }
+
+            body.print-cons table { width: 100% !important; border: 2px solid #000 !important; background: white !important; table-layout: fixed !important; }
+            body.print-cons th, body.print-cons td { border: 1px solid #000 !important; color: black !important; padding: 4px 2px !important; text-align: center; word-wrap: break-word !important; } 
+            body.print-cons th { background: #f2f2f2 !important; font-weight: bold; font-size: 10px !important; }
+            body.print-cons td { font-size: 11px !important; }
+            body.print-cons .fail-row { background: #ffe6e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+            body.print-indv #individualReport { border: 5px double #0a1628 !important; padding: 40px !important; height: 95vh; box-sizing: border-box; box-shadow: none !important; border-radius: 0 !important;}
+            body.print-indv .ir-details { background: transparent !important; border: 1px solid #000 !important; }
+            body.print-indv .ir-table th, body.print-indv .ir-table td { border: 1px solid #000 !important; }
+            body.print-indv .ir-table th { background: #e2e8f0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body.print-indv .ir-table tr:nth-child(even) td { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body.print-indv .ir-box { border: 2px solid #000 !important; }
+        }
+    </style>
 </head>
-
 <body>
-
-  <div id="customAlertBox"></div>
-
-  <div id="loginPage" class="login-container">
-    <div class="card">
-      <div class="school-logo">BGPS</div>
-      <h1 style="text-align:center; font-size:26px; margin-bottom:20px;">BG PUBLIC SCHOOL</h1>
-
-      <div class="control-group">
-        <label>Teacher ID</label>
-        <input type="text" id="tid" placeholder="Teacher ID" autocomplete="username" />
-      </div>
-
-      <div class="control-group">
-        <label>Security PIN</label>
-        <input type="password" id="tpass" placeholder="PIN" autocomplete="current-password" />
-      </div>
-
-      <button class="btn-primary" onclick="loginTeacher()">Login</button>
-
-      <p class="hint" style="text-align:center;">
-        Authorized BG Public School staff login only.
-      </p>
-    </div>
-  </div>
-
-  <div id="appShell" class="app-shell">
-    <div class="topbar no-print">
-      <div class="school-title">BG PUBLIC SCHOOL ERP</div>
-      <div id="loggedInUser" class="user-badge">User</div>
+    <div class="login-container" id="loginPage" style="max-width:400px; margin: 60px auto;">
+        <div class="card">
+            <div class="school-logo"><span class="logo-text">BGPS</span></div>
+            <h1 style="text-align:center; color:var(--gold); font-family:'EB Garamond'; font-size:24px; margin-bottom:20px;">BG PUBLIC SCHOOL</h1>
+            <div class="control-group"><label>Teacher ID</label><input type="text" id="tid" placeholder="ADMIN, T-4, etc."></div>
+            <div class="control-group"><label>Security PIN</label><input type="password" id="tpass" placeholder="bgps123"></div>
+            <button class="btn-primary" onclick="loginTeacher()">Login</button>
+        </div>
     </div>
 
-    <div class="nav-tabs no-print">
-      <button class="tab-btn active" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
-      <button class="tab-btn" id="tab-dash" onclick="switchTab('dash')">Dashboard</button>
-      <button class="tab-btn" onclick="exportToCSV()">Download CSV</button>
-      <button class="tab-btn" onclick="printDashboardReport()">Print Report</button>
-      <button class="tab-btn danger" onclick="logout()">Logout</button>
+    <div class="app-shell" id="appShell">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;" class="no-print">
+            <div style="font-family:'EB Garamond'; color:var(--gold); font-size:22px; font-weight:bold;">BG PUBLIC SCHOOL</div>
+            <div id="loggedInUser" style="color:var(--blue); font-size:12px;">User</div>
+        </div>
+        <div class="nav-tabs no-print">
+            <button class="tab-btn" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
+            <button class="tab-btn" id="tab-dash" onclick="switchTab('dash')">Dashboard</button>
+            <button class="tab-btn" onclick="location.reload()" style="margin-left:auto; color:var(--red); border:none; background:transparent;">Logout</button>
+        </div>
+
+        <div class="card view-section" id="entryView">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                <div class="control-group"><label>Class</label><select id="class"></select></div>
+                <div class="control-group"><label>Subject</label>
+                    <select id="subject">
+                        <option value="">Select</option>
+                        <option>English</option>
+                        <option>English Literature</option>
+                        <option>English Language</option>
+                        <option>Hindi</option>
+                        <option>Maths</option>
+                        <option>EVS</option>
+                        <option>GK/Msc</option>
+                        <option>Computer</option>
+                        <option>Science</option>
+                        <option>Social Studies</option>
+                        <option>Geography</option>
+                        <option>History/Civics</option>
+                        <option>Physics</option>
+                        <option>Chemistry</option>
+                        <option>Biology</option>
+                        <option>Account</option>
+                        <option>Business</option>
+                        <option>Economics</option>
+                    </select>
+                </div>
+                <div class="control-group"><label>Exam</label><select id="examType"><option>Unit Test 1</option><option>Unit Test 2</option><option>Half Yearly</option><option>Unit Test 3</option><option>Annual Exam</option></select></div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="control-group"><label>Mode</label><select id="type"><option>Written</option><option>Oral</option><option>Practical</option></select></div>
+                <div class="control-group"><label>Max Marks</label><input type="number" id="maxMarks" placeholder="e.g. 80"></div>
+            </div>
+            <div id="studentContainer"></div>
+            <button class="btn-primary" onclick="submitData()" id="submitBtn">Submit Records</button>
+        </div>
+
+        <div class="card view-section" id="dashView">
+            <div id="dashMain">
+                <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;" class="no-print">
+                    <div class="control-group" style="flex:2; margin-bottom:0;"><label>Select Class & Exam</label><select id="tabSelector"></select></div>
+                    <button class="btn-primary" onclick="fetchData()" style="flex:1; margin:0; padding:10px;" id="fetchBtn">Fetch Data</button>
+                    <button class="btn-primary" id="btn-print-cons" onclick="printConsolidated()" style="flex:1; margin:0; padding:10px; background:var(--green); display:none;">Print Consolidated</button>
+                </div>
+                <div id="printHeader" class="print-only-header">
+                    <h1>BG PUBLIC SCHOOL</h1>
+                    <h3>CONSOLIDATED REPORT & ANALYTICS</h3>
+                    <p id="pDetails">CLASS: -- | EXAM: --</p>
+                </div>
+                <div class="analytics-panel no-print" id="analyticsPanel">
+                    <div class="stat-box"><h4>Overall Result</h4><p id="passFailText">Waiting...</p></div>
+                    <div class="stat-box"><h4>Top 3 Rankers</h4><div id="topRankersList">Waiting...</div></div>
+                    <div class="stat-box"><h4>Highest in Subject</h4><div id="subjectHighsList">Waiting...</div></div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table id="resTable"><thead id="tHead"></thead><tbody id="tBody"></tbody></table>
+                </div>
+            </div>
+
+            <div id="individualReportContainer">
+                <div class="no-print" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="color:var(--gold); font-family:'EB Garamond';">Student Report Card</h2>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-small" onclick="closeIndividualView()" style="background: var(--red); color: white; padding: 10px 15px; font-size: 14px;">⬅ Back to Dashboard</button>
+                        <button class="btn-small" id="btn-print-indv" onclick="executeIndividualPrint()" style="background: var(--green); color: white; padding: 10px 15px; font-size: 14px; display: none;">🖨️ Print Report Card</button>
+                    </div>
+                </div>
+                <div id="individualReport">
+                    <div class="ir-header"><h1>BG PUBLIC SCHOOL</h1><h3>PROGRESS REPORT</h3></div>
+                    <div class="ir-details"><span id="irRoll">Roll No: </span><span id="irClass">Class: </span><span id="irExam">Exam: </span></div>
+                    <table class="ir-table">
+                        <thead><tr><th>SUBJECT</th><th>WRITTEN</th><th>ORAL</th><th>PRACTICAL</th><th>TOTAL MAX</th><th>TOTAL OBTAINED</th></tr></thead>
+                        <tbody id="irTableBody"></tbody>
+                    </table>
+                    <div class="ir-summary"><div class="ir-box" id="irTotal">Total: -- / --</div><div class="ir-box" id="irPerc">Percentage: --%</div><div class="ir-box" id="irRank">Class Rank: #--</div><div class="ir-box" id="irResult">Result: --</div></div>
+                    <div class="ir-footer"><div class="sign-line">Class Teacher</div><div class="sign-line">Principal</div></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="card view-section active" id="entryView">
-      <h2>Marks Entry</h2>
-      <p class="hint">
-        Rule: every visible roll must contain marks or <b>AB</b>. Blank rows cannot be submitted.
-      </p>
-
-      <div class="grid-4 no-print">
-        <div class="control-group">
-          <label>Class</label>
-          <select id="classIn"></select>
-        </div>
-
-        <div class="control-group">
-          <label>Subject</label>
-          <select id="subIn">
-            <option value="">Select Subject</option>
-            <option>English Language</option>
-            <option>English Literature</option>
-            <option>Hindi</option>
-            <option>Maths</option>
-            <option>Geography</option>
-            <option>History/Civics</option>
-            <option>Chemistry</option>
-            <option>Biology</option>
-            <option>Physics</option>
-            <option>GK/Msc</option>
-            <option>Computer</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label>Exam</label>
-          <select id="examType">
-            <option>Unit Test 1</option>
-            <option>Unit Test 2</option>
-            <option>Half Yearly</option>
-            <option>Unit Test 3</option>
-            <option>Annual Exam</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label>Mode</label>
-          <select id="typeIn">
-            <option>Written</option>
-            <option>Oral</option>
-            <option>Practical</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="grid-3 no-print">
-        <div class="control-group">
-          <label>Max Marks</label>
-          <input type="number" id="maxMarks" min="1" placeholder="e.g. 80" />
-        </div>
-
-        <div class="control-group">
-          <label>Total Students / Rolls</label>
-          <input type="number" id="stuCount" value="50" min="1" max="250" />
-        </div>
-
-        <div class="control-group">
-          <label>Generate Roll Format</label>
-          <button class="btn-small btn-green" onclick="generateRows()" style="height:42px; margin-top:18px;">Set Roll Nos</button>
-        </div>
-      </div>
-
-      <div id="studentContainer"></div>
-
-      <button class="btn-primary no-print" id="submitBtn" onclick="submitData()">Submit / Update Records</button>
-    </div>
-
-    <div class="card view-section" id="dashView">
-      <h2>Dashboard</h2>
-
-      <div id="printHeader" class="print-only">
-        <h1>BG PUBLIC SCHOOL</h1>
-        <h2>CONSOLIDATED REPORT & ANALYTICS</h2>
-        <div id="printReportMeta">CLASS: -- | EXAM: --</div>
-        <div id="printGenerated">Generated: --</div>
-      </div>
-
-      <div class="grid-3 no-print">
-        <div class="control-group">
-          <label>Select Class & Exam</label>
-          <select id="tabSelector"></select>
-        </div>
-
-        <div class="control-group">
-          <label>Fetch</label>
-          <button class="btn-small btn-green" id="fetchBtn" onclick="fetchData()" style="height:42px; margin-top:18px;">Fetch Data</button>
-        </div>
-
-        <div class="control-group">
-          <label>Status</label>
-          <input type="text" id="dashStatus" readonly value="Waiting..." />
-        </div>
-      </div>
-
-      <div id="analyticsPanel" class="analytics-panel">
-        <div class="stat-box">
-          <h4>Overall Result</h4>
-          <p id="passFailText">Waiting...</p>
-        </div>
-
-        <div class="stat-box">
-          <h4>Top 3 Rankers</h4>
-          <div id="topRankersList">Waiting...</div>
-        </div>
-
-        <div class="stat-box">
-          <h4>Subject Average</h4>
-          <div id="subjectAvgsList">Waiting...</div>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table id="resTable">
-          <thead id="tHead"></thead>
-          <tbody id="tBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="editMarksModal" class="edit-modal-backdrop">
-      <div class="edit-modal">
-        <div class="edit-modal-header">
-          <div>
-            <div class="edit-modal-title">Edit Marks</div>
-            <div id="editModalMeta" class="edit-modal-subtitle">Class: -- | Exam: -- | Roll: --</div>
-          </div>
-          <button class="modal-close" onclick="closeEditModal()">Close</button>
-        </div>
-
-        <div class="grid-3">
-          <div class="control-group">
-            <label>Roll No</label>
-            <input type="text" id="editRoll" readonly />
-          </div>
-
-          <div class="control-group">
-            <label>Subject</label>
-            <select id="editSubject" onchange="loadEditSubjectValues()"></select>
-          </div>
-
-          <div class="control-group">
-            <label>Class / Exam</label>
-            <input type="text" id="editClassExam" readonly />
-          </div>
-        </div>
-
-        <div class="edit-grid">
-          <div class="edit-mode-card">
-            <h4>Written</h4>
-            <div class="control-group">
-              <label>Marks</label>
-              <input type="text" id="editWrittenMarks" placeholder="Marks or AB" />
-            </div>
-            <div class="control-group">
-              <label>Max Marks</label>
-              <input type="number" id="editWrittenMax" min="0" placeholder="Max marks" />
-            </div>
-          </div>
-
-          <div class="edit-mode-card">
-            <h4>Oral</h4>
-            <div class="control-group">
-              <label>Marks</label>
-              <input type="text" id="editOralMarks" placeholder="Marks or AB" />
-            </div>
-            <div class="control-group">
-              <label>Max Marks</label>
-              <input type="number" id="editOralMax" min="0" placeholder="Max marks" />
-            </div>
-          </div>
-
-          <div class="edit-mode-card">
-            <h4>Practical</h4>
-            <div class="control-group">
-              <label>Marks</label>
-              <input type="text" id="editPracticalMarks" placeholder="Marks or AB" />
-            </div>
-            <div class="control-group">
-              <label>Max Marks</label>
-              <input type="number" id="editPracticalMax" min="0" placeholder="Max marks" />
-            </div>
-          </div>
-        </div>
-
-        <p class="edit-help">
-          Enter marks or AB. If a mode is not applicable, keep both marks and max marks blank.
-          Existing rows will be updated. New mode entries will be added.
-        </p>
-
-        <div class="modal-actions">
-          <button class="btn-small btn-red" onclick="closeEditModal()">Cancel</button>
-          <button class="btn-small btn-green" id="saveEditBtn" onclick="saveEditedMarks()">Save Changes</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_csBKyvviScR_x5tPRBRmcXMNuz9tpqyrECWYqJxrqKB-jkl7BNw3D9CG23IWPMeb/exec";
-
-    const customSubjectOrder = [
-      "ENGLISH LANGUAGE",
-      "ENGLISH LITERATURE",
-      "HINDI",
-      "MATHS",
-      "GEOGRAPHY",
-      "HISTORY/CIVICS",
-      "CHEMISTRY",
-      "BIOLOGY",
-      "PHYSICS",
-      "GK/MSC",
-      "COMPUTER"
-    ];
-
-    const classList = [
-      "Playgroup",
-      "LKG",
-      "UKG",
-      "Class 1",
-      "Class 2",
-      "Class 3",
-      "Class 4",
-      "Class 5",
-      "Class 6",
-      "Class 7",
-      "Class 8",
-      "Class 9",
-      "Class 10",
-      "Class 11",
-      "Class 12"
-    ];
-
-    const teacherClassMap = {
-      "T-1": "Playgroup",
-      "T-2": "LKG",
-      "T-3": "UKG",
-      "T-4": "Class 1",
-      "T-5": "Class 2",
-      "T-6": "Class 3",
-      "T-7": "Class 4",
-      "T-8": "Class 5",
-      "T-9": "Class 6",
-      "T-10": "Class 7",
-      "T-11": "Class 8",
-      "T-12": "Class 9",
-      "T-13": "Class 10",
-      "T-14": "Class 11",
-      "T-15": "Class 12",
-      "ADMIN": "ALL_CLASSES"
-    };
-
-    let currentId = "";
-    let currentClassView = "";
-    let currentExamView = "";
-    let globalStudents = {};
-    let globalSubsArray = [];
-    let globalRankMap = {};
-    let currentEditingRoll = "";
-    let alertTimer = null;
-
-    window.addEventListener("DOMContentLoaded", function() {
-      generateRows();
-    });
-
-    function showMessage(msg, type = "info") {
-      const box = document.getElementById("customAlertBox");
-      box.innerHTML = msg;
-      box.className = type === "error" ? "alert-error" : (type === "success" ? "alert-success" : "alert-info");
-      box.style.display = "block";
-
-      clearTimeout(alertTimer);
-      alertTimer = setTimeout(function() {
-        box.style.display = "none";
-      }, 4200);
-    }
-
-    function loginTeacher() {
-      const id = document.getElementById("tid").value.trim().toUpperCase();
-      const pass = document.getElementById("tpass").value.trim();
-
-      if (!id || !pass) {
-        showMessage("Teacher ID and PIN are required.", "error");
-        return;
-      }
-
-      const valid =
-        (id === "ADMIN" && pass === "Admin@1") ||
-        (id !== "ADMIN" && pass === "bgps123" && teacherClassMap[id]);
-
-      if (!valid) {
-        showMessage("Login failed. Please check the ID and PIN.", "error");
-        return;
-      }
-
-      currentId = id;
-      const assignedClass = teacherClassMap[id];
-
-      document.getElementById("loggedInUser").textContent =
-        id + " | " + (assignedClass === "ALL_CLASSES" ? "SUPER ADMIN" : assignedClass);
-
-      populateClassOptions(id);
-      populateDashboardOptions(id);
-
-      document.getElementById("loginPage").style.display = "none";
-      document.getElementById("appShell").style.display = "block";
-
-      switchTab("entry");
-      showMessage("Login successful. Welcome to BG Public School ERP.", "success");
-    }
-
-    function logout() {
-      currentId = "";
-      location.reload();
-    }
-
-    function populateClassOptions(id) {
-      const classSelect = document.getElementById("classIn");
-      classSelect.innerHTML = "";
-
-      const allowedClasses = id === "ADMIN" ? classList : [teacherClassMap[id]];
-
-      allowedClasses.forEach(function(cls) {
-        const opt = document.createElement("option");
-        opt.value = cls;
-        opt.textContent = cls;
-        classSelect.appendChild(opt);
-      });
-    }
-
-    function populateDashboardOptions(id) {
-      const selector = document.getElementById("tabSelector");
-      selector.innerHTML = '<option value="">Select Report</option>';
-
-      const allowedClasses = id === "ADMIN" ? classList : [teacherClassMap[id]];
-      const exams = ["Unit Test 1", "Unit Test 2", "Half Yearly", "Unit Test 3", "Annual Exam"];
-
-      allowedClasses.forEach(function(cls) {
-        exams.forEach(function(exam) {
-          const opt = document.createElement("option");
-          opt.value = cls + "|" + exam;
-          opt.textContent = cls + " - " + exam;
-          selector.appendChild(opt);
-        });
-      });
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll(".view-section").forEach(function(el) {
-        el.classList.remove("active");
-      });
-
-      document.querySelectorAll(".tab-btn").forEach(function(el) {
-        el.classList.remove("active");
-      });
-
-      if (tab === "entry") {
-        document.getElementById("entryView").classList.add("active");
-        document.getElementById("tab-entry").classList.add("active");
-      } else {
-        document.getElementById("dashView").classList.add("active");
-        document.getElementById("tab-dash").classList.add("active");
-      }
-    }
-
-    function generateRows() {
-      const countEl = document.getElementById("stuCount");
-      const count = Number(countEl ? countEl.value : 50);
-      const container = document.getElementById("studentContainer");
-
-      if (!count || count < 1 || count > 250) {
-        showMessage("Roll count must be between 1 and 250.", "error");
-        return;
-      }
-
-      container.innerHTML = "";
-
-      for (let i = 1; i <= count; i++) {
-        const row = document.createElement("div");
-        row.className = "student-row";
-        row.innerHTML = `
-          <strong>Roll ${String(i).padStart(2, "0")}</strong>
-          <span>Enter marks or AB</span>
-          <input type="text" class="m-input" data-roll="${i}" placeholder="Marks / AB" />
-        `;
-        container.appendChild(row);
-      }
-
-      showMessage("Roll format generated for " + count + " students.", "info");
-    }
-
-    document.addEventListener("input", function(e) {
-      if (!e.target.classList.contains("m-input")) return;
-
-      const input = e.target;
-      const maxEl = document.getElementById("maxMarks");
-      const maxVal = Number(maxEl.value);
-      let val = input.value.trim().toUpperCase();
-
-      input.classList.remove("input-error");
-      maxEl.classList.remove("input-error");
-
-      if (val === "" || val === "A" || val === "AB") return;
-
-      if (!maxVal || maxVal <= 0) {
-        maxEl.classList.add("input-error");
-        input.value = "";
-        showMessage("Please enter Max Marks first.", "error");
-        maxEl.focus();
-        return;
-      }
-
-      if (isNaN(Number(val))) {
-        input.value = "";
-        showMessage("Marks must be a number or AB.", "error");
-        return;
-      }
-
-      const num = Number(val);
-
-      if (num < 0 || num > maxVal) {
-        input.classList.add("input-error");
-        input.value = "";
-        showMessage("Marks must be between 0 and " + maxVal + ".", "error");
-      }
-    });
-
-    async function submitData() {
-      const clsEl = document.getElementById("classIn");
-      const subEl = document.getElementById("subIn");
-      const examEl = document.getElementById("examType");
-      const typeEl = document.getElementById("typeIn");
-      const maxEl = document.getElementById("maxMarks");
-
-      [clsEl, subEl, examEl, typeEl, maxEl].forEach(function(el) {
-        el.classList.remove("input-error");
-      });
-
-      const cls = clsEl.value;
-      const subject = subEl.value;
-      const examType = examEl.value;
-      const type = typeEl.value;
-      const maxMarks = Number(maxEl.value);
-
-      let formError = false;
-
-      if (!cls) { clsEl.classList.add("input-error"); formError = true; }
-      if (!subject) { subEl.classList.add("input-error"); formError = true; }
-      if (!examType) { examEl.classList.add("input-error"); formError = true; }
-      if (!type) { typeEl.classList.add("input-error"); formError = true; }
-      if (!maxMarks || maxMarks <= 0) { maxEl.classList.add("input-error"); formError = true; }
-
-      if (formError) {
-        showMessage("Please check Class, Subject, Exam, Mode, and Max Marks.", "error");
-        return;
-      }
-
-      const entries = [];
-      const blankRolls = [];
-      const invalidRolls = [];
-
-      document.querySelectorAll(".m-input").forEach(function(input) {
-        input.classList.remove("input-error");
-
-        let val = input.value.trim().toUpperCase();
-        const roll = input.dataset.roll;
-
-        if (val === "") {
-          input.classList.add("input-error");
-          blankRolls.push(roll);
-          return;
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoFAw_Dr-c8Uez79RLT7wbfVZ5xhqUUrFlqkcN5j4FYUsiUaaoYoC4H9tldaoxoGMZ/exec";
+        
+        // Sequence requested by user: English, Hindi, Maths, EVS, GK, Computer... then rest of subjects.
+        const customSubjectOrder = [
+            "ENGLISH",
+            "ENGLISH LITERATURE", 
+            "ENGLISH LANGUAGE", 
+            "HINDI", 
+            "MATHS", 
+            "EVS",
+            "GK/MSC", 
+            "COMPUTER",
+            "SCIENCE",
+            "SOCIAL STUDIES",
+            "GEOGRAPHY", 
+            "HISTORY/CIVICS", 
+            "PHYSICS",
+            "CHEMISTRY", 
+            "BIOLOGY", 
+            "ACCOUNT",
+            "BUSINESS",
+            "ECONOMICS"
+        ];
+        
+        const mapping = {"T-1":"Playgroup","T-2":"LKG","T-3":"UKG","T-4":"Class 1","T-5":"Class 2","T-6":"Class 3","T-7":"Class 4","T-8":"Class 5","T-9":"Class 6","T-10":"Class 7","T-11":"Class 8","T-12":"Class 9","T-13":"Class 10","T-14":"Class 11","T-15":"Class 12","ADMIN":"ALL_CLASSES"};
+        let globalStudents = {}, globalSubsArray = [], globalRankMap = {}, currentClassView = "", currentExamView = "", currentId = "";
+
+        function loginTeacher() {
+            let id = document.getElementById('tid').value.toUpperCase(); let pass = document.getElementById('tpass').value;
+            if (((id === "ADMIN" && pass === "Admin@1") || (id !== "ADMIN" && pass === "bgps123")) && mapping[id]) {
+                currentId = id; let myClass = mapping[id];
+                document.getElementById('loggedInUser').innerText = id + " | " + (id === "ADMIN" ? "SUPER ADMIN" : myClass);
+                
+                const clsSelect = document.getElementById('class'), dashSelect = document.getElementById('tabSelector');
+                let classesToLoad = id === "ADMIN" ? ["Playgroup", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"] : [myClass];
+                
+                let clsOptions = id === "ADMIN" ? "<option value=''>Class</option>" : "";
+                let dashOptions = "<option value=''>Select Report</option>";
+                
+                const allExams = ["Unit Test 1", "Unit Test 2", "Half Yearly", "Unit Test 3", "Annual Exam"];
+                
+                classesToLoad.forEach(c => { 
+                    clsOptions += `<option value="${c}">${c}</option>`; 
+                    allExams.forEach(ex => { dashOptions += `<option value="${c}|${ex}">${c} - ${ex}</option>`; }); 
+                });
+                
+                clsSelect.innerHTML = clsOptions; dashSelect.innerHTML = dashOptions;
+                document.getElementById('loginPage').style.display = 'none'; document.getElementById('appShell').style.display = 'block';
+                
+                if(id === "ADMIN") { 
+                    document.getElementById('tab-entry').style.display = 'none'; 
+                    document.getElementById('btn-print-cons').style.display = 'inline-block'; 
+                    switchTab('dash'); 
+                } else { 
+                    document.getElementById('btn-print-cons').style.display = 'none'; 
+                    generateRows(); 
+                    switchTab('entry'); 
+                }
+            } else { alert("Login Failed!"); }
         }
 
-        if (val === "A") val = "AB";
-
-        if (val !== "AB") {
-          const num = Number(val);
-
-          if (isNaN(num) || num < 0 || num > maxMarks) {
-            input.classList.add("input-error");
-            invalidRolls.push(roll);
-            return;
-          }
-
-          val = num;
+        function switchTab(t) {
+            document.querySelectorAll('.view-section').forEach(el=>el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+            if(t === 'entry') { document.getElementById('entryView').classList.add('active'); document.getElementById('tab-entry').classList.add('active'); } 
+            else { document.getElementById('dashView').classList.add('active'); document.getElementById('tab-dash').classList.add('active'); }
         }
 
-        entries.push({
-          teacherId: currentId || "UNKNOWN",
-          className: cls,
-          subject: subject,
-          examType: examType,
-          type: type,
-          rollNo: roll,
-          marks: val,
-          maxMarks: maxMarks
-        });
-      });
-
-      if (blankRolls.length > 0) {
-        showMessage("Blank rolls: " + blankRolls.slice(0, 20).join(", ") + ". Enter marks or AB.", "error");
-        return;
-      }
-
-      if (invalidRolls.length > 0) {
-        showMessage("Invalid marks in rolls: " + invalidRolls.join(", "), "error");
-        return;
-      }
-
-      const btn = document.getElementById("submitBtn");
-      btn.disabled = true;
-      btn.textContent = "Saving...";
-
-      try {
-        await fetch(WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify({ entries: entries })
-        });
-
-        btn.textContent = "Verifying...";
-        await sleep(2000);
-
-        const verified = await verifySavedEntries(entries);
-
-        if (verified.ok) {
-          showMessage("✅ Records saved and verified!", "success");
-
-          document.querySelectorAll(".m-input").forEach(function(input) {
-            input.value = "";
-            input.classList.remove("input-error");
-          });
-
-        } else {
-          showMessage(
-            "⚠️ Verification failed. Missing rolls: " + verified.missing.slice(0, 15).join(", "),
-            "error"
-          );
+        function generateRows() {
+            let c = document.getElementById('studentContainer'); c.innerHTML = "";
+            for(let i=1; i<=50; i++) { c.innerHTML += `<div class="student-row"><span>Roll No. ${i.toString().padStart(2, '0')}</span><input type="number" class="m-input" data-roll="${i}" placeholder="--"></div>`; }
         }
 
-      } catch (err) {
-        showMessage("Network/verification error: " + err.message, "error");
-
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Submit / Update Records";
-      }
-    }
-
-    async function verifySavedEntries(entries) {
-      const raw = await getMasterData();
-      const dataRows = raw.slice(1);
-
-      const existingKeys = new Set();
-
-      dataRows.forEach(function(row) {
-        const key = makeKey(row[2], row[3], row[4], row[5], row[6], row[7], row[8]);
-        existingKeys.add(key);
-      });
-
-      const missing = [];
-
-      entries.forEach(function(item) {
-        const key = makeKey(
-          item.className,
-          item.subject,
-          item.examType,
-          item.type,
-          item.rollNo,
-          item.marks,
-          item.maxMarks
-        );
-
-        if (!existingKeys.has(key)) {
-          missing.push(item.rollNo);
-        }
-      });
-
-      return {
-        ok: missing.length === 0,
-        missing: missing,
-        checked: entries.length
-      };
-    }
-
-    async function getMasterData() {
-      const res = await fetch(WEB_APP_URL + "?action=get&ts=" + Date.now(), {
-        method: "GET",
-        cache: "no-store"
-      });
-
-      const payload = await res.json();
-
-      if (Array.isArray(payload)) return payload;
-
-      if (payload.status === "success" && Array.isArray(payload.data)) {
-        return payload.data;
-      }
-
-      throw new Error(payload.msg || "Invalid backend response.");
-    }
-
-    async function fetchData() {
-      const selector = document.getElementById("tabSelector");
-      selector.classList.remove("input-error");
-
-      if (!selector.value) {
-        selector.classList.add("input-error");
-        showMessage("Please select Class and Exam.", "error");
-        return;
-      }
-
-      const parts = selector.value.split("|");
-      const selectedClass = parts[0];
-      const selectedExam = parts[1];
-
-      currentClassView = selectedClass;
-      currentExamView = selectedExam;
-
-      const btn = document.getElementById("fetchBtn");
-      btn.disabled = true;
-      btn.textContent = "Fetching...";
-
-      try {
-        const rawData = await getMasterData();
-
-        if (!rawData || rawData.length < 2) {
-          showMessage("No data found in Master sheet.", "info");
-          clearDashboard();
-          return;
+        async function submitData() {
+            let entries = [];
+            let sub = document.getElementById('subject').value, exam = document.getElementById('examType').value, comp = document.getElementById('type').value, max = document.getElementById('maxMarks').value, cls = document.getElementById('class').value;
+            if(!sub || !max || !cls) return alert("Fill Class, Subject, Max Marks!");
+            
+            document.querySelectorAll('.m-input').forEach(i => { if(i.value && i.value.trim() !== "") entries.push({ teacherId: currentId, class: cls, subject: sub, examType: exam, type: comp, maxMarks: max, rollNo: i.dataset.roll, marks: i.value }); });
+            
+            if(entries.length === 0) return alert("No marks entered!");
+            const btn = document.getElementById('submitBtn'); if(btn.disabled) return;
+            btn.innerText = "Saving..."; btn.disabled = true;
+            
+            try { 
+                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entries) }); 
+                alert("Saved!"); 
+                document.querySelectorAll('.m-input').forEach(i => i.value = ""); 
+            } catch(e) { alert("Error!"); } 
+            finally { setTimeout(() => { btn.innerText = "Submit Records"; btn.disabled = false; }, 3000); }
         }
 
-        const cIdx = 2, sIdx = 3, eIdx = 4, tIdx = 5, rIdx = 6, oIdx = 7, mIdx = 8;
-
-        const students = {};
-        const allSubjects = new Set();
-        let hasData = false;
-
-        for (let i = 1; i < rawData.length; i++) {
-          const row = rawData[i];
-
-          if (!row) continue;
-
-          const cls = String(row[cIdx] || "").trim();
-          const exam = String(row[eIdx] || "").trim();
-
-          if (cls !== selectedClass || exam !== selectedExam) continue;
-
-          hasData = true;
-
-          const roll = String(row[rIdx] || "").trim();
-          if (!roll) continue;
-
-          const subject = String(row[sIdx] || "UNKNOWN").trim().toUpperCase();
-          const mode = String(row[tIdx] || "Written").trim().toLowerCase();
-          const max = Number(row[mIdx]) || 0;
-          const marksText = String(row[oIdx]).trim().toUpperCase();
-          const obtained = marksText === "AB" ? "AB" : (Number(marksText) || 0);
-
-          if (!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0 };
-
-          if (!students[roll].subs[subject]) {
-            students[roll].subs[subject] = {
-              written: { o: "-", m: 0 },
-              oral: { o: "-", m: 0 },
-              practical: { o: "-", m: 0 },
-              totMax: 0,
-              totObt: 0,
-              hasAB: false
-            };
-          }
-
-          if (students[roll].subs[subject][mode] !== undefined) {
-            students[roll].subs[subject][mode] = { o: obtained, m: max };
-          }
-
-          allSubjects.add(subject);
+        async function fetchData() {
+            let selection = document.getElementById('tabSelector').value; if(!selection) return alert("Select a report!");
+            let [selectedClass, selectedExam] = selection.split('|'); currentClassView = selectedClass; currentExamView = selectedExam;
+            document.getElementById('pDetails').innerText = "CLASS: " + selectedClass.toUpperCase() + " | EXAM: " + selectedExam.toUpperCase();
+            
+            let fBtn = document.getElementById('fetchBtn'); fBtn.innerText = "Fetching..."; fBtn.disabled = true;
+            try {
+                let res = await fetch(WEB_APP_URL + "?tabName=Master"); let rawData = await res.json();
+                fBtn.innerText = "Fetch Data"; fBtn.disabled = false;
+                if(!rawData || rawData.error || rawData.length < 2) return alert("No data found!");
+                
+                let students = {}, allSubjects = new Set(), hasData = false;
+                const cIdx=2, sIdx=3, eIdx=4, tIdx=5, rIdx=6, oIdx=7, mIdx=8;
+                
+                for(let i=1; i<rawData.length; i++) {
+                    let row = rawData[i]; if(!row || String(row[cIdx]).trim() !== selectedClass || String(row[eIdx]).trim() !== selectedExam) continue;
+                    hasData = true; 
+                    let roll = String(row[rIdx] || '').trim(); if(!roll) continue;
+                    let sub = String(row[sIdx] || 'UNKNOWN').toUpperCase().trim(); let mode = String(row[tIdx] || 'Written').trim().toLowerCase();
+                    let max = Number(row[mIdx]) || 0, obt = Number(row[oIdx]) || 0;
+                    
+                    if(!students[roll]) students[roll] = { subs: {}, totalMax: 0, totalObt: 0 };
+                    if(!students[roll].subs[sub]) students[roll].subs[sub] = { max:0, obt:0, written:'-', oral:'-', practical:'-' };
+                    
+                    students[roll].subs[sub].max += max; students[roll].subs[sub].obt += obt; 
+                    students[roll].totalMax += max; students[roll].totalObt += obt;
+                    
+                    if(mode.includes('oral')) students[roll].subs[sub].oral = students[roll].subs[sub].oral === '-' ? obt : students[roll].subs[sub].oral + obt;
+                    else if(mode.includes('practical')) students[roll].subs[sub].practical = students[roll].subs[sub].practical === '-' ? obt : students[roll].subs[sub].practical + obt;
+                    else students[roll].subs[sub].written = students[roll].subs[sub].written === '-' ? obt : students[roll].subs[sub].written + obt;
+                    
+                    allSubjects.add(sub);
+                }
+                
+                if(!hasData) return alert(`No marks for ${selectedClass} - ${selectedExam}`);
+                
+                let subsArray = Array.from(allSubjects);
+                subsArray.sort((a, b) => {
+                    let posA = customSubjectOrder.indexOf(a), posB = customSubjectOrder.indexOf(b);
+                    if (posA === -1) posA = 999; if (posB === -1) posB = 999;
+                    if (posA !== posB) return posA - posB;
+                    return a.localeCompare(b);
+                });
+                
+                let rolls = Object.keys(students);
+                rolls.sort((a,b) => students[b].totalObt - students[a].totalObt);
+                let rankMap = {}; let currentRank = 1;
+                let passCount = 0; let failCount = 0; 
+                let subStats = {};
+                
+                subsArray.forEach(sub => subStats[sub] = { highest: 0, max: 0 });
+                
+                rolls.forEach((r, index) => {
+                    if (index > 0 && students[r].totalObt < students[rolls[index-1]].totalObt) currentRank++;
+                    rankMap[r] = currentRank;
+                    let p_val = (students[r].totalObt / students[r].totalMax) * 100;
+                    if(p_val >= 33) passCount++; else failCount++;
+                    subsArray.forEach(sub => {
+                        if(students[r].subs[sub] !== undefined) { 
+                            if(students[r].subs[sub].obt > subStats[sub].highest) {
+                                subStats[sub].highest = students[r].subs[sub].obt;
+                            }
+                            subStats[sub].max = students[r].subs[sub].max;
+                        }
+                    });
+                });
+                
+                globalStudents = students; globalSubsArray = subsArray; globalRankMap = rankMap;
+                
+                document.getElementById('analyticsPanel').style.display = 'grid';
+                document.getElementById('passFailText').innerHTML = `<span class="text-green">PASS: ${passCount}</span><br><span class="text-red">FAIL: ${failCount}</span>`;
+                
+                let topHtml = "";
+                rolls.slice(0, 3).forEach((r, idx) => { topHtml += `<div>Rank ${idx+1}: Roll ${r} (${((students[r].totalObt / students[r].totalMax) * 100).toFixed(1)}%)</div>`; });
+                document.getElementById('topRankersList').innerHTML = topHtml || "N/A";
+                
+                let highHtml = "";
+                subsArray.forEach(sub => { 
+                    highHtml += `<div>${sub}: ${subStats[sub].highest} / ${subStats[sub].max}</div>`; 
+                });
+                document.getElementById('subjectHighsList').innerHTML = highHtml || "N/A";
+                
+                let h = "<tr><th>ROLL NO</th>"; subsArray.forEach(sub => { h += `<th>${sub}</th>`; });
+                h += "<th class='highlight-col'>MAX</th><th class='highlight-col'>OBT</th><th class='perc-col'>%</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>"; 
+                document.getElementById('tHead').innerHTML = h;
+                
+                let b = ""; let displayRolls = Object.keys(students).sort((a,b) => Number(a) - Number(b));
+                let btnText = currentId === "ADMIN" ? "View/Print" : "View";
+                
+                displayRolls.forEach(roll => {
+                    let s = students[roll]; let rawP = (s.totalObt / s.totalMax) * 100;
+                    let p = s.totalMax > 0 ? rawP.toFixed(2) + "%" : "0%"; let isFail = rawP < 33;
+                    
+                    b += `<tr class="${isFail ? 'fail-row' : ''}"><td>${roll}</td>`;
+                    subsArray.forEach(sub => { b += `<td>${s.subs[sub] !== undefined ? s.subs[sub].obt : '-'}</td>`; });
+                    let failMark = isFail ? "<span style='color:red;'> (F)</span>" : "";
+                    b += `<td class='highlight-col'>${s.totalMax}</td><td class='highlight-col'>${s.totalObt}</td><td class='perc-col'>${p}${failMark}</td><td class='rank-col'># ${rankMap[roll]}</td>`;
+                    b += `<td class='action-col'><button class="btn-small" onclick="viewIndividualReport('${roll}')">${btnText}</button></td></tr>`;
+                });
+                document.getElementById('tBody').innerHTML = b;
+            } catch(e) { alert("Error!"); fBtn.innerText = "Fetch Data"; fBtn.disabled = false; }
         }
 
-        if (!hasData) {
-          showMessage("No data found for " + selectedClass + " - " + selectedExam + ".", "info");
-          clearDashboard();
-          return;
+        function viewIndividualReport(roll) {
+            let s = globalStudents[roll]; if(!s) return;
+            document.getElementById('irRoll').innerText = "Roll No: " + roll; document.getElementById('irClass').innerText = "Class: " + currentClassView; document.getElementById('irExam').innerText = "Exam: " + currentExamView;
+            
+            let tbody = ""; globalSubsArray.forEach(sub => { if(s.subs[sub]) tbody += `<tr><td>${sub}</td><td>${s.subs[sub].written}</td><td>${s.subs[sub].oral}</td><td>${s.subs[sub].practical}</td><td>${s.subs[sub].max}</td><td>${s.subs[sub].obt}</td></tr>`; });
+            document.getElementById('irTableBody').innerHTML = tbody;
+            
+            let rawP = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;
+            document.getElementById('irTotal').innerText = `Total: ${s.totalObt} / ${s.totalMax}`; document.getElementById('irPerc').innerText = `Percentage: ${rawP.toFixed(2)}%`;
+            document.getElementById('irRank').innerText = `Class Rank: #${globalRankMap[roll]}`;
+            
+            let resEl = document.getElementById('irResult');
+            if(rawP < 33) { resEl.innerText = "Result: NEEDS IMPROVEMENT"; resEl.style.color = "#dc2626"; } 
+            else { resEl.innerText = "Result: PASSED"; resEl.style.color = "#16a34a"; }
+            
+            document.getElementById('dashMain').style.display = 'none'; document.getElementById('individualReportContainer').style.display = 'block';
+            document.getElementById('btn-print-indv').style.display = currentId === "ADMIN" ? "inline-block" : "none";
         }
 
-        const rolls = Object.keys(students);
-
-        rolls.forEach(function(roll) {
-          const student = students[roll];
-
-          Object.keys(student.subs).forEach(function(subject) {
-            const sub = student.subs[subject];
-
-            ["written", "oral", "practical"].forEach(function(mode) {
-              const obj = sub[mode];
-
-              if (obj.m > 0) {
-                sub.totMax += Number(obj.m);
-                student.totalMax += Number(obj.m);
-              }
-
-              if (obj.o === "AB") {
-                sub.hasAB = true;
-              } else if (obj.o !== "-") {
-                sub.totObt += Number(obj.o);
-                student.totalObt += Number(obj.o);
-              }
-            });
-          });
-        });
-
-        const subsArray = Array.from(allSubjects).sort(function(a, b) {
-          let posA = customSubjectOrder.indexOf(a);
-          let posB = customSubjectOrder.indexOf(b);
-
-          if (posA === -1) posA = 999;
-          if (posB === -1) posB = 999;
-
-          if (posA !== posB) return posA - posB;
-          return a.localeCompare(b);
-        });
-
-        const rankRolls = rolls.slice().sort(function(a, b) {
-          return students[b].totalObt - students[a].totalObt;
-        });
-
-        const rankMap = {};
-        let currentRank = 1;
-
-        rankRolls.forEach(function(roll, index) {
-          if (index > 0 && students[roll].totalObt < students[rankRolls[index - 1]].totalObt) {
-            currentRank = index + 1;
-          }
-
-          rankMap[roll] = currentRank;
-        });
-
-        globalStudents = students;
-        globalSubsArray = subsArray;
-        globalRankMap = rankMap;
-
-        renderAnalytics(students, subsArray, rankMap);
-        renderTable(students, subsArray, rankMap);
-
-        document.getElementById("dashStatus").value = "Loaded: " + selectedClass + " | " + selectedExam;
-        showMessage("Data fetched successfully.", "success");
-
-      } catch (err) {
-        showMessage("Fetch error: " + err.message, "error");
-        clearDashboard();
-
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Fetch Data";
-      }
-    }
-
-    function renderAnalytics(students, subsArray, rankMap) {
-      const rolls = Object.keys(students);
-      let passCount = 0;
-      let failCount = 0;
-
-      const subjectStats = {};
-      subsArray.forEach(function(sub) {
-        subjectStats[sub] = { obt: 0, max: 0, count: 0 };
-      });
-
-      rolls.forEach(function(roll) {
-        const s = students[roll];
-        const percent = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;
-
-        if (percent >= 33) passCount++;
-        else failCount++;
-
-        subsArray.forEach(function(sub) {
-          if (s.subs[sub] && s.subs[sub].totMax > 0) {
-            subjectStats[sub].obt += s.subs[sub].totObt;
-            subjectStats[sub].max += s.subs[sub].totMax;
-            subjectStats[sub].count++;
-          }
-        });
-      });
-
-      document.getElementById("analyticsPanel").style.display = "grid";
-      document.getElementById("passFailText").innerHTML =
-        '<span class="text-green">PASS: ' + passCount + '</span><br>' +
-        '<span class="text-red">FAIL/NI: ' + failCount + '</span>';
-
-      const topRolls = rolls.slice().sort(function(a, b) {
-        return rankMap[a] - rankMap[b];
-      }).slice(0, 3);
-
-      let topHtml = "";
-
-      topRolls.forEach(function(roll) {
-        const s = students[roll];
-        const p = s.totalMax > 0 ? ((s.totalObt / s.totalMax) * 100).toFixed(1) : "0.0";
-        topHtml += "<div>Rank " + rankMap[roll] + ": Roll " + roll + " (" + p + "%)</div>";
-      });
-
-      document.getElementById("topRankersList").innerHTML = topHtml || "N/A";
-
-      let avgHtml = "";
-
-      subsArray.forEach(function(sub) {
-        const st = subjectStats[sub];
-        const avg = st.max > 0 ? ((st.obt / st.max) * 100).toFixed(1) : "0.0";
-        avgHtml += "<div>" + sub + ": " + avg + "%</div>";
-      });
-
-      document.getElementById("subjectAvgsList").innerHTML = avgHtml || "N/A";
-    }
-
-    function renderTable(students, subsArray, rankMap) {
-      let header = "<tr><th>Roll No</th>";
-
-      subsArray.forEach(function(sub) {
-        header += "<th>" + escapeHtml(sub) + "</th>";
-      });
-
-      header += "<th class='highlight-col'>Max</th><th class='highlight-col'>Obt</th><th class='perc-col'>%</th><th>Rank</th><th class='action-col'>Edit</th></tr>";
-
-      document.getElementById("tHead").innerHTML = header;
-
-      const displayRolls = Object.keys(students).sort(function(a, b) {
-        return Number(a) - Number(b);
-      });
-
-      let body = "";
-
-      displayRolls.forEach(function(roll) {
-        const s = students[roll];
-        const percentRaw = s.totalMax > 0 ? (s.totalObt / s.totalMax) * 100 : 0;
-        const fail = percentRaw < 33;
-
-        body += "<tr class='" + (fail ? "fail-row" : "") + "'>";
-        body += "<td>" + escapeHtml(roll) + "</td>";
-
-        subsArray.forEach(function(sub) {
-          const d = s.subs[sub];
-
-          if (!d) {
-            body += "<td>-</td>";
-          } else {
-            const val = d.totMax > 0
-              ? (d.hasAB && d.totObt === 0 ? "AB" : d.totObt)
-              : "-";
-
-            body += "<td>" + val + "</td>";
-          }
-        });
-
-        body += "<td class='highlight-col'>" + s.totalMax + "</td>";
-        body += "<td class='highlight-col'>" + s.totalObt + "</td>";
-        body += "<td class='perc-col'>" + percentRaw.toFixed(2) + "%</td>";
-        body += "<td># " + rankMap[roll] + "</td>";
-        body += "<td class='action-col'><button class='btn-small' onclick='openEditModal(" + JSON.stringify(roll) + ")'>Edit</button></td>";
-        body += "</tr>";
-      });
-
-      document.getElementById("tBody").innerHTML = body;
-    }
-
-    function clearDashboard() {
-      document.getElementById("tHead").innerHTML = "";
-      document.getElementById("tBody").innerHTML = "";
-      document.getElementById("analyticsPanel").style.display = "none";
-      document.getElementById("dashStatus").value = "No data";
-    }
-
-    function openEditModal(roll) {
-      if (!globalStudents[roll]) {
-        showMessage("Student record not found.", "error");
-        return;
-      }
-
-      currentEditingRoll = String(roll);
-
-      const subjectSelect = document.getElementById("editSubject");
-      subjectSelect.innerHTML = "";
-
-      globalSubsArray.forEach(function(subject) {
-        const opt = document.createElement("option");
-        opt.value = subject;
-        opt.textContent = subject;
-        subjectSelect.appendChild(opt);
-      });
-
-      document.getElementById("editRoll").value = currentEditingRoll;
-      document.getElementById("editClassExam").value = currentClassView + " | " + currentExamView;
-      document.getElementById("editModalMeta").textContent =
-        "Class: " + currentClassView + " | Exam: " + currentExamView + " | Roll: " + currentEditingRoll;
-
-      loadEditSubjectValues();
-
-      document.getElementById("editMarksModal").classList.add("active");
-    }
-
-    function closeEditModal() {
-      document.getElementById("editMarksModal").classList.remove("active");
-      currentEditingRoll = "";
-    }
-
-    function loadEditSubjectValues() {
-      const roll = currentEditingRoll;
-      const subject = document.getElementById("editSubject").value;
-
-      const empty = { o: "", m: "" };
-      const student = globalStudents[roll];
-      const subjectData = student && student.subs && student.subs[subject] ? student.subs[subject] : null;
-
-      const written = subjectData ? subjectData.written : empty;
-      const oral = subjectData ? subjectData.oral : empty;
-      const practical = subjectData ? subjectData.practical : empty;
-
-      setEditModeValues("Written", written);
-      setEditModeValues("Oral", oral);
-      setEditModeValues("Practical", practical);
-    }
-
-    function setEditModeValues(modeName, data) {
-      const prefix = modeName.toLowerCase();
-      const marksEl = document.getElementById("edit" + modeName + "Marks");
-      const maxEl = document.getElementById("edit" + modeName + "Max");
-
-      marksEl.classList.remove("input-error");
-      maxEl.classList.remove("input-error");
-
-      marksEl.value = data && data.o !== "-" ? data.o : "";
-      maxEl.value = data && Number(data.m) > 0 ? data.m : "";
-    }
-
-    async function saveEditedMarks() {
-      const roll = currentEditingRoll;
-      const subject = document.getElementById("editSubject").value;
-
-      if (!roll || !subject) {
-        showMessage("Roll number and subject are required.", "error");
-        return;
-      }
-
-      const editEntries = [];
-      const modes = [
-        { type: "Written", marksId: "editWrittenMarks", maxId: "editWrittenMax" },
-        { type: "Oral", marksId: "editOralMarks", maxId: "editOralMax" },
-        { type: "Practical", marksId: "editPracticalMarks", maxId: "editPracticalMax" }
-      ];
-
-      let hasError = false;
-
-      modes.forEach(function(mode) {
-        const marksEl = document.getElementById(mode.marksId);
-        const maxEl = document.getElementById(mode.maxId);
-
-        marksEl.classList.remove("input-error");
-        maxEl.classList.remove("input-error");
-
-        let marks = marksEl.value.trim().toUpperCase();
-        const maxMarks = Number(maxEl.value);
-
-        if (marks === "" && !maxEl.value) {
-          return;
-        }
-
-        if (marks === "" && maxEl.value) {
-          marksEl.classList.add("input-error");
-          hasError = true;
-          return;
-        }
-
-        if (marks !== "" && (!maxMarks || maxMarks <= 0)) {
-          maxEl.classList.add("input-error");
-          hasError = true;
-          return;
-        }
-
-        if (marks === "A") marks = "AB";
-
-        if (marks !== "AB") {
-          const marksNum = Number(marks);
-
-          if (isNaN(marksNum) || marksNum < 0 || marksNum > maxMarks) {
-            marksEl.classList.add("input-error");
-            hasError = true;
-            return;
-          }
-
-          marks = marksNum;
-        }
-
-        editEntries.push({
-          teacherId: currentId || "UNKNOWN",
-          className: currentClassView,
-          subject: subject,
-          examType: currentExamView,
-          type: mode.type,
-          rollNo: roll,
-          marks: marks,
-          maxMarks: maxMarks
-        });
-      });
-
-      if (hasError) {
-        showMessage("Please correct the highlighted fields.", "error");
-        return;
-      }
-
-      if (editEntries.length === 0) {
-        showMessage("No changes were entered.", "error");
-        return;
-      }
-
-      const btn = document.getElementById("saveEditBtn");
-      btn.disabled = true;
-      btn.textContent = "Saving...";
-
-      try {
-        await fetch(WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify({ entries: editEntries })
-        });
-
-        btn.textContent = "Verifying...";
-        await sleep(2000);
-
-        const verified = await verifySavedEntries(editEntries);
-
-        if (!verified.ok) {
-          showMessage("Verification failed. Missing rolls: " + verified.missing.slice(0, 15).join(", "), "error");
-          return;
-        }
-
-        showMessage("Marks updated and verified successfully.", "success");
-        closeEditModal();
-        await fetchData();
-
-      } catch (err) {
-        showMessage("Update failed: " + err.message, "error");
-
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Save Changes";
-      }
-    }
-
-    function printDashboardReport() {
-      if (!document.getElementById("tHead").innerHTML) {
-        showMessage("Fetch dashboard data before printing the report.", "error");
-        switchTab("dash");
-        return;
-      }
-
-      switchTab("dash");
-
-      document.getElementById("printReportMeta").textContent =
-        "CLASS: " + (currentClassView || "--").toUpperCase() +
-        " | EXAM: " + (currentExamView || "--").toUpperCase();
-
-      document.getElementById("printGenerated").textContent =
-        "Generated: " + new Date().toLocaleString("en-IN");
-
-      document.body.classList.add("print-report");
-
-      setTimeout(function() {
-        window.print();
-      }, 120);
-    }
-
-    window.addEventListener("afterprint", function() {
-      document.body.classList.remove("print-report");
-    });
-
-    function exportToCSV() {
-      const table = document.getElementById("resTable");
-
-      if (!document.getElementById("tHead").innerHTML) {
-        showMessage("Fetch dashboard data first.", "error");
-        return;
-      }
-
-      const rows = table.querySelectorAll("tr");
-      const csv = [];
-
-      rows.forEach(function(row) {
-        const cols = row.querySelectorAll("th, td");
-        const line = [];
-
-        cols.forEach(function(col) {
-          line.push('"' + col.innerText.replace(/"/g, '""') + '"');
-        });
-
-        csv.push(line.join(","));
-      });
-
-      const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-
-      a.href = url;
-      a.download = (currentClassView || "Class") + "_" + (currentExamView || "Exam") + "_Report.csv";
-      a.click();
-
-      URL.revokeObjectURL(url);
-      showMessage("CSV downloaded.", "success");
-    }
-
-    function makeKey(className, subject, examType, type, rollNo, marks, maxMarks) {
-      return [
-        norm(className),
-        norm(subject),
-        norm(examType),
-        norm(type),
-        norm(rollNo),
-        norm(marks),
-        norm(maxMarks)
-      ].join("|");
-    }
-
-    function norm(value) {
-      if (value === null || value === undefined) return "";
-      return String(value).trim().toUpperCase();
-    }
-
-    function sleep(ms) {
-      return new Promise(function(resolve) {
-        setTimeout(resolve, ms);
-      });
-    }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-  </script>
-
+        function closeIndividualView() { document.getElementById('dashMain').style.display = 'block'; document.getElementById('individualReportContainer').style.display = 'none'; document.body.classList.remove('print-indv'); }
+        function printConsolidated() { document.body.classList.add('print-cons'); window.print(); document.body.classList.remove('print-cons'); }
+        function executeIndividualPrint() { document.body.classList.add('print-indv'); window.print(); document.body.classList.remove('print-indv'); }
+    </script>
 </body>
 </html>

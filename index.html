@@ -84,6 +84,37 @@
         body.wide-report #resTable th { font-size:clamp(7.5px,.62vw,9.5px); padding-left:2px; padding-right:2px; }
         body.wide-report #resTable td { font-size:clamp(9.5px,.72vw,12px); padding-left:2px; padding-right:2px; }
 
+        /* Class 6-10: abbreviated headings allow larger, readable text in the same width. */
+        body.class6to10-report #resTable th,
+        body.class6to10-report.wide-report #resTable th {
+            height:54px;
+            padding:6px 2px;
+            font-size:clamp(10px,.78vw,12px);
+            line-height:1.05;
+            letter-spacing:.12px;
+            white-space:nowrap;
+            overflow-wrap:normal;
+        }
+        body.class6to10-report #resTable td,
+        body.class6to10-report.wide-report #resTable td {
+            height:46px;
+            padding:6px 2px;
+            font-size:clamp(12px,.92vw,14px);
+            line-height:1.05;
+        }
+        body.class6to10-report #resTable .subject-header-short {
+            min-height:34px;
+            white-space:nowrap;
+            font-weight:900;
+            letter-spacing:.18px;
+        }
+        body.class6to10-report #resTable .roll-col { width:5%; min-width:50px; }
+        body.class6to10-report #resTable .summary-col { width:4.7%; min-width:44px; }
+        body.class6to10-report #resTable .percentage-col { width:6.2%; min-width:60px; }
+        body.class6to10-report #resTable .rank-col { width:5%; min-width:48px; }
+        body.class6to10-report #resTable .action-col { width:8%; min-width:88px; }
+        body.class6to10-report #resTable .btn-small { padding:6px 5px; font-size:9px; }
+
         .app-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:14px; }
         .logout-tab { margin-left:auto; color:var(--red); border:none; background:transparent; }
         .entry-grid { display:grid; gap:10px; }
@@ -808,6 +839,21 @@
                 min-height: 0 !important;
             }
 
+            /* Class 6-10 uses short subject labels, so print can remain larger and clearer. */
+            body.class6to10-report.print-cons #resTable th,
+            body.class6to10-report.print-cons.print-fit-one #resTable th {
+                font-size:9.4px !important;
+                line-height:1 !important;
+                padding:2.4px 1.5px !important;
+                white-space:nowrap !important;
+            }
+            body.class6to10-report.print-cons #resTable td,
+            body.class6to10-report.print-cons.print-fit-one #resTable td {
+                font-size:10.2px !important;
+                line-height:1 !important;
+                padding:2.4px 1.5px !important;
+            }
+
             /* Primary classes keep their fixed 11-column print order and exact 100% width. */
             body.primary-report.print-cons #resTable th:nth-child(1),
             body.primary-report.print-cons #resTable td:nth-child(1) { width: 6% !important; }
@@ -977,8 +1023,72 @@
             })[character]);
         }
 
-        function subjectHeaderHtml(subject) {
-            const safe = escapeHtml(subject);
+        function isClass6To10Report(className) {
+            return /^Class\s(?:6|7|8|9|10)$/.test(String(className || '').trim());
+        }
+
+        function class6To10SubjectPosition(subject) {
+            const value = String(subject || '').toUpperCase().trim().replace(/\s+/g, ' ');
+            const positions = {
+                'ENGLISH LANGUAGE': 0,
+                'ENGLISH LITERATURE': 1,
+                'HINDI': 2,
+                'MATHS': 3,
+                'MATHEMATICS': 3,
+                'MATH': 3,
+                'GEOGRAPHY': 4,
+                'HISTORY/CIVICS': 5,
+                'HISTORY / CIVICS': 5,
+                'CHEMISTRY': 6,
+                'BIOLOGY': 7,
+                'PHYSICS': 8,
+                'GK/MSC': 9,
+                'GK / MSC': 9,
+                'GK-MSC': 9,
+                'GK/MORAL SCIENCE': 9,
+                'GK / MORAL SCIENCE': 9,
+                'GENERAL KNOWLEDGE': 9,
+                'MORAL SCIENCE': 9,
+                'MSC': 9,
+                'GK': 9,
+                'COMPUTER': 10
+            };
+            return Object.prototype.hasOwnProperty.call(positions, value) ? positions[value] : 999;
+        }
+
+        function subjectHeaderHtml(subject, className) {
+            const value = String(subject || '').toUpperCase().trim().replace(/\s+/g, ' ');
+            const safe = escapeHtml(value);
+
+            if (isClass6To10Report(className)) {
+                const shortLabels = {
+                    'ENGLISH LANGUAGE': 'ENG LAN',
+                    'ENGLISH LITERATURE': 'ENG LIT',
+                    'HINDI': 'HINDI',
+                    'MATHS': 'MATHS',
+                    'MATHEMATICS': 'MATHS',
+                    'MATH': 'MATHS',
+                    'GEOGRAPHY': 'GEO',
+                    'HISTORY/CIVICS': 'HIS/CIV',
+                    'HISTORY / CIVICS': 'HIS/CIV',
+                    'CHEMISTRY': 'CHEM',
+                    'BIOLOGY': 'BIO',
+                    'PHYSICS': 'PHY',
+                    'GK/MSC': 'GK/MSC',
+                    'GK / MSC': 'GK/MSC',
+                    'GK-MSC': 'GK/MSC',
+                    'GK/MORAL SCIENCE': 'GK/MSC',
+                    'GK / MORAL SCIENCE': 'GK/MSC',
+                    'GENERAL KNOWLEDGE': 'GK/MSC',
+                    'MORAL SCIENCE': 'GK/MSC',
+                    'MSC': 'GK/MSC',
+                    'GK': 'GK/MSC',
+                    'COMPUTER': 'COMP'
+                };
+                const label = shortLabels[value] || value;
+                return `<span class="subject-header subject-header-short" title="${safe}">${escapeHtml(label)}</span>`;
+            }
+
             const wrapped = safe
                 .replace('ENGLISH LITERATURE', 'ENGLISH<br>LITERATURE')
                 .replace('ENGLISH LANGUAGE', 'ENGLISH<br>LANGUAGE')
@@ -1514,6 +1624,15 @@
                 let subjects;
                 if (isPrimaryReportClass(selectedClass)) {
                     subjects = [...primarySubjectOrder];
+                } else if (isClass6To10Report(selectedClass)) {
+                    // Class 6-10 fixed display sequence:
+                    // Eng Lan, Eng Lit, Hindi, Maths, Geo, History/Civics,
+                    // Chemistry, Biology, Physics, GK/MSC, Computer.
+                    subjects = [...allSubjects].sort((a, b) => {
+                        const posA = class6To10SubjectPosition(a);
+                        const posB = class6To10SubjectPosition(b);
+                        return posA !== posB ? posA - posB : a.localeCompare(b);
+                    });
                 } else {
                     subjects = [...allSubjects].sort((a, b) => {
                         let posA = customSubjectOrder.indexOf(a);
@@ -1568,7 +1687,9 @@
                 globalStudentRecords = studentRecords;
 
                 const primaryReport = isPrimaryReportClass(selectedClass);
+                const class6To10Report = isClass6To10Report(selectedClass);
                 document.body.classList.toggle('primary-report', primaryReport);
+                document.body.classList.toggle('class6to10-report', class6To10Report);
                 document.body.classList.toggle('wide-report', !primaryReport && subjects.length >= 8);
 
                 document.getElementById('analyticsPanel').style.display = 'grid';
@@ -1597,7 +1718,7 @@
                 if (markClickHint) markClickHint.classList.add('visible');
 
                 let header = '<tr><th class="roll-col">ROLL NO</th>';
-                subjects.forEach(subject => header += `<th class="subject-col">${subjectHeaderHtml(subject)}</th>`);
+                subjects.forEach(subject => header += `<th class="subject-col">${subjectHeaderHtml(subject, selectedClass)}</th>`);
                 if (primaryReport) {
                     header += "<th class='highlight-col summary-col'>TOTAL</th><th class='perc-col percentage-col'>PERCENTAGE</th><th class='rank-col'>RANK</th><th class='action-col'>ACTION</th></tr>";
                 } else {

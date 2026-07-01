@@ -1027,6 +1027,56 @@
             return /^Class\s(?:6|7|8|9|10)$/.test(String(className || '').trim());
         }
 
+        const class6To10SubjectSlots = [
+            { fallback: 'ENGLISH LANGUAGE', aliases: ['ENGLISH LANGUAGE', 'ENG LANGUAGE', 'ENGLISH LANG'] },
+            { fallback: 'ENGLISH LITERATURE', aliases: ['ENGLISH LITERATURE', 'ENG LITERATURE', 'ENGLISH LIT'] },
+            { fallback: 'HINDI', aliases: ['HINDI'] },
+            { fallback: 'MATHS', aliases: ['MATHS', 'MATHEMATICS', 'MATH'] },
+            { fallback: 'GEOGRAPHY', aliases: ['GEOGRAPHY', 'GEO'] },
+            { fallback: 'HISTORY/CIVICS', aliases: ['HISTORY/CIVICS', 'HISTORY / CIVICS', 'HISTORY & CIVICS', 'HISTORY AND CIVICS'] },
+            { fallback: 'CHEMISTRY', aliases: ['CHEMISTRY', 'CHEM'] },
+            { fallback: 'BIOLOGY', aliases: ['BIOLOGY', 'BIO'] },
+            { fallback: 'PHYSICS', aliases: ['PHYSICS', 'PHY'] },
+            {
+                fallback: 'GK/MSC',
+                aliases: [
+                    'GK/MSC', 'GK / MSC', 'GK-MSC', 'GK & MSC', 'GK AND MSC',
+                    'GK/MORAL SCIENCE', 'GK / MORAL SCIENCE', 'GK & MORAL SCIENCE',
+                    'GENERAL KNOWLEDGE', 'MORAL SCIENCE', 'MORAL SCIENCE/GK',
+                    'MSC', 'M.SC', 'GK', 'G.K', 'G.K.'
+                ]
+            },
+            {
+                fallback: 'COMPUTER',
+                aliases: [
+                    'COMPUTER', 'COMPUTERS', 'COMPUTER SCIENCE', 'COMPUTER APPLICATION',
+                    'COMPUTER APPLICATIONS', 'COMPUTER STUDIES', 'COMP'
+                ]
+            }
+        ];
+
+        function normalizedSubjectLabel(subject) {
+            return String(subject || '').toUpperCase().trim().replace(/\s+/g, ' ');
+        }
+
+        function resolveClass6To10Subjects(allSubjects) {
+            const available = [...allSubjects];
+            const used = new Set();
+
+            return class6To10SubjectSlots.map(slot => {
+                const found = available.find(subject => {
+                    if (used.has(subject)) return false;
+                    return slot.aliases.includes(normalizedSubjectLabel(subject));
+                });
+
+                if (found) {
+                    used.add(found);
+                    return found;
+                }
+                return slot.fallback;
+            });
+        }
+
         function class6To10SubjectPosition(subject) {
             const value = String(subject || '').toUpperCase().trim().replace(/\s+/g, ' ');
             const positions = {
@@ -1051,7 +1101,19 @@
                 'MORAL SCIENCE': 9,
                 'MSC': 9,
                 'GK': 9,
-                'COMPUTER': 10
+                'G.K': 9,
+                'G.K.': 9,
+                'GK & MSC': 9,
+                'GK AND MSC': 9,
+                'MORAL SCIENCE/GK': 9,
+                'M.SC': 9,
+                'COMPUTER': 10,
+                'COMPUTERS': 10,
+                'COMPUTER SCIENCE': 10,
+                'COMPUTER APPLICATION': 10,
+                'COMPUTER APPLICATIONS': 10,
+                'COMPUTER STUDIES': 10,
+                'COMP': 10
             };
             return Object.prototype.hasOwnProperty.call(positions, value) ? positions[value] : 999;
         }
@@ -1083,7 +1145,19 @@
                     'MORAL SCIENCE': 'GK/MSC',
                     'MSC': 'GK/MSC',
                     'GK': 'GK/MSC',
-                    'COMPUTER': 'COMP'
+                    'G.K': 'GK/MSC',
+                    'G.K.': 'GK/MSC',
+                    'GK & MSC': 'GK/MSC',
+                    'GK AND MSC': 'GK/MSC',
+                    'MORAL SCIENCE/GK': 'GK/MSC',
+                    'M.SC': 'GK/MSC',
+                    'COMPUTER': 'COMP',
+                    'COMPUTERS': 'COMP',
+                    'COMPUTER SCIENCE': 'COMP',
+                    'COMPUTER APPLICATION': 'COMP',
+                    'COMPUTER APPLICATIONS': 'COMP',
+                    'COMPUTER STUDIES': 'COMP',
+                    'COMP': 'COMP'
                 };
                 const label = shortLabels[value] || value;
                 return `<span class="subject-header subject-header-short" title="${safe}">${escapeHtml(label)}</span>`;
@@ -1625,14 +1699,10 @@
                 if (isPrimaryReportClass(selectedClass)) {
                     subjects = [...primarySubjectOrder];
                 } else if (isClass6To10Report(selectedClass)) {
-                    // Class 6-10 fixed display sequence:
-                    // Eng Lan, Eng Lit, Hindi, Maths, Geo, History/Civics,
-                    // Chemistry, Biology, Physics, GK/MSC, Computer.
-                    subjects = [...allSubjects].sort((a, b) => {
-                        const posA = class6To10SubjectPosition(a);
-                        const posB = class6To10SubjectPosition(b);
-                        return posA !== posB ? posA - posB : a.localeCompare(b);
-                    });
+                    // Class 6-10 fixed display sequence. GK/MSC and Computer are always retained.
+                    // Existing sheet labels are resolved through aliases so old records remain editable
+                    // with their original subject key and continue to overwrite instead of duplicating.
+                    subjects = resolveClass6To10Subjects(allSubjects);
                 } else {
                     subjects = [...allSubjects].sort((a, b) => {
                         let posA = customSubjectOrder.indexOf(a);

@@ -2791,7 +2791,6 @@
                     `Saved: ${result.inserted || 0} new, ${result.updated || 0} updated, ${result.unchanged || 0} unchanged. Duplicate rows removed: ${result.duplicatesRemoved || 0}.`,
                     'success'
                 );
-                alert(`Records saved successfully.\nNew: ${result.inserted || 0}\nUpdated: ${result.updated || 0}\nUnchanged: ${result.unchanged || 0}`);
                 await loadExistingMarks(false);
             } catch (error) {
                 console.error(error);
@@ -3887,7 +3886,7 @@
                 box.className = 'manual-checks success';
                 box.innerHTML = `✓ Marks verified (${analysis.total}/${meta.maxMarks}) · ✓ ${analysis.questionCount} mark-bearing items detected${warnings.length ? `<br>⚠ ${warnings.map(escapeHtml).join('<br>⚠ ')}` : '<br>✓ Basic duplicate-line check passed'}<br>ⓘ Red spelling underlines are provided by the browser. Hindi Unicode typing is supported through the phone/computer keyboard.`;
             }
-            if (showAlert) alert(errors.length ? `Paper has ${errors.length} issue(s). See the check panel.` : 'Paper checks passed. Preview it once before submission.');
+            if (showAlert) box.scrollIntoView({ behavior:'smooth', block:'center' });
             return { valid:errors.length === 0, errors, warnings, meta, analysis };
         }
 
@@ -3977,13 +3976,22 @@
                         blueprint:getSuggestedBlueprint(check.meta.maxMarks)
                     }
                 });
-                alert(`Paper submitted successfully as Version ${result.version}.`);
+                const autosaveNote = document.getElementById('manualAutosaveNote');
+                if (autosaveNote) {
+                    autosaveNote.textContent = `Paper submitted successfully as Version ${result.version}.`;
+                    autosaveNote.style.color = '#bbf7d0';
+                }
                 localStorage.removeItem(manualDraftKey());
                 clearManualDraftAfterSubmit();
                 questionPapers = [];
                 await loadQuestionPapers(true);
             } catch (error) {
-                console.error(error); alert(`Paper submission failed. ${error.message}`);
+                console.error(error);
+                const autosaveNote = document.getElementById('manualAutosaveNote');
+                if (autosaveNote) {
+                    autosaveNote.textContent = `Paper submission failed: ${error.message}`;
+                    autosaveNote.style.color = '#fecaca';
+                }
             } finally {
                 button.disabled = false; button.textContent = 'Submit Paper to Admin';
             }
@@ -4010,7 +4018,10 @@
             const classFilter = document.getElementById('paperFilterClass').value;
             const statusFilter = document.getElementById('paperFilterStatus').value;
             const sourceFilter = document.getElementById('paperFilterSource').value;
-            const papers = questionPapers.filter(paper => (!classFilter || paper.className === classFilter) && (!statusFilter || paper.status === statusFilter) && (!sourceFilter || paper.sourceType === sourceFilter));
+            const statusRank = { 'Submitted': 0, 'Correction Required': 1, 'Approved': 2, 'Locked': 3, 'Draft': 4 };
+            const papers = questionPapers
+                .filter(paper => (!classFilter || paper.className === classFilter) && (!statusFilter || paper.status === statusFilter) && (!sourceFilter || paper.sourceType === sourceFilter))
+                .sort((a, b) => (statusRank[a.status] ?? 9) - (statusRank[b.status] ?? 9) || String(b.uploadedAt || '').localeCompare(String(a.uploadedAt || '')));
             if (!papers.length) { list.innerHTML = '<div class="paper-empty">No question papers match the selected filters.</div>'; return; }
 
             list.innerHTML = papers.map(paper => {
@@ -4021,7 +4032,7 @@
                 let adminActions = '';
                 if (currentId === 'ADMIN') {
                     if (paper.status !== 'Approved' && paper.status !== 'Locked') adminActions += `<button class="paper-action-approve" onclick="updatePaperStatus('${escapeHtml(paper.paperId)}','Approved')">Approve</button>`;
-                    if (paper.status !== 'Locked') adminActions += `<button class="paper-action-return" onclick="requestPaperCorrection('${escapeHtml(paper.paperId)}')">Correction</button>`;
+                    if (paper.status !== 'Locked') adminActions += `<button class="paper-action-return" onclick="requestPaperCorrection('${escapeHtml(paper.paperId)}')">Request Correction</button>`;
                     if (paper.status === 'Approved') adminActions += `<button class="paper-action-lock" onclick="updatePaperStatus('${escapeHtml(paper.paperId)}','Locked')">Lock</button>`;
                     if (paper.status === 'Locked') adminActions += `<button class="paper-action-unlock" onclick="updatePaperStatus('${escapeHtml(paper.paperId)}','Approved')">Unlock</button>`;
                 }
@@ -4052,6 +4063,29 @@
   .nav-tabs.no-print .tab-btn { white-space:nowrap; }
   .tab-btn.is-attention { position:relative; }
   .tab-btn.is-attention::after { content:''; position:absolute; top:7px; right:7px; width:8px; height:8px; border-radius:50%; background:#fb7185; box-shadow:0 0 0 4px rgba(251,113,133,.15); }
+
+  /* ---------- Paper module modes ---------- */
+  #paperView.pro-paper-approval #paperAdminControls { display:none !important; }
+  #paperView.pro-paper-settings #paperLibraryPanel { display:none !important; }
+  #paperView.pro-paper-settings #paperAdminControls {
+    display:block !important;
+    max-width:980px;
+    margin:0 auto;
+  }
+  #paperView.pro-paper-settings .premium-paper-main { display:block; }
+  #paperView.pro-paper-settings .premium-panel-header h2 { font-size:26px; }
+  #paperView.pro-paper-approval #paperLibraryPanel {
+    border-color:rgba(246,201,14,.34);
+    box-shadow:0 18px 44px rgba(2,12,27,.22);
+  }
+  #paperView.pro-paper-approval .compact-paper-card:first-child {
+    border-color:rgba(246,201,14,.72);
+    box-shadow:0 12px 28px rgba(146,94,0,.16);
+  }
+  #paperView.pro-paper-approval .paper-badge.submitted {
+    background:#fef3c7;
+    color:#92400e;
+  }
 
   /* ---------- Pro cards / command center ---------- */
   .bgps-pro-view { display:none; }
@@ -4219,9 +4253,8 @@
     if (isAdminUser()) {
       nav.innerHTML = `
         <button class="tab-btn" id="tab-home" onclick="switchTab('home')">Principal Command Center</button>
-        <button class="tab-btn" id="tab-review" onclick="switchTab('review')">Marks Review</button>
+        <button class="tab-btn" id="tab-review" onclick="switchTab('review')">Marks & Reports</button>
         <button class="tab-btn${attention}" id="tab-approval" onclick="switchTab('approval')">Paper Approval</button>
-        <button class="tab-btn" id="tab-reports" onclick="switchTab('reports')">Reports & Print Library</button>
         <button class="tab-btn" id="tab-teachers" onclick="switchTab('teachers')">Teacher Progress</button>
         <button class="tab-btn${attention}" id="tab-corrections" onclick="switchTab('corrections')">Correction Tracker</button>
         <button class="tab-btn" id="tab-settings" onclick="switchTab('settings')">Settings</button>
@@ -4333,7 +4366,7 @@
   function renderActionList(stats) {
     const actions = stats.actions && stats.actions.length ? stats.actions : [{
       title: 'No urgent action right now',
-      detail: isAdminUser() ? 'Open Marks Review, Paper Approval, or Reports & Print Library for detailed checking.' : 'Open Marks Entry, Review Library or Question Paper Center to continue work.',
+      detail: isAdminUser() ? 'Open Marks & Reports, Paper Approval, or Teacher Progress for detailed checking.' : 'Open Marks Entry, Review Library or Question Paper Center to continue work.',
       status: 'approved'
     }];
     return actions.map(item => `
@@ -4360,9 +4393,8 @@
         <section class="bgps-pro-panel"><h2>Quick Moves</h2><p>Priority workflows for the current role.</p>
           <div class="bgps-pro-actions">
             ${isAdminUser() ? `
-              <button class="btn-primary" type="button" onclick="switchTab('review')">Open Marks Review</button>
+              <button class="btn-primary" type="button" onclick="switchTab('review')">Open Marks & Reports</button>
               <button class="btn-primary" type="button" onclick="switchTab('approval')">Open Paper Approval</button>
-              <button class="btn-primary" type="button" onclick="switchTab('reports')">Open Reports & Print Library</button>
               <button class="btn-primary" type="button" onclick="switchTab('teachers')">Open Teacher Progress</button>
             ` : `
               <button class="btn-primary" type="button" onclick="switchTab('entry')">Enter / Edit Marks</button>
@@ -4387,14 +4419,50 @@
       if (dashMain) dashMain.insertBefore(intro, dashMain.firstChild);
     }
     intro.innerHTML = `
-      <div><strong>${isAdminUser() ? (mode === 'reports' ? 'Reports & Print Library' : 'Marks Review') : 'Review & Print Library'}</strong><br>
-      ${isAdminUser() ? (mode === 'reports' ? 'Select class and exam to print consolidated sheets or individual report cards.' : 'Select class and exam to audit result health, incomplete entries, fail list and report cards.') : 'Select your class and exam, then print consolidated sheet or student report card.'}</div>
+      <div><strong>${isAdminUser() ? 'Marks & Reports' : 'Review & Print Library'}</strong><br>
+      ${isAdminUser() ? 'Select class and exam to audit marks, review incomplete entries, and print consolidated or individual reports.' : 'Select your class and exam, then print consolidated sheet or student report card.'}</div>
       <button class="btn-primary" type="button" onclick="fetchData()">Fetch Selected Report</button>`;
 
     const printCons = document.getElementById('btn-print-cons');
     if (printCons) {
       printCons.style.display = 'inline-block';
       printCons.textContent = 'Print Consolidated';
+    }
+  }
+
+  function preparePaperMode(mode) {
+    const view = document.getElementById('paperView');
+    if (!view) return;
+    const admin = isAdminUser();
+    const isSettings = admin && (mode === 'settings' || mode === 'controls');
+    const isApproval = admin && mode === 'approval';
+    view.classList.toggle('pro-paper-settings', isSettings);
+    view.classList.toggle('pro-paper-approval', isApproval);
+
+    const controlsTitle = document.querySelector('#paperAdminControls .premium-panel-header h2');
+    const controlsCopy = document.querySelector('#paperAdminControls .premium-panel-header p');
+    const libraryKicker = document.getElementById('paperLibraryKicker');
+    const libraryTitle = document.getElementById('paperLibraryTitle');
+    const librarySubtitle = document.getElementById('paperLibrarySubtitle');
+
+    if (admin && isSettings) {
+      if (controlsTitle) controlsTitle.textContent = 'Question Paper Settings';
+      if (controlsCopy) controlsCopy.textContent = 'Manage paper upload, creator access, submissions and teacher notice from one clean control panel.';
+      return;
+    }
+
+    if (admin) {
+      if (controlsTitle) controlsTitle.textContent = 'Question Paper Controls';
+      if (controlsCopy) controlsCopy.textContent = 'Open or close each teacher workflow. Every switch is also enforced by the Apps Script backend.';
+      if (libraryKicker) libraryKicker.textContent = isApproval ? 'Admin Approval Desk' : 'Admin Paper Library';
+      if (libraryTitle) libraryTitle.textContent = isApproval ? 'Paper Approval' : 'Question Paper Center';
+      if (librarySubtitle) librarySubtitle.textContent = isApproval
+        ? 'Pending papers appear first. Preview, print, approve, lock or request corrections with admin remarks.'
+        : 'Review submissions, corrections, approved papers and locked versions.';
+    } else {
+      if (libraryKicker) libraryKicker.textContent = 'Your Submission History';
+      if (libraryTitle) libraryTitle.textContent = 'Question Paper Center';
+      if (librarySubtitle) librarySubtitle.textContent = 'Upload, create and track papers with admin remarks in one place.';
     }
   }
 
@@ -4497,12 +4565,13 @@
       document.getElementById('entryView')?.classList.add('active'); setActiveTab('tab-entry'); return;
     }
     if (t === 'review' || t === 'reports') {
-      prepareReviewMode(t); document.getElementById('dashView')?.classList.add('active'); setActiveTab(t === 'reports' && document.getElementById('tab-reports') ? 'tab-reports' : 'tab-review'); return;
+      prepareReviewMode(t); document.getElementById('dashView')?.classList.add('active'); setActiveTab('tab-review'); return;
     }
     if (t === 'papers' || t === 'approval' || t === 'settings' || t === 'controls') {
       const activePaperTab = t === 'approval' ? 'tab-approval' : (t === 'settings' || t === 'controls') ? 'tab-settings' : 'tab-papers';
-      document.getElementById('paperView')?.classList.add('active'); setActiveTab(document.getElementById(activePaperTab) ? activePaperTab : 'tab-papers');
+      document.getElementById('paperView')?.classList.add('active'); preparePaperMode(t); setActiveTab(document.getElementById(activePaperTab) ? activePaperTab : 'tab-papers');
       try { if (typeof loadPaperSettings === 'function') await loadPaperSettings(false); if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(false); } catch (_) {}
+      preparePaperMode(t);
       if (t === 'settings' || t === 'controls') setTimeout(() => document.getElementById('paperAdminControls')?.scrollIntoView({behavior:'smooth', block:'start'}), 120);
       return;
     }

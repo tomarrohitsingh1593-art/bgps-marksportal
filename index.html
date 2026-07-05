@@ -4034,5 +4034,516 @@
         }
 
     </script>
+<!-- ==============================================================
+BG PUBLIC SCHOOL — PRO UI FINAL PATCH V35
+Paste this whole block just BEFORE </body> in your current HTML file.
+It does not change your Apps Script backend URL or sheet logic.
+============================================================== -->
+<style>
+  /* ---------- BGPS Pro Shell / Role Navigation ---------- */
+  .bgps-pro-titlebar {
+    display:flex; justify-content:space-between; align-items:flex-start; gap:18px;
+    padding:18px 20px; margin:0 0 18px;
+    border:1px solid rgba(169,199,227,.24); border-radius:22px;
+    background:linear-gradient(135deg,rgba(11,36,64,.72),rgba(28,61,96,.48));
+    box-shadow:0 22px 54px rgba(2,12,27,.22), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .bgps-pro-titlebar h1 { margin:0; color:var(--gold); font-family:'EB Garamond',serif; font-size:30px; line-height:1.05; letter-spacing:-.02em; }
+  .bgps-pro-titlebar p { margin:6px 0 0; color:#cfe4f7; font-size:12px; line-height:1.45; max-width:820px; }
+  .bgps-pro-role-pill { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border-radius:999px; background:rgba(246,201,14,.13); border:1px solid rgba(246,201,14,.35); color:#fef3c7; font-family:'Inconsolata',monospace; font-size:12px; font-weight:900; white-space:nowrap; }
+
+  .nav-tabs.no-print { width:100%; overflow-x:auto; scrollbar-width:thin; }
+  .nav-tabs.no-print .tab-btn { white-space:nowrap; }
+  .tab-btn.is-attention { position:relative; }
+  .tab-btn.is-attention::after { content:''; position:absolute; top:7px; right:7px; width:8px; height:8px; border-radius:50%; background:#fb7185; box-shadow:0 0 0 4px rgba(251,113,133,.15); }
+
+  /* ---------- Pro cards / command center ---------- */
+  .bgps-pro-view { display:none; }
+  .bgps-pro-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:16px 0; }
+  .bgps-pro-card {
+    position:relative; overflow:hidden; min-height:112px; padding:16px;
+    border:1px solid rgba(169,199,227,.28); border-radius:18px;
+    background:linear-gradient(180deg,rgba(42,78,117,.72),rgba(19,51,84,.88));
+    box-shadow:0 16px 40px rgba(2,18,35,.18), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .bgps-pro-card::before { content:''; position:absolute; inset:0 0 auto; height:2px; background:linear-gradient(90deg,transparent,rgba(246,201,14,.75),transparent); opacity:.55; }
+  .bgps-pro-card span { display:block; color:#9fc7e8; font-size:9px; letter-spacing:.85px; text-transform:uppercase; font-weight:900; }
+  .bgps-pro-card strong { display:block; margin-top:8px; color:#fff; font-family:'Inconsolata',monospace; font-size:27px; line-height:1; }
+  .bgps-pro-card small { display:block; margin-top:8px; color:#c7d9ea; font-size:11px; line-height:1.35; }
+  .bgps-pro-card.good strong { color:#86efac; }
+  .bgps-pro-card.warn strong { color:#fcd34d; }
+  .bgps-pro-card.danger strong { color:#fca5a5; }
+
+  .bgps-pro-two-col { display:grid; grid-template-columns:minmax(0,1.28fr) minmax(320px,.72fr); gap:16px; align-items:start; }
+  .bgps-pro-panel {
+    border:1px solid rgba(169,199,227,.26); border-radius:20px; padding:18px;
+    background:rgba(18,48,82,.72); box-shadow:0 18px 44px rgba(2,12,27,.18);
+  }
+  .bgps-pro-panel h2 { margin:0 0 4px; color:var(--gold); font-family:'EB Garamond',serif; font-size:24px; }
+  .bgps-pro-panel p { color:#cfe4f7; font-size:12px; line-height:1.45; margin:0 0 13px; }
+  .bgps-pro-actions { display:grid; gap:10px; }
+  .bgps-action-card {
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    background:#f8fbff; color:#102a43; border:1px solid #b8cee2; border-radius:14px; padding:13px;
+    box-shadow:0 8px 22px rgba(2,20,38,.12);
+  }
+  .bgps-action-card strong { display:block; color:#12395f; font-size:13px; }
+  .bgps-action-card small { display:block; color:#526d82; font-size:11px; margin-top:3px; line-height:1.35; }
+  .bgps-status-badge { padding:6px 9px; border-radius:999px; font-size:10px; font-weight:900; text-transform:uppercase; white-space:nowrap; }
+  .bgps-status-badge.pending { background:#dbeafe; color:#1d4ed8; }
+  .bgps-status-badge.correction { background:#fee2e2; color:#b91c1c; }
+  .bgps-status-badge.approved { background:#dcfce7; color:#166534; }
+  .bgps-status-badge.locked { background:#e2e8f0; color:#334155; }
+
+  /* ---------- Teacher review / remarks ---------- */
+  .bgps-review-intro {
+    display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center;
+    margin-bottom:14px; padding:14px 16px; border-radius:16px;
+    background:rgba(144,205,244,.10); border:1px solid rgba(144,205,244,.32); color:#dbeafe;
+  }
+  .bgps-review-intro strong { color:#fff; }
+  .bgps-review-intro .btn-primary { width:auto; min-width:160px; margin:0; }
+  .remarks-list { display:grid; gap:12px; margin-top:14px; }
+  .remark-card {
+    background:#f8fbff; color:#102a43; border:1px solid #b8cee2; border-left:5px solid #f59e0b;
+    border-radius:14px; padding:14px; box-shadow:0 10px 28px rgba(2,20,38,.12);
+  }
+  .remark-card.correction { border-left-color:#dc2626; }
+  .remark-card.notice { border-left-color:#2f5f91; }
+  .remark-card h3 { margin:0; color:#12395f; font-size:15px; }
+  .remark-card p { margin:8px 0 0; color:#475569; font-size:12px; line-height:1.45; }
+  .remark-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+  .remark-meta span { padding:4px 7px; border-radius:999px; background:#eef6ff; color:#315b82; font-family:'Inconsolata',monospace; font-size:10px; font-weight:900; }
+
+  /* ---------- Softer table alerts ---------- */
+  #resTable tr.fail-row td { background:#fff7f7 !important; color:#7f1d1d !important; }
+  #resTable tr.fail-row td.roll-col { border-left:5px solid #dc2626 !important; }
+  #resTable tr.incomplete-row td.roll-col { border-left:5px solid #f59e0b !important; }
+  #resTable .missing-cell { background:#fff7ed !important; color:#9a3412 !important; font-weight:900 !important; }
+
+  /* ---------- Pearl theme support for new blocks ---------- */
+  body.bgps-theme-white .bgps-pro-titlebar,
+  body.bgps-theme-white .bgps-pro-card,
+  body.bgps-theme-white .bgps-pro-panel {
+    background:linear-gradient(180deg,#ffffff,#f5f9fe) !important; color:#102a43 !important;
+    border-color:#b8cee2 !important; box-shadow:0 18px 44px rgba(34,61,87,.12) !important;
+  }
+  body.bgps-theme-white .bgps-pro-titlebar h1,
+  body.bgps-theme-white .bgps-pro-panel h2 { color:#9a6500 !important; }
+  body.bgps-theme-white .bgps-pro-titlebar p,
+  body.bgps-theme-white .bgps-pro-panel p,
+  body.bgps-theme-white .bgps-pro-card small { color:#486b8b !important; }
+  body.bgps-theme-white .bgps-pro-card span { color:#2f5f91 !important; }
+  body.bgps-theme-white .bgps-pro-card strong { color:#12395f !important; }
+  body.bgps-theme-white .bgps-pro-card.good strong { color:#15803d !important; }
+  body.bgps-theme-white .bgps-pro-card.warn strong { color:#b7791f !important; }
+  body.bgps-theme-white .bgps-pro-card.danger strong { color:#b91c1c !important; }
+  body.bgps-theme-white .bgps-review-intro { background:#eef6ff !important; color:#12395f !important; border-color:#c7dcec !important; }
+  body.bgps-theme-white .bgps-review-intro strong { color:#12395f !important; }
+
+  @media screen and (max-width:1100px) {
+    .bgps-pro-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .bgps-pro-two-col { grid-template-columns:1fr; }
+  }
+  @media screen and (max-width:640px) {
+    .bgps-pro-titlebar { flex-direction:column; padding:15px; border-radius:18px; }
+    .bgps-pro-titlebar h1 { font-size:24px; }
+    .bgps-pro-grid { grid-template-columns:1fr; }
+    .bgps-review-intro { grid-template-columns:1fr; }
+    .bgps-review-intro .btn-primary { width:100%; }
+  }
+</style>
+
+<script>
+(function bgpsProFinalPatchV35(){
+  const PRO = {
+    homeId: 'proHomeView',
+    remarksId: 'remarksView',
+    teachersId: 'teachersView',
+    lastHomeStats: null
+  };
+
+  function safeText(value) { return String(value == null ? '' : value); }
+  function html(value) { return typeof escapeHtml === 'function' ? escapeHtml(value) : safeText(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch])); }
+  function paperStatusKey(status) {
+    const s = safeText(status).toLowerCase();
+    if (s.includes('correction')) return 'correction';
+    if (s.includes('approved')) return 'approved';
+    if (s.includes('locked')) return 'locked';
+    return 'pending';
+  }
+  function isAdminUser() { return safeText(window.currentId || currentId).toUpperCase() === 'ADMIN'; }
+  function roleClass() { return isAdminUser() ? 'Principal / Admin' : (mapping && mapping[currentId]) ? mapping[currentId] : 'Teacher'; }
+
+  function ensureProViews() {
+    const shell = document.getElementById('appShell');
+    if (!shell) return;
+
+    if (!document.getElementById(PRO.homeId)) {
+      const home = document.createElement('div');
+      home.className = 'card view-section bgps-pro-view';
+      home.id = PRO.homeId;
+      home.innerHTML = '<div id="proHomeContent"></div>';
+      shell.insertBefore(home, document.getElementById('entryView') || shell.firstChild);
+    }
+
+    if (!document.getElementById(PRO.remarksId)) {
+      const remarks = document.createElement('div');
+      remarks.className = 'card view-section bgps-pro-view';
+      remarks.id = PRO.remarksId;
+      remarks.innerHTML = '<div id="remarksContent"></div>';
+      shell.appendChild(remarks);
+    }
+
+    if (!document.getElementById(PRO.teachersId)) {
+      const teachers = document.createElement('div');
+      teachers.className = 'card view-section bgps-pro-view';
+      teachers.id = PRO.teachersId;
+      teachers.innerHTML = '<div id="teachersContent"></div>';
+      shell.appendChild(teachers);
+    }
+  }
+
+  function setActiveTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    const tab = document.getElementById(tabId);
+    if (tab) tab.classList.add('active');
+  }
+
+  function hideAllViews() {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+  }
+
+  function renderRoleTabs() {
+    const nav = document.querySelector('.nav-tabs.no-print') || document.querySelector('.nav-tabs');
+    if (!nav || !currentId) return;
+    const correctionCount = Array.isArray(questionPapers) ? questionPapers.filter(p => safeText(p.status) === 'Correction Required').length : 0;
+    const attention = correctionCount ? ' is-attention' : '';
+
+    if (isAdminUser()) {
+      nav.innerHTML = `
+        <button class="tab-btn" id="tab-home" onclick="switchTab('home')">Principal Command Center</button>
+        <button class="tab-btn" id="tab-review" onclick="switchTab('review')">Marks Review</button>
+        <button class="tab-btn${attention}" id="tab-papers" onclick="switchTab('papers')">Paper Review Library</button>
+        <button class="tab-btn" id="tab-teachers" onclick="switchTab('teachers')">Teacher Progress</button>
+        <button class="tab-btn${attention}" id="tab-remarks" onclick="switchTab('remarks')">Remarks Tracker</button>
+        <button class="tab-btn" id="tab-controls" onclick="switchTab('controls')">Controls</button>
+        <button class="tab-btn logout-tab" onclick="location.reload()">Logout</button>
+      `;
+    } else {
+      nav.innerHTML = `
+        <button class="tab-btn" id="tab-home" onclick="switchTab('home')">Home</button>
+        <button class="tab-btn" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
+        <button class="tab-btn" id="tab-review" onclick="switchTab('review')">Review & Print Library</button>
+        <button class="tab-btn" id="tab-papers" onclick="switchTab('papers')">Question Paper Center</button>
+        <button class="tab-btn${attention}" id="tab-remarks" onclick="switchTab('remarks')">Remarks & Corrections</button>
+        <button class="tab-btn logout-tab" onclick="location.reload()">Logout</button>
+      `;
+    }
+    if (typeof applyMarksEntryGate === 'function') applyMarksEntryGate();
+  }
+
+  function buildTitle(title, subtitle) {
+    return `
+      <div class="bgps-pro-titlebar no-print">
+        <div><h1>${html(title)}</h1><p>${html(subtitle)}</p></div>
+        <div class="bgps-pro-role-pill">${html(currentId || 'USER')} · ${html(roleClass())}</div>
+      </div>`;
+  }
+
+  async function gatherStats() {
+    const stats = {
+      marksRecords: 0,
+      classesTouched: 0,
+      teachersTouched: 0,
+      pendingPapers: 0,
+      corrections: 0,
+      approvedPapers: 0,
+      lockedPapers: 0,
+      actions: []
+    };
+
+    try {
+      if (typeof getMasterData === 'function') {
+        const rows = await getMasterData(true);
+        if (Array.isArray(rows) && rows.length > 1) {
+          const seenClasses = new Set();
+          const seenTeachers = new Set();
+          rows.slice(1).forEach(row => {
+            if (!row) return;
+            const tid = safeText(row[1]).trim();
+            const cls = safeText(row[2]).trim();
+            if (!isAdminUser() && cls !== mapping[currentId]) return;
+            if (tid) seenTeachers.add(tid);
+            if (cls) seenClasses.add(cls);
+            stats.marksRecords += 1;
+          });
+          stats.classesTouched = seenClasses.size;
+          stats.teachersTouched = seenTeachers.size;
+        }
+      }
+    } catch (e) {
+      stats.actions.push({ title:'Marks data could not be refreshed', detail:e.message || e, status:'correction' });
+    }
+
+    try {
+      if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true);
+      const papers = Array.isArray(questionPapers) ? questionPapers : [];
+      stats.pendingPapers = papers.filter(p => p.status === 'Submitted').length;
+      stats.corrections = papers.filter(p => p.status === 'Correction Required').length;
+      stats.approvedPapers = papers.filter(p => p.status === 'Approved').length;
+      stats.lockedPapers = papers.filter(p => p.status === 'Locked').length;
+      papers.filter(p => p.status === 'Correction Required').slice(0, 6).forEach(p => stats.actions.push({
+        title: `${p.className} · ${p.subject} · ${p.exam}`,
+        detail: p.adminNote || 'Correction required by Admin.',
+        status: 'correction'
+      }));
+      papers.filter(p => p.status === 'Submitted').slice(0, 6).forEach(p => stats.actions.push({
+        title: `${p.className} · ${p.subject} · ${p.exam}`,
+        detail: isAdminUser() ? `Teacher ${p.teacherId} submitted a paper for review.` : 'Your paper is waiting for admin review.',
+        status: 'pending'
+      }));
+    } catch (e) {
+      stats.actions.push({ title:'Question-paper data could not be refreshed', detail:e.message || e, status:'correction' });
+    }
+
+    PRO.lastHomeStats = stats;
+    renderRoleTabs();
+    return stats;
+  }
+
+  function renderCards(stats) {
+    if (isAdminUser()) {
+      return `
+        <div class="bgps-pro-grid">
+          <div class="bgps-pro-card"><span>Marks Records</span><strong>${stats.marksRecords}</strong><small>Total saved marks entries in Master sheet.</small></div>
+          <div class="bgps-pro-card"><span>Classes Active</span><strong>${stats.classesTouched}</strong><small>Classes with marks data.</small></div>
+          <div class="bgps-pro-card warn"><span>Papers Pending</span><strong>${stats.pendingPapers}</strong><small>Need approval / print review.</small></div>
+          <div class="bgps-pro-card danger"><span>Corrections</span><strong>${stats.corrections}</strong><small>Teacher action required.</small></div>
+        </div>`;
+    }
+    return `
+      <div class="bgps-pro-grid">
+        <div class="bgps-pro-card"><span>Your Class</span><strong>${html(mapping[currentId] || '-')}</strong><small>Assigned class workspace.</small></div>
+        <div class="bgps-pro-card"><span>Marks Entries</span><strong>${stats.marksRecords}</strong><small>Saved marks entries for your class.</small></div>
+        <div class="bgps-pro-card warn"><span>Papers Pending</span><strong>${stats.pendingPapers}</strong><small>Your papers waiting for review.</small></div>
+        <div class="bgps-pro-card danger"><span>Corrections</span><strong>${stats.corrections}</strong><small>Remarks requiring your action.</small></div>
+      </div>`;
+  }
+
+  function renderActionList(stats) {
+    const actions = stats.actions && stats.actions.length ? stats.actions : [{
+      title: 'No urgent action right now',
+      detail: isAdminUser() ? 'Open Marks Review or Paper Review Library for detailed checking.' : 'Open Marks Entry, Review Library or Question Paper Center to continue work.',
+      status: 'approved'
+    }];
+    return actions.map(item => `
+      <div class="bgps-action-card">
+        <div><strong>${html(item.title)}</strong><small>${html(item.detail)}</small></div>
+        <span class="bgps-status-badge ${item.status || 'pending'}">${item.status || 'pending'}</span>
+      </div>`).join('');
+  }
+
+  async function renderHome(refresh) {
+    ensureProViews();
+    const host = document.getElementById('proHomeContent');
+    if (!host) return;
+    const title = isAdminUser() ? 'Principal Command Center' : 'Teacher Workspace';
+    const subtitle = isAdminUser()
+      ? 'One screen for marks completion, pending papers, correction load and teacher follow-up.'
+      : 'Marks entry, review & print, question papers and admin corrections in one clean workspace.';
+    host.innerHTML = buildTitle(title, subtitle) + '<div class="paper-empty">Refreshing command center...</div>';
+
+    const stats = refresh || !PRO.lastHomeStats ? await gatherStats() : PRO.lastHomeStats;
+    host.innerHTML = buildTitle(title, subtitle) + renderCards(stats) + `
+      <div class="bgps-pro-two-col">
+        <section class="bgps-pro-panel"><h2>Action Required</h2><p>Priority list generated from pending papers, correction notes and available portal data.</p><div class="bgps-pro-actions">${renderActionList(stats)}</div></section>
+        <section class="bgps-pro-panel"><h2>Quick Moves</h2><p>Use these shortcuts instead of searching through the old dashboard.</p>
+          <div class="bgps-pro-actions">
+            ${isAdminUser() ? `
+              <button class="btn-primary" type="button" onclick="switchTab('review')">Open Marks Review</button>
+              <button class="btn-primary" type="button" onclick="switchTab('papers')">Open Paper Review Library</button>
+              <button class="btn-primary" type="button" onclick="switchTab('teachers')">Open Teacher Progress</button>
+            ` : `
+              <button class="btn-primary" type="button" onclick="switchTab('entry')">Enter / Edit Marks</button>
+              <button class="btn-primary" type="button" onclick="switchTab('review')">Review & Print Result</button>
+              <button class="btn-primary" type="button" onclick="switchTab('papers')">Upload / Create Paper</button>
+            `}
+            <button class="btn-secondary" type="button" onclick="bgpsProRefreshHome()">Refresh Command Center</button>
+          </div>
+        </section>
+      </div>`;
+  }
+
+  function prepareReviewMode() {
+    const dash = document.getElementById('dashView');
+    if (!dash) return;
+    let intro = document.getElementById('bgpsReviewIntro');
+    if (!intro) {
+      intro = document.createElement('div');
+      intro.id = 'bgpsReviewIntro';
+      intro.className = 'bgps-review-intro no-print';
+      const dashMain = document.getElementById('dashMain');
+      if (dashMain) dashMain.insertBefore(intro, dashMain.firstChild);
+    }
+    intro.innerHTML = `
+      <div><strong>${isAdminUser() ? 'Marks Review' : 'Review & Print Library'}</strong><br>
+      ${isAdminUser() ? 'Select class and exam to audit result health, incomplete entries, fail list and report cards.' : 'Select your class and exam, then print consolidated sheet or student report card.'}</div>
+      <button class="btn-primary" type="button" onclick="fetchData()">Fetch Selected Report</button>`;
+
+    const printCons = document.getElementById('btn-print-cons');
+    if (printCons) {
+      printCons.style.display = 'inline-block';
+      printCons.textContent = 'Print Consolidated';
+    }
+  }
+
+  async function renderRemarks() {
+    ensureProViews();
+    const host = document.getElementById('remarksContent');
+    if (!host) return;
+    host.innerHTML = buildTitle(isAdminUser() ? 'Remarks Tracker' : 'Remarks & Corrections', isAdminUser() ? 'Track correction requests and teacher follow-up from one place.' : 'Admin notices and paper correction remarks appear here.') + '<div class="paper-empty">Loading remarks...</div>';
+    try { if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true); } catch (_) {}
+    const papers = Array.isArray(questionPapers) ? questionPapers : [];
+    const remarks = [];
+
+    if (paperSettings && paperSettings.adminNotice) {
+      remarks.push({ type:'notice', title:'Admin Notice', detail:paperSettings.adminNotice, meta:['Portal Notice'] });
+    }
+    papers.filter(p => p.status === 'Correction Required' || p.adminNote).forEach(p => remarks.push({
+      type:p.status === 'Correction Required' ? 'correction' : 'notice',
+      title:`${p.className} · ${p.subject} · ${p.exam}`,
+      detail:p.adminNote || 'Paper has an admin remark.',
+      meta:[`Teacher ${p.teacherId}`, p.status || 'Submitted', p.sourceType || 'Upload', `V${p.version || 1}`],
+      paper:p
+    }));
+
+    const empty = `<div class="paper-empty">No admin remarks or correction requests right now.</div>`;
+    const list = remarks.length ? remarks.map(r => `
+      <article class="remark-card ${r.type}">
+        <h3>${html(r.title)}</h3>
+        <p>${html(r.detail)}</p>
+        <div class="remark-meta">${(r.meta || []).map(x => `<span>${html(x)}</span>`).join('')}</div>
+        ${r.paper ? `<div class="paper-actions"><button class="paper-action-view" onclick="openPaperFile('${html(r.paper.paperId)}','preview')">Open</button>${!isAdminUser() && r.paper.status === 'Correction Required' ? `<button class="paper-action-resubmit" onclick="selectCorrectionMode('${html(r.paper.sourceType)}')">Correct Version</button>` : ''}</div>` : ''}
+      </article>`).join('') : empty;
+
+    host.innerHTML = buildTitle(isAdminUser() ? 'Remarks Tracker' : 'Remarks & Corrections', isAdminUser() ? 'Track correction requests and teacher follow-up from one place.' : 'Admin notices and paper correction remarks appear here.') + `<div class="remarks-list">${list}</div>`;
+    renderRoleTabs();
+  }
+
+  async function renderTeacherProgress() {
+    ensureProViews();
+    const host = document.getElementById('teachersContent');
+    if (!host) return;
+    host.innerHTML = buildTitle('Teacher Progress', 'Class-wise paper and marks activity summary for principal follow-up.') + '<div class="paper-empty">Loading teacher progress...</div>';
+    const mapData = new Map();
+
+    try { if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true); } catch (_) {}
+    (Array.isArray(questionPapers) ? questionPapers : []).forEach(p => {
+      const key = p.teacherId || 'Unknown';
+      if (!mapData.has(key)) mapData.set(key, { teacher:key, className:p.className || '-', papers:0, pending:0, correction:0, approved:0, locked:0, marks:0 });
+      const item = mapData.get(key);
+      item.papers += 1;
+      if (p.status === 'Submitted') item.pending += 1;
+      else if (p.status === 'Correction Required') item.correction += 1;
+      else if (p.status === 'Approved') item.approved += 1;
+      else if (p.status === 'Locked') item.locked += 1;
+    });
+
+    try {
+      const rows = typeof getMasterData === 'function' ? await getMasterData(true) : [];
+      if (Array.isArray(rows)) rows.slice(1).forEach(row => {
+        const tid = safeText(row && row[1]).trim() || 'Unknown';
+        const cls = safeText(row && row[2]).trim() || (mapping && mapping[tid]) || '-';
+        if (!mapData.has(tid)) mapData.set(tid, { teacher:tid, className:cls, papers:0, pending:0, correction:0, approved:0, locked:0, marks:0 });
+        mapData.get(tid).marks += 1;
+      });
+    } catch (_) {}
+
+    const cards = Array.from(mapData.values()).sort((a,b) => a.teacher.localeCompare(b.teacher)).map(t => `
+      <div class="class-summary-card">
+        <strong>${html(t.teacher)} · ${html(t.className)}</strong>
+        <div class="class-summary-pills">
+          <span class="class-pill">Marks ${t.marks}</span>
+          <span class="class-pill">Papers ${t.papers}</span>
+          <span class="class-pill pending">Pending ${t.pending}</span>
+          <span class="class-pill correction">Correction ${t.correction}</span>
+          <span class="class-pill approved">Approved ${t.approved}</span>
+          <span class="class-pill locked">Locked ${t.locked}</span>
+        </div>
+      </div>`).join('') || '<div class="paper-empty">No teacher activity found yet.</div>';
+
+    host.innerHTML = buildTitle('Teacher Progress', 'Class-wise paper and marks activity summary for principal follow-up.') + `<section class="bgps-pro-panel"><h2>Teacher Activity Board</h2><p>Use this for follow-up: pending submissions, correction load and marks activity.</p><div class="class-summary-grid">${cards}</div></section>`;
+  }
+
+  async function proSwitchTab(tab) {
+    ensureProViews();
+    const t = tab === 'dash' ? 'review' : tab;
+
+    if (t === 'entry' && currentId && !isAdminUser()) {
+      try { if (typeof loadPaperSettings === 'function') await loadPaperSettings(true); } catch (_) {}
+      if (paperSettings && paperSettings.marksEntryEnabled === false) {
+        if (typeof applyMarksEntryGate === 'function') applyMarksEntryGate();
+        alert(paperSettings.adminNotice || 'Marks Entry Portal is locked by Admin.');
+        return proSwitchTab('papers');
+      }
+    }
+
+    hideAllViews();
+    if (t === 'home') {
+      document.getElementById(PRO.homeId)?.classList.add('active'); setActiveTab('tab-home'); await renderHome(false); return;
+    }
+    if (t === 'entry') {
+      document.getElementById('entryView')?.classList.add('active'); setActiveTab('tab-entry'); return;
+    }
+    if (t === 'review') {
+      prepareReviewMode(); document.getElementById('dashView')?.classList.add('active'); setActiveTab('tab-review'); return;
+    }
+    if (t === 'papers' || t === 'controls') {
+      document.getElementById('paperView')?.classList.add('active'); setActiveTab(t === 'controls' ? 'tab-controls' : 'tab-papers');
+      try { if (typeof loadPaperSettings === 'function') await loadPaperSettings(false); if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(false); } catch (_) {}
+      if (t === 'controls') setTimeout(() => document.getElementById('paperAdminControls')?.scrollIntoView({behavior:'smooth', block:'start'}), 120);
+      return;
+    }
+    if (t === 'remarks') {
+      document.getElementById(PRO.remarksId)?.classList.add('active'); setActiveTab('tab-remarks'); await renderRemarks(); return;
+    }
+    if (t === 'teachers') {
+      document.getElementById(PRO.teachersId)?.classList.add('active'); setActiveTab('tab-teachers'); await renderTeacherProgress(); return;
+    }
+  }
+
+  window.bgpsProRefreshHome = function(){ PRO.lastHomeStats = null; return renderHome(true); };
+
+  const originalLogin = window.loginTeacher || loginTeacher;
+  window.loginTeacher = loginTeacher = async function(){
+    await originalLogin.apply(this, arguments);
+    ensureProViews();
+    renderRoleTabs();
+    await proSwitchTab('home');
+  };
+
+  window.switchTab = switchTab = proSwitchTab;
+
+  if (typeof viewIndividualReport === 'function') {
+    const originalViewIndividual = viewIndividualReport;
+    window.viewIndividualReport = viewIndividualReport = function(roll) {
+      originalViewIndividual.apply(this, arguments);
+      const btn = document.getElementById('btn-print-indv');
+      if (btn) btn.style.display = 'inline-block';
+    };
+  }
+
+  if (typeof renderPaperLibrary === 'function') {
+    const originalRenderLibrary = renderPaperLibrary;
+    window.renderPaperLibrary = renderPaperLibrary = function(){
+      originalRenderLibrary.apply(this, arguments);
+      renderRoleTabs();
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', ensureProViews);
+})();
+</script>
 </body>
 </html>

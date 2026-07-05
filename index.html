@@ -1138,7 +1138,10 @@
         #manualPaperEditor .or-line { text-align:center; font-weight:800; margin:8px 0; }
         #manualPaperEditor table { width:100%; border-collapse:collapse; margin:8px 0; background:#fff; }
         #manualPaperEditor td, #manualPaperEditor th { border:1px solid #333; padding:6px; color:#111; background:#fff; }
-        #manualPaperEditor .diagram-box { min-height:120px; border:1.5px dashed #666; display:grid; place-items:center; color:#777; margin:9px 0; }
+        #manualPaperEditor .diagram-box { min-height:120px; border:1.5px dashed #666; display:grid; place-items:center; color:#777; margin:9px 0; padding:8px; text-align:center; }
+        #manualPaperEditor .diagram-image { max-width:100%; max-height:260px; object-fit:contain; display:block; }
+        #manualPaperEditor .q-placeholder { color:#8b97a6; background:#fff7d6; border-bottom:1px dashed #b7791f; padding:0 2px; }
+        #manualPaperEditor .q-placeholder:focus { outline:1px solid #b7791f; background:#fff3bf; }
         #manualPaperEditor .page-break { border-top:1px dashed #777; margin:24px 0; page-break-after:always; }
         #manualPaperEditor.hindi-editor { font-family:'Noto Serif Devanagari','Mangal','Nirmala UI',serif; font-size:15px; }
         #manualPaperEditor.bilingual-editor { font-family:Georgia,'Noto Serif Devanagari','Mangal',serif; }
@@ -1155,6 +1158,8 @@
 
         /* Compact library */
         #paperLibraryPanel.premium-library { padding:16px; min-width:0; }
+        #paperView.pro-teacher-papers #paperLibraryPanel { display:none !important; }
+        #paperView.pro-teacher-papers .premium-paper-workspace { grid-template-columns:1fr; }
         .library-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-bottom:11px; }
         .library-stat { border:1px solid rgba(169,199,227,.25); background:rgba(8,31,54,.3); border-radius:10px; padding:8px; text-align:center; }
         .library-stat strong { display:block; color:#fff; font-family:'Inconsolata',monospace; font-size:16px; }
@@ -1234,7 +1239,7 @@
         <div class="nav-tabs no-print">
             <button class="tab-btn" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
             <button class="tab-btn" id="tab-papers" onclick="switchTab('papers')">Question Paper Center</button>
-            <button class="tab-btn" id="tab-dash" onclick="switchTab('dash')">Review & Print Library</button>
+            <button class="tab-btn" id="tab-dash" onclick="switchTab('dash')">Marks & Reports</button>
             <button class="tab-btn logout-tab" onclick="location.reload()">Logout</button>
         </div>
 
@@ -1396,6 +1401,8 @@
                                         <button class="editor-tool" type="button" title="Common symbols" onmousedown="event.preventDefault()" onclick="toggleSymbolPalette('common')">Ω Symbols</button>
                                         <button class="editor-tool" type="button" onmousedown="event.preventDefault()" onclick="insertPaperTable()">Table</button>
                                         <button class="editor-tool" type="button" onmousedown="event.preventDefault()" onclick="insertEditorBlock('diagram')">Diagram</button>
+                                        <button class="editor-tool" type="button" title="Upload diagram image" onmousedown="event.preventDefault()" onclick="triggerDiagramUpload()">Image</button>
+                                        <input type="file" id="manualDiagramFile" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="insertDiagramImage(this)">
                                     </div>
                                     <div class="toolbar-group">
                                         <select class="editor-language" id="manualLanguageMode" onchange="setEditorLanguage(this.value); saveManualDraft()" title="Typing language">
@@ -1417,7 +1424,7 @@
                                             <span id="composerTimeLine">Time Allotted: —</span><span id="composerMarksLine">Maximum Marks: —</span>
                                             <span id="composerReadingLine">Reading Time: —</span><span>Date: ____________</span>
                                         </div>
-                                        <div id="manualPaperEditor" contenteditable="true" spellcheck="true" lang="en" aria-label="Question paper content" oninput="handleManualEditorInput(); saveManualEditorSelection()" onfocus="saveManualEditorSelection()" onkeyup="saveManualEditorSelection()" onmouseup="saveManualEditorSelection()" onpaste="handleManualEditorPaste(event)"></div>
+                                        <div id="manualPaperEditor" contenteditable="true" spellcheck="true" lang="en" aria-label="Question paper content" oninput="handleManualEditorInput(); saveManualEditorSelection()" onclick="handleManualEditorClick(event)" onfocus="saveManualEditorSelection()" onkeyup="saveManualEditorSelection()" onmouseup="saveManualEditorSelection()" onpaste="handleManualEditorPaste(event)"></div>
                                     </div>
                                 </div>
                             </div>
@@ -1992,7 +1999,7 @@
                 document.getElementById('paperUploadPanel').style.display = 'none';
                 document.getElementById('paperCreatorPanel').style.display = 'none';
                 document.getElementById('paperAvailabilityBanner').style.display = 'none';
-                document.getElementById('paperLibraryTitle').textContent = 'Question Paper Review & Print Library';
+                document.getElementById('paperLibraryTitle').textContent = 'Question Paper Center';
                 document.getElementById('paperLibrarySubtitle').textContent = 'Control module availability, review submissions, request corrections, approve, lock and print.';
             } else {
                 document.getElementById('paperAdminControls').style.display = 'none';
@@ -2429,7 +2436,7 @@
                 return `<section><div class="section"><strong>${escapeHtml(section)}</strong><strong>${marks} Marks</strong></div>${items.map(item => `<div class="q"><b>Q.${item.number}</b><div>${escapeHtml(item.text).replace(/\n/g,'<br>')}${item.orText ? `<div class="or">OR</div>${escapeHtml(item.orText).replace(/\n/g,'<br>')}` : ''}<small>Chapter: ${escapeHtml(item.chapter)}</small></div><b>[${escapeHtml(item.marks)}]</b></div>`).join('')}</section>`;
             }).join('');
             const instructions = meta.instructions ? `<div class="instructions"><b>General Instructions:</b><ol>${meta.instructions.split(/\n+/).filter(Boolean).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ol></div>` : '';
-            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Question Paper Preview</title><style>@page{size:A4;margin:14mm}body{font-family:Georgia,serif;color:#111;margin:0}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:8px}.head h1{margin:0}.meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 15px;border:1px solid #111;padding:8px;margin:10px 0;font-weight:bold}.instructions{border:1px solid #777;padding:8px 12px}.section{display:flex;justify-content:space-between;background:#eee;border:1px solid #111;padding:6px 8px;margin-top:12px}.q{display:grid;grid-template-columns:38px 1fr 50px;gap:5px;padding:7px 2px;border-bottom:1px dotted #999;break-inside:avoid}.q> b:last-child{text-align:right}.or{text-align:center;font-weight:bold;margin:5px}.q small{display:block;color:#555;margin-top:4px}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.q{grid-template-columns:32px 1fr 42px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="head"><h1>BG PUBLIC SCHOOL</h1><b>${escapeHtml(meta.exam)} QUESTION PAPER</b></div><div class="meta"><span>Class: ${escapeHtml(meta.className)}</span><span>Subject: ${escapeHtml(meta.subject)}</span><span>Time: ${escapeHtml(meta.timeAllowed)}</span><span>Maximum Marks: ${escapeHtml(meta.maxMarks)}</span><span>Date: ${escapeHtml(meta.examDate || '__________')}</span><span>Chapters: ${escapeHtml(meta.chapters)}</span></div>${instructions}${sections}</main></body></html>`;
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Question Paper Preview</title><style>@page{size:A4;margin:14mm}body{font-family:Georgia,serif;color:#111;margin:0}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:8px}.head h1{margin:0}.meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 15px;border:1px solid #111;padding:8px;margin:10px 0;font-weight:bold}.instructions{border:1px solid #777;padding:8px 12px}.section{display:flex;justify-content:space-between;background:#eee;border:1px solid #111;padding:6px 8px;margin-top:12px}.q{display:grid;grid-template-columns:38px 1fr 50px;gap:5px;padding:7px 2px;border-bottom:1px dotted #999;break-inside:avoid}.q> b:last-child{text-align:right}.or{text-align:center;font-weight:bold;margin:5px}.q small{display:block;color:#555;margin-top:4px}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.q{grid-template-columns:32px 1fr 42px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="head"><h1>BG PUBLIC SCHOOL</h1><b>${escapeHtml(meta.exam)} - ${escapeHtml(meta.boardPattern || inferBoardPattern(meta.className))} QUESTION PAPER</b></div><div class="meta"><span>Class: ${escapeHtml(meta.className)}</span><span>Subject: ${escapeHtml(meta.subject)}</span><span>Time: ${escapeHtml(meta.timeAllowed)}</span><span>Maximum Marks: ${escapeHtml(meta.maxMarks)}</span><span>Date: ${escapeHtml(meta.examDate || '__________')}</span><span>Chapters: ${escapeHtml(meta.chapters)}</span></div>${instructions}${sections}</main></body></html>`;
         }
 
         function legacyPreviewManualPaper() {
@@ -3365,7 +3372,7 @@
         let manualEditorSelection = null;
         let manualEditorSaveTimer = null;
         const MANUAL_PLACEHOLDERS = ['Type question here', 'Replace with question', 'यहाँ प्रश्न लिखें', 'प्रश्न यहाँ लिखें'];
-        const MANUAL_ALLOWED_CLASSES = new Set(['paper-instructions','section-heading','question-line','mark-token','or-line','diagram-box','page-break']);
+        const MANUAL_ALLOWED_CLASSES = new Set(['paper-instructions','section-heading','question-line','mark-token','or-line','diagram-box','diagram-image','q-placeholder','page-break']);
         
         // Categorized symbol palettes
         const MANUAL_SYMBOL_PALETTES = {
@@ -3394,7 +3401,7 @@
                 document.getElementById('paperAdminControls').style.display = 'block';
                 teacherConsole.style.display = 'none';
                 document.getElementById('paperLibraryKicker').textContent = 'Admin Review Desk';
-                document.getElementById('paperLibraryTitle').textContent = 'Review & Print Library';
+                document.getElementById('paperLibraryTitle').textContent = 'Question Paper Center';
                 document.getElementById('paperLibrarySubtitle').textContent = 'Review submissions, request corrections, approve, lock and print.';
             } else {
                 workspace.classList.remove('admin-workspace');
@@ -3520,6 +3527,14 @@
             return classNo >= 9 || Number(maxMarks) >= 70 ? 'Additional 15 Minutes' : 'Additional 10 Minutes';
         }
 
+        function inferBoardPattern(className) {
+            const match = String(className || '').match(/Class\s+(\d+)/i);
+            const classNo = match ? Number(match[1]) : 0;
+            if (classNo >= 11) return 'ISC Pattern';
+            if (classNo >= 9) return 'ICSE Pattern';
+            return 'School Pattern';
+        }
+
         function updateComposerHeader() {
             const className = document.getElementById('manualClass')?.value || '—';
             const subject = document.getElementById('manualSubject')?.value || '—';
@@ -3529,7 +3544,7 @@
             const reading = inferReadingTime(className, maxMarks);
             const examLine = document.getElementById('composerExamLine');
             if (!examLine) return;
-            examLine.textContent = exam ? `${exam} QUESTION PAPER` : 'QUESTION PAPER';
+            examLine.textContent = exam ? `${exam} - ${inferBoardPattern(className)} Question Paper` : 'QUESTION PAPER';
             document.getElementById('composerClassLine').textContent = `Class: ${className}`;
             document.getElementById('composerSubjectLine').textContent = `Subject: ${subject}`;
             document.getElementById('composerTimeLine').textContent = `Time Allotted: ${maxMarks ? time : '—'}`;
@@ -3599,9 +3614,11 @@
                 'प्रश्नों के निर्धारित अंक कोष्ठक [ ] में दिए गए हैं।'
             ];
             return [
-                'Read all questions carefully and follow the instructions given in each section.',
-                'Draw neat and labelled diagrams wherever required.',
-                'The intended marks for questions are given in brackets [ ].'
+                'Answers to this paper must be written on the paper provided separately.',
+                'You will not be allowed to write during the first 10 minutes. This time is to be spent reading the question paper.',
+                'Attempt all questions from Section A and follow the choices given in later sections.',
+                'The intended marks for questions or parts of questions are given in brackets [ ].',
+                'Draw neat and labelled diagrams wherever required.'
             ];
         }
 
@@ -3613,6 +3630,7 @@
             const isHindi = language === 'hindi';
             const placeholder = isHindi ? 'यहाँ प्रश्न लिखें।' : 'Type question here.';
             const instructionTitle = isHindi ? 'परीक्षार्थियों के लिए निर्देश' : 'Instructions to Candidates';
+            const placeholderSpan = `<span class="q-placeholder">${placeholder.replace(/\.$/, '')}</span>`;
             const instructions = suggestedInstructions(language);
             let html = `<div class="paper-instructions"><h3>${instructionTitle}</h3><ol>${instructions.map(item => `<li>${item}</li>`).join('')}</ol></div>`;
             let questionNumber = 1;
@@ -3622,12 +3640,12 @@
                 if (sectionIndex === 0 && item.marks === 1 && item.count > 3) {
                     html += `<h3>${isHindi ? 'प्रश्न' : 'Question'} ${questionNumber}</h3>`;
                     for (let i=1; i<=item.count; i++) {
-                        html += `<p class="question-line">(${romanNumber(i)}) ${placeholder} <span class="mark-token">[${item.marks}]</span></p>`;
+                        html += `<p class="question-line">(${romanNumber(i)}) ${placeholderSpan} <span class="mark-token">[${item.marks}]</span></p>`;
                     }
                     questionNumber += 1;
                 } else {
                     for (let i=0; i<item.count; i++) {
-                        html += `<p class="question-line"><strong>${isHindi ? 'प्रश्न' : 'Question'} ${questionNumber}</strong> ${placeholder} <span class="mark-token">[${item.marks}]</span></p>`;
+                        html += `<p class="question-line"><strong>${isHindi ? 'प्रश्न' : 'Question'} ${questionNumber}</strong> ${placeholderSpan} <span class="mark-token">[${item.marks}]</span></p>`;
                         questionNumber += 1;
                     }
                 }
@@ -3745,6 +3763,36 @@
             if (type === 'diagram') insertEditorHtml('<div class="diagram-box">Diagram / Figure Space</div><p><br></p>');
         }
 
+        function triggerDiagramUpload() {
+            document.getElementById('manualDiagramFile')?.click();
+        }
+
+        function insertDiagramImage(input) {
+            const file = input && input.files && input.files[0];
+            if (!file) return;
+            if (!/^image\/(png|jpeg|webp|svg\+xml)$/.test(file.type)) {
+                alert('Only PNG, JPG, WEBP or SVG diagram images are allowed.');
+                input.value = '';
+                return;
+            }
+            if (file.size > 1.5 * 1024 * 1024) {
+                alert('Diagram image is too large. Please use an image below 1.5 MB.');
+                input.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                const src = String(reader.result || '');
+                insertEditorHtml(`<div class="diagram-box"><img class="diagram-image" src="${src}" alt="Diagram"></div><p><br></p>`);
+                input.value = '';
+            };
+            reader.onerror = () => {
+                alert('Could not read this diagram image.');
+                input.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
         function insertPaperTable() {
             insertEditorHtml('<table><tbody><tr><th>Heading 1</th><th>Heading 2</th></tr><tr><td>Data</td><td>Data</td></tr></tbody></table><p><br></p>');
         }
@@ -3775,8 +3823,25 @@
 
         function handleManualEditorPaste(event) {
             event.preventDefault();
+            const imageItem = [...(event.clipboardData?.items || [])].find(item => item.kind === 'file' && /^image\//.test(item.type));
+            if (imageItem) {
+                const file = imageItem.getAsFile();
+                if (file) {
+                    insertDiagramImage({ files:[file], value:'' });
+                    return;
+                }
+            }
             const text = (event.clipboardData || window.clipboardData).getData('text/plain');
             document.execCommand('insertText', false, text);
+            handleManualEditorInput();
+        }
+
+        function handleManualEditorClick(event) {
+            const target = event.target && event.target.closest ? event.target.closest('.q-placeholder') : null;
+            if (!target) return;
+            target.textContent = '';
+            target.classList.remove('q-placeholder');
+            saveManualEditorSelection();
             handleManualEditorInput();
         }
 
@@ -3793,7 +3858,7 @@
         function sanitizeComposerHtmlClient(html) {
             const template = document.createElement('template');
             template.innerHTML = html || '';
-            const allowed = new Set(['DIV','P','BR','B','STRONG','I','EM','U','SUP','SUB','OL','UL','LI','H2','H3','H4','TABLE','THEAD','TBODY','TR','TH','TD','SPAN','HR']);
+            const allowed = new Set(['DIV','P','BR','B','STRONG','I','EM','U','SUP','SUB','OL','UL','LI','H2','H3','H4','TABLE','THEAD','TBODY','TR','TH','TD','SPAN','HR','IMG']);
             [...template.content.querySelectorAll('*')].forEach(node => {
                 if (!allowed.has(node.tagName)) {
                     node.replaceWith(...node.childNodes);
@@ -3804,6 +3869,10 @@
                     if (name === 'class') {
                         const safe = attribute.value.split(/\s+/).filter(value => MANUAL_ALLOWED_CLASSES.has(value));
                         if (safe.length) node.setAttribute('class', safe.join(' ')); else node.removeAttribute('class');
+                    } else if (node.tagName === 'IMG' && name === 'src' && /^data:image\/(png|jpeg|webp|svg\+xml);base64,/i.test(attribute.value)) {
+                        node.setAttribute('src', attribute.value);
+                    } else if (node.tagName === 'IMG' && name === 'alt') {
+                        node.setAttribute('alt', attribute.value.slice(0, 80));
                     } else if ((name === 'colspan' || name === 'rowspan') && (node.tagName === 'TD' || node.tagName === 'TH')) {
                         const value = Math.max(1, Math.min(10, Number(attribute.value) || 1)); node.setAttribute(name, value);
                     } else {
@@ -3841,12 +3910,14 @@
 
         function getManualMetadata() {
             const maxMarks = Number(document.getElementById('manualMaxMarks').value);
+            const className = document.getElementById('manualClass').value;
             return {
-                className: document.getElementById('manualClass').value,
+                className,
                 subject: document.getElementById('manualSubject').value,
                 exam: document.getElementById('manualExam').value,
                 maxMarks,
                 timeAllowed: inferPaperTime(maxMarks),
+                boardPattern: inferBoardPattern(className),
                 examDate: '',
                 chapters: document.getElementById('manualChapters').value.trim(),
                 instructions: '',
@@ -3941,7 +4012,7 @@
         function buildManualPreviewHtml(meta, bodyHtml) {
             const reading = inferReadingTime(meta.className, meta.maxMarks);
             const safeBody = sanitizeComposerHtmlClient(bodyHtml);
-            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(meta.className)} ${escapeHtml(meta.subject)} ${escapeHtml(meta.exam)}</title><style>@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,'Noto Serif Devanagari','Mangal',serif;color:#111;margin:0;background:#fff;font-size:14px;line-height:1.5}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.header{text-align:center;border-bottom:1.8px solid #111;padding-bottom:8px}.header h1{font-size:24px;margin:0}.exam{font-size:15px;font-weight:800;text-transform:uppercase;margin-top:3px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;border-bottom:1px solid #555;padding:8px 0 9px;margin-bottom:12px;font-weight:700}.meta div:nth-child(even){text-align:right}.content h2.section-heading{display:flex;justify-content:space-between;margin:17px 0 8px;padding:6px 8px;border:1px solid #222;background:#f0f0f0;font-size:14px}.content h3{font-size:14px;margin:12px 0 6px}.content p{margin:6px 0}.paper-instructions{border:1px solid #777;padding:8px 12px;margin-bottom:12px}.paper-instructions h3{margin:0 0 5px}.paper-instructions ol{margin:4px 0 0 20px;padding:0}.question-line{position:relative;padding-right:48px;break-inside:avoid}.mark-token{float:right;font-weight:800}.or-line{text-align:center;font-weight:800}.content table{width:100%;border-collapse:collapse;margin:8px 0}.content td,.content th{border:1px solid #333;padding:6px}.diagram-box{min-height:120px;border:1.5px dashed #666;display:grid;place-items:center;color:#777;margin:9px 0}.page-break{page-break-after:always;border-top:1px dashed #777;margin:24px 0}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}.paper{padding:0 4px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(meta.exam)} QUESTION PAPER</div></div><div class="meta"><div>Class: ${escapeHtml(meta.className)}</div><div>Subject: ${escapeHtml(meta.subject)}</div><div>Time Allotted: ${escapeHtml(meta.timeAllowed)}</div><div>Maximum Marks: ${escapeHtml(meta.maxMarks)}</div><div>Reading Time: ${escapeHtml(reading)}</div><div>Date: ____________</div></div><div class="content">${safeBody}</div></main></body></html>`;
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(meta.className)} ${escapeHtml(meta.subject)} ${escapeHtml(meta.exam)}</title><style>@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,'Noto Serif Devanagari','Mangal',serif;color:#111;margin:0;background:#fff;font-size:14px;line-height:1.5}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.header{text-align:center;border-bottom:1.8px solid #111;padding-bottom:8px}.header h1{font-size:24px;margin:0}.exam{font-size:15px;font-weight:800;text-transform:uppercase;margin-top:3px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;border-bottom:1px solid #555;padding:8px 0 9px;margin-bottom:12px;font-weight:700}.meta div:nth-child(even){text-align:right}.content h2.section-heading{display:flex;justify-content:space-between;margin:17px 0 8px;padding:6px 8px;border:1px solid #222;background:#f0f0f0;font-size:14px}.content h3{font-size:14px;margin:12px 0 6px}.content p{margin:6px 0}.paper-instructions{border:1px solid #777;padding:8px 12px;margin-bottom:12px}.paper-instructions h3{margin:0 0 5px}.paper-instructions ol{margin:4px 0 0 20px;padding:0}.question-line{position:relative;padding-right:48px;break-inside:avoid}.mark-token{float:right;font-weight:800}.or-line{text-align:center;font-weight:800}.content table{width:100%;border-collapse:collapse;margin:8px 0}.content td,.content th{border:1px solid #333;padding:6px}.diagram-box{min-height:120px;border:1.5px dashed #666;display:grid;place-items:center;color:#777;margin:9px 0}.page-break{page-break-after:always;border-top:1px dashed #777;margin:24px 0}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}.paper{padding:0 4px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(meta.exam)} - ${escapeHtml(meta.boardPattern || inferBoardPattern(meta.className))} QUESTION PAPER</div></div><div class="meta"><div>Class: ${escapeHtml(meta.className)}</div><div>Subject: ${escapeHtml(meta.subject)}</div><div>Time Allotted: ${escapeHtml(meta.timeAllowed)}</div><div>Maximum Marks: ${escapeHtml(meta.maxMarks)}</div><div>Reading Time: ${escapeHtml(reading)}</div><div>Date: ____________</div></div><div class="content">${safeBody}</div></main></body></html>`;
         }
 
         function previewManualPaper() {
@@ -4264,7 +4335,7 @@
       nav.innerHTML = `
         <button class="tab-btn" id="tab-home" onclick="switchTab('home')">Overview</button>
         <button class="tab-btn" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
-        <button class="tab-btn" id="tab-review" onclick="switchTab('review')">Review & Print Library</button>
+        <button class="tab-btn" id="tab-review" onclick="switchTab('review')">Marks & Reports</button>
         <button class="tab-btn" id="tab-papers" onclick="switchTab('papers')">Question Paper Center</button>
         <button class="tab-btn${attention}" id="tab-remarks" onclick="switchTab('remarks')">Remarks & Corrections</button>
         <button class="tab-btn logout-tab" onclick="location.reload()">Logout</button>
@@ -4290,6 +4361,7 @@
       corrections: 0,
       approvedPapers: 0,
       lockedPapers: 0,
+      paperHistory: [],
       actions: []
     };
 
@@ -4319,6 +4391,7 @@
     try {
       if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true);
       const papers = Array.isArray(questionPapers) ? questionPapers : [];
+      stats.paperHistory = papers.slice().sort((a, b) => String(b.uploadedAt || '').localeCompare(String(a.uploadedAt || ''))).slice(0, 6);
       stats.pendingPapers = papers.filter(p => p.status === 'Submitted').length;
       stats.corrections = papers.filter(p => p.status === 'Correction Required').length;
       stats.approvedPapers = papers.filter(p => p.status === 'Approved').length;
@@ -4366,7 +4439,7 @@
   function renderActionList(stats) {
     const actions = stats.actions && stats.actions.length ? stats.actions : [{
       title: 'No urgent action right now',
-      detail: isAdminUser() ? 'Open Marks & Reports, Paper Approval, or Teacher Progress for detailed checking.' : 'Open Marks Entry, Review Library or Question Paper Center to continue work.',
+      detail: isAdminUser() ? 'Open Marks & Reports, Paper Approval, or Teacher Progress for detailed checking.' : 'Open Marks Entry, Marks & Reports or Question Paper Center to continue work.',
       status: 'approved'
     }];
     return actions.map(item => `
@@ -4374,6 +4447,26 @@
         <div><strong>${html(item.title)}</strong><small>${html(item.detail)}</small></div>
         <span class="bgps-status-badge ${item.status || 'pending'}">${item.status || 'pending'}</span>
       </div>`).join('');
+  }
+
+  function renderSubmissionHistory(stats) {
+    const papers = Array.isArray(stats.paperHistory) ? stats.paperHistory : [];
+    if (!papers.length) return '<div class="paper-empty">No question paper submissions yet.</div>';
+    return papers.map(paper => {
+      const status = paper.status || 'Submitted';
+      const statusKey = paperStatusKey(status);
+      const meta = `${paper.className || '-'} / ${paper.subject || '-'} / ${paper.exam || '-'}`;
+      const detail = paper.adminNote || `${paper.sourceType || 'Upload'} paper, Version ${paper.version || 1}`;
+      return `
+        <div class="bgps-action-card">
+          <div><strong>${html(meta)}</strong><small>${html(detail)}</small></div>
+          <div class="paper-actions" style="margin:0;">
+            <span class="bgps-status-badge ${statusKey}">${html(status)}</span>
+            ${paper.paperId ? `<button class="paper-action-view" type="button" onclick="openPaperFile('${html(paper.paperId)}','preview')">Open</button>` : ''}
+            ${!isAdminUser() && status === 'Correction Required' ? `<button class="paper-action-resubmit" type="button" onclick="switchTab('papers')">Correct</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
   }
 
   async function renderHome(refresh) {
@@ -4398,13 +4491,14 @@
               <button class="btn-primary" type="button" onclick="switchTab('teachers')">Open Teacher Progress</button>
             ` : `
               <button class="btn-primary" type="button" onclick="switchTab('entry')">Enter / Edit Marks</button>
-              <button class="btn-primary" type="button" onclick="switchTab('review')">Review & Print Result</button>
+              <button class="btn-primary" type="button" onclick="switchTab('review')">Open Marks & Reports</button>
               <button class="btn-primary" type="button" onclick="switchTab('papers')">Upload / Create Paper</button>
             `}
             <button class="btn-secondary" type="button" onclick="bgpsProRefreshHome()">Refresh Command Center</button>
           </div>
         </section>
-      </div>`;
+      </div>
+      ${!isAdminUser() ? `<section class="bgps-pro-panel" style="margin-top:16px;"><h2>Submission History</h2><p>Your latest uploaded or created question papers with admin remarks and status.</p><div class="bgps-pro-actions">${renderSubmissionHistory(stats)}</div></section>` : ''}`;
   }
 
   function prepareReviewMode(mode) {
@@ -4419,7 +4513,7 @@
       if (dashMain) dashMain.insertBefore(intro, dashMain.firstChild);
     }
     intro.innerHTML = `
-      <div><strong>${isAdminUser() ? 'Marks & Reports' : 'Review & Print Library'}</strong><br>
+      <div><strong>Marks & Reports</strong><br>
       ${isAdminUser() ? 'Select class and exam to audit marks, review incomplete entries, and print consolidated or individual reports.' : 'Select your class and exam, then print consolidated sheet or student report card.'}</div>
       <button class="btn-primary" type="button" onclick="fetchData()">Fetch Selected Report</button>`;
 
@@ -4438,6 +4532,7 @@
     const isApproval = admin && mode === 'approval';
     view.classList.toggle('pro-paper-settings', isSettings);
     view.classList.toggle('pro-paper-approval', isApproval);
+    view.classList.toggle('pro-teacher-papers', !admin);
 
     const controlsTitle = document.querySelector('#paperAdminControls .premium-panel-header h2');
     const controlsCopy = document.querySelector('#paperAdminControls .premium-panel-header p');
@@ -4552,8 +4647,10 @@
       try { if (typeof loadPaperSettings === 'function') await loadPaperSettings(true); } catch (_) {}
       if (paperSettings && paperSettings.marksEntryEnabled === false) {
         if (typeof applyMarksEntryGate === 'function') applyMarksEntryGate();
-        alert(paperSettings.adminNotice || 'Marks Entry Portal is locked by Admin.');
-        return proSwitchTab('papers');
+        const message = paperSettings.adminNotice || 'Marks Entry is closed by Admin.';
+        alert(message);
+        if (typeof setEntryStatus === 'function') setEntryStatus(message, 'error');
+        return;
       }
     }
 

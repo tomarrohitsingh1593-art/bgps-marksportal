@@ -1213,6 +1213,95 @@
             .premium-library-toolbar .paper-refresh { width:100%; }
         }
 
+    
+
+        /* ==============================================================
+           FINAL ADMIN POLISH V33
+           Theme picker, marks-entry lock tile and class-wise paper summary.
+           ============================================================== */
+        .admin-control-overview { grid-template-columns:repeat(5,minmax(0,1fr)); }
+        .admin-theme-strip {
+            display:flex; justify-content:space-between; align-items:center; gap:12px;
+            margin:12px 0 14px; padding:12px; border-radius:12px;
+            background:rgba(144,205,244,.10); border:1px solid rgba(144,205,244,.32);
+        }
+        .admin-theme-strip strong { display:block; color:#f8fafc; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+        .admin-theme-strip small { display:block; color:#bfdbfe; font-size:10px; margin-top:3px; }
+        .theme-choice-row { display:flex; flex-wrap:wrap; gap:7px; justify-content:flex-end; }
+        .theme-choice {
+            border:1px solid rgba(219,234,254,.55); background:rgba(15,35,62,.74); color:#eaf4ff;
+            padding:8px 11px; border-radius:999px; cursor:pointer; font-weight:900; font-size:11px;
+        }
+        .theme-choice.active { background:var(--gold); color:var(--navy); border-color:var(--gold); }
+        .admin-class-summary { margin:12px 0 14px; display:grid; gap:9px; }
+        .class-summary-title {
+            display:flex; justify-content:space-between; align-items:center; gap:10px;
+            color:#dbeafe; font-size:11px; text-transform:uppercase; font-weight:900; letter-spacing:.08em;
+        }
+        .class-summary-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+        .class-summary-card {
+            background:rgba(248,251,255,.96); color:#102a43; border:1px solid #9dbbd6;
+            border-radius:11px; padding:10px 11px; box-shadow:0 6px 18px rgba(2,20,38,.14);
+        }
+        .class-summary-card strong { display:block; color:#12395f; font-size:13px; margin-bottom:7px; }
+        .class-summary-pills { display:flex; flex-wrap:wrap; gap:5px; }
+        .class-pill { padding:4px 6px; border-radius:999px; font-size:9px; font-weight:900; background:#eaf4ff; color:#12395f; border:1px solid #cfe0f0; }
+        .class-pill.pending { background:#dbeafe; color:#1d4ed8; }
+        .class-pill.correction { background:#fee2e2; color:#b91c1c; }
+        .class-pill.approved { background:#dcfce7; color:#166534; }
+        .class-pill.locked { background:#e2e8f0; color:#334155; }
+        .mini-empty { padding:14px !important; }
+        body.bgps-theme-white {
+            background:linear-gradient(135deg,#f7fafc 0%,#eef4fb 55%,#e2edf7 100%) !important;
+            color:#102a43 !important;
+        }
+        body.bgps-theme-white .app-header,
+        body.bgps-theme-white #loggedInUser { color:#102a43 !important; }
+        body.bgps-theme-white .card,
+        body.bgps-theme-white #paperView.premium-paper-view {
+            background:linear-gradient(145deg,#ffffff,#f3f8fd) !important;
+            color:#102a43 !important; border-color:#b8cee2 !important;
+        }
+        body.bgps-theme-white .premium-panel,
+        body.bgps-theme-white .paper-panel,
+        body.bgps-theme-white .paper-admin-controls {
+            background:rgba(255,255,255,.96) !important; color:#102a43 !important; border-color:#b8cee2 !important;
+        }
+        body.bgps-theme-white .premium-panel-header p,
+        body.bgps-theme-white .paper-panel-subtitle,
+        body.bgps-theme-white .panel-kicker,
+        body.bgps-theme-white .control-group label { color:#315b82 !important; }
+        body.bgps-theme-white .premium-panel h2,
+        body.bgps-theme-white .paper-panel h2 { color:#b7791f !important; }
+        body.bgps-theme-white .admin-theme-strip,
+        body.bgps-theme-white .paper-availability,
+        body.bgps-theme-white .paper-status { background:#eef6ff !important; color:#12395f !important; border-color:#b8cee2 !important; }
+        body.bgps-theme-white .admin-theme-strip strong { color:#12395f !important; }
+        body.bgps-theme-white .admin-theme-strip small,
+        body.bgps-theme-white .class-summary-title { color:#315b82 !important; }
+        body.bgps-theme-white .tab-btn { color:#12395f; background:#fff; border-color:#b8cee2; }
+        body.bgps-theme-white .tab-btn.active { background:var(--gold); color:var(--navy); }
+        body.bgps-theme-slate {
+            background:radial-gradient(ellipse at 25% 15%,#426b91 0%,#274967 55%,#182d42 100%) !important;
+        }
+        body.bgps-theme-slate #paperView.premium-paper-view {
+            background:linear-gradient(145deg,rgba(42,76,108,.98),rgba(25,51,79,.98)) !important;
+        }
+        body.bgps-theme-slate .premium-panel,
+        body.bgps-theme-slate .paper-panel {
+            background:rgba(33,65,96,.92) !important;
+            border-color:rgba(190,213,235,.36) !important;
+        }
+        @media screen and (max-width:900px) {
+            .admin-control-overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .admin-theme-strip { align-items:flex-start; flex-direction:column; }
+            .theme-choice-row { justify-content:flex-start; }
+            .class-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        }
+        @media screen and (max-width:560px) {
+            .class-summary-grid { grid-template-columns:1fr; }
+        }
+
     </style>
 </head>
 <body>
@@ -1276,8 +1365,20 @@
                         <div class="admin-control-overview">
                             <div class="admin-state-chip"><span>Upload</span><strong id="adminUploadState">—</strong></div>
                             <div class="admin-state-chip"><span>Creator</span><strong id="adminCreatorState">—</strong></div>
+                            <div class="admin-state-chip"><span>Marks Entry</span><strong id="adminMarksState">—</strong></div>
                             <div class="admin-state-chip"><span>Submissions</span><strong id="adminSubmissionState">—</strong></div>
                             <div class="admin-state-chip"><span>Emergency</span><strong id="adminEmergencyState">—</strong></div>
+                        </div>
+                        <div class="admin-theme-strip" id="adminThemeStrip">
+                            <div>
+                                <strong>Dashboard Background</strong>
+                                <small>Change admin screen colour without touching backend data.</small>
+                            </div>
+                            <div class="theme-choice-row">
+                                <button type="button" class="theme-choice" data-bgps-theme="navy">Navy</button>
+                                <button type="button" class="theme-choice" data-bgps-theme="white">White</button>
+                                <button type="button" class="theme-choice" data-bgps-theme="slate">Soft Blue</button>
+                            </div>
                         </div>
                         <div class="paper-control-list">
                             <div class="paper-control-tile">
@@ -1289,8 +1390,12 @@
                                 <label class="paper-switch"><input type="checkbox" id="settingUploadEnabled"><span class="paper-switch-slider"></span></label>
                             </div>
                             <div class="paper-control-tile">
-                                <div><strong>Paper Creator</strong><small>Allow teachers to type a paper inside the portal.</small></div>
+                                <div><strong>Paper Creator</strong><small>Allow teachers to type a paper inside the portal. Switch OFF = creator locked.</small></div>
                                 <label class="paper-switch"><input type="checkbox" id="settingCreatorEnabled"><span class="paper-switch-slider"></span></label>
+                            </div>
+                            <div class="paper-control-tile">
+                                <div><strong>Marks Entry Portal</strong><small>Allow teachers to enter/edit marks. Switch OFF = marks entry locked.</small></div>
+                                <label class="paper-switch"><input type="checkbox" id="settingMarksEntryEnabled" checked><span class="paper-switch-slider"></span></label>
                             </div>
                             <div class="paper-control-tile">
                                 <div><strong>New Submissions</strong><small>Master switch for upload and creator submission.</small></div>
@@ -1459,6 +1564,7 @@
                             <button class="btn-primary paper-refresh" type="button" id="paperRefreshBtn" onclick="loadQuestionPapers(true)">Refresh</button>
                         </div>
                     </div>
+                    <div class="admin-class-summary" id="paperClassSummary"><div class="paper-empty mini-empty">Class-wise summary will appear after papers load.</div></div>
                     <div class="paper-card-list compact-paper-list" id="paperCardList"><div class="paper-empty">Open this tab after login to load question papers.</div></div>
                 </section>
             </div>
@@ -1769,6 +1875,7 @@
             uploadEnabled: true,
             creatorEnabled: false,
             submissionEnabled: true,
+            marksEntryEnabled: true,
             adminNotice: ''
         };
         let paperPermissions = { canUpload:false, canCreate:false, canViewLibrary:true };
@@ -2096,6 +2203,8 @@
                 document.getElementById('settingUploadEnabled').checked = Boolean(paperSettings.uploadEnabled);
                 document.getElementById('settingCreatorEnabled').checked = Boolean(paperSettings.creatorEnabled);
                 document.getElementById('settingSubmissionEnabled').checked = Boolean(paperSettings.submissionEnabled);
+                const marksEntrySwitch = document.getElementById('settingMarksEntryEnabled');
+                if (marksEntrySwitch) marksEntrySwitch.checked = paperSettings.marksEntryEnabled !== false;
                 document.getElementById('settingAdminNotice').value = paperSettings.adminNotice || '';
                 const summary = `Emergency lock: ${paperSettings.emergencyLock ? 'ON' : 'OFF'} · Upload: ${paperSettings.uploadEnabled ? 'ON' : 'OFF'} · Creator: ${paperSettings.creatorEnabled ? 'ON' : 'OFF'} · Submissions: ${paperSettings.submissionEnabled ? 'OPEN' : 'CLOSED'}`;
                 setPaperStatusBox(document.getElementById('paperSettingsStatus'), summary, paperSettings.emergencyLock ? 'error' : 'success');
@@ -2139,6 +2248,7 @@
                         uploadEnabled: document.getElementById('settingUploadEnabled').checked,
                         creatorEnabled: document.getElementById('settingCreatorEnabled').checked,
                         submissionEnabled: document.getElementById('settingSubmissionEnabled').checked,
+                        marksEntryEnabled: document.getElementById('settingMarksEntryEnabled') ? document.getElementById('settingMarksEntryEnabled').checked : true,
                         adminNotice: document.getElementById('settingAdminNotice').value.trim()
                     }
                 });
@@ -3434,6 +3544,7 @@
             const states = [
                 ['adminUploadState', paperSettings.uploadEnabled && !paperSettings.emergencyLock, paperSettings.uploadEnabled ? 'OPEN' : 'CLOSED'],
                 ['adminCreatorState', paperSettings.creatorEnabled && !paperSettings.emergencyLock, paperSettings.creatorEnabled ? 'OPEN' : 'CLOSED'],
+                ['adminMarksState', paperSettings.marksEntryEnabled !== false, paperSettings.marksEntryEnabled !== false ? 'OPEN' : 'LOCKED'],
                 ['adminSubmissionState', paperSettings.submissionEnabled && !paperSettings.emergencyLock, paperSettings.submissionEnabled ? 'OPEN' : 'CLOSED'],
                 ['adminEmergencyState', !paperSettings.emergencyLock, paperSettings.emergencyLock ? 'LOCKED' : 'NORMAL']
             ];
@@ -3452,6 +3563,8 @@
                 document.getElementById('settingUploadEnabled').checked = Boolean(paperSettings.uploadEnabled);
                 document.getElementById('settingCreatorEnabled').checked = Boolean(paperSettings.creatorEnabled);
                 document.getElementById('settingSubmissionEnabled').checked = Boolean(paperSettings.submissionEnabled);
+                const marksEntrySwitch = document.getElementById('settingMarksEntryEnabled');
+                if (marksEntrySwitch) marksEntrySwitch.checked = paperSettings.marksEntryEnabled !== false;
                 document.getElementById('settingAdminNotice').value = paperSettings.adminNotice || '';
                 renderAdminControlState();
                 const summary = paperSettings.emergencyLock
@@ -4032,6 +4145,159 @@
                 return `<article class="compact-paper-card" id="paper-${escapeHtml(paper.paperId)}"><div class="paper-card-top"><div><div class="paper-title">${escapeHtml(paper.className)} · ${escapeHtml(paper.subject)}</div><div class="paper-version">${escapeHtml(paper.exam)} · ${formatLabel} · V${escapeHtml(paper.version)}</div></div><span class="paper-badge ${paperStatusClass(paper.status)}">${escapeHtml(paper.status)}</span></div><div class="compact-meta-row"><span class="compact-meta-chip">Teacher ${escapeHtml(paper.teacherId)}</span><span class="compact-meta-chip">${escapeHtml(paper.maxMarks)} Marks</span><span class="compact-meta-chip">${escapeHtml(formatPaperDate(paper.uploadedAt))}</span>${paper.sourceType === 'Manual' ? `<span class="compact-meta-chip">${escapeHtml(paper.totalQuestions || 0)} items</span>` : ''}</div><div class="compact-reference"><strong>Chapters:</strong> ${escapeHtml(paper.chapters)}</div>${paper.note ? `<div class="compact-reference"><strong>Reference:</strong> ${escapeHtml(paper.note)}</div>` : ''}${note}<div class="paper-actions"><button class="paper-action-view" onclick="openPaperFile('${escapeHtml(paper.paperId)}','preview')">Preview</button>${printButton}<button class="paper-action-download" onclick="openPaperFile('${escapeHtml(paper.paperId)}','download')">Download</button>${adminActions}${resubmit}</div></article>`;
             }).join('');
         }
+
+    
+
+        /* ==============================================================
+           FINAL ADMIN POLISH V33
+           Keeps backend-safe controls in sync and adds local theme + class summary.
+           ============================================================== */
+        const BGPS_THEME_KEY = 'bgpsDashboardThemeV33';
+
+        function applyBgpsTheme(theme) {
+            const safeTheme = ['navy', 'white', 'slate'].includes(theme) ? theme : 'navy';
+            document.body.classList.remove('bgps-theme-navy', 'bgps-theme-white', 'bgps-theme-slate');
+            document.body.classList.add(`bgps-theme-${safeTheme}`);
+            localStorage.setItem(BGPS_THEME_KEY, safeTheme);
+            document.querySelectorAll('.theme-choice').forEach(btn => btn.classList.toggle('active', btn.dataset.bgpsTheme === safeTheme));
+        }
+
+        function setupBgpsThemePicker() {
+            const theme = localStorage.getItem(BGPS_THEME_KEY) || 'navy';
+            applyBgpsTheme(theme);
+            document.querySelectorAll('.theme-choice').forEach(btn => {
+                if (btn.dataset.boundTheme === 'yes') return;
+                btn.dataset.boundTheme = 'yes';
+                btn.addEventListener('click', () => applyBgpsTheme(btn.dataset.bgpsTheme || 'navy'));
+            });
+        }
+
+        function ensureFinalAdminControls() {
+            const overview = document.querySelector('.admin-control-overview');
+            if (overview && !document.getElementById('adminMarksState')) {
+                const chip = document.createElement('div');
+                chip.className = 'admin-state-chip';
+                chip.innerHTML = '<span>Marks Entry</span><strong id="adminMarksState">—</strong>';
+                const creator = document.getElementById('adminCreatorState')?.closest('.admin-state-chip');
+                if (creator && creator.nextSibling) overview.insertBefore(chip, creator.nextSibling); else overview.appendChild(chip);
+            }
+
+            const controlList = document.querySelector('.paper-control-list');
+            if (controlList && !document.getElementById('settingMarksEntryEnabled')) {
+                const tile = document.createElement('div');
+                tile.className = 'paper-control-tile';
+                tile.innerHTML = '<div><strong>Marks Entry Portal</strong><small>Allow teachers to enter/edit marks. Switch OFF = marks entry locked.</small></div><label class="paper-switch"><input type="checkbox" id="settingMarksEntryEnabled" checked><span class="paper-switch-slider"></span></label>';
+                const submissionTile = document.getElementById('settingSubmissionEnabled')?.closest('.paper-control-tile');
+                if (submissionTile) controlList.insertBefore(tile, submissionTile); else controlList.appendChild(tile);
+            }
+
+            const status = document.getElementById('paperSettingsStatus');
+            if (status && !document.getElementById('adminThemeStrip')) {
+                const theme = document.createElement('div');
+                theme.className = 'admin-theme-strip';
+                theme.id = 'adminThemeStrip';
+                theme.innerHTML = '<div><strong>Dashboard Background</strong><small>White, Soft Blue or current Navy view.</small></div><div class="theme-choice-row"><button type="button" class="theme-choice" data-bgps-theme="navy">Navy</button><button type="button" class="theme-choice" data-bgps-theme="white">White</button><button type="button" class="theme-choice" data-bgps-theme="slate">Soft Blue</button></div>';
+                const list = document.querySelector('.paper-control-list');
+                if (list && list.parentElement) list.parentElement.insertBefore(theme, list); else status.parentElement.insertBefore(theme, status);
+            }
+
+            const cardList = document.getElementById('paperCardList');
+            if (cardList && !document.getElementById('paperClassSummary')) {
+                const summary = document.createElement('div');
+                summary.className = 'admin-class-summary';
+                summary.id = 'paperClassSummary';
+                summary.innerHTML = '<div class="paper-empty mini-empty">Class-wise summary will appear after papers load.</div>';
+                cardList.parentElement.insertBefore(summary, cardList);
+            }
+            setupBgpsThemePicker();
+        }
+
+        function refreshFinalAdminControlState() {
+            ensureFinalAdminControls();
+            const marksSwitch = document.getElementById('settingMarksEntryEnabled');
+            if (marksSwitch) marksSwitch.checked = paperSettings.marksEntryEnabled !== false;
+            const marksState = document.getElementById('adminMarksState');
+            if (marksState) {
+                const open = paperSettings.marksEntryEnabled !== false;
+                marksState.textContent = open ? 'OPEN' : 'LOCKED';
+                marksState.className = open ? 'on' : 'off';
+            }
+        }
+
+        function renderPaperClassSummary() {
+            const host = document.getElementById('paperClassSummary');
+            if (!host) return;
+            const papers = Array.isArray(questionPapers) ? questionPapers : [];
+            if (!papers.length) {
+                host.innerHTML = '<div class="paper-empty mini-empty">No class-wise submission data yet.</div>';
+                return;
+            }
+            const map = new Map();
+            papers.forEach(p => {
+                const cls = p.className || 'Unknown Class';
+                if (!map.has(cls)) map.set(cls, { total:0, submitted:0, correction:0, approved:0, locked:0 });
+                const item = map.get(cls);
+                item.total += 1;
+                const status = String(p.status || 'Submitted').toLowerCase();
+                if (status === 'submitted') item.submitted += 1;
+                else if (status === 'correction required') item.correction += 1;
+                else if (status === 'approved') item.approved += 1;
+                else if (status === 'locked') item.locked += 1;
+            });
+            const order = Object.values(mapping || {}).filter(v => v && v !== 'ALL_CLASSES');
+            const rows = Array.from(map.entries()).sort((a,b) => {
+                const ai = order.indexOf(a[0]); const bi = order.indexOf(b[0]);
+                return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a[0].localeCompare(b[0]);
+            });
+            const totalPending = rows.reduce((sum, [,v]) => sum + v.submitted + v.correction, 0);
+            host.innerHTML = '<div class="class-summary-title"><span>Class-wise Paper Tracker</span><span>' + totalPending + ' pending / correction items</span></div>' +
+                '<div class="class-summary-grid">' + rows.map(([cls, v]) => {
+                    return '<div class="class-summary-card"><strong>' + escapeHtml(cls) + '</strong><div class="class-summary-pills">' +
+                        '<span class="class-pill">Total ' + v.total + '</span>' +
+                        '<span class="class-pill pending">Pending ' + v.submitted + '</span>' +
+                        '<span class="class-pill correction">Correction ' + v.correction + '</span>' +
+                        '<span class="class-pill approved">Approved ' + v.approved + '</span>' +
+                        '<span class="class-pill locked">Locked ' + v.locked + '</span>' +
+                        '</div></div>';
+                }).join('') + '</div>';
+        }
+
+        const bgpsOriginalRenderAdminControlState = renderAdminControlState;
+        renderAdminControlState = function() {
+            bgpsOriginalRenderAdminControlState.apply(this, arguments);
+            refreshFinalAdminControlState();
+        };
+
+        const bgpsOriginalApplyPaperSettingsUI = applyPaperSettingsUI;
+        applyPaperSettingsUI = function() {
+            bgpsOriginalApplyPaperSettingsUI.apply(this, arguments);
+            refreshFinalAdminControlState();
+            const status = document.getElementById('paperSettingsStatus');
+            if (currentId === 'ADMIN' && status && paperSettings._loaded) {
+                const msg = paperSettings.emergencyLock
+                    ? 'Emergency lock is active. Paper activity is blocked. Marks Entry: ' + (paperSettings.marksEntryEnabled !== false ? 'open' : 'locked') + '.'
+                    : 'Upload ' + (paperSettings.uploadEnabled ? 'open' : 'closed') + ' · Creator ' + (paperSettings.creatorEnabled ? 'open' : 'locked') + ' · Marks Entry ' + (paperSettings.marksEntryEnabled !== false ? 'open' : 'locked') + ' · Submissions ' + (paperSettings.submissionEnabled ? 'open' : 'closed');
+                setPaperStatusBox(status, msg, paperSettings.emergencyLock ? 'error' : 'success');
+            }
+        };
+
+        const bgpsOriginalSavePaperSettings = savePaperSettings;
+        savePaperSettings = async function() {
+            ensureFinalAdminControls();
+            await bgpsOriginalSavePaperSettings.apply(this, arguments);
+            refreshFinalAdminControlState();
+        };
+
+        const bgpsOriginalRenderPaperLibrary = renderPaperLibrary;
+        renderPaperLibrary = function() {
+            bgpsOriginalRenderPaperLibrary.apply(this, arguments);
+            renderPaperClassSummary();
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ensureFinalAdminControls();
+            renderPaperClassSummary();
+        });
 
     </script>
 </body>

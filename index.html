@@ -4545,5 +4545,332 @@ It does not change your Apps Script backend URL or sheet logic.
   document.addEventListener('DOMContentLoaded', ensureProViews);
 })();
 </script>
+<!-- ==============================================================
+BG PUBLIC SCHOOL — PROFESSIONAL AUDIT PATCH V36
+Clean navigation, no repeated review controls, sorted libraries, toast messages.
+============================================================== -->
+<style id="bgps-v36-audit-style">
+  .bgps-toast-stack{position:fixed;right:18px;top:18px;z-index:2147483000;display:grid;gap:10px;width:min(390px,calc(100vw - 32px));pointer-events:none}
+  .bgps-toast{pointer-events:auto;border:1px solid rgba(169,199,227,.35);border-left:5px solid #90cdf4;border-radius:14px;background:#f8fbff;color:#102a43;box-shadow:0 18px 45px rgba(2,12,27,.32);padding:12px 14px;font-family:Georgia,serif;font-size:13px;line-height:1.35;animation:bgpsToastIn .18s ease-out}
+  .bgps-toast strong{display:block;margin-bottom:3px;color:#12395f;font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-family:Inconsolata,monospace}
+  .bgps-toast.error{border-left-color:#ef4444}.bgps-toast.success{border-left-color:#22c55e}.bgps-toast.warning{border-left-color:#f59e0b}
+  @keyframes bgpsToastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+  .bgps-soft-hidden{display:none!important}
+
+  .app-header.no-print{align-items:center;padding:0 2px 10px;border-bottom:0;margin-bottom:14px}
+  .nav-tabs.no-print{gap:12px;margin-bottom:20px;align-items:center}
+  .nav-tabs.no-print .tab-btn{min-height:46px;padding:0 20px;border-radius:11px;background:rgba(234,244,255,.07);border:1px solid rgba(169,199,227,.45);font-family:Arial, sans-serif;font-size:14px;font-weight:650;letter-spacing:.01em;color:#eaf4ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .nav-tabs.no-print .tab-btn.active{background:var(--gold)!important;border-color:var(--gold);color:#06182b;box-shadow:0 10px 25px rgba(246,201,14,.18)}
+  .nav-tabs.no-print .logout-tab{margin-left:auto;color:#fecaca;border-color:transparent;background:transparent!important;box-shadow:none}
+
+  #bgpsReviewIntro{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 16px;padding:18px 22px;border:1px solid rgba(169,199,227,.34);border-radius:18px;background:linear-gradient(135deg,rgba(42,78,117,.75),rgba(18,48,82,.82));box-shadow:0 16px 40px rgba(2,12,27,.18)}
+  #bgpsReviewIntro strong{display:block;color:#fff;font-size:21px;font-family:'EB Garamond',serif;line-height:1.05}
+  #bgpsReviewIntro span{display:block;color:#cfe4f7;font-size:12px;margin-top:5px;line-height:1.45}
+  #bgpsReviewIntro .review-pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:999px;background:rgba(246,201,14,.13);border:1px solid rgba(246,201,14,.35);color:#fef3c7;font-family:Inconsolata,monospace;font-size:12px;font-weight:900;white-space:nowrap}
+  #dashMain .dashboard-toolbar{display:grid!important;grid-template-columns:minmax(280px,1.2fr) minmax(180px,.55fr) minmax(210px,.62fr);gap:12px;align-items:end;margin-bottom:16px;padding:14px;border:1px solid rgba(169,199,227,.24);border-radius:14px;background:rgba(8,31,54,.22)}
+  #dashMain .dashboard-toolbar .control-group{margin:0}#dashMain .dashboard-toolbar .btn-primary{height:44px;border-radius:10px;font-family:Arial,sans-serif;font-size:13px;letter-spacing:.01em}
+  #tabSelector option{font-family:Arial,sans-serif}
+
+  body.bgps-clean-papers #paperView.premium-paper-view{padding:18px;background:linear-gradient(145deg,rgba(18,48,82,.98),rgba(9,33,60,.98));}
+  body.bgps-clean-papers .premium-paper-workspace{grid-template-columns:minmax(0,1.55fr) minmax(330px,.85fr);gap:16px}
+  body.bgps-clean-papers .paper-availability.premium-availability{border-radius:10px;margin:0;padding:9px 12px;font-size:11px}
+  body.bgps-clean-papers .premium-mode-switch{width:max-content;min-width:420px;max-width:100%;align-self:start;margin:0;background:rgba(5,28,51,.34)}
+  body.bgps-clean-papers .premium-mode-switch .paper-mode-btn{font-family:Arial,sans-serif;text-transform:none;font-size:13px;letter-spacing:.01em}
+  body.bgps-clean-papers .premium-panel-header{margin-bottom:12px}
+  body.bgps-clean-papers .premium-panel-header h2{font-size:22px}
+  body.bgps-clean-papers .premium-panel-header p{max-width:760px}
+  body.bgps-clean-papers .premium-icon-badge{display:none}
+  body.bgps-clean-papers #paperLibraryPanel.premium-library{position:sticky;top:14px}
+  body.bgps-clean-papers .compact-paper-list{max-height:calc(100vh - 280px)}
+  .bgps-paper-row{display:grid;gap:8px;background:linear-gradient(180deg,#fff,#f6faff);border:1px solid #b9cee0;border-radius:13px;padding:12px;color:#102a43;box-shadow:0 8px 20px rgba(3,29,54,.1)}
+  .bgps-paper-row + .bgps-paper-row{margin-top:10px}.bgps-paper-row-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.bgps-paper-row h3{margin:0;color:#12395f;font-size:14px;line-height:1.25}.bgps-paper-row small{display:block;margin-top:3px;color:#526d82;font-family:Inconsolata,monospace;font-size:11px}.bgps-paper-meta{display:flex;flex-wrap:wrap;gap:5px}.bgps-paper-meta span{padding:4px 7px;border-radius:7px;background:#edf5fc;border:1px solid #cfdfec;color:#315b82;font-size:10px;font-family:Inconsolata,monospace;font-weight:800}.bgps-paper-note{padding:7px 8px;border-radius:8px;background:#eef6ff;color:#315b82;font-size:11px;line-height:1.35}.bgps-paper-row .paper-actions{margin-top:2px}.bgps-paper-row .paper-actions button{padding:7px 9px;font-size:9px}
+  .paper-badge.locked{background:#e2e8f0;color:#334155}.paper-badge.correction-required{background:#fee2e2;color:#b91c1c}.paper-badge.submitted{background:#dbeafe;color:#1d4ed8}.paper-badge.approved{background:#dcfce7;color:#166534}
+
+  @media screen and (max-width:1100px){body.bgps-clean-papers .premium-paper-workspace{grid-template-columns:1fr}body.bgps-clean-papers #paperLibraryPanel.premium-library{position:static}#dashMain .dashboard-toolbar{grid-template-columns:1fr!important}.nav-tabs.no-print .logout-tab{margin-left:0}}
+  @media screen and (max-width:640px){#bgpsReviewIntro{display:block}.review-pill{margin-top:10px}.nav-tabs.no-print .tab-btn{flex:1 1 calc(50% - 10px);padding:0 12px}.premium-mode-switch{min-width:0!important;width:100%!important}}
+</style>
+<script id="bgps-v36-audit-script">
+(function(){
+  'use strict';
+  if (window.__BGPS_V36_PRO_AUDIT_PATCH__) return;
+  window.__BGPS_V36_PRO_AUDIT_PATCH__ = true;
+
+  const CLASS_ORDER = ['Playgroup','LKG','UKG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'];
+  const EXAM_ORDER = ['Unit Test 1','Unit Test 2','Half Yearly','Unit Test 3','Annual Exam','Class Test','Revision Test'];
+  const STATUS_ORDER = {'Correction Required':0,'Submitted':1,'Approved':2,'Locked':3};
+
+  const text = value => String(value ?? '').trim();
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const isAdmin = () => text(typeof currentId !== 'undefined' ? currentId : '').toUpperCase() === 'ADMIN';
+  const classRank = cls => { const i = CLASS_ORDER.indexOf(text(cls)); return i === -1 ? 999 : i; };
+  const examRank = ex => { const i = EXAM_ORDER.indexOf(text(ex)); return i === -1 ? 999 : i; };
+  const statusRank = st => Object.prototype.hasOwnProperty.call(STATUS_ORDER, text(st)) ? STATUS_ORDER[text(st)] : 99;
+
+  function toast(message, tone){
+    const msg = text(message);
+    if (!msg) return;
+    let stack = document.getElementById('bgpsToastStack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.id = 'bgpsToastStack';
+      stack.className = 'bgps-toast-stack no-print';
+      document.body.appendChild(stack);
+    }
+    const lower = msg.toLowerCase();
+    const type = tone || (/(fail|failed|error|invalid|blocked|could not|required|missing|login)/i.test(msg) ? 'error' : /(saved|success|approved|uploaded|submitted|updated|passed)/i.test(msg) ? 'success' : /(warning|verify|closed|locked)/i.test(msg) ? 'warning' : 'info');
+    const node = document.createElement('div');
+    node.className = 'bgps-toast ' + type;
+    node.innerHTML = `<strong>${type === 'error' ? 'Action Needed' : type === 'success' ? 'Done' : type === 'warning' ? 'Please Check' : 'Notice'}</strong>${esc(msg).replace(/\n/g,'<br>')}`;
+    stack.appendChild(node);
+    setTimeout(() => { node.style.opacity = '0'; node.style.transform = 'translateY(-6px)'; setTimeout(() => node.remove(), 220); }, type === 'error' ? 6200 : 4200);
+  }
+  window.bgpsNotify = toast;
+  const nativeAlert = window.alert;
+  window.alert = function(message){ toast(message); };
+
+  function correctionCount(){
+    try { return (Array.isArray(questionPapers) ? questionPapers : []).filter(p => p && p.status === 'Correction Required').length; }
+    catch (_) { return 0; }
+  }
+
+  function teacherTitle(){
+    try { return isAdmin() ? 'ADMIN · All Classes' : `${text(currentId)} · ${text(mapping[currentId])}`; }
+    catch (_) { return text(currentId) || 'User'; }
+  }
+
+  function renderCleanTabs(){
+    const nav = document.querySelector('.nav-tabs.no-print') || document.querySelector('.nav-tabs');
+    if (!nav || !text(typeof currentId !== 'undefined' ? currentId : '')) return;
+    const attention = correctionCount() ? ' is-attention' : '';
+    nav.innerHTML = isAdmin() ? `
+      <button class="tab-btn" id="tab-home" onclick="switchTab('home')">Home</button>
+      <button class="tab-btn" id="tab-review" onclick="switchTab('review')">Marks Review</button>
+      <button class="tab-btn${attention}" id="tab-papers" onclick="switchTab('papers')">Paper Library</button>
+      <button class="tab-btn" id="tab-teachers" onclick="switchTab('teachers')">Teacher Progress</button>
+      <button class="tab-btn${attention}" id="tab-remarks" onclick="switchTab('remarks')">Remarks</button>
+      <button class="tab-btn" id="tab-controls" onclick="switchTab('controls')">Controls</button>
+      <button class="tab-btn logout-tab" onclick="location.reload()">Logout</button>` : `
+      <button class="tab-btn" id="tab-home" onclick="switchTab('home')">Home</button>
+      <button class="tab-btn" id="tab-entry" onclick="switchTab('entry')">Marks Entry</button>
+      <button class="tab-btn" id="tab-review" onclick="switchTab('review')">Results</button>
+      <button class="tab-btn" id="tab-papers" onclick="switchTab('papers')">Papers</button>
+      <button class="tab-btn${attention}" id="tab-remarks" onclick="switchTab('remarks')">Remarks</button>
+      <button class="tab-btn logout-tab" onclick="location.reload()">Logout</button>`;
+  }
+
+  function setActiveCleanTab(tab){
+    const target = tab === 'dash' ? 'review' : tab;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    const id = target === 'controls' ? 'tab-controls' : `tab-${target}`;
+    document.getElementById(id)?.classList.add('active');
+  }
+
+  function sortReportSelector(){
+    const select = document.getElementById('tabSelector');
+    if (!select) return;
+    const selected = select.value;
+    const placeholder = [...select.options].find(o => !o.value)?.outerHTML || '<option value="">Select Report</option>';
+    const items = [...select.options]
+      .filter(o => o.value)
+      .map(o => {
+        const parts = o.value.split('|');
+        return { value:o.value, cls:parts[0] || '', exam:parts[1] || '', label:o.textContent || o.value };
+      })
+      .sort((a,b) => classRank(a.cls) - classRank(b.cls) || examRank(a.exam) - examRank(b.exam) || a.label.localeCompare(b.label));
+    select.innerHTML = placeholder + items.map(item => `<option value="${esc(item.value)}">${esc(item.cls)} — ${esc(item.exam)}</option>`).join('');
+    if ([...select.options].some(o => o.value === selected)) select.value = selected;
+  }
+
+  function cleanupButtonLabels(){
+    document.querySelectorAll('button').forEach(button => {
+      const value = button.textContent.replace(/\s+/g,' ').trim();
+      if (value === 'Upload / Create Paper') button.textContent = 'Prepare Paper';
+      if (value === 'Review & Print Result') button.textContent = 'Results / Print';
+      if (value === 'Refresh Command Center') button.textContent = 'Refresh';
+      if (value === 'FETCH DATA' || value === 'Fetch Data') button.textContent = 'Fetch Report';
+      if (value === 'FETCH SELECTED REPORT') button.textContent = 'Fetch Report';
+      if (value === 'PRINT CONSOLIDATED' || value === 'Print Consolidated') button.textContent = 'Print Consolidated';
+    });
+  }
+
+  function applyReviewCleanup(){
+    const dashMain = document.getElementById('dashMain');
+    if (!dashMain) return;
+    let intro = document.getElementById('bgpsReviewIntro');
+    if (!intro) {
+      intro = document.createElement('div');
+      intro.id = 'bgpsReviewIntro';
+      intro.className = 'no-print';
+      dashMain.insertBefore(intro, dashMain.firstChild);
+    }
+    intro.innerHTML = `<div><strong>${isAdmin() ? 'Marks Review & Print Library' : 'Results Review & Print'}</strong><span>${isAdmin() ? 'Sorted class-wise result audit, incomplete entries, report cards and consolidated printing.' : 'Select your class and exam once. Use the buttons below for fetch and printing.'}</span></div><div class="review-pill">${esc(teacherTitle())}</div>`;
+    sortReportSelector();
+    const selectorLabel = document.querySelector('#dashMain .report-selector label');
+    if (selectorLabel) selectorLabel.textContent = 'Select Report';
+    const fetchBtn = document.getElementById('fetchBtn');
+    if (fetchBtn) fetchBtn.textContent = 'Fetch Report';
+    const printBtn = document.getElementById('btn-print-cons');
+    if (printBtn) { printBtn.textContent = 'Print Consolidated'; if (isAdmin()) printBtn.style.display = 'inline-block'; }
+  }
+
+  function applyPaperCleanup(){
+    document.body.classList.add('bgps-clean-papers');
+    const uploadBtn = document.getElementById('paperModeUploadBtn');
+    const creatorBtn = document.getElementById('paperModeCreatorBtn');
+    if (uploadBtn) uploadBtn.innerHTML = 'Upload File';
+    if (creatorBtn) creatorBtn.innerHTML = 'Compose Online';
+
+    const title = document.getElementById('paperLibraryTitle');
+    const subtitle = document.getElementById('paperLibrarySubtitle');
+    const kicker = document.getElementById('paperLibraryKicker');
+    if (title) title.textContent = isAdmin() ? 'Paper Review Library' : 'Paper History';
+    if (subtitle) subtitle.textContent = isAdmin() ? 'Sorted review queue: corrections first, then pending, approved and locked.' : 'Your submitted, correction and approved question papers in clean order.';
+    if (kicker) kicker.textContent = isAdmin() ? 'Review Desk' : 'Submission History';
+
+    try {
+      const canUpload = Boolean(paperPermissions && paperPermissions.canUpload);
+      const canCreate = Boolean(paperPermissions && paperPermissions.canCreate);
+      const modeBox = document.getElementById('paperModeButtons');
+      if (modeBox && !isAdmin()) modeBox.style.display = (canUpload && canCreate) ? 'flex' : 'none';
+      if (!isAdmin() && !canUpload && canCreate && typeof selectPaperMode === 'function') selectPaperMode('creator', true);
+      if (!isAdmin() && canUpload && !canCreate && typeof selectPaperMode === 'function') selectPaperMode('upload', true);
+    } catch (_) {}
+
+    const banner = document.getElementById('paperAvailabilityBanner');
+    if (banner && !isAdmin()) {
+      const msg = banner.textContent.replace(/\s+/g,' ').trim();
+      const isGenericOpen = /both pdf\/docx upload and manual paper creator are open|question-paper upload is open|available now/i.test(msg) && !(paperSettings && paperSettings.adminNotice);
+      banner.classList.toggle('bgps-soft-hidden', isGenericOpen);
+    }
+  }
+
+  function updateLibraryStatsClean(papers){
+    const arr = Array.isArray(papers) ? papers : [];
+    const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    set('paperStatPending', arr.filter(p => p.status === 'Submitted').length);
+    set('paperStatCorrection', arr.filter(p => p.status === 'Correction Required').length);
+    set('paperStatApproved', arr.filter(p => p.status === 'Approved' || p.status === 'Locked').length);
+  }
+
+  function comparePapers(a,b){
+    const dateA = new Date(a.uploadedAt || a.createdAt || 0).getTime() || 0;
+    const dateB = new Date(b.uploadedAt || b.createdAt || 0).getTime() || 0;
+    return statusRank(a.status) - statusRank(b.status)
+      || classRank(a.className) - classRank(b.className)
+      || examRank(a.exam) - examRank(b.exam)
+      || text(a.subject).localeCompare(text(b.subject))
+      || dateB - dateA;
+  }
+
+  function paperStatusClassClean(status){
+    return text(status || 'Submitted').toLowerCase().replace(/\s+/g,'-');
+  }
+  function formatDateClean(value){
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? text(value) : date.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  }
+  function renderPaperActions(paper, isPrintable){
+    const id = esc(paper.paperId);
+    let actions = `<button class="paper-action-view" onclick="openPaperFile('${id}','preview')">Preview</button>`;
+    if (isAdmin() && isPrintable) actions += `<button class="paper-action-print" onclick="openPaperFile('${id}','print')">Print</button>`;
+    actions += `<button class="paper-action-download" onclick="openPaperFile('${id}','download')">Download</button>`;
+    if (isAdmin()) {
+      if (paper.status !== 'Approved' && paper.status !== 'Locked') actions += `<button class="paper-action-approve" onclick="updatePaperStatus('${id}','Approved')">Approve</button>`;
+      if (paper.status !== 'Locked') actions += `<button class="paper-action-return" onclick="requestPaperCorrection('${id}')">Correction</button>`;
+      if (paper.status === 'Approved') actions += `<button class="paper-action-lock" onclick="updatePaperStatus('${id}','Locked')">Lock</button>`;
+      if (paper.status === 'Locked') actions += `<button class="paper-action-unlock" onclick="updatePaperStatus('${id}','Approved')">Unlock</button>`;
+    } else if (paper.status === 'Correction Required') {
+      actions += `<button class="paper-action-resubmit" onclick="selectCorrectionMode('${esc(paper.sourceType)}')">Correct Version</button>`;
+    }
+    return actions;
+  }
+
+  function renderPaperLibraryClean(){
+    const list = document.getElementById('paperCardList');
+    if (!list) return;
+    const all = Array.isArray(questionPapers) ? questionPapers.slice() : [];
+    updateLibraryStatsClean(all);
+    const classFilter = document.getElementById('paperFilterClass')?.value || '';
+    const statusFilter = document.getElementById('paperFilterStatus')?.value || '';
+    const sourceFilter = document.getElementById('paperFilterSource')?.value || '';
+    const papers = all
+      .filter(p => (!classFilter || p.className === classFilter) && (!statusFilter || p.status === statusFilter) && (!sourceFilter || p.sourceType === sourceFilter))
+      .sort(comparePapers);
+    if (!papers.length) {
+      list.innerHTML = '<div class="paper-empty">No papers found for these filters.</div>';
+      renderCleanTabs(); applyPaperCleanup();
+      return;
+    }
+    list.innerHTML = papers.map(paper => {
+      const mime = text(paper.mimeType).toLowerCase();
+      const fileName = text(paper.fileName);
+      const isPdf = mime === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf');
+      const isHtml = mime === 'text/html' || fileName.toLowerCase().endsWith('.html');
+      const isPrintable = isPdf || isHtml;
+      const formatLabel = isPdf ? 'PDF' : isHtml ? 'Portal Paper' : 'DOCX';
+      const note = paper.adminNote ? `<div class="paper-admin-note"><strong>Admin:</strong> ${esc(paper.adminNote)}</div>` : '';
+      return `<article class="bgps-paper-row" id="paper-${esc(paper.paperId)}">
+        <div class="bgps-paper-row-top"><div><h3>${esc(paper.className)} · ${esc(paper.subject)}</h3><small>${esc(paper.exam)} · ${formatLabel} · Version ${esc(paper.version || 1)}</small></div><span class="paper-badge ${paperStatusClassClean(paper.status)}">${esc(paper.status || 'Submitted')}</span></div>
+        <div class="bgps-paper-meta"><span>Teacher ${esc(paper.teacherId || '—')}</span><span>${esc(paper.maxMarks || '—')} Marks</span><span>${esc(formatDateClean(paper.uploadedAt))}</span><span>${esc(paper.sourceType || 'Upload')}</span>${paper.totalQuestions ? `<span>${esc(paper.totalQuestions)} Questions</span>` : ''}</div>
+        <div class="bgps-paper-note"><strong>Chapters:</strong> ${esc(paper.chapters || '—')}</div>${paper.note ? `<div class="bgps-paper-note"><strong>Reference:</strong> ${esc(paper.note)}</div>` : ''}${note}
+        <div class="paper-actions">${renderPaperActions(paper, isPrintable)}</div>
+      </article>`;
+    }).join('');
+    renderCleanTabs(); applyPaperCleanup();
+  }
+
+  const originalLogin = window.loginTeacher;
+  if (typeof originalLogin === 'function') {
+    window.loginTeacher = loginTeacher = async function(){
+      const result = await originalLogin.apply(this, arguments);
+      setTimeout(() => { renderCleanTabs(); sortReportSelector(); applyPaperCleanup(); cleanupButtonLabels(); setActiveCleanTab('home'); }, 120);
+      return result;
+    };
+  }
+
+  const originalSwitch = window.switchTab;
+  if (typeof originalSwitch === 'function') {
+    window.switchTab = switchTab = async function(tab){
+      const result = await originalSwitch.apply(this, arguments);
+      setTimeout(() => {
+        renderCleanTabs();
+        const cleanTab = tab === 'dash' ? 'review' : tab;
+        setActiveCleanTab(cleanTab);
+        if (cleanTab === 'review') applyReviewCleanup();
+        if (cleanTab === 'papers' || cleanTab === 'controls') applyPaperCleanup();
+        cleanupButtonLabels();
+      }, 40);
+      return result;
+    };
+  }
+
+  if (typeof window.renderPaperLibrary === 'function' || typeof renderPaperLibrary === 'function') {
+    window.renderPaperLibrary = renderPaperLibrary = renderPaperLibraryClean;
+  }
+
+  if (typeof window.applyPaperSettingsUI === 'function' || typeof applyPaperSettingsUI === 'function') {
+    const originalSettingsUI = window.applyPaperSettingsUI || applyPaperSettingsUI;
+    window.applyPaperSettingsUI = applyPaperSettingsUI = function(){
+      const result = originalSettingsUI.apply(this, arguments);
+      setTimeout(() => { applyPaperCleanup(); cleanupButtonLabels(); }, 40);
+      return result;
+    };
+  }
+
+  if (typeof window.fetchData === 'function' || typeof fetchData === 'function') {
+    const originalFetchData = window.fetchData || fetchData;
+    window.fetchData = fetchData = async function(){
+      const result = await originalFetchData.apply(this, arguments);
+      setTimeout(() => { applyReviewCleanup(); cleanupButtonLabels(); }, 50);
+      return result;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => { renderCleanTabs(); sortReportSelector(); applyPaperCleanup(); cleanupButtonLabels(); }, 120);
+  });
+})();
+</script>
 </body>
 </html>

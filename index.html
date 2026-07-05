@@ -1302,6 +1302,307 @@
             .class-summary-grid { grid-template-columns:1fr; }
         }
 
+
+        /* ============================================================== 
+           FINAL V34 — PROFESSIONAL ADMIN UI + MARKS LOCK VISIBILITY
+           Two themes only: Royal Dark and Pearl Light.
+           ============================================================== */
+        .app-header.no-print {
+            padding: 4px 0 14px;
+            border-bottom: 1px solid rgba(169,199,227,.18);
+        }
+        .nav-tabs.no-print {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px;
+            border: 1px solid rgba(169,199,227,.24);
+            border-radius: 16px;
+            background: rgba(8,28,50,.22);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+        }
+        .tab-btn {
+            border-radius: 11px;
+            padding: 11px 17px;
+            font-weight: 800;
+            letter-spacing: .01em;
+        }
+        .tab-btn.locked-tab {
+            opacity: .58;
+            cursor: not-allowed;
+            background: rgba(148,163,184,.18) !important;
+            color: #cbd5e1 !important;
+            border-color: rgba(148,163,184,.35) !important;
+        }
+        #paperView.premium-paper-view {
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 34px 80px rgba(2,12,27,.34), inset 0 1px 0 rgba(255,255,255,.06);
+        }
+        .premium-paper-workspace.admin-workspace {
+            grid-template-columns: minmax(410px, 440px) minmax(0, 1fr);
+            gap: 22px;
+        }
+        .paper-admin-controls.control-center {
+            position: sticky;
+            top: 14px;
+            border-radius: 22px;
+            padding: 24px;
+            background: linear-gradient(180deg, rgba(24,58,91,.94), rgba(15,44,73,.98));
+            border: 1px solid rgba(190,213,235,.34);
+            box-shadow: 0 22px 60px rgba(1,14,28,.24), inset 0 1px 0 rgba(255,255,255,.06);
+        }
+        .premium-panel-header h2 {
+            letter-spacing: -.02em;
+        }
+        .premium-icon-badge {
+            border-radius: 16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .admin-control-overview {
+            grid-template-columns: repeat(5, minmax(0,1fr));
+            gap: 9px;
+            margin: 17px 0 16px;
+        }
+        .admin-state-chip {
+            min-height: 58px;
+            border-radius: 14px;
+            padding: 10px 9px;
+            background: linear-gradient(180deg, rgba(8,32,56,.52), rgba(8,29,50,.38));
+            border: 1px solid rgba(169,199,227,.24);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+        }
+        .admin-state-chip span {
+            min-height: 20px;
+            line-height: 1.05;
+        }
+        .admin-state-chip strong {
+            font-size: 12px;
+            letter-spacing: .02em;
+        }
+        .admin-theme-strip {
+            margin: 16px 0;
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(144,205,244,.11);
+            border-color: rgba(144,205,244,.28);
+        }
+        .theme-choice[data-bgps-theme="slate"] { display: none !important; }
+        .theme-choice {
+            min-width: 105px;
+            padding: 10px 13px;
+            border-radius: 999px;
+            border-color: rgba(219,234,254,.42);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+        }
+        .theme-choice.active {
+            box-shadow: 0 8px 22px rgba(246,201,14,.18);
+        }
+        .paper-control-list { gap: 11px; }
+        .paper-control-list .paper-control-tile {
+            min-height: 72px;
+            padding: 14px 15px;
+            border-radius: 17px;
+            border: 1px solid rgba(196,214,229,.96);
+            background: linear-gradient(180deg, #ffffff, #f2f7fc);
+            box-shadow: 0 10px 26px rgba(2,18,35,.10);
+        }
+        .paper-control-list .paper-control-tile strong {
+            color: #12395f;
+            font-size: 12px;
+            letter-spacing: .01em;
+        }
+        .paper-control-list .paper-control-tile small {
+            color: #526d82;
+            font-size: 10px;
+        }
+        .paper-switch { width: 54px; height: 30px; }
+        .paper-switch-slider::before { width: 24px; height: 24px; }
+        .paper-switch input:checked + .paper-switch-slider::before { transform: translateX(24px); }
+        .paper-admin-message {
+            margin-top: 15px;
+            padding-top: 3px;
+        }
+        .paper-admin-message input,
+        .premium-library-toolbar select,
+        .premium-library-toolbar input {
+            border-radius: 12px;
+            min-height: 44px;
+        }
+        #savePaperSettingsBtn {
+            min-height: 47px;
+            border-radius: 13px;
+            letter-spacing: .02em;
+            box-shadow: 0 14px 26px rgba(246,201,14,.16);
+        }
+        .paper-status {
+            border-radius: 14px !important;
+            padding: 12px 13px !important;
+        }
+        #paperLibraryPanel.premium-library {
+            border-radius: 22px;
+            padding: 20px;
+        }
+        .library-stats { gap: 10px; }
+        .library-stat {
+            border-radius: 14px;
+            padding: 12px;
+            background: linear-gradient(180deg, rgba(8,31,54,.38), rgba(8,31,54,.25));
+        }
+        .premium-library-toolbar {
+            grid-template-columns: minmax(160px,1fr) minmax(160px,1fr);
+            gap: 10px;
+        }
+        .premium-library-toolbar .source-filter {
+            grid-template-columns: minmax(0,1fr) 118px;
+            gap: 10px;
+        }
+        .paper-refresh { border-radius: 13px !important; }
+        .admin-class-summary {
+            padding: 13px;
+            border-radius: 18px;
+            border: 1px solid rgba(169,199,227,.22);
+            background: rgba(5,28,51,.22);
+        }
+        .class-summary-grid {
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 10px;
+        }
+        .class-summary-card {
+            border-radius: 15px;
+            padding: 12px;
+        }
+        .marks-lock-notice {
+            display: none;
+            margin: 0 0 14px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(252,129,129,.45);
+            background: rgba(252,129,129,.14);
+            color: #fecaca;
+            font-family: 'Inconsolata', monospace;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+        .marks-locked-view .marks-lock-notice { display: block; }
+        .marks-locked-view #studentContainer,
+        .marks-locked-view .entry-actions,
+        .marks-locked-view .entry-grid {
+            opacity: .56;
+            pointer-events: none;
+            filter: grayscale(.2);
+        }
+        .marks-locked-view #submitBtn {
+            background: #94a3b8 !important;
+            color: #102a43 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+        }
+
+        body.bgps-theme-white {
+            background: radial-gradient(circle at 18% 0%, #ffffff 0%, #f3f8fd 45%, #e5eef7 100%) !important;
+            color: #102a43 !important;
+        }
+        body.bgps-theme-white .app-header.no-print {
+            border-bottom-color: rgba(120,151,180,.22);
+        }
+        body.bgps-theme-white .nav-tabs.no-print {
+            background: rgba(255,255,255,.72);
+            border-color: rgba(184,206,226,.85);
+            box-shadow: 0 14px 36px rgba(34,61,87,.10), inset 0 1px 0 rgba(255,255,255,.9);
+        }
+        body.bgps-theme-white #paperView.premium-paper-view {
+            background: rgba(255,255,255,.76) !important;
+            border-color: rgba(184,206,226,.9) !important;
+            box-shadow: 0 28px 70px rgba(34,61,87,.18) !important;
+        }
+        body.bgps-theme-white .paper-admin-controls.control-center,
+        body.bgps-theme-white .premium-panel,
+        body.bgps-theme-white .paper-panel,
+        body.bgps-theme-white #paperLibraryPanel.premium-library {
+            background: linear-gradient(180deg, #ffffff, #f5f9fe) !important;
+            color: #102a43 !important;
+            border-color: rgba(184,206,226,.95) !important;
+            box-shadow: 0 18px 44px rgba(34,61,87,.12), inset 0 1px 0 rgba(255,255,255,.9) !important;
+        }
+        body.bgps-theme-white .premium-panel::before,
+        body.bgps-theme-white .paper-admin-controls.control-center::before {
+            background: linear-gradient(90deg, transparent, rgba(246,201,14,.78), transparent) !important;
+        }
+        body.bgps-theme-white .panel-kicker,
+        body.bgps-theme-white .control-group label {
+            color: #2f5f91 !important;
+        }
+        body.bgps-theme-white .premium-panel-header p,
+        body.bgps-theme-white .paper-panel-subtitle,
+        body.bgps-theme-white .admin-theme-strip small,
+        body.bgps-theme-white .class-summary-title {
+            color: #486b8b !important;
+        }
+        body.bgps-theme-white .premium-panel h2,
+        body.bgps-theme-white .paper-panel h2 {
+            color: #9a6500 !important;
+        }
+        body.bgps-theme-white .admin-state-chip,
+        body.bgps-theme-white .library-stat,
+        body.bgps-theme-white .admin-class-summary {
+            background: #f8fbff !important;
+            border-color: #d3e0ec !important;
+            color: #12395f !important;
+        }
+        body.bgps-theme-white .admin-state-chip span,
+        body.bgps-theme-white .library-stat span {
+            color: #5f7f9d !important;
+        }
+        body.bgps-theme-white .admin-state-chip strong,
+        body.bgps-theme-white .library-stat strong {
+            color: #12395f !important;
+        }
+        body.bgps-theme-white .admin-state-chip strong.on { color: #15803d !important; }
+        body.bgps-theme-white .admin-state-chip strong.off { color: #b91c1c !important; }
+        body.bgps-theme-white .admin-theme-strip,
+        body.bgps-theme-white .paper-status,
+        body.bgps-theme-white .paper-availability {
+            background: #eef6ff !important;
+            color: #12395f !important;
+            border-color: #c7dcec !important;
+        }
+        body.bgps-theme-white .admin-theme-strip strong { color: #12395f !important; }
+        body.bgps-theme-white .theme-choice {
+            background: #ffffff;
+            color: #12395f;
+            border-color: #b8cee2;
+        }
+        body.bgps-theme-white .theme-choice.active {
+            background: var(--gold);
+            color: var(--navy);
+            border-color: var(--gold);
+        }
+        body.bgps-theme-white .compact-paper-card,
+        body.bgps-theme-white .class-summary-card {
+            background: #ffffff;
+            border-color: #d3e0ec;
+            box-shadow: 0 10px 24px rgba(34,61,87,.08);
+        }
+        body.bgps-theme-white .paper-empty {
+            background: #f8fbff !important;
+            color: #8aa4bb !important;
+            border-color: #b8cee2 !important;
+        }
+        @media screen and (max-width:1180px) {
+            .premium-paper-workspace.admin-workspace { grid-template-columns: 1fr; }
+            .paper-admin-controls.control-center { position: relative; top: auto; }
+        }
+        @media screen and (max-width:720px) {
+            .premium-paper-workspace.admin-workspace { gap: 14px; }
+            #paperView.premium-paper-view { padding: 12px; border-radius: 18px; }
+            .paper-admin-controls.control-center { padding: 16px; border-radius: 18px; }
+            .admin-control-overview { grid-template-columns: repeat(2, minmax(0,1fr)); }
+            .class-summary-grid { grid-template-columns: 1fr; }
+            .premium-library-toolbar, .premium-library-toolbar .source-filter { grid-template-columns: 1fr; }
+        }
+
+
     </style>
 </head>
 <body>
@@ -1375,9 +1676,8 @@
                                 <small>Change admin screen colour without touching backend data.</small>
                             </div>
                             <div class="theme-choice-row">
-                                <button type="button" class="theme-choice" data-bgps-theme="navy">Navy</button>
-                                <button type="button" class="theme-choice" data-bgps-theme="white">White</button>
-                                <button type="button" class="theme-choice" data-bgps-theme="slate">Soft Blue</button>
+                                <button type="button" class="theme-choice" data-bgps-theme="navy">Royal Dark</button>
+                                <button type="button" class="theme-choice" data-bgps-theme="white">Pearl Light</button>
                             </div>
                         </div>
                         <div class="paper-control-list">
@@ -1672,7 +1972,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxBgmS8ZjcU62MRQOFKWAJBKHdhUQ7V6wMC2eR2TDue286Q7ycelf1QkCtqCqrzHsGp/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkwK3XTWTQKRZMjQEJnZSLmbNLqV6YBSCA1dFwbKW41r2SFFlEu2h7eh39w-Ib4yMc/exec";
         
         const PASS_PERCENT = 33;
 
@@ -1953,7 +2253,7 @@
             box.style.color = selected[2];
         }
 
-        function loginTeacher() {
+        async function loginTeacher() {
             const id = document.getElementById('tid').value.toUpperCase().trim();
             const pass = document.getElementById('tpass').value;
 
@@ -1990,7 +2290,8 @@
             document.getElementById('appShell').style.display = 'block';
 
             setupQuestionPaperModule(classesToLoad);
-            loadPaperSettings(true);
+            await loadPaperSettings(true);
+            applyMarksEntryGate();
             generateRows();
             renderSubjectOptions(clsSelect.value);
 
@@ -2004,7 +2305,20 @@
             }
         }
 
-        function switchTab(tab) {
+        async function switchTab(tab) {
+            if (tab === 'entry' && currentId && currentId !== 'ADMIN') {
+                try {
+                    await loadPaperSettings(true);
+                } catch (error) {
+                    console.error(error);
+                }
+                if (paperSettings.marksEntryEnabled === false) {
+                    applyMarksEntryGate();
+                    alert(paperSettings.adminNotice || 'Marks Entry Portal is locked by Admin.');
+                    tab = 'papers';
+                }
+            }
+
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
@@ -2832,10 +3146,22 @@
             }
 
             if (!response.ok || result.ok === false) throw new Error(result.error || 'Save failed.');
+            if (result && typeof result === 'object') {
+                if (result.inserted == null && result.created != null) result.inserted = result.created;
+                if (result.unchanged == null) result.unchanged = 0;
+                if (result.duplicatesRemoved == null) result.duplicatesRemoved = 0;
+            }
             return result;
         }
 
         async function submitData() {
+            await loadPaperSettings(true);
+            if (currentId !== 'ADMIN' && paperSettings.marksEntryEnabled === false) {
+                applyMarksEntryGate();
+                alert(paperSettings.adminNotice || 'Marks Entry Portal is locked by Admin.');
+                return;
+            }
+
             const cls = document.getElementById('class').value;
             const subjectValue = document.getElementById('subject').value;
             const exam = document.getElementById('examType').value;
@@ -4196,7 +4522,7 @@
                 const theme = document.createElement('div');
                 theme.className = 'admin-theme-strip';
                 theme.id = 'adminThemeStrip';
-                theme.innerHTML = '<div><strong>Dashboard Background</strong><small>White, Soft Blue or current Navy view.</small></div><div class="theme-choice-row"><button type="button" class="theme-choice" data-bgps-theme="navy">Navy</button><button type="button" class="theme-choice" data-bgps-theme="white">White</button><button type="button" class="theme-choice" data-bgps-theme="slate">Soft Blue</button></div>';
+                theme.innerHTML = '<div><strong>Admin Theme</strong><small>Two clean views only: Royal Dark or Pearl Light.</small></div><div class="theme-choice-row"><button type="button" class="theme-choice" data-bgps-theme="navy">Royal Dark</button><button type="button" class="theme-choice" data-bgps-theme="white">Pearl Light</button></div>';
                 const list = document.querySelector('.paper-control-list');
                 if (list && list.parentElement) list.parentElement.insertBefore(theme, list); else status.parentElement.insertBefore(theme, status);
             }
@@ -4298,6 +4624,92 @@
             ensureFinalAdminControls();
             renderPaperClassSummary();
         });
+
+
+        /* ============================================================== 
+           FINAL V34 — Marks Entry Lock Gate + 2-theme picker override
+           ============================================================== */
+        function getMarksLockMessage() {
+            return paperSettings.adminNotice || 'Marks Entry Portal is locked by Admin. Teachers cannot enter or edit marks right now.';
+        }
+
+        function applyMarksEntryGate() {
+            const isTeacher = Boolean(currentId) && currentId !== 'ADMIN';
+            const locked = isTeacher && paperSettings && paperSettings._loaded && paperSettings.marksEntryEnabled === false;
+            const entryView = document.getElementById('entryView');
+            const tab = document.getElementById('tab-entry');
+            const submitBtn = document.getElementById('submitBtn');
+            const loadBtn = document.getElementById('loadExistingBtn');
+
+            if (entryView && !document.getElementById('marksEntryLockNotice')) {
+                const notice = document.createElement('div');
+                notice.id = 'marksEntryLockNotice';
+                notice.className = 'marks-lock-notice';
+                entryView.insertBefore(notice, entryView.firstElementChild);
+            }
+
+            const notice = document.getElementById('marksEntryLockNotice');
+            if (notice) notice.textContent = getMarksLockMessage();
+            if (entryView) entryView.classList.toggle('marks-locked-view', locked);
+            if (tab) {
+                tab.disabled = locked;
+                tab.classList.toggle('locked-tab', locked);
+                tab.textContent = locked ? 'Marks Locked' : 'Marks Entry';
+                tab.title = locked ? getMarksLockMessage() : '';
+            }
+            if (submitBtn) {
+                submitBtn.disabled = locked;
+                if (locked) submitBtn.textContent = 'Marks Entry Locked by Admin';
+                else if (submitBtn.textContent === 'Marks Entry Locked by Admin') submitBtn.textContent = 'Save / Update Records';
+            }
+            if (loadBtn) loadBtn.disabled = locked;
+            if (locked) setEntryStatus(getMarksLockMessage(), 'error');
+        }
+
+        applyBgpsTheme = function(theme) {
+            const safeTheme = theme === 'white' ? 'white' : 'navy';
+            document.body.classList.remove('bgps-theme-navy', 'bgps-theme-white', 'bgps-theme-slate');
+            document.body.classList.add(`bgps-theme-${safeTheme}`);
+            localStorage.setItem(BGPS_THEME_KEY, safeTheme);
+            document.querySelectorAll('.theme-choice').forEach(btn => {
+                const isLegacySlate = btn.dataset.bgpsTheme === 'slate';
+                btn.style.display = isLegacySlate ? 'none' : '';
+                if (btn.dataset.bgpsTheme === 'navy') btn.textContent = 'Royal Dark';
+                if (btn.dataset.bgpsTheme === 'white') btn.textContent = 'Pearl Light';
+                btn.classList.toggle('active', btn.dataset.bgpsTheme === safeTheme);
+            });
+        };
+
+        setupBgpsThemePicker = function() {
+            let theme = localStorage.getItem(BGPS_THEME_KEY) || 'navy';
+            if (theme === 'slate') theme = 'navy';
+            applyBgpsTheme(theme);
+            document.querySelectorAll('.theme-choice').forEach(btn => {
+                if (btn.dataset.boundTheme === 'final-v34') return;
+                btn.dataset.boundTheme = 'final-v34';
+                btn.addEventListener('click', () => applyBgpsTheme(btn.dataset.bgpsTheme === 'white' ? 'white' : 'navy'));
+            });
+        };
+
+        const bgpsV34ApplyPaperSettingsUI = applyPaperSettingsUI;
+        applyPaperSettingsUI = function() {
+            bgpsV34ApplyPaperSettingsUI.apply(this, arguments);
+            setupBgpsThemePicker();
+            applyMarksEntryGate();
+        };
+
+        const bgpsV34SavePaperSettings = savePaperSettings;
+        savePaperSettings = async function() {
+            await bgpsV34SavePaperSettings.apply(this, arguments);
+            applyMarksEntryGate();
+            setupBgpsThemePicker();
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupBgpsThemePicker();
+            applyMarksEntryGate();
+        });
+
 
     </script>
 </body>

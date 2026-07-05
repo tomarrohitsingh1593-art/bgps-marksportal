@@ -1379,8 +1379,7 @@
                                         <button class="editor-tool" type="button" title="Subscript" onmousedown="event.preventDefault()" onclick="editorCommand('subscript')">x₂</button>
                                     </div>
                                     <div class="toolbar-group">
-                                        <button class="editor-tool" type="button" title="Numbered list" onmousedown="event.preventDefault()" onclick="editorCommand('insertOrderedList')">1.</button>
-                                        <button class="editor-tool" type="button" title="Bullet list" onmousedown="event.preventDefault()" onclick="editorCommand('insertUnorderedList')">•</button>
+                                        <button class="editor-tool primary-tool" type="button" title="Insert Questions" onmousedown="event.preventDefault()" onclick="insertQuestions()">Q+</button>
                                         <button class="editor-tool" type="button" title="Section heading" onmousedown="event.preventDefault()" onclick="insertEditorBlock('section')">Section</button>
                                         <button class="editor-tool" type="button" title="OR" onmousedown="event.preventDefault()" onclick="insertEditorBlock('or')">OR</button>
                                     </div>
@@ -1392,7 +1391,9 @@
                                         <button class="editor-tool" type="button" onmousedown="event.preventDefault()" onclick="insertEditorText('[5]')">[5]</button>
                                     </div>
                                     <div class="toolbar-group">
-                                        <button class="editor-tool primary-tool" type="button" onmousedown="event.preventDefault()" onclick="toggleSymbolPalette()">Ω Symbols</button>
+                                        <button class="editor-tool" type="button" title="Mathematical symbols" onmousedown="event.preventDefault()" onclick="toggleSymbolPalette('maths')">∑ Maths</button>
+                                        <button class="editor-tool" type="button" title="Physics symbols" onmousedown="event.preventDefault()" onclick="toggleSymbolPalette('physics')">λ Physics</button>
+                                        <button class="editor-tool" type="button" title="Common symbols" onmousedown="event.preventDefault()" onclick="toggleSymbolPalette('common')">Ω Symbols</button>
                                         <button class="editor-tool" type="button" onmousedown="event.preventDefault()" onclick="insertPaperTable()">Table</button>
                                         <button class="editor-tool" type="button" onmousedown="event.preventDefault()" onclick="insertEditorBlock('diagram')">Diagram</button>
                                     </div>
@@ -1402,7 +1403,9 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="symbol-palette" id="manualSymbolPalette"></div>
+                                <div class="symbol-palette" id="manualMathsPalette"></div>
+                                <div class="symbol-palette" id="manualPhysicsPalette"></div>
+                                <div class="symbol-palette" id="manualCommonPalette"></div>
                                 <div class="paper-document-stage">
                                     <div class="paper-document">
                                         <div class="composer-paper-header">
@@ -1414,7 +1417,7 @@
                                             <span id="composerTimeLine">Time Allotted: —</span><span id="composerMarksLine">Maximum Marks: —</span>
                                             <span id="composerReadingLine">Reading Time: —</span><span>Date: ____________</span>
                                         </div>
-                                        <div id="manualPaperEditor" contenteditable="true" spellcheck="true" lang="en" aria-label="Question paper content" oninput="handleManualEditorInput()" onkeyup="saveManualEditorSelection()" onmouseup="saveManualEditorSelection()" onpaste="handleManualEditorPaste(event)"></div>
+                                        <div id="manualPaperEditor" contenteditable="true" spellcheck="true" lang="en" aria-label="Question paper content" oninput="handleManualEditorInput(); saveManualEditorSelection()" onfocus="saveManualEditorSelection()" onkeyup="saveManualEditorSelection()" onmouseup="saveManualEditorSelection()" onpaste="handleManualEditorPaste(event)"></div>
                                     </div>
                                 </div>
                             </div>
@@ -1563,7 +1566,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyLitF9xnzBUc4d30PujHyk3M8gYQYycLXWtJnrldzcyqePmfXLmi36wcwgE7WpPkj5sw/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxBgmS8ZjcU62MRQOFKWAJBKHdhUQ7V6wMC2eR2TDue286Q7ycelf1QkCtqCqrzHsGp/exec";
         
         const PASS_PERCENT = 33;
 
@@ -3364,7 +3367,16 @@
         let manualEditorSaveTimer = null;
         const MANUAL_PLACEHOLDERS = ['Type question here', 'Replace with question', 'यहाँ प्रश्न लिखें', 'प्रश्न यहाँ लिखें'];
         const MANUAL_ALLOWED_CLASSES = new Set(['paper-instructions','section-heading','question-line','mark-token','or-line','diagram-box','page-break']);
-        const MANUAL_SYMBOLS = ['π','√','∑','∆','θ','α','β','γ','λ','μ','Ω','ω','φ','°','±','×','÷','≤','≥','≠','≈','→','⇌','∞','∴','∵','∝','∫','∂','∇','²','³','₁','₂','₃','₄','₅','⁻¹','·','₹','।','॥'];
+        
+        // Categorized symbol palettes
+        const MANUAL_SYMBOL_PALETTES = {
+            maths: ['sin', 'cos', 'tan', 'log', 'ln', 'lim', '∫', '∑', '√', 'π', 'θ', 'α', 'β', 'γ', '≤', '≥', '≠', '≈', '∴', '∵', '±', '×', '÷', '∞', 'x²', 'x₁'],
+            physics: ['λ', 'μ', 'Ω', 'ρ', 'ε', 'Δ', '∇', 'φ', 'ω', 'τ', 'η', 'm/s', 'm/s²', 'kg', 'N', 'J', 'W', 'V', 'A', 'Hz', 'Pa', '°C'],
+            common: ['•', '→', '←', '↔', '↑', '↓', '✓', '✗', '§', '—', '–', '" "', "' '", '…', '₹', '%', '°']
+        };
+        
+        // Legacy array for backward compatibility (if needed elsewhere)
+        const MANUAL_SYMBOLS = [...MANUAL_SYMBOL_PALETTES.maths, ...MANUAL_SYMBOL_PALETTES.physics, ...MANUAL_SYMBOL_PALETTES.common];
 
         function setupQuestionPaperModule(classesToLoad) {
             const paperClass = document.getElementById('paperClass');
@@ -3400,7 +3412,7 @@
 
             renderPaperSubjectOptions();
             renderManualSubjectOptions();
-            renderManualSymbolPalette();
+            renderManualSymbolPalettes();
             updateComposerHeader();
             refreshBlueprintSuggestion();
             if (currentId !== 'ADMIN') restoreManualDraft();
@@ -3639,14 +3651,45 @@
             editor.focus();
         }
 
-        function renderManualSymbolPalette() {
-            const palette = document.getElementById('manualSymbolPalette');
-            if (!palette) return;
-            palette.innerHTML = MANUAL_SYMBOLS.map(symbol => `<button type="button" class="symbol-btn" onmousedown="event.preventDefault()" onclick="insertEditorText('${symbol.replace(/'/g,"\\'")}')">${symbol}</button>`).join('');
+        function renderManualSymbolPalettes() {
+            const palettes = {
+                maths: document.getElementById('manualMathsPalette'),
+                physics: document.getElementById('manualPhysicsPalette'),
+                common: document.getElementById('manualCommonPalette')
+            };
+
+            Object.entries(palettes).forEach(([category, paletteEl]) => {
+                if (!paletteEl) return;
+                const symbols = MANUAL_SYMBOL_PALETTES[category] || [];
+
+                // V3.2: No inline onclick. Use mousedown + preventDefault so the editor cursor is never lost.
+                paletteEl.innerHTML = symbols.map(symbol => (
+                    `<button type="button" class="symbol-btn" data-symbol="${escapeHtml(symbol)}">${escapeHtml(symbol)}</button>`
+                )).join('');
+
+                paletteEl.querySelectorAll('.symbol-btn').forEach(button => {
+                    button.addEventListener('mousedown', event => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        insertEditorText(button.dataset.symbol || button.textContent || '');
+                    });
+                });
+            });
         }
 
-        function toggleSymbolPalette() {
-            document.getElementById('manualSymbolPalette').classList.toggle('open');
+        function toggleSymbolPalette(category) {
+            // Close all open palettes first
+            ['manualMathsPalette', 'manualPhysicsPalette', 'manualCommonPalette'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && id !== `manual${category.charAt(0).toUpperCase() + category.slice(1)}Palette`) {
+                    el.classList.remove('open');
+                }
+            });
+            
+            // Toggle the requested palette
+            const paletteId = `manual${category.charAt(0).toUpperCase() + category.slice(1)}Palette`;
+            const palette = document.getElementById(paletteId);
+            if (palette) palette.classList.toggle('open');
         }
 
         function saveManualEditorSelection() {
@@ -3659,32 +3702,39 @@
 
         function restoreManualEditorSelection() {
             const editor = document.getElementById('manualPaperEditor');
+            if (!editor) return false;
             editor.focus();
             const selection = window.getSelection();
+            if (!selection) return false;
             selection.removeAllRanges();
-            if (manualEditorSelection) selection.addRange(manualEditorSelection);
-            else {
+            if (manualEditorSelection && editor.contains(manualEditorSelection.commonAncestorContainer)) {
+                selection.addRange(manualEditorSelection);
+            } else {
                 const range = document.createRange();
-                range.selectNodeContents(editor); range.collapse(false); selection.addRange(range);
+                range.selectNodeContents(editor);
+                range.collapse(false);
+                selection.addRange(range);
+                manualEditorSelection = range.cloneRange();
             }
+            return true;
         }
 
         function editorCommand(command, value = null) {
-            restoreManualEditorSelection();
+            if (!restoreManualEditorSelection()) return;
             document.execCommand(command, false, value);
             saveManualEditorSelection();
             handleManualEditorInput();
         }
 
         function insertEditorHtml(html) {
-            restoreManualEditorSelection();
+            if (!restoreManualEditorSelection()) return;
             document.execCommand('insertHTML', false, html);
             saveManualEditorSelection();
             handleManualEditorInput();
         }
 
         function insertEditorText(text) {
-            restoreManualEditorSelection();
+            if (!restoreManualEditorSelection()) return;
             document.execCommand('insertText', false, text);
             saveManualEditorSelection();
             handleManualEditorInput();
@@ -3698,6 +3748,22 @@
 
         function insertPaperTable() {
             insertEditorHtml('<table><tbody><tr><th>Heading 1</th><th>Heading 2</th></tr><tr><td>Data</td><td>Data</td></tr></tbody></table><p><br></p>');
+        }
+
+        function insertQuestions() {
+            const editor = document.getElementById('manualPaperEditor');
+            if (!editor) return;
+
+            // V3.2: Q+ inserts only the next single question number per click.
+            // Example: first click = Question 1., second click = Question 2.
+            const text = editor.innerText || '';
+            const questionMatches = [...text.matchAll(/Question\s+(\d+)\./gi)];
+            let nextNumber = 1;
+            if (questionMatches.length > 0) {
+                nextNumber = Math.max(...questionMatches.map(match => Number(match[1]) || 0)) + 1;
+            }
+
+            insertEditorHtml(`<p class="question-line"><strong>Question ${nextNumber}.</strong>&nbsp;</p>`);
         }
 
         function setEditorLanguage(mode) {

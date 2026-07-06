@@ -4245,13 +4245,33 @@
     background:#f8fbff; color:#102a43; border:1px solid #b8cee2; border-radius:14px; padding:13px;
     box-shadow:0 8px 22px rgba(2,20,38,.12);
   }
+  .bgps-action-card.is-paper { align-items:flex-start; border-left:4px solid #f6c90e; }
+  .bgps-action-card.is-correction { border-left-color:#dc2626; }
   .bgps-action-card strong { display:block; color:#12395f; font-size:13px; }
   .bgps-action-card small { display:block; color:#526d82; font-size:11px; margin-top:3px; line-height:1.35; }
+  .bgps-action-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .bgps-action-meta span { padding:4px 7px; border-radius:999px; background:#eef6ff; color:#315b82; font-family:'Inconsolata',monospace; font-size:10px; font-weight:900; }
   .bgps-status-badge { padding:6px 9px; border-radius:999px; font-size:10px; font-weight:900; text-transform:uppercase; white-space:nowrap; }
   .bgps-status-badge.pending { background:#dbeafe; color:#1d4ed8; }
   .bgps-status-badge.correction { background:#fee2e2; color:#b91c1c; }
   .bgps-status-badge.approved { background:#dcfce7; color:#166534; }
   .bgps-status-badge.locked { background:#e2e8f0; color:#334155; }
+  .class-summary-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:14px; }
+  .class-summary-card {
+    display:grid; gap:10px; min-height:118px; padding:14px;
+    border:1px solid rgba(169,199,227,.30); border-radius:16px;
+    background:linear-gradient(180deg,rgba(42,78,117,.78),rgba(13,43,75,.92));
+    box-shadow:0 12px 30px rgba(2,18,35,.16);
+  }
+  .class-summary-card strong { color:#fff; font-size:15px; line-height:1.2; }
+  .class-summary-card small { color:#a9c7e3; font-size:11px; line-height:1.35; }
+  .class-summary-pills { display:flex; flex-wrap:wrap; gap:6px; align-content:flex-start; }
+  .class-pill { padding:5px 8px; border-radius:999px; background:#eaf4ff; color:#315b82; font-size:10px; font-family:'Inconsolata',monospace; font-weight:900; }
+  .class-pill.pending { background:#fef3c7; color:#92400e; }
+  .class-pill.correction { background:#fee2e2; color:#b91c1c; }
+  .class-pill.approved { background:#dcfce7; color:#166534; }
+  .class-pill.locked { background:#e2e8f0; color:#334155; }
+  .teacher-progress-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:14px; }
 
   /* ---------- Teacher review / remarks ---------- */
   .bgps-review-intro {
@@ -4296,6 +4316,9 @@
   body.bgps-theme-white .bgps-pro-card.good strong { color:#15803d !important; }
   body.bgps-theme-white .bgps-pro-card.warn strong { color:#b7791f !important; }
   body.bgps-theme-white .bgps-pro-card.danger strong { color:#b91c1c !important; }
+  body.bgps-theme-white .class-summary-card { background:#f8fbff !important; border-color:#c7dcec !important; }
+  body.bgps-theme-white .class-summary-card strong { color:#12395f !important; }
+  body.bgps-theme-white .class-summary-card small { color:#486b8b !important; }
   body.bgps-theme-white .bgps-control-row { background:#eef6ff !important; border-color:#c7dcec !important; }
   body.bgps-theme-white .bgps-control-row strong { color:#12395f !important; }
   body.bgps-theme-white .bgps-control-row small { color:#486b8b !important; }
@@ -4305,11 +4328,15 @@
   @media screen and (max-width:1100px) {
     .bgps-pro-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .bgps-pro-two-col { grid-template-columns:1fr; }
+    .class-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .teacher-progress-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
   }
   @media screen and (max-width:640px) {
     .bgps-pro-titlebar { flex-direction:column; padding:15px; border-radius:18px; }
     .bgps-pro-titlebar h1 { font-size:24px; }
     .bgps-pro-grid { grid-template-columns:1fr; }
+    .class-summary-grid,
+    .teacher-progress-summary { grid-template-columns:1fr; }
     .bgps-review-intro { grid-template-columns:1fr; }
     .bgps-review-intro .btn-primary { width:100%; }
   }
@@ -4480,6 +4507,8 @@
       lockedPapers: 0,
       paperHistory: [],
       actions: [],
+      notifications: [],
+      pendingByClass: [],
       portal: getPortalStates()
     };
 
@@ -4516,20 +4545,53 @@
     try {
       if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true);
       const papers = Array.isArray(questionPapers) ? questionPapers : [];
-      stats.paperHistory = papers.slice().sort((a, b) => String(b.uploadedAt || '').localeCompare(String(a.uploadedAt || ''))).slice(0, 6);
-      stats.pendingPapers = papers.filter(p => p.status === 'Submitted').length;
+      const sortedPapers = papers.slice().sort((a, b) => String(b.uploadedAt || '').localeCompare(String(a.uploadedAt || '')));
+      const pendingPapers = papers.filter(p => p.status === 'Submitted');
+      stats.paperHistory = sortedPapers.slice(0, 8);
+      stats.pendingPapers = pendingPapers.length;
       stats.corrections = papers.filter(p => p.status === 'Correction Required').length;
       stats.approvedPapers = papers.filter(p => p.status === 'Approved').length;
       stats.lockedPapers = papers.filter(p => p.status === 'Locked').length;
+      const pendingMap = new Map();
+      pendingPapers.forEach(p => {
+        const cls = p.className || 'Unknown Class';
+        if (!pendingMap.has(cls)) pendingMap.set(cls, []);
+        pendingMap.get(cls).push(p);
+      });
+      stats.pendingByClass = Array.from(pendingMap.entries()).map(([className, list]) => {
+        const ordered = list.slice().sort((a, b) => String(a.uploadedAt || '').localeCompare(String(b.uploadedAt || '')));
+        return { className, total: list.length, first: ordered[0] };
+      }).sort((a, b) => b.total - a.total || String(a.className).localeCompare(String(b.className)));
+      stats.pendingByClass.slice(0, 8).forEach(item => {
+        const first = item.first || {};
+        stats.notifications.push({
+          title: `${item.className}: ${item.total} pending paper${item.total === 1 ? '' : 's'}`,
+          detail: `First pending: ${first.subject || '-'} / ${first.exam || '-'} submitted by Teacher ${first.teacherId || '-'}.`,
+          status: 'pending',
+          meta: ['Class Queue', `${item.total} Pending`, formatPaperDate(first.uploadedAt)]
+        });
+      });
       papers.filter(p => p.status === 'Correction Required').slice(0, 6).forEach(p => stats.actions.push({
         title: `${p.className} / ${p.subject} / ${p.exam}`,
         detail: p.adminNote || 'Correction required by Admin.',
         status: 'correction'
       }));
+      papers.filter(p => p.status === 'Correction Required').slice(0, 6).forEach(p => stats.notifications.push({
+        title: `${p.className} / ${p.subject}`,
+        detail: `${p.exam} requires correction. ${p.adminNote || 'Admin remark is pending teacher action.'}`,
+        status: 'correction',
+        meta: [`Teacher ${p.teacherId || '-'}`, p.sourceType || 'Paper', formatPaperDate(p.uploadedAt)]
+      }));
       papers.filter(p => p.status === 'Submitted').slice(0, 6).forEach(p => stats.actions.push({
         title: `${p.className} / ${p.subject} / ${p.exam}`,
         detail: isAdminUser() ? `Teacher ${p.teacherId} submitted a paper for review.` : 'Your paper is waiting for admin review.',
         status: 'pending'
+      }));
+      sortedPapers.slice(0, 8).forEach(p => stats.notifications.push({
+        title: `${p.className || '-'} / ${p.subject || '-'} / ${p.exam || '-'}`,
+        detail: `${p.status === 'Submitted' ? 'Submitted' : p.status || 'Updated'} by Teacher ${p.teacherId || '-'} as ${p.sourceType || 'Paper'} paper.`,
+        status: paperStatusKey(p.status),
+        meta: [p.sourceType || 'Paper', `V${p.version || 1}`, formatPaperDate(p.uploadedAt)]
       }));
     } catch (e) {
       stats.actions.push({ title:'Question-paper data could not be refreshed', detail:e.message || e, status:'correction' });
@@ -4541,38 +4603,49 @@
   }
 
   function renderCards(stats) {
-    const portal = stats.portal || getPortalStates();
     if (isAdminUser()) {
       return `
         <div class="bgps-pro-grid">
           <div class="bgps-pro-card"><span>Total Classes</span><strong>15</strong><small>Playgroup through Class 12.</small></div>
-          <div class="bgps-pro-card ${liveCardClass(portal.marksLive)}"><span>Marks Entry</span><strong>${liveLabel(portal.marksLive)}</strong><small>Teacher marks entry switch.</small></div>
-          <div class="bgps-pro-card ${liveCardClass(portal.uploadLive)}"><span>Paper Upload</span><strong>${liveLabel(portal.uploadLive)}</strong><small>PDF / DOCX upload availability.</small></div>
-          <div class="bgps-pro-card ${liveCardClass(portal.creatorLive)}"><span>Paper Creator</span><strong>${liveLabel(portal.creatorLive)}</strong><small>Manual paper creation availability.</small></div>
+          <div class="bgps-pro-card"><span>Marks Records</span><strong>${stats.marksRecords || 0}</strong><small>${stats.classesTouched || 0} classes have saved marks.</small></div>
           <div class="bgps-pro-card warn"><span>Question Papers Pending</span><strong>${stats.pendingPapers}</strong><small>Need approval / print review.</small></div>
           <div class="bgps-pro-card danger"><span>Correction Required</span><strong>${stats.corrections}</strong><small>Teacher action required.</small></div>
+          <div class="bgps-pro-card good"><span>Approved Papers</span><strong>${stats.approvedPapers}</strong><small>Ready for print or final review.</small></div>
+          <div class="bgps-pro-card"><span>Locked Papers</span><strong>${stats.lockedPapers}</strong><small>Final paper versions locked.</small></div>
         </div>`;
     }
     return `
       <div class="bgps-pro-grid">
         <div class="bgps-pro-card"><span>Your Class</span><strong>${html(mapping[currentId] || '-')}</strong><small>Assigned class workspace.</small></div>
-        <div class="bgps-pro-card ${liveCardClass(portal.marksLive)}"><span>Marks Entry</span><strong>${liveLabel(portal.marksLive)}</strong><small>Admin-controlled marks entry access.</small></div>
-        <div class="bgps-pro-card ${liveCardClass(portal.uploadLive)}"><span>Paper Upload</span><strong>${liveLabel(portal.uploadLive)}</strong><small>PDF / DOCX upload access.</small></div>
-        <div class="bgps-pro-card ${liveCardClass(portal.creatorLive)}"><span>Paper Creator</span><strong>${liveLabel(portal.creatorLive)}</strong><small>Manual question paper creation access.</small></div>
+        <div class="bgps-pro-card"><span>Marks Records</span><strong>${stats.marksRecords || 0}</strong><small>Saved marks rows for your class.</small></div>
         <div class="bgps-pro-card warn"><span>Papers Pending</span><strong>${stats.pendingPapers}</strong><small>Your papers waiting for review.</small></div>
         <div class="bgps-pro-card danger"><span>Corrections</span><strong>${stats.corrections}</strong><small>Remarks requiring your action.</small></div>
+        <div class="bgps-pro-card good"><span>Approved</span><strong>${stats.approvedPapers}</strong><small>Papers approved or ready.</small></div>
+        <div class="bgps-pro-card"><span>Locked</span><strong>${stats.lockedPapers}</strong><small>Final locked versions.</small></div>
       </div>`;
   }
 
   function renderActionList(stats) {
-    const actions = stats.actions && stats.actions.length ? stats.actions : [{
-      title: 'No urgent action right now',
-      detail: isAdminUser() ? 'Open Marks & Reports, Paper Approval, or Teacher Progress for detailed checking.' : 'Open Marks Entry, Marks & Reports or Question Paper Center to continue work.',
+    const rawItems = (stats.notifications && stats.notifications.length) ? stats.notifications : (stats.actions || []);
+    const seen = new Set();
+    const actions = rawItems.filter(item => {
+      const key = `${item.title || ''}|${item.detail || ''}|${(item.meta || []).join('|')}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 12);
+    const items = actions.length ? actions : [{
+      title: isAdminUser() ? 'No paper notifications yet' : 'No paper updates yet',
+      detail: isAdminUser() ? 'New submissions, class-wise pending queues and correction requests will appear here.' : 'Your submitted papers and admin updates will appear here.',
       status: 'approved'
     }];
-    return actions.map(item => `
-      <div class="bgps-action-card">
-        <div><strong>${html(item.title)}</strong><small>${html(item.detail)}</small></div>
+    return items.map(item => `
+      <div class="bgps-action-card is-paper ${item.status === 'correction' ? 'is-correction' : ''}">
+        <div>
+          <strong>${html(item.title)}</strong>
+          <small>${html(item.detail)}</small>
+          ${item.meta && item.meta.length ? `<div class="bgps-action-meta">${item.meta.map(x => `<span>${html(x || '-')}</span>`).join('')}</div>` : ''}
+        </div>
         <span class="bgps-status-badge ${item.status || 'pending'}">${item.status || 'pending'}</span>
       </div>`).join('');
   }
@@ -4621,7 +4694,7 @@
         </div>
         <div class="control-group">
           <label>Teacher Notice</label>
-          <input type="text" id="ccAdminNotice" maxlength="300" value="${html(paperSettings.adminNotice || '')}" placeholder="Example: Half Yearly paper submission closes on 18 August.">
+          <textarea id="ccAdminNotice" maxlength="300" rows="2" placeholder="Example: Half Yearly paper submission closes on 18 August.">${html(paperSettings.adminNotice || '')}</textarea>
         </div>
         <div class="bgps-command-actions">
           <button class="btn-primary" type="button" id="ccSaveControls" onclick="bgpsSaveCommandControls()">Save Live Controls</button>
@@ -4695,7 +4768,7 @@
         </section>`;
     host.innerHTML = buildTitle(title, subtitle) + renderCards(stats) + `
       <div class="bgps-pro-two-col">
-        <section class="bgps-pro-panel"><h2>Action Required</h2><p>Priority list generated from pending papers, correction notes and available portal data.</p><div class="bgps-pro-actions">${renderActionList(stats)}</div></section>
+        <section class="bgps-pro-panel"><h2>Paper Notifications</h2><p>Class-wise pending queues, first pending paper and latest submitted papers appear here.</p><div class="bgps-pro-actions">${renderActionList(stats)}</div></section>
         ${sidePanel}
       </div>
       ${!isAdminUser() ? `<section class="bgps-pro-panel" style="margin-top:16px;"><h2>Submission History</h2><p>Your latest uploaded or created question papers with admin remarks and status.</p><div class="bgps-pro-actions">${renderSubmissionHistory(stats)}</div></section>` : ''}`;
@@ -4806,9 +4879,13 @@
     try { if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true); } catch (_) {}
     (Array.isArray(questionPapers) ? questionPapers : []).forEach(p => {
       const key = p.teacherId || 'Unknown';
-      if (!mapData.has(key)) mapData.set(key, { teacher:key, className:p.className || '-', papers:0, pending:0, correction:0, approved:0, locked:0, marks:0 });
+      if (!mapData.has(key)) mapData.set(key, { teacher:key, className:p.className || '-', papers:0, pending:0, correction:0, approved:0, locked:0, marks:0, latest:null });
       const item = mapData.get(key);
+      const mappedClass = mapping && mapping[key] && mapping[key] !== 'ALL_CLASSES' ? mapping[key] : '';
+      if (mappedClass) item.className = mappedClass;
+      else if (p.className) item.className = p.className;
       item.papers += 1;
+      if (!item.latest || String(p.uploadedAt || '').localeCompare(String(item.latest.uploadedAt || '')) > 0) item.latest = p;
       if (p.status === 'Submitted') item.pending += 1;
       else if (p.status === 'Correction Required') item.correction += 1;
       else if (p.status === 'Approved') item.approved += 1;
@@ -4819,26 +4896,49 @@
       const rows = typeof getMasterData === 'function' ? await getMasterData(true) : [];
       if (Array.isArray(rows)) rows.slice(1).forEach(row => {
         const tid = safeText(row && row[1]).trim() || 'Unknown';
-        const cls = safeText(row && row[2]).trim() || (mapping && mapping[tid]) || '-';
-        if (!mapData.has(tid)) mapData.set(tid, { teacher:tid, className:cls, papers:0, pending:0, correction:0, approved:0, locked:0, marks:0 });
+        const mappedClass = mapping && mapping[tid] && mapping[tid] !== 'ALL_CLASSES' ? mapping[tid] : '';
+        const cls = mappedClass || safeText(row && row[2]).trim() || '-';
+        if (!mapData.has(tid)) mapData.set(tid, { teacher:tid, className:cls, papers:0, pending:0, correction:0, approved:0, locked:0, marks:0, latest:null });
+        if (mappedClass) mapData.get(tid).className = mappedClass;
         mapData.get(tid).marks += 1;
       });
     } catch (_) {}
 
-    const cards = Array.from(mapData.values()).sort((a,b) => a.teacher.localeCompare(b.teacher)).map(t => `
-      <div class="class-summary-card">
-        <strong>${html(t.teacher)} / ${html(t.className)}</strong>
+    const teachers = Array.from(mapData.values()).sort((a,b) => a.teacher.localeCompare(b.teacher, undefined, { numeric:true }));
+    const totals = teachers.reduce((sum, t) => ({
+      teachers: sum.teachers + 1,
+      marks: sum.marks + t.marks,
+      papers: sum.papers + t.papers,
+      pending: sum.pending + t.pending,
+      correction: sum.correction + t.correction
+    }), { teachers:0, marks:0, papers:0, pending:0, correction:0 });
+    const summary = `
+      <div class="teacher-progress-summary">
+        <div class="bgps-pro-card"><span>Teachers</span><strong>${totals.teachers}</strong><small>Class owners with activity.</small></div>
+        <div class="bgps-pro-card"><span>Marks Records</span><strong>${totals.marks}</strong><small>Saved marks rows in master sheet.</small></div>
+        <div class="bgps-pro-card warn"><span>Pending Papers</span><strong>${totals.pending}</strong><small>Need admin approval.</small></div>
+        <div class="bgps-pro-card danger"><span>Corrections</span><strong>${totals.correction}</strong><small>Returned to teachers.</small></div>
+      </div>`;
+    const cards = teachers.map(t => {
+      const latest = t.latest ? `${t.latest.subject || '-'} / ${t.latest.exam || '-'} (${t.latest.status || 'Submitted'})` : 'No paper submitted yet';
+      return `
+      <article class="class-summary-card">
+        <div>
+          <strong>${html(t.teacher)} / ${html(t.className)}</strong>
+          <small>Latest paper: ${html(latest)}</small>
+        </div>
         <div class="class-summary-pills">
-          <span class="class-pill">Marks ${t.marks}</span>
-          <span class="class-pill">Papers ${t.papers}</span>
+          <span class="class-pill">Marks Records ${t.marks}</span>
+          <span class="class-pill">Total Papers ${t.papers}</span>
           <span class="class-pill pending">Pending ${t.pending}</span>
           <span class="class-pill correction">Correction ${t.correction}</span>
           <span class="class-pill approved">Approved ${t.approved}</span>
           <span class="class-pill locked">Locked ${t.locked}</span>
         </div>
-      </div>`).join('') || '<div class="paper-empty">No teacher activity found yet.</div>';
+      </article>`;
+    }).join('') || '<div class="paper-empty">No teacher activity found yet.</div>';
 
-    host.innerHTML = buildTitle('Teacher Progress', 'Class-wise paper and marks activity summary for principal follow-up.') + `<section class="bgps-pro-panel"><h2>Teacher Activity Board</h2><p>Use this for follow-up: pending submissions, correction load and marks activity.</p><div class="class-summary-grid">${cards}</div></section>`;
+    host.innerHTML = buildTitle('Teacher Progress', 'Class-wise paper and marks activity summary for principal follow-up.') + `${summary}<section class="bgps-pro-panel"><h2>Teacher Activity Board</h2><p>Use this for follow-up: pending submissions, correction load and marks activity.</p><div class="class-summary-grid">${cards}</div></section>`;
   }
 
   async function proSwitchTab(tab) {

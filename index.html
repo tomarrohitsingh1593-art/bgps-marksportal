@@ -1037,7 +1037,7 @@
 
         /* Admin control center */
         .paper-admin-controls.control-center { display:none; padding:18px; margin:0; }
-        .admin-control-overview { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 14px; }
+        .admin-control-overview { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin:12px 0 14px; }
         .admin-state-chip { border:1px solid rgba(169,199,227,.25); border-radius:10px; padding:9px 10px; background:rgba(8,32,56,.32); }
         .admin-state-chip span { display:block; color:#9ec9ed; font-size:8px; font-weight:900; text-transform:uppercase; letter-spacing:.65px; }
         .admin-state-chip strong { display:block; margin-top:3px; color:#fff; font-family:'Inconsolata',monospace; font-size:11px; }
@@ -1279,6 +1279,7 @@
                             <div class="premium-icon-badge">⚙</div>
                         </div>
                         <div class="admin-control-overview">
+                            <div class="admin-state-chip"><span>Marks Entry</span><strong id="adminMarksState">—</strong></div>
                             <div class="admin-state-chip"><span>Upload</span><strong id="adminUploadState">—</strong></div>
                             <div class="admin-state-chip"><span>Creator</span><strong id="adminCreatorState">—</strong></div>
                             <div class="admin-state-chip"><span>Submissions</span><strong id="adminSubmissionState">—</strong></div>
@@ -1288,6 +1289,10 @@
                             <div class="paper-control-tile">
                                 <div><strong>Emergency Lock</strong><small>Immediately stop every new paper submission.</small></div>
                                 <label class="paper-switch danger"><input type="checkbox" id="settingEmergencyLock"><span class="paper-switch-slider"></span></label>
+                            </div>
+                            <div class="paper-control-tile">
+                                <div><strong>Marks Entry</strong><small>Allow teachers to enter or update marks.</small></div>
+                                <label class="paper-switch"><input type="checkbox" id="settingMarksEntryEnabled"><span class="paper-switch-slider"></span></label>
                             </div>
                             <div class="paper-control-tile">
                                 <div><strong>Existing File Upload</strong><small>Allow PDF and DOCX submission.</small></div>
@@ -1773,6 +1778,7 @@
         let questionPapers = [];
         let paperSettings = {
             emergencyLock: false,
+            marksEntryEnabled: true,
             uploadEnabled: true,
             creatorEnabled: false,
             submissionEnabled: true,
@@ -2100,11 +2106,12 @@
             if (!currentId) return;
             if (currentId === 'ADMIN') {
                 document.getElementById('settingEmergencyLock').checked = Boolean(paperSettings.emergencyLock);
+                document.getElementById('settingMarksEntryEnabled').checked = Boolean(paperSettings.marksEntryEnabled !== false);
                 document.getElementById('settingUploadEnabled').checked = Boolean(paperSettings.uploadEnabled);
                 document.getElementById('settingCreatorEnabled').checked = Boolean(paperSettings.creatorEnabled);
                 document.getElementById('settingSubmissionEnabled').checked = Boolean(paperSettings.submissionEnabled);
                 document.getElementById('settingAdminNotice').value = paperSettings.adminNotice || '';
-                const summary = `Emergency lock: ${paperSettings.emergencyLock ? 'ON' : 'OFF'} · Upload: ${paperSettings.uploadEnabled ? 'ON' : 'OFF'} · Creator: ${paperSettings.creatorEnabled ? 'ON' : 'OFF'} · Submissions: ${paperSettings.submissionEnabled ? 'OPEN' : 'CLOSED'}`;
+                const summary = `Marks Entry: ${paperSettings.marksEntryEnabled !== false ? 'ON' : 'OFF'} · Emergency lock: ${paperSettings.emergencyLock ? 'ON' : 'OFF'} · Upload: ${paperSettings.uploadEnabled ? 'ON' : 'OFF'} · Creator: ${paperSettings.creatorEnabled ? 'ON' : 'OFF'} · Submissions: ${paperSettings.submissionEnabled ? 'OPEN' : 'CLOSED'}`;
                 setPaperStatusBox(document.getElementById('paperSettingsStatus'), summary, paperSettings.emergencyLock ? 'error' : 'success');
                 return;
             }
@@ -2122,10 +2129,10 @@
                 banner.textContent = paperSettings.adminNotice || 'Question-paper submission is currently closed by Admin.';
             } else if (!paperPermissions.canUpload || !paperPermissions.canCreate) {
                 banner.className = 'paper-availability partial';
-                banner.textContent = paperSettings.adminNotice || `Available now: ${paperPermissions.canUpload ? 'PDF/DOCX Upload' : 'Manual Paper Creator'}.`;
+                banner.textContent = `Available now: ${paperPermissions.canUpload ? 'PDF/DOCX Upload' : 'Manual Paper Creator'}.`;
             } else {
                 banner.className = 'paper-availability';
-                banner.textContent = paperSettings.adminNotice || 'Both PDF/DOCX Upload and Manual Paper Creator are open.';
+                banner.textContent = 'Both PDF/DOCX Upload and Manual Paper Creator are open.';
             }
 
             if (selectedPaperMode === 'upload' && !paperPermissions.canUpload && paperPermissions.canCreate) selectedPaperMode = 'creator';
@@ -2143,14 +2150,17 @@
                 const result = await paperApi('updatePaperSettings', {
                     settings: {
                         emergencyLock: document.getElementById('settingEmergencyLock').checked,
+                        marksEntryEnabled: document.getElementById('settingMarksEntryEnabled').checked,
                         uploadEnabled: document.getElementById('settingUploadEnabled').checked,
                         creatorEnabled: document.getElementById('settingCreatorEnabled').checked,
                         submissionEnabled: document.getElementById('settingSubmissionEnabled').checked,
                         adminNotice: document.getElementById('settingAdminNotice').value.trim()
                     }
                 });
-                paperSettings = { ...(result.settings || {}), _loaded:true };
+                paperSettings = { ...paperSettings, ...(result.settings || {}), _loaded:true };
                 applyPaperSettingsUI();
+                if (typeof bgpsSyncCommandControls === 'function') bgpsSyncCommandControls();
+                if (typeof applyMarksEntryGate === 'function') applyMarksEntryGate();
                 setPaperStatusBox(document.getElementById('paperSettingsStatus'), 'Controls saved. Teachers will receive the new availability on refresh/login.', 'success');
             } catch (error) {
                 setPaperStatusBox(document.getElementById('paperSettingsStatus'), `Could not save controls: ${error.message}`, 'error');
@@ -2160,11 +2170,24 @@
             }
         }
 
+        function getPaperControlMessage(mode) {
+            const notice = (paperSettings.adminNotice || '').trim();
+            if (paperSettings.emergencyLock) return notice || 'Question-paper activity is locked by Admin.';
+            if (!paperSettings.submissionEnabled) return notice || 'New question-paper submissions are closed by Admin.';
+            if (mode === 'upload' && !paperSettings.uploadEnabled) return 'PDF/DOCX Upload is closed by Admin.';
+            if (mode === 'creator' && !paperSettings.creatorEnabled) return 'Paper Creator is closed by Admin.';
+            return notice || 'This question-paper workflow is currently closed by Admin.';
+        }
+
+        function getMarksEntryMessage() {
+            return 'Marks Entry is closed by Admin.';
+        }
+
         function legacySelectPaperMode(mode, silent = false) {
             if (currentId === 'ADMIN') return;
             const allowed = mode === 'upload' ? paperPermissions.canUpload : paperPermissions.canCreate;
             if (!allowed && !silent) {
-                alert(paperSettings.adminNotice || `${mode === 'upload' ? 'Upload' : 'Manual Creator'} is currently disabled by Admin.`);
+                alert(getPaperControlMessage(mode));
                 return;
             }
             selectedPaperMode = mode;
@@ -2190,7 +2213,7 @@
             if (currentId === 'ADMIN') return;
             await loadPaperSettings(true);
             if (!paperPermissions.canUpload) {
-                setPaperUploadStatus(paperSettings.adminNotice || 'Upload is currently disabled by Admin.', 'error');
+                setPaperUploadStatus(getPaperControlMessage('upload'), 'error');
                 return;
             }
 
@@ -2457,7 +2480,7 @@
             if (currentId === 'ADMIN') return;
             await loadPaperSettings(true);
             if (!paperPermissions.canCreate) {
-                alert(paperSettings.adminNotice || 'Manual creator is currently disabled by Admin.');
+                alert(getPaperControlMessage('creator'));
                 return;
             }
             const check = runManualChecks(true);
@@ -2569,10 +2592,18 @@
         }
 
         function selectCorrectionMode(sourceType) {
-            if (String(sourceType).toLowerCase() === 'manual' && paperPermissions.canCreate) selectPaperMode('creator');
-            else if (paperPermissions.canUpload) selectPaperMode('upload');
-            else alert(paperSettings.adminNotice || 'The required correction channel is currently closed by Admin.');
-            document.getElementById(sourceType === 'Manual' ? 'paperCreatorPanel' : 'paperUploadPanel')?.scrollIntoView({ behavior:'smooth', block:'start' });
+            const manual = String(sourceType).toLowerCase() === 'manual';
+            let targetMode = '';
+            if (manual && paperPermissions.canCreate) targetMode = 'creator';
+            else if (!manual && paperPermissions.canUpload) targetMode = 'upload';
+            else if (paperPermissions.canUpload) targetMode = 'upload';
+            else if (paperPermissions.canCreate) targetMode = 'creator';
+            else {
+                alert(getPaperControlMessage(manual ? 'creator' : 'upload'));
+                return;
+            }
+            selectPaperMode(targetMode);
+            document.getElementById(targetMode === 'creator' ? 'paperCreatorPanel' : 'paperUploadPanel')?.scrollIntoView({ behavior:'smooth', block:'start' });
         }
 
         async function openPaperFile(paperId, mode) {
@@ -3437,6 +3468,7 @@
         function renderAdminControlState() {
             if (currentId !== 'ADMIN') return;
             const states = [
+                ['adminMarksState', paperSettings.marksEntryEnabled !== false, paperSettings.marksEntryEnabled !== false ? 'LIVE' : 'CLOSED'],
                 ['adminUploadState', paperSettings.uploadEnabled && !paperSettings.emergencyLock, paperSettings.uploadEnabled ? 'OPEN' : 'CLOSED'],
                 ['adminCreatorState', paperSettings.creatorEnabled && !paperSettings.emergencyLock, paperSettings.creatorEnabled ? 'OPEN' : 'CLOSED'],
                 ['adminSubmissionState', paperSettings.submissionEnabled && !paperSettings.emergencyLock, paperSettings.submissionEnabled ? 'OPEN' : 'CLOSED'],
@@ -3454,6 +3486,7 @@
             if (!currentId) return;
             if (currentId === 'ADMIN') {
                 document.getElementById('settingEmergencyLock').checked = Boolean(paperSettings.emergencyLock);
+                document.getElementById('settingMarksEntryEnabled').checked = Boolean(paperSettings.marksEntryEnabled !== false);
                 document.getElementById('settingUploadEnabled').checked = Boolean(paperSettings.uploadEnabled);
                 document.getElementById('settingCreatorEnabled').checked = Boolean(paperSettings.creatorEnabled);
                 document.getElementById('settingSubmissionEnabled').checked = Boolean(paperSettings.submissionEnabled);
@@ -3461,13 +3494,14 @@
                 renderAdminControlState();
                 const summary = paperSettings.emergencyLock
                     ? 'Emergency lock is active. New teacher paper activity is blocked.'
-                    : `Upload ${paperSettings.uploadEnabled ? 'open' : 'closed'} · Creator ${paperSettings.creatorEnabled ? 'open' : 'closed'} · Submissions ${paperSettings.submissionEnabled ? 'open' : 'closed'}`;
+                    : `Marks Entry ${paperSettings.marksEntryEnabled !== false ? 'live' : 'closed'} · Upload ${paperSettings.uploadEnabled ? 'open' : 'closed'} · Creator ${paperSettings.creatorEnabled ? 'open' : 'closed'} · Submissions ${paperSettings.submissionEnabled ? 'open' : 'closed'}`;
                 setPaperStatusBox(document.getElementById('paperSettingsStatus'), summary, paperSettings.emergencyLock ? 'error' : 'success');
                 return;
             }
 
             paperPermissions.canUpload = !paperSettings.emergencyLock && paperSettings.uploadEnabled && paperSettings.submissionEnabled;
             paperPermissions.canCreate = !paperSettings.emergencyLock && paperSettings.creatorEnabled && paperSettings.submissionEnabled;
+            if (typeof applyMarksEntryGate === 'function') applyMarksEntryGate();
             const banner = document.getElementById('paperAvailabilityBanner');
             const bannerText = banner.querySelector('span:last-child') || banner;
             const uploadButton = document.getElementById('paperModeUploadBtn');
@@ -3480,10 +3514,10 @@
                 bannerText.textContent = paperSettings.adminNotice || 'Question-paper submission is currently closed by Admin.';
             } else if (!paperPermissions.canUpload || !paperPermissions.canCreate) {
                 banner.className = 'paper-availability premium-availability partial';
-                bannerText.textContent = paperSettings.adminNotice || `Available now: ${paperPermissions.canUpload ? 'PDF/DOCX Upload' : 'Paper Creator'}.`;
+                bannerText.textContent = `Available now: ${paperPermissions.canUpload ? 'PDF/DOCX Upload' : 'Paper Creator'}.`;
             } else {
                 banner.className = 'paper-availability premium-availability';
-                bannerText.textContent = paperSettings.adminNotice || 'Upload and Paper Creator are both open.';
+                bannerText.textContent = 'Upload and Paper Creator are both open.';
             }
 
             if (selectedPaperMode === 'upload' && !paperPermissions.canUpload && paperPermissions.canCreate) selectedPaperMode = 'creator';
@@ -3495,7 +3529,7 @@
             if (currentId === 'ADMIN') return;
             const allowed = mode === 'upload' ? paperPermissions.canUpload : paperPermissions.canCreate;
             if (!allowed && !silent) {
-                alert(paperSettings.adminNotice || `${mode === 'upload' ? 'Upload' : 'Paper Creator'} is currently disabled by Admin.`);
+                alert(getPaperControlMessage(mode));
                 return;
             }
             selectedPaperMode = mode;
@@ -4029,7 +4063,7 @@
         async function submitManualPaper() {
             if (currentId === 'ADMIN') return;
             await loadPaperSettings(true);
-            if (!paperPermissions.canCreate) { alert(paperSettings.adminNotice || 'Paper Creator is currently disabled by Admin.'); return; }
+            if (!paperPermissions.canCreate) { alert(getPaperControlMessage('creator')); return; }
             const check = runManualChecks(true);
             if (!check.valid) return;
             const editor = document.getElementById('manualPaperEditor');
@@ -4188,6 +4222,24 @@
   .bgps-pro-panel h2 { margin:0 0 4px; color:var(--gold); font-family:'EB Garamond',serif; font-size:24px; }
   .bgps-pro-panel p { color:#cfe4f7; font-size:12px; line-height:1.45; margin:0 0 13px; }
   .bgps-pro-actions { display:grid; gap:10px; }
+  .bgps-command-panel { display:grid; gap:12px; }
+  .bgps-command-grid { display:grid; gap:10px; }
+  .bgps-control-row {
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:12px 13px; border-radius:14px; border:1px solid rgba(169,199,227,.28);
+    background:rgba(9,34,60,.42);
+  }
+  .bgps-control-row strong { display:block; color:#fff; font-size:13px; }
+  .bgps-control-row small { display:block; color:#bdd5ea; font-size:11px; line-height:1.35; margin-top:3px; }
+  .bgps-control-row .paper-switch { flex:0 0 auto; margin:0; }
+  .bgps-command-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .bgps-command-actions .btn-primary,
+  .bgps-command-actions .btn-secondary { width:auto; min-width:140px; margin:0; }
+  .bgps-command-status { margin-top:0; }
+  .tab-btn.is-locked { opacity:.72; border-style:dashed; }
+  #entryView.entry-locked #studentContainer { opacity:.56; pointer-events:none; }
+  #entryView.entry-locked #submitBtn,
+  #entryView.entry-locked #loadExistingBtn { opacity:.65; }
   .bgps-action-card {
     display:flex; justify-content:space-between; align-items:center; gap:12px;
     background:#f8fbff; color:#102a43; border:1px solid #b8cee2; border-radius:14px; padding:13px;
@@ -4244,6 +4296,9 @@
   body.bgps-theme-white .bgps-pro-card.good strong { color:#15803d !important; }
   body.bgps-theme-white .bgps-pro-card.warn strong { color:#b7791f !important; }
   body.bgps-theme-white .bgps-pro-card.danger strong { color:#b91c1c !important; }
+  body.bgps-theme-white .bgps-control-row { background:#eef6ff !important; border-color:#c7dcec !important; }
+  body.bgps-theme-white .bgps-control-row strong { color:#12395f !important; }
+  body.bgps-theme-white .bgps-control-row small { color:#486b8b !important; }
   body.bgps-theme-white .bgps-review-intro { background:#eef6ff !important; color:#12395f !important; border-color:#c7dcec !important; }
   body.bgps-theme-white .bgps-review-intro strong { color:#12395f !important; }
 
@@ -4266,7 +4321,8 @@
     homeId: 'proHomeView',
     remarksId: 'remarksView',
     teachersId: 'teachersView',
-    lastHomeStats: null
+    lastHomeStats: null,
+    commandStatusMessage: ''
   };
 
   function safeText(value) { return String(value == null ? '' : value); }
@@ -4280,6 +4336,62 @@
   }
   function isAdminUser() { return safeText(window.currentId || currentId).toUpperCase() === 'ADMIN'; }
   function roleClass() { return isAdminUser() ? 'Principal / Admin' : (mapping && mapping[currentId]) ? mapping[currentId] : 'Teacher'; }
+  function getPortalStates() {
+    const settings = paperSettings || {};
+    const submissionsLive = !settings.emergencyLock && settings.submissionEnabled !== false;
+    return {
+      marksLive: settings.marksEntryEnabled !== false,
+      uploadLive: submissionsLive && settings.uploadEnabled !== false,
+      creatorLive: submissionsLive && Boolean(settings.creatorEnabled),
+      submissionsLive,
+      emergencyLocked: Boolean(settings.emergencyLock)
+    };
+  }
+  function liveLabel(live) { return live ? 'Live' : 'Closed'; }
+  function liveCardClass(live) { return live ? 'good' : 'danger'; }
+  function setCommandStatus(message, tone = 'info') {
+    const box = document.getElementById('ccSettingsStatus');
+    if (!box) return;
+    if (typeof setPaperStatusBox === 'function') setPaperStatusBox(box, message, tone);
+    else box.textContent = message;
+  }
+  function syncCommandControlsFromSettings() {
+    if (!isAdminUser()) return;
+    const map = [
+      ['ccMarksEntryEnabled', paperSettings.marksEntryEnabled !== false],
+      ['ccUploadEnabled', paperSettings.uploadEnabled !== false],
+      ['ccCreatorEnabled', Boolean(paperSettings.creatorEnabled)],
+      ['ccSubmissionEnabled', paperSettings.submissionEnabled !== false],
+      ['ccEmergencyLock', Boolean(paperSettings.emergencyLock)]
+    ];
+    map.forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = value;
+    });
+    const notice = document.getElementById('ccAdminNotice');
+    if (notice) notice.value = paperSettings.adminNotice || '';
+    if (PRO.commandStatusMessage) setCommandStatus(PRO.commandStatusMessage, 'success');
+  }
+  function applyMarksEntryGate() {
+    if (!currentId || isAdminUser()) return;
+    const live = !paperSettings || paperSettings.marksEntryEnabled !== false;
+    const tab = document.getElementById('tab-entry');
+    const entry = document.getElementById('entryView');
+    const submit = document.getElementById('submitBtn');
+    const load = document.getElementById('loadExistingBtn');
+    if (tab) {
+      tab.classList.toggle('is-locked', !live);
+      tab.title = live ? 'Marks Entry is live' : 'Marks Entry is closed by Admin';
+    }
+    if (entry) entry.classList.toggle('entry-locked', !live);
+    if (submit) submit.disabled = !live;
+    if (load) load.disabled = !live;
+    if (!live && typeof setEntryStatus === 'function') setEntryStatus(getMarksEntryMessage(), 'error');
+    const statusBox = document.getElementById('entryStatus');
+    if (live && statusBox && /closed by admin/i.test(statusBox.textContent || '') && typeof setEntryStatus === 'function') {
+      setEntryStatus('Select subject, exam and mode. Use Load / Edit Existing Marks before correcting old marks.', 'info');
+    }
+  }
 
   function ensureProViews() {
     const shell = document.getElementById('appShell');
@@ -4367,8 +4479,16 @@
       approvedPapers: 0,
       lockedPapers: 0,
       paperHistory: [],
-      actions: []
+      actions: [],
+      portal: getPortalStates()
     };
+
+    try {
+      if (typeof loadPaperSettings === 'function') await loadPaperSettings(true);
+      stats.portal = getPortalStates();
+    } catch (e) {
+      stats.actions.push({ title:'Portal controls could not be refreshed', detail:e.message || e, status:'correction' });
+    }
 
     try {
       if (typeof getMasterData === 'function') {
@@ -4421,21 +4541,24 @@
   }
 
   function renderCards(stats) {
+    const portal = stats.portal || getPortalStates();
     if (isAdminUser()) {
       return `
         <div class="bgps-pro-grid">
           <div class="bgps-pro-card"><span>Total Classes</span><strong>15</strong><small>Playgroup through Class 12.</small></div>
-          <div class="bgps-pro-card"><span>Marks Review</span><strong>${stats.classesTouched || '-'}</strong><small>Classes with available marks data.</small></div>
+          <div class="bgps-pro-card ${liveCardClass(portal.marksLive)}"><span>Marks Entry</span><strong>${liveLabel(portal.marksLive)}</strong><small>Teacher marks entry switch.</small></div>
+          <div class="bgps-pro-card ${liveCardClass(portal.uploadLive)}"><span>Paper Upload</span><strong>${liveLabel(portal.uploadLive)}</strong><small>PDF / DOCX upload availability.</small></div>
+          <div class="bgps-pro-card ${liveCardClass(portal.creatorLive)}"><span>Paper Creator</span><strong>${liveLabel(portal.creatorLive)}</strong><small>Manual paper creation availability.</small></div>
           <div class="bgps-pro-card warn"><span>Question Papers Pending</span><strong>${stats.pendingPapers}</strong><small>Need approval / print review.</small></div>
           <div class="bgps-pro-card danger"><span>Correction Required</span><strong>${stats.corrections}</strong><small>Teacher action required.</small></div>
-          <div class="bgps-pro-card"><span>Report Review</span><strong>Open</strong><small>Open Marks & Reports for class-level completion.</small></div>
-          <div class="bgps-pro-card danger"><span>At Risk / Failed Students</span><strong>-</strong><small>Calculated after fetching a report.</small></div>
         </div>`;
     }
     return `
       <div class="bgps-pro-grid">
         <div class="bgps-pro-card"><span>Your Class</span><strong>${html(mapping[currentId] || '-')}</strong><small>Assigned class workspace.</small></div>
-        <div class="bgps-pro-card"><span>Marks Status</span><strong>${stats.marksRecords ? 'Ready' : '-'}</strong><small>Open Marks & Reports for saved results.</small></div>
+        <div class="bgps-pro-card ${liveCardClass(portal.marksLive)}"><span>Marks Entry</span><strong>${liveLabel(portal.marksLive)}</strong><small>Admin-controlled marks entry access.</small></div>
+        <div class="bgps-pro-card ${liveCardClass(portal.uploadLive)}"><span>Paper Upload</span><strong>${liveLabel(portal.uploadLive)}</strong><small>PDF / DOCX upload access.</small></div>
+        <div class="bgps-pro-card ${liveCardClass(portal.creatorLive)}"><span>Paper Creator</span><strong>${liveLabel(portal.creatorLive)}</strong><small>Manual question paper creation access.</small></div>
         <div class="bgps-pro-card warn"><span>Papers Pending</span><strong>${stats.pendingPapers}</strong><small>Your papers waiting for review.</small></div>
         <div class="bgps-pro-card danger"><span>Corrections</span><strong>${stats.corrections}</strong><small>Remarks requiring your action.</small></div>
       </div>`;
@@ -4474,6 +4597,82 @@
     }).join('');
   }
 
+  function commandSwitch(id, title, detail, checked, danger = false) {
+    return `
+      <div class="bgps-control-row">
+        <div><strong>${html(title)}</strong><small>${html(detail)}</small></div>
+        <label class="paper-switch ${danger ? 'danger' : ''}"><input type="checkbox" id="${html(id)}" ${checked ? 'checked' : ''}><span class="paper-switch-slider"></span></label>
+      </div>`;
+  }
+
+  function renderCommandControls(stats) {
+    const portal = stats.portal || getPortalStates();
+    const statusText = PRO.commandStatusMessage || `Marks ${liveLabel(portal.marksLive)} · Upload ${liveLabel(portal.uploadLive)} · Creator ${liveLabel(portal.creatorLive)}`;
+    return `
+      <section class="bgps-pro-panel bgps-command-panel">
+        <h2>Live Module Controls</h2>
+        <p>Control teacher workflows from the command center. These switches are saved to Apps Script and enforced on refresh/login.</p>
+        <div class="bgps-command-grid">
+          ${commandSwitch('ccMarksEntryEnabled', 'Marks Entry', 'Allow teachers to enter or update marks.', paperSettings.marksEntryEnabled !== false)}
+          ${commandSwitch('ccUploadEnabled', 'Question Paper Upload', 'Allow teachers to submit prepared PDF / DOCX papers.', paperSettings.uploadEnabled !== false)}
+          ${commandSwitch('ccCreatorEnabled', 'Question Paper Creator', 'Allow teachers to create papers inside the portal.', Boolean(paperSettings.creatorEnabled))}
+          ${commandSwitch('ccSubmissionEnabled', 'New Paper Submissions', 'Master switch for upload and creator submissions.', paperSettings.submissionEnabled !== false)}
+          ${commandSwitch('ccEmergencyLock', 'Paper Emergency Lock', 'Immediately block every new paper submission.', Boolean(paperSettings.emergencyLock), true)}
+        </div>
+        <div class="control-group">
+          <label>Teacher Notice</label>
+          <input type="text" id="ccAdminNotice" maxlength="300" value="${html(paperSettings.adminNotice || '')}" placeholder="Example: Half Yearly paper submission closes on 18 August.">
+        </div>
+        <div class="bgps-command-actions">
+          <button class="btn-primary" type="button" id="ccSaveControls" onclick="bgpsSaveCommandControls()">Save Live Controls</button>
+          <button class="btn-secondary" type="button" onclick="switchTab('approval')">Open Paper Approval</button>
+          <button class="btn-secondary" type="button" onclick="switchTab('review')">Open Marks & Reports</button>
+        </div>
+        <div class="paper-status bgps-command-status" id="ccSettingsStatus">${html(statusText)}</div>
+      </section>`;
+  }
+
+  async function saveCommandCenterSettings() {
+    if (!isAdminUser()) return;
+    const button = document.getElementById('ccSaveControls');
+    const readChecked = (id, fallback) => {
+      const el = document.getElementById(id);
+      return el ? el.checked : fallback;
+    };
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Saving...';
+    }
+    setCommandStatus('Saving live module controls...', 'info');
+    try {
+      const result = await paperApi('updatePaperSettings', {
+        settings: {
+          marksEntryEnabled: readChecked('ccMarksEntryEnabled', paperSettings.marksEntryEnabled !== false),
+          uploadEnabled: readChecked('ccUploadEnabled', paperSettings.uploadEnabled !== false),
+          creatorEnabled: readChecked('ccCreatorEnabled', Boolean(paperSettings.creatorEnabled)),
+          submissionEnabled: readChecked('ccSubmissionEnabled', paperSettings.submissionEnabled !== false),
+          emergencyLock: readChecked('ccEmergencyLock', Boolean(paperSettings.emergencyLock)),
+          adminNotice: (document.getElementById('ccAdminNotice')?.value || '').trim()
+        }
+      });
+      paperSettings = { ...paperSettings, ...(result.settings || {}), _loaded:true };
+      paperPermissions = { ...paperPermissions, ...(result.permissions || {}) };
+      PRO.commandStatusMessage = 'Controls saved. Teacher dashboard will show the updated live status.';
+      PRO.lastHomeStats = null;
+      if (typeof applyPaperSettingsUI === 'function') applyPaperSettingsUI();
+      renderRoleTabs();
+      await renderHome(true);
+    } catch (error) {
+      setCommandStatus(`Could not save controls: ${error.message}`, 'error');
+    } finally {
+      const freshButton = document.getElementById('ccSaveControls');
+      if (freshButton) {
+        freshButton.disabled = false;
+        freshButton.textContent = 'Save Live Controls';
+      }
+    }
+  }
+
   async function renderHome(refresh) {
     ensureProViews();
     const host = document.getElementById('proHomeContent');
@@ -4485,25 +4684,22 @@
     host.innerHTML = buildTitle(title, subtitle) + '<div class="paper-empty">Refreshing command center...</div>';
 
     const stats = refresh || !PRO.lastHomeStats ? await gatherStats() : PRO.lastHomeStats;
+    const sidePanel = isAdminUser() ? renderCommandControls(stats) : `
+        <section class="bgps-pro-panel"><h2>Quick Moves</h2><p>Priority workflows for the current role.</p>
+          <div class="bgps-pro-actions">
+            <button class="btn-primary" type="button" onclick="switchTab('entry')">Enter / Edit Marks</button>
+            <button class="btn-primary" type="button" onclick="switchTab('review')">Open Marks & Reports</button>
+            <button class="btn-primary" type="button" onclick="switchTab('papers')">Upload / Create Paper</button>
+            <button class="btn-secondary" type="button" onclick="bgpsProRefreshHome()">Refresh Overview</button>
+          </div>
+        </section>`;
     host.innerHTML = buildTitle(title, subtitle) + renderCards(stats) + `
       <div class="bgps-pro-two-col">
         <section class="bgps-pro-panel"><h2>Action Required</h2><p>Priority list generated from pending papers, correction notes and available portal data.</p><div class="bgps-pro-actions">${renderActionList(stats)}</div></section>
-        <section class="bgps-pro-panel"><h2>Quick Moves</h2><p>Priority workflows for the current role.</p>
-          <div class="bgps-pro-actions">
-            ${isAdminUser() ? `
-              <button class="btn-primary" type="button" onclick="switchTab('review')">Open Marks & Reports</button>
-              <button class="btn-primary" type="button" onclick="switchTab('approval')">Open Paper Approval</button>
-              <button class="btn-primary" type="button" onclick="switchTab('teachers')">Open Teacher Progress</button>
-            ` : `
-              <button class="btn-primary" type="button" onclick="switchTab('entry')">Enter / Edit Marks</button>
-              <button class="btn-primary" type="button" onclick="switchTab('review')">Open Marks & Reports</button>
-              <button class="btn-primary" type="button" onclick="switchTab('papers')">Upload / Create Paper</button>
-            `}
-            <button class="btn-secondary" type="button" onclick="bgpsProRefreshHome()">Refresh Command Center</button>
-          </div>
-        </section>
+        ${sidePanel}
       </div>
       ${!isAdminUser() ? `<section class="bgps-pro-panel" style="margin-top:16px;"><h2>Submission History</h2><p>Your latest uploaded or created question papers with admin remarks and status.</p><div class="bgps-pro-actions">${renderSubmissionHistory(stats)}</div></section>` : ''}`;
+    syncCommandControlsFromSettings();
   }
 
   function prepareReviewMode(mode) {
@@ -4571,6 +4767,7 @@
     const host = document.getElementById('remarksContent');
     if (!host) return;
     host.innerHTML = buildTitle(isAdminUser() ? 'Correction Tracker' : 'Remarks & Corrections', isAdminUser() ? 'Track correction requests and teacher follow-up from one place.' : 'Admin notices and paper correction remarks appear here.') + '<div class="paper-empty">Loading remarks...</div>';
+    try { if (typeof loadPaperSettings === 'function') await loadPaperSettings(true); } catch (_) {}
     try { if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true); } catch (_) {}
     const papers = Array.isArray(questionPapers) ? questionPapers : [];
     const remarks = [];
@@ -4652,7 +4849,7 @@
       try { if (typeof loadPaperSettings === 'function') await loadPaperSettings(true); } catch (_) {}
       if (paperSettings && paperSettings.marksEntryEnabled === false) {
         if (typeof applyMarksEntryGate === 'function') applyMarksEntryGate();
-        const message = paperSettings.adminNotice || 'Marks Entry is closed by Admin.';
+        const message = typeof getMarksEntryMessage === 'function' ? getMarksEntryMessage() : 'Marks Entry is closed by Admin.';
         alert(message);
         if (typeof setEntryStatus === 'function') setEntryStatus(message, 'error');
         return;
@@ -4687,6 +4884,9 @@
   }
 
   window.bgpsProRefreshHome = function(){ PRO.lastHomeStats = null; return renderHome(true); };
+  window.bgpsSyncCommandControls = syncCommandControlsFromSettings;
+  window.bgpsSaveCommandControls = saveCommandCenterSettings;
+  window.applyMarksEntryGate = applyMarksEntryGate;
 
   const originalLogin = window.loginTeacher || loginTeacher;
   window.loginTeacher = loginTeacher = async function(){

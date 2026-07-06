@@ -2694,10 +2694,9 @@
                 if (validMaxValues.length === 1) document.getElementById('maxMarks').value = validMaxValues[0];
 
                 entryLoadedKey = contextKey();
-                const count = latestByRoll.size;
                 setEntryStatus(
-                    count ? `${count} existing record(s) loaded. Change values or mark Absent, then Save / Update.` : 'No old records found. New records will be created.',
-                    count ? 'success' : 'info'
+                    latestByRoll.size ? 'Existing marks loaded. Review values or mark Absent, then Save / Update.' : 'No previous marks found. New marks will be saved.',
+                    latestByRoll.size ? 'success' : 'info'
                 );
 
                 if (showMessage && validMaxValues.length > 1) {
@@ -2791,11 +2790,11 @@
             button.textContent = 'Saving / Updating...';
 
             try {
-                const result = await postEntries(entries);
+                await postEntries(entries);
                 cachedMasterData = null;
                 entryLoadedKey = contextKey();
                 setEntryStatus(
-                    `Saved: ${result.inserted || 0} new, ${result.updated || 0} updated, ${result.unchanged || 0} unchanged. Duplicate rows removed: ${result.duplicatesRemoved || 0}.`,
+                    'Marks saved successfully.',
                     'success'
                 );
                 await loadExistingMarks(false);
@@ -4137,6 +4136,11 @@
 
   /* ---------- Paper module modes ---------- */
   #paperView.pro-paper-approval #paperAdminControls { display:none !important; }
+  #paperView.pro-paper-approval .premium-paper-workspace {
+    grid-template-columns:1fr !important;
+    max-width:100%;
+  }
+  #paperView.pro-paper-approval .premium-paper-main { display:none !important; }
   #paperView.pro-paper-settings #paperLibraryPanel { display:none !important; }
   #paperView.pro-paper-settings #paperAdminControls {
     display:block !important;
@@ -4148,6 +4152,7 @@
   #paperView.pro-paper-approval #paperLibraryPanel {
     border-color:rgba(246,201,14,.34);
     box-shadow:0 18px 44px rgba(2,12,27,.22);
+    width:100%;
   }
   #paperView.pro-paper-approval .compact-paper-card:first-child {
     border-color:rgba(246,201,14,.72);
@@ -4420,17 +4425,17 @@
       return `
         <div class="bgps-pro-grid">
           <div class="bgps-pro-card"><span>Total Classes</span><strong>15</strong><small>Playgroup through Class 12.</small></div>
-          <div class="bgps-pro-card"><span>Marks Records</span><strong>${stats.marksRecords}</strong><small>Total saved marks entries in Master sheet.</small></div>
+          <div class="bgps-pro-card"><span>Marks Review</span><strong>${stats.classesTouched || '-'}</strong><small>Classes with available marks data.</small></div>
           <div class="bgps-pro-card warn"><span>Question Papers Pending</span><strong>${stats.pendingPapers}</strong><small>Need approval / print review.</small></div>
           <div class="bgps-pro-card danger"><span>Correction Required</span><strong>${stats.corrections}</strong><small>Teacher action required.</small></div>
-          <div class="bgps-pro-card"><span>Marks Completion</span><strong>${stats.marksRecords ? 'Loaded' : '-'}</strong><small>Use Marks Review for class-level completion.</small></div>
+          <div class="bgps-pro-card"><span>Report Review</span><strong>Open</strong><small>Open Marks & Reports for class-level completion.</small></div>
           <div class="bgps-pro-card danger"><span>At Risk / Failed Students</span><strong>-</strong><small>Calculated after fetching a report.</small></div>
         </div>`;
     }
     return `
       <div class="bgps-pro-grid">
         <div class="bgps-pro-card"><span>Your Class</span><strong>${html(mapping[currentId] || '-')}</strong><small>Assigned class workspace.</small></div>
-        <div class="bgps-pro-card"><span>Marks Entries</span><strong>${stats.marksRecords}</strong><small>Saved marks entries for your class.</small></div>
+        <div class="bgps-pro-card"><span>Marks Status</span><strong>${stats.marksRecords ? 'Ready' : '-'}</strong><small>Open Marks & Reports for saved results.</small></div>
         <div class="bgps-pro-card warn"><span>Papers Pending</span><strong>${stats.pendingPapers}</strong><small>Your papers waiting for review.</small></div>
         <div class="bgps-pro-card danger"><span>Corrections</span><strong>${stats.corrections}</strong><small>Remarks requiring your action.</small></div>
       </div>`;

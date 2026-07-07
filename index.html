@@ -1242,6 +1242,7 @@
         }
 
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="login-container" id="loginPage" style="max-width:400px; margin: 60px auto;">
@@ -1455,6 +1456,7 @@
                                         <div class="composer-paper-header">
                                             <div class="school-name">BG PUBLIC SCHOOL</div>
                                             <div class="exam-name" id="composerExamLine">QUESTION PAPER</div>
+                                            <div class="exam-name" id="composerTermLine" style="font-size:13px;margin-top:2px;">Exam / Term: —</div>
                                         </div>
                                         <div class="composer-paper-meta">
                                             <span id="composerClassLine">Class: —</span><span id="composerSubjectLine">Subject: —</span>
@@ -1615,7 +1617,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxBgmS8ZjcU62MRQOFKWAJBKHdhUQ7V6wMC2eR2TDue286Q7ycelf1QkCtqCqrzHsGp/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVcUu2uHPvlEg70XscA9cvF-VgbimiZ-6L9zPl1N3wRODYw1Q-u-lIAaemg32oTail/exec";
         
         const PASS_PERCENT = 33;
 
@@ -1845,16 +1847,6 @@
                     "Class 8": ["Physics", "Chemistry", "Biology"]
                 }
             };
-            base["T-16"] = {
-                displayName: "Physics Teacher",
-                classTeacherOf: [],
-                marksClasses: ["Class 9", "Class 10"],
-                paperClasses: ["Class 9", "Class 10"],
-                subjectsByClass: {
-                    "Class 9": ["Physics"],
-                    "Class 10": ["Physics"]
-                }
-            };
             base["ADMIN"] = {
                 displayName: "SUPER ADMIN",
                 classTeacherOf: [],
@@ -1891,8 +1883,9 @@
         }
 
         function getPaperClassesForTeacher(teacherId) {
-            const profile = getTeacherProfile(teacherId);
-            return teacherId === 'ADMIN' ? ALL_CLASSES : uniqueList(profile.paperClasses || profile.classTeacherOf || []);
+            // Question-paper module is intentionally free-class for authenticated teachers.
+            // Marks entry remains restricted through getMarksClassesForTeacher().
+            return ALL_CLASSES.slice();
         }
 
         function getSubjectsForClassAndTeacher(className, teacherId, context = 'paper') {
@@ -1909,8 +1902,7 @@
             const profile = getTeacherProfile(teacherId);
             const parts = [];
             if ((profile.classTeacherOf || []).length) parts.push(`Class Teacher: ${profile.classTeacherOf.join(', ')}`);
-            const paperClasses = getPaperClassesForTeacher(teacherId);
-            if (paperClasses.length && paperClasses.join('|') !== (profile.classTeacherOf || []).join('|')) parts.push(`Subject/Paper: ${paperClasses.join(', ')}`);
+            parts.push('Question Papers: All Classes');
             return parts.join(' · ') || 'Subject Teacher';
         }
 
@@ -2149,7 +2141,8 @@
             const paperClass = document.getElementById('paperClass');
             const manualClass = document.getElementById('manualClass');
             const filterClass = document.getElementById('paperFilterClass');
-            const classOptions = classesToLoad.map(cls => `<option value="${escapeHtml(cls)}">${escapeHtml(cls)}</option>`).join('');
+            const paperClasses = getPaperClassesForTeacher(currentId);
+            const classOptions = paperClasses.map(cls => `<option value="${escapeHtml(cls)}">${escapeHtml(cls)}</option>`).join('');
 
             paperClass.innerHTML = (currentId === 'ADMIN' ? '<option value="">Select Class</option>' : '') + classOptions;
             manualClass.innerHTML = (currentId === 'ADMIN' ? '<option value="">Select Class</option>' : '') + classOptions;
@@ -2163,17 +2156,19 @@
                 document.getElementById('paperAvailabilityBanner').style.display = 'none';
                 document.getElementById('paperLibraryTitle').textContent = 'Question Paper Center';
                 document.getElementById('paperLibrarySubtitle').textContent = 'Control module availability, review submissions, request corrections, approve, lock and print.';
+                paperClass.disabled = false;
+                manualClass.disabled = false;
             } else {
                 document.getElementById('paperAdminControls').style.display = 'none';
                 document.getElementById('paperModeButtons').style.display = 'flex';
                 document.getElementById('paperAvailabilityBanner').style.display = 'block';
-                const paperClasses = getPaperClassesForTeacher(currentId);
+                const marksClass = getMarksClassesForTeacher(currentId)[0] || paperClasses[0] || '';
                 if (paperClasses.length) {
-                    paperClass.value = paperClasses[0];
-                    manualClass.value = paperClasses[0];
+                    paperClass.value = paperClasses.includes(marksClass) ? marksClass : paperClasses[0];
+                    manualClass.value = paperClasses.includes(marksClass) ? marksClass : paperClasses[0];
                 }
-                paperClass.disabled = paperClasses.length <= 1;
-                manualClass.disabled = paperClasses.length <= 1;
+                paperClass.disabled = false;
+                manualClass.disabled = false;
                 document.getElementById('paperLibraryTitle').textContent = 'My Question Papers';
                 document.getElementById('paperLibrarySubtitle').textContent = 'Track uploaded and manually created papers, corrections and approval status.';
                 restoreManualDraft();
@@ -3706,16 +3701,20 @@
                 document.getElementById('paperLibraryKicker').textContent = 'Admin Review Desk';
                 document.getElementById('paperLibraryTitle').textContent = 'Question Paper Center';
                 document.getElementById('paperLibrarySubtitle').textContent = 'Review submissions, request corrections, approve, lock and print.';
+                paperClass.disabled = false;
+                manualClass.disabled = false;
             } else {
                 workspace.classList.remove('admin-workspace');
                 document.getElementById('paperAdminControls').style.display = 'none';
                 teacherConsole.style.display = 'grid';
+                const marksClass = getMarksClassesForTeacher(currentId)[0] || paperClasses[0] || '';
                 if (paperClasses.length) {
-                    paperClass.value = paperClasses[0];
-                    manualClass.value = paperClasses[0];
+                    paperClass.value = paperClasses.includes(marksClass) ? marksClass : paperClasses[0];
+                    manualClass.value = paperClasses.includes(marksClass) ? marksClass : paperClasses[0];
                 }
-                paperClass.disabled = paperClasses.length <= 1;
-                manualClass.disabled = paperClasses.length <= 1;
+                // Paper creation/upload class dropdowns must remain free for teachers.
+                paperClass.disabled = false;
+                manualClass.disabled = false;
                 document.getElementById('paperLibraryKicker').textContent = 'Your Submission History';
                 document.getElementById('paperLibraryTitle').textContent = 'My Question Papers';
                 document.getElementById('paperLibrarySubtitle').textContent = 'Track uploaded and portal-created papers, corrections and approval.';
@@ -3893,12 +3892,14 @@
             const reading = inferReadingTime(className, maxMarks);
             const examLine = document.getElementById('composerExamLine');
             if (!examLine) return;
-            examLine.textContent = exam ? `${exam} - ${inferBoardPattern(className)} Question Paper` : 'QUESTION PAPER';
+            examLine.textContent = exam ? `${inferBoardPattern(className)} Question Paper` : 'QUESTION PAPER';
             document.getElementById('composerClassLine').textContent = `Class: ${className}`;
             document.getElementById('composerSubjectLine').textContent = `Subject: ${subject}`;
             document.getElementById('composerTimeLine').textContent = `Time Allotted: ${maxMarks ? time : '—'}`;
             document.getElementById('composerMarksLine').textContent = `Maximum Marks: ${maxMarks || '—'}`;
             document.getElementById('composerReadingLine').textContent = `Reading Time: ${maxMarks ? reading : '—'}`;
+            const termLine = document.getElementById('composerTermLine');
+            if (termLine) termLine.textContent = `Exam / Term: ${exam || '—'}`;
             document.getElementById('manualAutoTime').textContent = maxMarks ? `${time} + reading` : '—';
             document.getElementById('manualTimeAllowed').value = time;
         }
@@ -4232,13 +4233,123 @@
             return template.innerHTML;
         }
 
+        function calculateMarksTokenValue(token) {
+            const expression = String(token || '').replace(/^\[|\]$/g, '').trim();
+            if (!expression) return 0;
+            if (/^\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*$/.test(expression)) {
+                return expression.split('+').reduce((sum, part) => sum + Number(part.trim() || 0), 0);
+            }
+            const number = Number(expression);
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        function isManualSectionLine(line) {
+            const value = String(line || '').trim();
+            return /^(section\s*[-:]?\s*[a-z0-9]+|part\s*[-:]?\s*[a-z0-9]+|खंड\s*[-:]?\s*[\u0900-\u097Fa-z0-9]+)\b/i.test(value);
+        }
+
+        function normalizeManualSectionName(line, fallback = 'Section A') {
+            const value = String(line || '').trim().replace(/\s+/g, ' ');
+            return value || fallback;
+        }
+
+        function splitOrQuestion(text) {
+            const value = String(text || '').trim();
+            const parts = value.split(/\s+(?:OR|Or|or|अथवा|या)\s+/);
+            if (parts.length >= 2) {
+                return { text: parts[0].trim(), orText: parts.slice(1).join(' OR ').trim() };
+            }
+            return { text: value, orText: '' };
+        }
+
+        function stripQuestionPrefix(text) {
+            return String(text || '')
+                .replace(/^\s*(?:Q(?:uestion)?\.?\s*)?\d+[.):-]?\s*/i, '')
+                .replace(/^\s*प्रश्न\s*\d+[.)।:-]?\s*/i, '')
+                .trim();
+        }
+
+        function parseComposerToQuestions(editorHtml, editorText) {
+            const fallbackText = String(editorText || '').replace(/\u00a0/g, ' ');
+            let lines = [];
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(`<div>${editorHtml || ''}</div>`, 'text/html');
+                doc.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+                doc.querySelectorAll('p, div, li, h1, h2, h3, h4, tr').forEach(node => {
+                    const value = String(node.innerText || node.textContent || '').replace(/\u00a0/g, ' ').trim();
+                    if (value) lines.push(value);
+                });
+            } catch (_) {
+                lines = [];
+            }
+            if (!lines.length) lines = fallbackText.split(/\n+/).map(line => line.trim()).filter(Boolean);
+            const normalizedLines = [];
+            lines.forEach(line => {
+                String(line || '').split(/\n+/).map(part => part.trim()).filter(Boolean).forEach(part => normalizedLines.push(part));
+            });
+
+            const questions = [];
+            let currentSection = 'Section A';
+            let pendingText = '';
+
+            normalizedLines.forEach(rawLine => {
+                const line = String(rawLine || '').replace(/\s+/g, ' ').trim();
+                if (!line) return;
+                if (isManualSectionLine(line) && !/\[\s*\d/.test(line)) {
+                    currentSection = normalizeManualSectionName(line, currentSection);
+                    pendingText = '';
+                    return;
+                }
+
+                const markRegex = /\[\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*\]/g;
+                const tokens = [...line.matchAll(markRegex)];
+                if (!tokens.length) {
+                    if (!/^(instructions|general instructions|निर्देश)\b/i.test(line)) {
+                        pendingText = pendingText ? `${pendingText} ${line}` : line;
+                    }
+                    return;
+                }
+
+                tokens.forEach((tokenMatch, tokenIndex) => {
+                    const token = tokenMatch[0];
+                    const marks = calculateMarksTokenValue(token);
+                    if (!marks) return;
+                    const beforeToken = line.slice(0, tokenMatch.index).trim();
+                    const textCandidate = tokenIndex === 0
+                        ? `${pendingText ? `${pendingText} ` : ''}${beforeToken}`.trim()
+                        : beforeToken;
+                    const cleaned = stripQuestionPrefix(textCandidate.replace(markRegex, '').trim());
+                    const split = splitOrQuestion(cleaned);
+                    questions.push({
+                        section: currentSection,
+                        text: split.text || cleaned || `Question ${questions.length + 1}`,
+                        marks,
+                        chapter: '',
+                        orText: split.orText || ''
+                    });
+                    pendingText = '';
+                });
+            });
+
+            return questions.filter(q => q.text && Number.isFinite(Number(q.marks)) && Number(q.marks) > 0);
+        }
+
+        function getDefaultManualInstructions(meta = {}) {
+            const reading = inferReadingTime(meta.className, meta.maxMarks);
+            return [
+                `${reading} are allowed for reading the paper. Candidates must not start writing during this time.`,
+                'Attempt all questions unless stated otherwise.',
+                'The intended marks for questions or parts of questions are given in brackets [ ].',
+                'Write answers clearly and neatly.'
+            ].join('\n');
+        }
+
         function analyzeManualPaper() {
             const editor = document.getElementById('manualPaperEditor');
             const text = String(editor?.innerText || '').replace(/\u00a0/g,' ');
-            const markRegex = /\[\s*(\d+(?:\.\d+)?)\s*\]/g;
-            const marks = [];
-            let match;
-            while ((match = markRegex.exec(text))) marks.push(Number(match[1]));
+            const questions = parseComposerToQuestions(editor?.innerHTML || '', text);
+            const marks = questions.map(question => Number(question.marks || 0)).filter(value => Number.isFinite(value) && value > 0);
             const total = marks.reduce((sum, value) => sum + value, 0);
             const distribution = {};
             marks.forEach(value => distribution[value] = (distribution[value] || 0) + 1);
@@ -4253,13 +4364,14 @@
                 if (seen.has(normalized)) duplicates.push(line); else seen.add(normalized);
             });
             const placeholderFound = MANUAL_PLACEHOLDERS.some(value => text.toLowerCase().includes(value.toLowerCase()));
-            const sectionCount = lines.filter(line => /^(section\s+[a-e])/i.test(line) || /^\u0916\u0902\u0921\s+/i.test(line)).length;
-            return { text, marks, total, questionCount:marks.length, distributionText, duplicates, placeholderFound, sectionCount };
+            const sectionCount = lines.filter(line => isManualSectionLine(line)).length;
+            return { text, marks, total, questionCount:questions.length, distributionText, duplicates, placeholderFound, sectionCount, questions };
         }
 
         function getManualMetadata() {
             const maxMarks = Number(document.getElementById('manualMaxMarks').value);
             const className = document.getElementById('manualClass').value;
+            const timeAllowed = document.getElementById('manualTimeAllowed')?.value || inferPaperTime(maxMarks);
             return {
                 draftId: document.getElementById('manualDraftId')?.value || '',
                 title: document.getElementById('manualPaperTitle')?.value.trim() || '',
@@ -4268,11 +4380,11 @@
                 subject: getManualSubjectValue(),
                 exam: document.getElementById('manualExam').value,
                 maxMarks,
-                timeAllowed: inferPaperTime(maxMarks),
+                timeAllowed,
                 boardPattern: inferBoardPattern(className),
-                examDate: '',
+                examDate: document.getElementById('manualExamDate')?.value || '',
                 chapters: document.getElementById('manualChapters').value.trim(),
-                instructions: '',
+                instructions: document.getElementById('manualInstructions')?.value || '',
                 note: document.getElementById('manualNote').value.trim(),
                 languageMode: document.getElementById('manualLanguageMode').value
             };
@@ -4349,6 +4461,8 @@
             const meta = getManualMetadata();
             const editor = document.getElementById('manualPaperEditor');
             const bodyHtml = sanitizeComposerHtmlClient(editor?.innerHTML || '');
+            const bodyText = String(editor?.innerText || '').replace(/\u00a0/g, ' ').trim();
+            const analysis = analyzeManualPaper();
             const hasMinimum = meta.title && meta.className && meta.subject && meta.exam;
             if (!force && !meta.draftId && !hasMinimum) return null;
             const now = new Date().toISOString();
@@ -4360,9 +4474,14 @@
                 subject: meta.subject,
                 exam: meta.exam,
                 maxMarks: meta.maxMarks,
+                examDate: meta.examDate || '',
                 chapters: meta.chapters,
                 note: meta.note,
+                timeAllowed: meta.timeAllowed,
+                instructions: meta.instructions || getDefaultManualInstructions(meta),
                 editorHtml: bodyHtml,
+                bodyText,
+                detectedMarks: analysis.total,
                 languageMode: meta.languageMode,
                 createdAt: now,
                 updatedAt: now,
@@ -4372,8 +4491,15 @@
         }
 
         async function trySaveDraftToBackend(draft) {
-            try { await paperApi('savePaperDraft', { draft }); return true; }
-            catch (_) { return false; }
+            try {
+                const result = await paperApi('savePaperDraft', { draft });
+                if (result && result.draftId) document.getElementById('manualDraftId').value = result.draftId;
+                await loadBackendPaperDrafts();
+                return true;
+            } catch (error) {
+                console.warn('Cloud draft save failed:', error);
+                return false;
+            }
         }
 
         async function loadBackendPaperDrafts() {
@@ -4410,11 +4536,50 @@
             return local;
         }
 
-        function loadBackendDraftIntoComposer(draftId) {
-            const local = promoteBackendDraftToLocal(draftId);
-            if (!local) return;
-            if (local.sourceType === 'Upload') continueUploadDraft(local.draftId);
-            else loadDraftIntoComposer(local.draftId);
+        async function loadBackendDraftIntoComposer(draftId) {
+            if (currentId === 'ADMIN') return;
+            try {
+                let draft = null;
+                try {
+                    const result = await paperApi('getPaperDraft', { draftId });
+                    draft = result && result.draft ? result.draft : null;
+                } catch (error) {
+                    draft = backendPaperDrafts.find(item => item.draftId === draftId || item.paperId === draftId) || null;
+                    if (!draft) throw error;
+                }
+                if (!draft) return;
+
+                document.getElementById('manualDraftId').value = draft.draftId || draft.paperId || draftId;
+                document.getElementById('manualPaperTitle').value = draft.title || '';
+                if (draft.className) document.getElementById('manualClass').value = draft.className;
+                renderManualSubjectOptions();
+                const subjectOptions = [...document.getElementById('manualSubject').options].map(option => option.value);
+                if (subjectOptions.includes(draft.subject)) {
+                    document.getElementById('manualSubject').value = draft.subject;
+                } else {
+                    document.getElementById('manualSubject').value = '__OTHER__';
+                    document.getElementById('manualCustomSubjectInput').value = draft.subject || '';
+                }
+                handleManualSubjectChange();
+                document.getElementById('manualExam').value = draft.exam || '';
+                document.getElementById('manualMaxMarks').value = draft.maxMarks || '';
+                document.getElementById('manualChapters').value = draft.chapters || '';
+                document.getElementById('manualNote').value = draft.note || '';
+                if (document.getElementById('manualExamDate')) document.getElementById('manualExamDate').value = draft.examDate || '';
+                if (document.getElementById('manualTimeAllowed')) document.getElementById('manualTimeAllowed').value = draft.timeAllowed || inferPaperTime(draft.maxMarks);
+                const mode = draft.languageMode || 'english';
+                document.getElementById('manualLanguageMode').value = mode;
+                setEditorLanguage(mode);
+                document.getElementById('manualPaperEditor').innerHTML = sanitizeComposerHtmlClient(draft.editorHtml || '');
+                updateComposerHeader();
+                refreshBlueprintSuggestion();
+                updateManualChecks();
+                setManualDraftStatus(`Editing cloud draft: ${draft.title || draft.draftId || draftId}`, 'info');
+                selectPaperMode('creator');
+                document.getElementById('paperCreatorPanel')?.scrollIntoView({ behavior:'smooth', block:'start' });
+            } catch (error) {
+                alert(`Could not load backend draft: ${error.message}`);
+            }
         }
 
         async function deleteBackendPaperDraft(draftId) {
@@ -4442,7 +4607,7 @@
             return saveLocalDraft(false);
         }
 
-        function saveLocalDraft(force = false) {
+        async function saveLocalDraft(force = false) {
             if (!currentId || currentId === 'ADMIN') return null;
             const draft = collectManualDraftData(force);
             if (!draft) {
@@ -4461,8 +4626,14 @@
             }
             setLocalDrafts(drafts);
             document.getElementById('manualDraftId').value = draft.draftId;
-            setManualDraftStatus(`Draft saved: ${new Date(draft.updatedAt).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' })}`, 'success');
-            if (force) trySaveDraftToBackend(draft);
+            setManualDraftStatus(`Saved on this device: ${new Date(draft.updatedAt).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' })}`, 'success');
+
+            if (force) {
+                const cloudSaved = await trySaveDraftToBackend(draft);
+                if (cloudSaved) setManualDraftStatus('Cloud draft saved', 'success');
+                else setManualDraftStatus('Cloud draft failed — local copy saved only', 'error');
+            }
+
             renderPaperLibrary();
             return draft;
         }
@@ -4486,6 +4657,8 @@
             document.getElementById('manualMaxMarks').value = draft.maxMarks || '';
             document.getElementById('manualChapters').value = draft.chapters || '';
             document.getElementById('manualNote').value = draft.note || '';
+            if (document.getElementById('manualExamDate')) document.getElementById('manualExamDate').value = draft.examDate || '';
+            if (document.getElementById('manualTimeAllowed')) document.getElementById('manualTimeAllowed').value = draft.timeAllowed || inferPaperTime(draft.maxMarks);
             const mode = draft.languageMode || 'english';
             document.getElementById('manualLanguageMode').value = mode;
             setEditorLanguage(mode);
@@ -4565,8 +4738,10 @@
 
         function clearManualDraft(ask = true) {
             if (ask && !confirm('Clear the current paper draft from the composer? Saved draft cards will remain in My Question Papers.')) return;
-            document.getElementById('manualDraftId').value = '';
-            ['manualPaperTitle','manualSubject','manualCustomSubjectInput','manualExam','manualMaxMarks','manualChapters','manualNote'].forEach(id => document.getElementById(id).value = '');
+            ['manualDraftId','manualPaperTitle','manualSubject','manualCustomSubjectInput','manualExam','manualMaxMarks','manualChapters','manualNote','manualExamDate','manualTimeAllowed'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
             handleManualSubjectChange();
             document.getElementById('manualLanguageMode').value = 'english';
             setEditorLanguage('english');
@@ -4578,7 +4753,7 @@
         function buildManualPreviewHtml(meta, bodyHtml) {
             const reading = inferReadingTime(meta.className, meta.maxMarks);
             const safeBody = sanitizeComposerHtmlClient(bodyHtml);
-            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(meta.className)} ${escapeHtml(meta.subject)} ${escapeHtml(meta.exam)}</title><style>@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,'Noto Serif Devanagari','Mangal',serif;color:#111;margin:0;background:#fff;font-size:14px;line-height:1.5}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.header{text-align:center;border-bottom:1.8px solid #111;padding-bottom:8px}.header h1{font-size:24px;margin:0}.exam{font-size:15px;font-weight:800;text-transform:uppercase;margin-top:3px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;border-bottom:1px solid #555;padding:8px 0 9px;margin-bottom:12px;font-weight:700}.meta div:nth-child(even){text-align:right}.content h2.section-heading{display:flex;justify-content:space-between;margin:17px 0 8px;padding:6px 8px;border:1px solid #222;background:#f0f0f0;font-size:14px}.content h3{font-size:14px;margin:12px 0 6px}.content p{margin:6px 0}.paper-instructions{border:1px solid #777;padding:8px 12px;margin-bottom:12px}.paper-instructions h3{margin:0 0 5px}.paper-instructions ol{margin:4px 0 0 20px;padding:0}.question-line{position:relative;padding-right:48px;break-inside:avoid}.mark-token{float:right;font-weight:800}.or-line{text-align:center;font-weight:800}.content table{width:100%;border-collapse:collapse;margin:8px 0}.content td,.content th{border:1px solid #333;padding:6px}.diagram-box{min-height:120px;border:1.5px dashed #666;display:grid;place-items:center;color:#777;margin:9px 0}.page-break{page-break-after:always;border-top:1px dashed #777;margin:24px 0}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}.paper{padding:0 4px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(meta.exam)} - ${escapeHtml(meta.boardPattern || inferBoardPattern(meta.className))} QUESTION PAPER</div></div><div class="meta"><div>Class: ${escapeHtml(meta.className)}</div><div>Subject: ${escapeHtml(meta.subject)}</div><div>Time Allotted: ${escapeHtml(meta.timeAllowed)}</div><div>Maximum Marks: ${escapeHtml(meta.maxMarks)}</div><div>Reading Time: ${escapeHtml(reading)}</div><div>Date: ____________</div></div><div class="content">${safeBody}</div></main></body></html>`;
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(meta.className)} ${escapeHtml(meta.subject)} ${escapeHtml(meta.exam)}</title><style>@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,'Noto Serif Devanagari','Mangal',serif;color:#111;margin:0;background:#fff;font-size:14px;line-height:1.5}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.header{text-align:center;border-bottom:1.8px solid #111;padding-bottom:8px}.header h1{font-size:24px;margin:0}.exam{font-size:15px;font-weight:800;text-transform:uppercase;margin-top:3px}.term{font-size:13px;font-weight:800;margin-top:2px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;border-bottom:1px solid #555;padding:8px 0 9px;margin-bottom:12px;font-weight:700}.meta div:nth-child(even){text-align:right}.content h2.section-heading{display:flex;justify-content:space-between;margin:17px 0 8px;padding:6px 8px;border:1px solid #222;background:#f0f0f0;font-size:14px}.content h3{font-size:14px;margin:12px 0 6px}.content p{margin:6px 0}.paper-instructions{border:1px solid #777;padding:8px 12px;margin-bottom:12px}.paper-instructions h3{margin:0 0 5px}.paper-instructions ol{margin:4px 0 0 20px;padding:0}.question-line{position:relative;padding-right:48px;break-inside:avoid}.mark-token{float:right;font-weight:800}.or-line{text-align:center;font-weight:800}.content table{width:100%;border-collapse:collapse;margin:8px 0}.content td,.content th{border:1px solid #333;padding:6px}.diagram-box{min-height:120px;border:1.5px dashed #666;display:grid;place-items:center;color:#777;margin:9px 0}.page-break{page-break-after:always;border-top:1px dashed #777;margin:24px 0}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}.paper{padding:0 4px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(meta.boardPattern || inferBoardPattern(meta.className))} QUESTION PAPER</div><div class="term">Exam / Term: ${escapeHtml(meta.exam || '—')}</div></div><div class="meta"><div>Class: ${escapeHtml(meta.className)}</div><div>Subject: ${escapeHtml(meta.subject)}</div><div>Exam / Term: ${escapeHtml(meta.exam || '—')}</div><div>Maximum Marks: ${escapeHtml(meta.maxMarks)}</div><div>Time Allotted: ${escapeHtml(meta.timeAllowed)}</div><div>Reading Time: ${escapeHtml(reading)}</div><div>Date: ____________</div><div>Layout: ISC/ICSE-style school question paper</div></div><div class="content">${safeBody}</div></main></body></html>`;
         }
 
         function previewManualPaper() {
@@ -4600,17 +4775,32 @@
             const check = runManualChecks(true);
             if (!check.valid) return;
             const editor = document.getElementById('manualPaperEditor');
+            const parsedQuestions = parseComposerToQuestions(editor.innerHTML, check.analysis.text);
+            const parsedTotal = parsedQuestions.reduce((sum, question) => sum + Number(question.marks || 0), 0);
+            if (!parsedQuestions.length) {
+                setManualDraftStatus('Paper submission failed: no questions could be parsed. Add marks like [2] after each question.', 'error');
+                return;
+            }
+            if (Math.abs(parsedTotal - check.meta.maxMarks) > 0.001) {
+                setManualDraftStatus(`Paper submission stopped: parsed questions total ${parsedTotal}, but Maximum Marks is ${check.meta.maxMarks}.`, 'error');
+                return;
+            }
+
             const button = document.getElementById('manualSubmitBtn');
             button.disabled = true; button.textContent = 'Submitting...';
             try {
                 const result = await paperApi('createManualPaper', {
                     paper: {
-                        ...check.meta,
-                        bodyHtml:sanitizeComposerHtmlClient(editor.innerHTML),
-                        bodyText:check.analysis.text,
-                        detectedMarks:check.analysis.total,
-                        totalQuestions:check.analysis.questionCount,
-                        blueprint:getSuggestedBlueprint(check.meta.maxMarks)
+                        className: check.meta.className,
+                        subject: check.meta.subject,
+                        exam: check.meta.exam,
+                        chapters: check.meta.chapters,
+                        maxMarks: check.meta.maxMarks,
+                        examDate: check.meta.examDate || '',
+                        note: check.meta.note || '',
+                        timeAllowed: check.meta.timeAllowed || inferPaperTime(check.meta.maxMarks),
+                        instructions: check.meta.instructions || getDefaultManualInstructions(check.meta),
+                        questions: parsedQuestions
                     }
                 });
                 const autosaveNote = document.getElementById('manualAutosaveNote');
@@ -4618,7 +4808,10 @@
                     autosaveNote.textContent = `Paper submitted successfully as Version ${result.version}.`;
                     autosaveNote.style.color = '#bbf7d0';
                 }
-                if (check.meta.draftId) setLocalDrafts(getLocalDrafts().filter(item => item.draftId !== check.meta.draftId));
+                if (check.meta.draftId) {
+                    setLocalDrafts(getLocalDrafts().filter(item => item.draftId !== check.meta.draftId));
+                    backendPaperDrafts = backendPaperDrafts.filter(item => item.draftId !== check.meta.draftId && item.paperId !== check.meta.draftId);
+                }
                 clearManualDraftAfterSubmit();
                 questionPapers = [];
                 await loadQuestionPapers(true);
@@ -4635,8 +4828,13 @@
         }
 
         function clearManualDraftAfterSubmit() {
-            ['manualDraftId','manualPaperTitle','manualSubject','manualCustomSubjectInput','manualExam','manualMaxMarks','manualChapters','manualNote'].forEach(id => document.getElementById(id).value = '');
+            ['manualDraftId','manualPaperTitle','manualSubject','manualCustomSubjectInput','manualExam','manualMaxMarks','manualChapters','manualNote','manualExamDate','manualTimeAllowed'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
             handleManualSubjectChange();
+            document.getElementById('manualLanguageMode').value = 'english';
+            setEditorLanguage('english');
             document.getElementById('manualPaperEditor').innerHTML = '';
             setManualDraftStatus('Unsaved composer. Click Save Draft.', 'info');
             updateComposerHeader(); refreshBlueprintSuggestion(); updateManualChecks();
@@ -4665,16 +4863,21 @@
         }
 
         function getPaperLibraryItems() {
-            const assignedClasses = getPaperClassesForTeacher(currentId);
             const backend = (Array.isArray(questionPapers) ? questionPapers : []).filter(paper => {
                 if (currentId === 'ADMIN') return true;
-                return paper.teacherId === currentId || assignedClasses.includes(paper.className);
+                // Backend already filters teacher submissions. Do not show papers by class match.
+                return !paper.teacherId || paper.teacherId === currentId;
             });
+            const backendDraftIds = new Set((Array.isArray(backendPaperDrafts) ? backendPaperDrafts : []).map(draft => draft.draftId || draft.paperId).filter(Boolean));
             const backendDrafts = (Array.isArray(backendPaperDrafts) ? backendPaperDrafts : []).filter(draft => {
                 if (currentId === 'ADMIN') return true;
-                return draft.teacherId === currentId || assignedClasses.includes(draft.className);
+                return draft.teacherId === currentId;
             });
-            const localDrafts = currentId === 'ADMIN' ? [] : getLocalDrafts().map(normalizeLocalDraftForLibrary);
+            const localDrafts = currentId === 'ADMIN'
+                ? []
+                : getLocalDrafts()
+                    .filter(draft => !backendDraftIds.has(draft.draftId))
+                    .map(normalizeLocalDraftForLibrary);
             return [...backend, ...backendDrafts, ...localDrafts];
         }
 
@@ -5206,7 +5409,7 @@
       notifications: [],
       pendingByClass: [],
       classStatus: isAdminUser() ? teacherClassRows() : teacherClassRows().filter(item => {
-        const classes = typeof getPaperClassesForTeacher === 'function' ? getPaperClassesForTeacher(currentId) : [mapping[currentId]];
+        const classes = typeof getMarksClassesForTeacher === 'function' ? getMarksClassesForTeacher(currentId) : [mapping[currentId]];
         return item.teacher === currentId || classes.includes(item.className);
       }),
       portal: getPortalStates()
@@ -5227,8 +5430,7 @@
         ? getLocalDrafts().map(draft => ({ ...draft, paperId:draft.draftId, uploadedAt:draft.updatedAt || draft.createdAt, version:'Draft' }))
         : [];
       const sourcePapers = [...backendPapers, ...backendDrafts, ...localDrafts];
-      const assignedClasses = typeof getPaperClassesForTeacher === 'function' ? getPaperClassesForTeacher(currentId) : [mapping[currentId]];
-      const papers = isAdminUser() ? sourcePapers : sourcePapers.filter(p => p.teacherId === currentId || assignedClasses.includes(p.className));
+      const papers = isAdminUser() ? sourcePapers : sourcePapers.filter(p => !p.teacherId || p.teacherId === currentId);
       stats.allPapers = papers;
       const classLookup = new Map();
       stats.classStatus.forEach(item => {
@@ -5300,7 +5502,8 @@
         meta: [p.sourceType || 'Paper', `V${p.version || 1}`, formatPaperDate(p.uploadedAt)]
       }));
       if (!isAdminUser()) {
-        stats.classStatus = stats.classStatus.filter(item => item.teacher === currentId || assignedClasses.includes(item.className));
+        const marksClasses = typeof getMarksClassesForTeacher === 'function' ? getMarksClassesForTeacher(currentId) : [mapping[currentId]];
+        stats.classStatus = stats.classStatus.filter(item => item.teacher === currentId || marksClasses.includes(item.className));
       }
     } catch (e) {
       stats.actions.push({ title:'Question-paper data could not be refreshed', detail:e.message || e, status:'correction' });

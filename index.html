@@ -5525,29 +5525,34 @@
           title: `${item.className}: ${item.total} pending paper${item.total === 1 ? '' : 's'}`,
           detail: `First pending: ${first.subject || '-'} / ${first.exam || '-'} submitted by Teacher ${first.teacherId || '-'}.`,
           status: 'pending',
+          paperId: first.paperId || first.draftId || '',
           meta: ['Class Queue', `${item.total} Pending`, formatPaperDate(first.uploadedAt)]
         });
       });
       papers.filter(p => p.status === 'Correction Required').slice(0, 6).forEach(p => stats.actions.push({
         title: `${p.className} / ${p.subject} / ${p.exam}`,
         detail: p.adminNote || 'Correction required by Admin.',
-        status: 'correction'
+        status: 'correction',
+        paperId: p.paperId || p.draftId || ''
       }));
       papers.filter(p => p.status === 'Correction Required').slice(0, 6).forEach(p => stats.notifications.push({
         title: `${p.className} / ${p.subject}`,
         detail: `${p.exam} requires correction. ${p.adminNote || 'Admin remark is pending teacher action.'}`,
         status: 'correction',
+        paperId: p.paperId || p.draftId || '',
         meta: [`Teacher ${p.teacherId || '-'}`, p.sourceType || 'Paper', formatPaperDate(p.uploadedAt)]
       }));
       papers.filter(p => p.status === 'Submitted').slice(0, 6).forEach(p => stats.actions.push({
         title: `${p.className} / ${p.subject} / ${p.exam}`,
         detail: isAdminUser() ? `Teacher ${p.teacherId} submitted a paper for review.` : 'Your paper is waiting for admin review.',
-        status: 'pending'
+        status: 'pending',
+        paperId: p.paperId || p.draftId || ''
       }));
       sortedPapers.slice(0, 8).forEach(p => stats.notifications.push({
         title: `${p.className || '-'} / ${p.subject || '-'} / ${p.exam || '-'}`,
         detail: `${p.status === 'Submitted' ? 'Submitted' : p.status || 'Updated'} by Teacher ${p.teacherId || '-'} as ${p.sourceType || 'Paper'} paper.`,
         status: paperStatusKey(p.status),
+        paperId: p.paperId || p.draftId || '',
         meta: [p.sourceType || 'Paper', `V${p.version || 1}`, formatPaperDate(p.uploadedAt)]
       }));
       if (!isAdminUser()) {
@@ -5571,12 +5576,15 @@
   function renderCards(stats) {
     const classCount = Array.isArray(stats.classStatus) ? stats.classStatus.length : teacherClassRows().length;
     const noteCount = Array.isArray(stats.notifications) ? stats.notifications.length : 0;
-    const teacherActive = (stats.classStatus || []).filter(item => item.papers || item.pending || item.correction).length;
+    const teacherActive = (stats.classStatus || []).filter(item => item.papers || item.pending || item.correction || item.draft).length;
     const remarksTotal = (stats.corrections || 0) + (paperSettings && paperSettings.adminNotice ? 1 : 0);
+    const draftCount = (stats.allPapers || []).filter(p => p.status === 'Draft' || p.status === 'Draft Metadata').length;
+    const paperSummaryCount = isAdminUser() ? (stats.pendingPapers || 0) : ((stats.pendingPapers || 0) + draftCount);
+    const paperSummaryText = isAdminUser() ? 'Click to view class-wise pending papers.' : 'Click to view your drafts and submitted papers.';
     return `
       <div class="bgps-summary-tabs">
         ${dashboardTab('classes', 'Live Class Status', classCount, 'Click to view every class owner and paper state.')}
-        ${dashboardTab('papers', 'Paper Summary', stats.pendingPapers || 0, 'Click to view class-wise pending papers.', 'warn')}
+        ${dashboardTab('papers', 'Paper Summary', paperSummaryCount, paperSummaryText, paperSummaryCount ? 'warn' : '')}
         ${dashboardTab('teachers', 'Teacher Progress', teacherActive, 'Click to view teacher-wise pending, approved and correction status.')}
         ${dashboardTab('remarks', 'Remarks / Corrections', remarksTotal, 'Click to view admin remarks and returned papers.', stats.corrections ? 'danger' : '')}
         ${dashboardTab('notifications', 'Notifications', noteCount, 'Click to view latest paper submissions and alerts.')}
@@ -5597,15 +5605,18 @@
       detail: isAdminUser() ? 'New submissions, class-wise pending queues and correction requests will appear here.' : 'Your submitted papers and admin updates will appear here.',
       status: 'approved'
     }];
-    return items.map(item => `
+    return items.map(item => {
+      const openButton = item.paperId ? `<button class="paper-action-view" type="button" onclick="bgpsOpenOverviewPaper('${html(item.paperId)}')">${paperStatusKey(item.status) === 'draft' ? 'Continue' : 'Open'}</button>` : '';
+      return `
       <div class="bgps-action-card is-paper ${item.status === 'correction' ? 'is-correction' : ''}">
         <div>
           <strong>${html(item.title)}</strong>
           <small>${html(item.detail)}</small>
           ${item.meta && item.meta.length ? `<div class="bgps-action-meta">${item.meta.map(x => `<span>${html(x || '-')}</span>`).join('')}</div>` : ''}
         </div>
-        <span class="bgps-status-badge ${item.status || 'pending'}">${item.status || 'pending'}</span>
-      </div>`).join('');
+        <div class="paper-actions" style="margin:0;justify-content:flex-end;"><span class="bgps-status-badge ${item.status || 'pending'}">${item.status || 'pending'}</span>${openButton}</div>
+      </div>`;
+    }).join('');
   }
 
   function classState(item) {
@@ -5744,7 +5755,7 @@
           <div><strong>${html(meta)}</strong><small>${html(detail)}</small></div>
           <div class="paper-actions" style="margin:0;">
             <span class="bgps-status-badge ${statusKey}">${html(status)}</span>
-            ${paper.paperId ? `<button class="paper-action-view" type="button" onclick="openPaperFile('${html(paper.paperId)}','preview')">Open</button>` : ''}
+            ${paper.paperId ? `<button class="paper-action-view" type="button" onclick="bgpsOpenOverviewPaper('${html(paper.paperId)}')">${statusKey === 'draft' ? 'Continue' : 'Open'}</button>` : ''}
             ${!isAdminUser() && status === 'Correction Required' ? `<button class="paper-action-resubmit" type="button" onclick="switchTab('papers')">Correct</button>` : ''}
           </div>
         </div>`;
@@ -6077,6 +6088,34 @@
       if (typeof renderPaperLibrary === 'function') renderPaperLibrary();
     }, 120);
   };
+  window.bgpsOpenOverviewPaper = async function(paperId){
+    const id = safeText(paperId);
+    if (!id) return;
+    const localDraft = typeof getLocalDrafts === 'function'
+      ? getLocalDrafts().find(draft => draft.draftId === id || draft.paperId === id)
+      : null;
+    if (localDraft) {
+      await proSwitchTab('papers');
+      setTimeout(() => {
+        if (localDraft.sourceType === 'Upload' && typeof continueUploadDraft === 'function') continueUploadDraft(id);
+        else if (typeof loadDraftIntoComposer === 'function') loadDraftIntoComposer(id);
+      }, 180);
+      return;
+    }
+    const backendDraft = Array.isArray(backendPaperDrafts)
+      ? backendPaperDrafts.find(draft => draft.draftId === id || draft.paperId === id)
+      : null;
+    if (backendDraft && (paperStatusKey(backendDraft.status) === 'draft' || backendDraft.isBackendDraft)) {
+      await proSwitchTab('papers');
+      setTimeout(() => {
+        if (!isAdminUser() && typeof loadBackendDraftIntoComposer === 'function') loadBackendDraftIntoComposer(id);
+        else if (typeof renderPaperLibrary === 'function') renderPaperLibrary();
+      }, 180);
+      return;
+    }
+    if (typeof openPaperFile === 'function') return openPaperFile(id, 'preview');
+  };
+
   window.bgpsOpenPaperApprovalForClass = function(className){
     return window.bgpsOpenPaperApprovalForClassStatus(className, '');
   };

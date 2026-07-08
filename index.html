@@ -7701,5 +7701,297 @@ Purpose:
   rerenderSoon();
 })();
 </script>
+<!-- BGPS CLASS PROGRESS RESTORE HOTFIX V3.8
+Paste this block AFTER V37 hotfix and BEFORE </body>.
+Purpose:
+1) Keep Principal approval cards: Pending / Approved / Returned / Locked.
+2) Restore Class Progress section below dashboard.
+3) Class progress shows each class/teacher paper movement without showing drafts.
+-->
+<style>
+  .bgps-class-progress-restore {
+    margin-top:16px;
+    border:1px solid rgba(169,199,227,.26);
+    border-radius:20px;
+    padding:18px;
+    background:rgba(18,48,82,.72);
+    box-shadow:0 18px 44px rgba(2,12,27,.18);
+  }
+  .bgps-class-progress-restore h2 {
+    margin:0 0 4px;
+    color:var(--gold);
+    font-family:'EB Garamond',serif;
+    font-size:24px;
+  }
+  .bgps-class-progress-restore p {
+    color:#cfe4f7;
+    font-size:12px;
+    line-height:1.45;
+    margin:0 0 13px;
+  }
+  .bgps-class-progress-grid {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+  }
+  .bgps-class-progress-card {
+    display:grid;
+    gap:10px;
+    min-height:120px;
+    padding:14px;
+    border:1px solid rgba(169,199,227,.30);
+    border-radius:16px;
+    background:linear-gradient(180deg,rgba(42,78,117,.78),rgba(13,43,75,.92));
+    box-shadow:0 12px 30px rgba(2,18,35,.16);
+  }
+  .bgps-class-progress-card strong {
+    color:#fff;
+    font-size:15px;
+    line-height:1.2;
+  }
+  .bgps-class-progress-card small {
+    color:#a9c7e3;
+    font-size:11px;
+    line-height:1.35;
+  }
+  .bgps-class-progress-pills {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-content:flex-start;
+  }
+  .bgps-class-progress-pills button,
+  .bgps-class-progress-pills span {
+    border:0;
+    cursor:pointer;
+    padding:5px 8px;
+    border-radius:999px;
+    background:#eaf4ff;
+    color:#315b82;
+    font-size:10px;
+    font-family:'Inconsolata',monospace;
+    font-weight:900;
+  }
+  .bgps-class-progress-pills button:hover {
+    filter:brightness(.96);
+    transform:translateY(-1px);
+  }
+  .bgps-class-progress-pills .pending { background:#fef3c7; color:#92400e; }
+  .bgps-class-progress-pills .correction { background:#fee2e2; color:#b91c1c; }
+  .bgps-class-progress-pills .approved { background:#dcfce7; color:#166534; }
+  .bgps-class-progress-pills .locked { background:#e2e8f0; color:#334155; }
+  .bgps-class-progress-pills .empty { background:#e2e8f0; color:#334155; }
+  body.bgps-theme-white .bgps-class-progress-restore {
+    background:linear-gradient(180deg,#ffffff,#f5f9fe) !important;
+    color:#102a43 !important;
+    border-color:#b8cee2 !important;
+    box-shadow:0 18px 44px rgba(34,61,87,.12) !important;
+  }
+  body.bgps-theme-white .bgps-class-progress-restore h2 { color:#9a6500 !important; }
+  body.bgps-theme-white .bgps-class-progress-restore p { color:#486b8b !important; }
+  body.bgps-theme-white .bgps-class-progress-card {
+    background:#f8fbff !important;
+    border-color:#c7dcec !important;
+  }
+  body.bgps-theme-white .bgps-class-progress-card strong { color:#12395f !important; }
+  body.bgps-theme-white .bgps-class-progress-card small { color:#486b8b !important; }
+  @media screen and (max-width:1100px) {
+    .bgps-class-progress-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media screen and (max-width:640px) {
+    .bgps-class-progress-grid { grid-template-columns:1fr; }
+  }
+</style>
+
+<script>
+(function bgpsClassProgressRestoreV38(){
+  if (window.__BGPS_CLASS_PROGRESS_RESTORE_V38__) return;
+  window.__BGPS_CLASS_PROGRESS_RESTORE_V38__ = true;
+
+  function safe(value) { return String(value == null ? '' : value); }
+  function esc(value) {
+    if (typeof escapeHtml === 'function') return escapeHtml(value);
+    return safe(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+  function adminUser() {
+    try { return safe(currentId).toUpperCase() === 'ADMIN'; } catch (_) { return false; }
+  }
+  function norm(status) {
+    return safe(status || '').toLowerCase().replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function isDraft(paper) {
+    const status = norm(paper && paper.status);
+    return Boolean(paper && (paper.isLocalDraft || paper.isBackendDraft || status.includes('draft')));
+  }
+  function isPending(paper) {
+    return ['submitted','pending','pending approval','pending for approval'].includes(norm(paper && paper.status));
+  }
+  function isCorrection(paper) { return norm(paper && paper.status) === 'correction required'; }
+  function isApproved(paper) { return norm(paper && paper.status) === 'approved'; }
+  function isLocked(paper) { return norm(paper && paper.status) === 'locked'; }
+  function paperDate(value) {
+    if (typeof formatPaperDate === 'function') return formatPaperDate(value);
+    if (!value) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? safe(value) : d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  function allClasses() {
+    if (Array.isArray(window.ALL_CLASSES)) return window.ALL_CLASSES;
+    if (typeof ALL_CLASSES !== 'undefined' && Array.isArray(ALL_CLASSES)) return ALL_CLASSES;
+    return ["Playgroup","LKG","UKG","Class 1","Class 2","Class 3","Class 4","Class 5","Class 6","Class 7","Class 8","Class 9","Class 10","Class 11","Class 12"];
+  }
+  function teacherForClass(className) {
+    try {
+      if (typeof TEACHER_ASSIGNMENTS === 'object') {
+        const found = Object.entries(TEACHER_ASSIGNMENTS).find(([teacherId, profile]) => {
+          if (teacherId === 'ADMIN') return false;
+          const classes = [...(profile.classTeacherOf || []), ...(profile.paperClasses || []), ...(profile.marksClasses || [])];
+          return classes.includes(className);
+        });
+        if (found) return found[0];
+      }
+    } catch (_) {}
+    try {
+      if (typeof mapping === 'object') {
+        const found = Object.entries(mapping).find(([teacherId, cls]) => teacherId !== 'ADMIN' && cls === className);
+        if (found) return found[0];
+      }
+    } catch (_) {}
+    return '—';
+  }
+  function submittedPapers() {
+    return (Array.isArray(questionPapers) ? questionPapers : []).filter(paper => !isDraft(paper));
+  }
+  function classProgressRows() {
+    const rows = allClasses().map(className => ({
+      className,
+      teacher: teacherForClass(className),
+      total:0,
+      pending:0,
+      correction:0,
+      approved:0,
+      locked:0,
+      latest:null
+    }));
+
+    const byClass = new Map(rows.map(row => [row.className, row]));
+    submittedPapers().forEach(paper => {
+      const cls = paper.className || 'Unassigned';
+      if (!byClass.has(cls)) {
+        const row = { className:cls, teacher:paper.teacherId || '—', total:0, pending:0, correction:0, approved:0, locked:0, latest:null };
+        rows.push(row);
+        byClass.set(cls, row);
+      }
+      const row = byClass.get(cls);
+      row.total += 1;
+      if (isPending(paper)) row.pending += 1;
+      if (isCorrection(paper)) row.correction += 1;
+      if (isApproved(paper)) row.approved += 1;
+      if (isLocked(paper)) row.locked += 1;
+      const stamp = safe(paper.uploadedAt || paper.updatedAt || paper.createdAt);
+      const latestStamp = safe(row.latest && (row.latest.uploadedAt || row.latest.updatedAt || row.latest.createdAt));
+      if (!row.latest || stamp.localeCompare(latestStamp) > 0) row.latest = paper;
+      if ((!row.teacher || row.teacher === '—') && paper.teacherId) row.teacher = paper.teacherId;
+    });
+
+    return rows;
+  }
+  function stateLabel(row) {
+    if (row.correction) return ['Correction Required', 'correction'];
+    if (row.pending) return ['Pending Approval', 'pending'];
+    if (row.approved || row.locked) return ['Approved / Final', 'approved'];
+    return ['No Submitted Paper', 'empty'];
+  }
+  function pill(className, status, label, count) {
+    const value = count == null ? '' : ` ${count}`;
+    const filter = status === 'pending' ? 'Submitted'
+      : status === 'correction' ? 'Correction Required'
+      : status === 'approved' ? 'Approved'
+      : status === 'locked' ? 'Locked'
+      : '';
+    return `<button class="${esc(status)}" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(className)}','${esc(filter)}')">${esc(label)}${esc(value)}</button>`;
+  }
+  function renderClassProgress() {
+    if (!adminUser()) return;
+    const home = document.getElementById('proHomeView');
+    if (!home || !home.classList.contains('active')) return;
+
+    let host = document.getElementById('bgpsClassProgressRestore');
+    if (!host) {
+      host = document.createElement('section');
+      host.id = 'bgpsClassProgressRestore';
+      host.className = 'bgps-class-progress-restore';
+
+      const twoCol = home.querySelector('.bgps-pro-two-col');
+      if (twoCol && twoCol.parentNode) twoCol.parentNode.insertBefore(host, twoCol.nextSibling);
+      else home.appendChild(host);
+    }
+
+    const rows = classProgressRows();
+    const cards = rows.map(row => {
+      const state = stateLabel(row);
+      const latest = row.latest
+        ? `${row.latest.subject || '-'} / ${row.latest.exam || '-'} · ${row.latest.status || 'Submitted'} · ${paperDate(row.latest.uploadedAt || row.latest.updatedAt || row.latest.createdAt)}`
+        : 'No submitted paper yet';
+
+      return `<article class="bgps-class-progress-card">
+        <div>
+          <strong>${esc(row.className)} ${row.teacher && row.teacher !== '—' ? '· ' + esc(row.teacher) : ''}</strong>
+          <small>Latest: ${esc(latest)}</small>
+        </div>
+        <div class="bgps-class-progress-pills">
+          <span class="${esc(state[1])}">${esc(state[0])}</span>
+          <span>Total ${esc(row.total)}</span>
+          ${pill(row.className, 'pending', 'Pending', row.pending)}
+          ${pill(row.className, 'correction', 'Correction', row.correction)}
+          ${pill(row.className, 'approved', 'Approved', row.approved)}
+          ${pill(row.className, 'locked', 'Locked', row.locked)}
+        </div>
+      </article>`;
+    }).join('');
+
+    host.innerHTML = `
+      <h2>Class Progress</h2>
+      <p>Approval cards upar rahenge; yahan class-wise progress rahegi. Drafts yahan bhi hidden rahenge jab tak teacher paper submit na kare.</p>
+      <div class="bgps-class-progress-grid">${cards || '<div class="paper-empty">No class progress available yet.</div>'}</div>
+    `;
+  }
+
+  function rerenderSoon() {
+    setTimeout(renderClassProgress, 200);
+    setTimeout(renderClassProgress, 700);
+  }
+
+  const oldSwitch = window.switchTab;
+  if (typeof oldSwitch === 'function') {
+    window.switchTab = switchTab = function bgpsSwitchTabV38() {
+      const result = oldSwitch.apply(this, arguments);
+      Promise.resolve(result).finally(rerenderSoon);
+      return result;
+    };
+  }
+
+  const oldRefresh = window.bgpsProRefreshHome;
+  if (typeof oldRefresh === 'function') {
+    window.bgpsProRefreshHome = function bgpsRefreshHomeV38() {
+      const result = oldRefresh.apply(this, arguments);
+      Promise.resolve(result).finally(rerenderSoon);
+      return result;
+    };
+  }
+
+  const oldLogin = window.loginTeacher;
+  if (typeof oldLogin === 'function') {
+    window.loginTeacher = loginTeacher = function bgpsLoginV38() {
+      const result = oldLogin.apply(this, arguments);
+      Promise.resolve(result).finally(rerenderSoon);
+      return result;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', rerenderSoon);
+  rerenderSoon();
+})();
+</script>
 </body>
 </html>

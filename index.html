@@ -7993,5 +7993,317 @@ Purpose:
   rerenderSoon();
 })();
 </script>
+<!-- BGPS CLASS PROGRESS TOP CARD HOTFIX V3.9
+Paste this block AFTER V38 hotfix and BEFORE </body>.
+Purpose:
+1) Adds "Class Progress" icon/card in the top approval cards row.
+2) Clicking the card opens the Class Progress board.
+3) Pending / Approved / Returned / Locked cards remain unchanged.
+-->
+<style>
+  .bgps-approval-tabs {
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  }
+  .bgps-approval-tab.class-progress strong {
+    color:#90cdf4;
+  }
+  .bgps-approval-tab.class-progress .progress-icon {
+    display:inline-grid;
+    place-items:center;
+    width:34px;
+    height:34px;
+    margin-bottom:8px;
+    border-radius:12px;
+    background:rgba(144,205,244,.14);
+    border:1px solid rgba(144,205,244,.38);
+    color:#dbeafe;
+    font-size:18px;
+  }
+  .bgps-approval-tab.class-progress.active {
+    border-color:rgba(144,205,244,.82);
+    box-shadow:0 18px 46px rgba(40,123,185,.18);
+  }
+  .bgps-class-progress-restore {
+    display:none;
+  }
+  .bgps-class-progress-restore.is-open {
+    display:block;
+  }
+  @media screen and (max-width:1180px) {
+    .bgps-approval-tabs {
+      grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    }
+  }
+  @media screen and (max-width:760px) {
+    .bgps-approval-tabs {
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+  }
+  @media screen and (max-width:520px) {
+    .bgps-approval-tabs {
+      grid-template-columns:1fr !important;
+    }
+  }
+</style>
+
+<script>
+(function bgpsClassProgressTopCardV39(){
+  if (window.__BGPS_CLASS_PROGRESS_TOP_CARD_V39__) return;
+  window.__BGPS_CLASS_PROGRESS_TOP_CARD_V39__ = true;
+
+  let classProgressOpen = false;
+
+  function safe(value) { return String(value == null ? '' : value); }
+  function esc(value) {
+    if (typeof escapeHtml === 'function') return escapeHtml(value);
+    return safe(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+  function adminUser() {
+    try { return safe(currentId).toUpperCase() === 'ADMIN'; } catch (_) { return false; }
+  }
+  function allClasses() {
+    try {
+      if (Array.isArray(ALL_CLASSES)) return ALL_CLASSES;
+    } catch (_) {}
+    return ["Playgroup","LKG","UKG","Class 1","Class 2","Class 3","Class 4","Class 5","Class 6","Class 7","Class 8","Class 9","Class 10","Class 11","Class 12"];
+  }
+  function norm(status) {
+    return safe(status || '').toLowerCase().replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function isDraft(paper) {
+    const status = norm(paper && paper.status);
+    return Boolean(paper && (paper.isLocalDraft || paper.isBackendDraft || status.includes('draft')));
+  }
+  function isPending(paper) {
+    return ['submitted','pending','pending approval','pending for approval'].includes(norm(paper && paper.status));
+  }
+  function isCorrection(paper) { return norm(paper && paper.status) === 'correction required'; }
+  function isApproved(paper) { return norm(paper && paper.status) === 'approved'; }
+  function isLocked(paper) { return norm(paper && paper.status) === 'locked'; }
+  function submittedPapers() {
+    return (Array.isArray(questionPapers) ? questionPapers : []).filter(paper => !isDraft(paper));
+  }
+  function paperDate(value) {
+    if (typeof formatPaperDate === 'function') return formatPaperDate(value);
+    if (!value) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? safe(value) : d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  function teacherForClass(className) {
+    try {
+      if (typeof TEACHER_ASSIGNMENTS === 'object') {
+        const found = Object.entries(TEACHER_ASSIGNMENTS).find(([teacherId, profile]) => {
+          if (teacherId === 'ADMIN') return false;
+          const classes = [...(profile.classTeacherOf || []), ...(profile.paperClasses || []), ...(profile.marksClasses || [])];
+          return classes.includes(className);
+        });
+        if (found) return found[0];
+      }
+    } catch (_) {}
+    try {
+      if (typeof mapping === 'object') {
+        const found = Object.entries(mapping).find(([teacherId, cls]) => teacherId !== 'ADMIN' && cls === className);
+        if (found) return found[0];
+      }
+    } catch (_) {}
+    return '—';
+  }
+  function classRows() {
+    const rows = allClasses().map(className => ({
+      className,
+      teacher: teacherForClass(className),
+      total:0,
+      pending:0,
+      correction:0,
+      approved:0,
+      locked:0,
+      latest:null
+    }));
+    const byClass = new Map(rows.map(row => [row.className, row]));
+
+    submittedPapers().forEach(paper => {
+      const cls = paper.className || 'Unassigned';
+      if (!byClass.has(cls)) {
+        const row = { className:cls, teacher:paper.teacherId || '—', total:0, pending:0, correction:0, approved:0, locked:0, latest:null };
+        rows.push(row);
+        byClass.set(cls, row);
+      }
+      const row = byClass.get(cls);
+      row.total += 1;
+      if (isPending(paper)) row.pending += 1;
+      if (isCorrection(paper)) row.correction += 1;
+      if (isApproved(paper)) row.approved += 1;
+      if (isLocked(paper)) row.locked += 1;
+
+      const stamp = safe(paper.uploadedAt || paper.updatedAt || paper.createdAt);
+      const latestStamp = safe(row.latest && (row.latest.uploadedAt || row.latest.updatedAt || row.latest.createdAt));
+      if (!row.latest || stamp.localeCompare(latestStamp) > 0) row.latest = paper;
+      if ((!row.teacher || row.teacher === '—') && paper.teacherId) row.teacher = paper.teacherId;
+    });
+
+    return rows;
+  }
+  function state(row) {
+    if (row.correction) return ['Correction Required', 'correction'];
+    if (row.pending) return ['Pending Approval', 'pending'];
+    if (row.approved || row.locked) return ['Approved / Final', 'approved'];
+    return ['No Submitted Paper', 'empty'];
+  }
+  function filterFor(kind) {
+    if (kind === 'pending') return 'Submitted';
+    if (kind === 'correction') return 'Correction Required';
+    if (kind === 'approved') return 'Approved';
+    if (kind === 'locked') return 'Locked';
+    return '';
+  }
+  function pill(className, kind, label, count) {
+    return `<button class="${esc(kind)}" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(className)}','${esc(filterFor(kind))}')">${esc(label)} ${esc(count)}</button>`;
+  }
+  function ensureClassProgressPanel() {
+    let host = document.getElementById('bgpsClassProgressRestore');
+    const home = document.getElementById('proHomeView');
+    if (!host && home) {
+      host = document.createElement('section');
+      host.id = 'bgpsClassProgressRestore';
+      host.className = 'bgps-class-progress-restore';
+      const twoCol = home.querySelector('.bgps-pro-two-col');
+      if (twoCol && twoCol.parentNode) twoCol.parentNode.insertBefore(host, twoCol.nextSibling);
+      else home.appendChild(host);
+    }
+    if (!host) return null;
+
+    const rows = classRows();
+    const cards = rows.map(row => {
+      const current = state(row);
+      const latest = row.latest
+        ? `${row.latest.subject || '-'} / ${row.latest.exam || '-'} · ${row.latest.status || 'Submitted'} · ${paperDate(row.latest.uploadedAt || row.latest.updatedAt || row.latest.createdAt)}`
+        : 'No submitted paper yet';
+
+      return `<article class="bgps-class-progress-card">
+        <div>
+          <strong>${esc(row.className)} ${row.teacher && row.teacher !== '—' ? '· ' + esc(row.teacher) : ''}</strong>
+          <small>Latest: ${esc(latest)}</small>
+        </div>
+        <div class="bgps-class-progress-pills">
+          <span class="${esc(current[1])}">${esc(current[0])}</span>
+          <span>Total ${esc(row.total)}</span>
+          ${pill(row.className, 'pending', 'Pending', row.pending)}
+          ${pill(row.className, 'correction', 'Correction', row.correction)}
+          ${pill(row.className, 'approved', 'Approved', row.approved)}
+          ${pill(row.className, 'locked', 'Locked', row.locked)}
+        </div>
+      </article>`;
+    }).join('');
+
+    host.innerHTML = `
+      <h2>📊 Class Progress</h2>
+      <p>Class-wise submitted paper movement. Drafts hidden hain; yahan sirf submitted / approval workflow ka progress dikh raha hai.</p>
+      <div class="bgps-class-progress-grid">${cards || '<div class="paper-empty">No class progress available yet.</div>'}</div>
+    `;
+    host.classList.toggle('is-open', classProgressOpen);
+    return host;
+  }
+  function ensureTopCard() {
+    if (!adminUser()) return;
+    const home = document.getElementById('proHomeView');
+    if (!home || !home.classList.contains('active')) return;
+
+    const tabs = home.querySelector('.bgps-approval-tabs');
+    if (!tabs) return;
+
+    let card = document.getElementById('bgpsTopClassProgressCard');
+    if (!card) {
+      card = document.createElement('button');
+      card.id = 'bgpsTopClassProgressCard';
+      card.type = 'button';
+      card.className = 'bgps-approval-tab class-progress';
+      card.onclick = function(){ window.bgpsOpenClassProgressCard(); };
+      tabs.appendChild(card);
+    }
+
+    const rows = classRows();
+    const activeClasses = rows.filter(row => row.total > 0).length;
+    const pendingClasses = rows.filter(row => row.pending > 0).length;
+
+    card.classList.toggle('active', classProgressOpen);
+    card.innerHTML = `
+      <span class="progress-icon">📊</span>
+      <span>Class Progress</span>
+      <strong>${esc(activeClasses)}/${esc(rows.length)}</strong>
+      <small>${esc(pendingClasses)} classes have papers pending. Click to open class-wise board.</small>
+    `;
+  }
+  function closeClassProgressOnApprovalCards() {
+    if (!classProgressOpen) return;
+    classProgressOpen = false;
+    const host = document.getElementById('bgpsClassProgressRestore');
+    if (host) host.classList.remove('is-open');
+    const card = document.getElementById('bgpsTopClassProgressCard');
+    if (card) card.classList.remove('active');
+  }
+  function renderSoon() {
+    setTimeout(() => { ensureClassProgressPanel(); ensureTopCard(); }, 220);
+    setTimeout(() => { ensureClassProgressPanel(); ensureTopCard(); }, 750);
+  }
+
+  window.bgpsOpenClassProgressCard = function() {
+    classProgressOpen = true;
+    const host = ensureClassProgressPanel();
+    ensureTopCard();
+
+    const home = document.getElementById('proHomeView');
+    if (home) {
+      home.querySelectorAll('.bgps-approval-tab').forEach(btn => btn.classList.remove('active'));
+    }
+    const card = document.getElementById('bgpsTopClassProgressCard');
+    if (card) card.classList.add('active');
+
+    if (host) {
+      host.classList.add('is-open');
+      setTimeout(() => host.scrollIntoView({ behavior:'smooth', block:'start' }), 80);
+    }
+  };
+
+  const oldPrincipalDashboard = window.bgpsPrincipalApprovalDashboard;
+  if (typeof oldPrincipalDashboard === 'function') {
+    window.bgpsPrincipalApprovalDashboard = function bgpsPrincipalApprovalDashboardV39(mode) {
+      closeClassProgressOnApprovalCards();
+      const result = oldPrincipalDashboard.apply(this, arguments);
+      Promise.resolve(result).finally(renderSoon);
+      return result;
+    };
+  }
+
+  const oldSwitch = window.switchTab;
+  if (typeof oldSwitch === 'function') {
+    window.switchTab = switchTab = function bgpsSwitchTabV39() {
+      const result = oldSwitch.apply(this, arguments);
+      Promise.resolve(result).finally(renderSoon);
+      return result;
+    };
+  }
+
+  const oldRefresh = window.bgpsProRefreshHome;
+  if (typeof oldRefresh === 'function') {
+    window.bgpsProRefreshHome = function bgpsRefreshHomeV39() {
+      const result = oldRefresh.apply(this, arguments);
+      Promise.resolve(result).finally(renderSoon);
+      return result;
+    };
+  }
+
+  const oldLogin = window.loginTeacher;
+  if (typeof oldLogin === 'function') {
+    window.loginTeacher = loginTeacher = function bgpsLoginV39() {
+      const result = oldLogin.apply(this, arguments);
+      Promise.resolve(result).finally(renderSoon);
+      return result;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', renderSoon);
+  renderSoon();
+})();
+</script>
 </body>
 </html>

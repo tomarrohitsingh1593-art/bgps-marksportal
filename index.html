@@ -6153,5 +6153,1233 @@
   document.addEventListener('DOMContentLoaded', ensureProViews);
 })();
 </script>
+<!-- BGPS APPROVAL WORKFLOW HOTFIX V3.6
+Paste this whole block AFTER the existing bgpsProFinalPatchV35 script and BEFORE </body>.
+Purpose:
+1) Principal/Admin dashboard no longer shows drafts.
+2) Paper Approval shows only submitted/pending papers by default.
+3) Pending papers open for review and show Approve + Send Remarks buttons.
+4) Teacher sees Admin remarks on returned/correction papers.
+-->
+<style>
+  .paper-badge.pending-approval { background:#fef3c7; color:#92400e; }
+  .paper-action-remarks { background:#fee2e2; color:#991b1b; }
+  .paper-action-review { background:#dbeafe; color:#1e3a8a; }
+  .bgps-approval-note {
+    margin-top:8px;
+    padding:9px 10px;
+    border-radius:8px;
+    background:#fff7ed;
+    border:1px solid #fdba74;
+    color:#9a3412;
+    font-size:12px;
+    line-height:1.45;
+  }
+</style>
+
+<script>
+(function bgpsApprovalWorkflowHotfixV36(){
+  if (window.__BGPS_APPROVAL_HOTFIX_V36__) return;
+  window.__BGPS_APPROVAL_HOTFIX_V36__ = true;
+
+  function safe(value) { return String(value == null ? '' : value); }
+  function esc(value) {
+    if (typeof escapeHtml === 'function') return escapeHtml(value);
+    return safe(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+  function adminUser() {
+    try { return safe(currentId).toUpperCase() === 'ADMIN'; } catch (_) { return false; }
+  }
+  function statusNorm(status) {
+    return safe(status || 'Submitted').toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function isDraftPaper(paper) {
+    const status = statusNorm(paper && paper.status);
+    return Boolean(paper && (paper.isLocalDraft || paper.isBackendDraft || status.includes('draft')));
+  }
+  function isPendingPaper(paper) {
+    const status = statusNorm(paper && paper.status);
+    return ['submitted', 'pending', 'pending approval', 'pending for approval'].includes(status);
+  }
+  function isCorrectionPaper(paper) { return statusNorm(paper && paper.status) === 'correction required'; }
+  function isApprovedPaper(paper) { return statusNorm(paper && paper.status) === 'approved'; }
+  function isLockedPaper(paper) { return statusNorm(paper && paper.status) === 'locked'; }
+  function paperIdOf(paper) { return safe((paper && (paper.paperId || paper.draftId || paper.id)) || ''); }
+  function paperTitleOf(paper) {
+    if (typeof getPaperTitle === 'function') return getPaperTitle(paper);
+    return paper.title || paper.paperTitle || paper.fileName || `${paper.className || 'Class'} ${paper.subject || 'Subject'} ${paper.exam || 'Exam'}`;
+  }
+  function formatDate(value) {
+    if (typeof formatPaperDate === 'function') return formatPaperDate(value);
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? safe(value) : date.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  function statusLabel(status) {
+    if (isPendingPaper({ status })) return 'Pending for Approval';
+    return safe(status || 'Submitted');
+  }
+  function statusClass(status) {
+    if (isPendingPaper({ status })) return 'pending-approval';
+    if (typeof paperStatusClass === 'function') return paperStatusClass(status);
+    return statusNorm(status).replace(/\s+/g, '-');
+  }
+  function submittedPapersForAdmin() {
+    return (Array.isArray(questionPapers) ? questionPapers : []).filter(paper => !isDraftPaper(paper));
+  }
+  function submittedPapersForTeacher() {
+    return (Array.isArray(questionPapers) ? questionPapers : []).filter(paper => !paper.teacherId || paper.teacherId === currentId);
+  }
+  function normalizeLocalDraftForList(draft) {
+    if (typeof normalizeLocalDraftForLibrary === 'function') return normalizeLocalDraftForLibrary(draft);
+    return {
+      ...draft,
+      paperId: draft.draftId,
+      title: draft.title || draft.paperTitle || 'Untitled Draft',
+      status: draft.status || 'Draft',
+      sourceType: draft.sourceType || 'Manual',
+      uploadedAt: draft.updatedAt || draft.createdAt,
+      version: 'Draft',
+      isLocalDraft: true
+    };
+  }
+
+  window.getPaperLibraryItems = getPaperLibraryItems = function getPaperLibraryItemsHotfixV36() {
+    if (adminUser()) {
+      // Principal/Admin review desk must not show teacher drafts.
+      // Only papers actually submitted to Admin should enter approval workflow.
+      return submittedPapersForAdmin();
+    }
+
+    const submitted = submittedPapersForTeacher();
+    const seenIds = new Set(submitted.map(paperIdOf).filter(Boolean));
+
+    const cloudDrafts = (Array.isArray(backendPaperDrafts) ? backendPaperDrafts : [])
+      .filter(draft => draft.teacherId === currentId)
+      .filter(draft => !seenIds.has(paperIdOf(draft)))
+      .map(draft => ({
+        ...draft,
+        draftId: draft.draftId || draft.paperId,
+        paperId: draft.paperId || draft.draftId,
+        status: draft.status || 'Draft',
+        sourceType: draft.sourceType || 'Manual',
+        uploadedAt: draft.updatedAt || draft.createdAt,
+        isBackendDraft: true
+      }));
+
+    const cloudIds = new Set(cloudDrafts.map(paperIdOf).filter(Boolean));
+    const localDrafts = (typeof getLocalDrafts === 'function' ? getLocalDrafts() : [])
+      .filter(draft => !cloudIds.has(draft.draftId))
+      .map(normalizeLocalDraftForList);
+
+    return [...submitted, ...cloudDrafts, ...localDrafts];
+  };
+
+  window.updatePaperLibraryStats = updatePaperLibraryStats = function updatePaperLibraryStatsHotfixV36(items = getPaperLibraryItems()) {
+    const setValue = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    const setLabel = (id, label) => {
+      const el = document.getElementById(id);
+      const labelEl = el && el.nextElementSibling;
+      if (labelEl) labelEl.textContent = label;
+    };
+
+    if (adminUser()) {
+      const pending = items.filter(isPendingPaper).length;
+      const correction = items.filter(isCorrectionPaper).length;
+      const approved = items.filter(isApprovedPaper).length;
+      const locked = items.filter(isLockedPaper).length;
+
+      setLabel('paperStatDraft', 'Pending');
+      setLabel('paperStatPending', 'Correction');
+      setLabel('paperStatCorrection', 'Approved');
+      setLabel('paperStatApproved', 'Locked');
+
+      setValue('paperStatDraft', pending);
+      setValue('paperStatPending', correction);
+      setValue('paperStatCorrection', approved);
+      setValue('paperStatApproved', locked);
+      return;
+    }
+
+    setLabel('paperStatDraft', 'Draft');
+    setLabel('paperStatPending', 'Pending');
+    setLabel('paperStatCorrection', 'Correction');
+    setLabel('paperStatApproved', 'Approved');
+
+    setValue('paperStatDraft', items.filter(isDraftPaper).length);
+    setValue('paperStatPending', items.filter(isPendingPaper).length);
+    setValue('paperStatCorrection', items.filter(isCorrectionPaper).length);
+    setValue('paperStatApproved', items.filter(p => isApprovedPaper(p) || isLockedPaper(p)).length);
+  };
+
+  function ensureApprovalStatusOptions() {
+    const select = document.getElementById('paperFilterStatus');
+    if (!select) return;
+
+    const current = select.value;
+    const paperView = document.getElementById('paperView');
+    const approvalMode = adminUser() && paperView && paperView.classList.contains('pro-paper-approval');
+
+    if (adminUser()) {
+      const options = [
+        ['', 'All Review Statuses'],
+        ['Submitted', 'Pending for Approval'],
+        ['Correction Required', 'Correction Required'],
+        ['Approved', 'Approved'],
+        ['Locked', 'Locked']
+      ];
+      select.innerHTML = options.map(([value, label]) => `<option value="${esc(value)}">${esc(label)}</option>`).join('');
+
+      const valid = options.some(([value]) => value === current);
+      if (approvalMode && (!select.dataset.bgpsDefaulted || current === '' || current === 'Draft' || current === 'Draft Metadata')) {
+        select.value = 'Submitted';
+        select.dataset.bgpsDefaulted = '1';
+      } else {
+        select.value = valid ? current : '';
+      }
+      return;
+    }
+
+    const teacherOptions = [
+      ['', 'All Statuses'],
+      ['Draft', 'Draft'],
+      ['Draft Metadata', 'Upload Draft'],
+      ['Submitted', 'Pending for Approval'],
+      ['Correction Required', 'Correction Required'],
+      ['Approved', 'Approved'],
+      ['Locked', 'Locked']
+    ];
+    select.innerHTML = teacherOptions.map(([value, label]) => `<option value="${esc(value)}">${esc(label)}</option>`).join('');
+    select.value = teacherOptions.some(([value]) => value === current) ? current : '';
+  }
+
+  function matchesStatusFilter(paper, filter) {
+    if (!filter) return true;
+    if (filter === 'Submitted') return isPendingPaper(paper);
+    if (filter === 'Draft') return statusNorm(paper.status) === 'draft';
+    if (filter === 'Draft Metadata') return statusNorm(paper.status) === 'draft metadata';
+    return safe(paper.status) === filter;
+  }
+
+  window.renderSubmittedPaperCard = renderSubmittedPaperCard = function renderSubmittedPaperCardHotfixV36(paper) {
+    const id = paperIdOf(paper);
+    const mime = safe(paper.mimeType).toLowerCase();
+    const fileName = safe(paper.fileName).toLowerCase();
+    const isPdf = mime === 'application/pdf' || fileName.endsWith('.pdf');
+    const isHtml = mime === 'text/html' || fileName.endsWith('.html');
+    const isPrintable = isPdf || isHtml;
+    const label = statusLabel(paper.status);
+    const title = paperTitleOf(paper);
+    const formatLabel = isPdf ? 'PDF' : isHtml ? 'Portal Paper' : (fileName.endsWith('.docx') ? 'DOCX' : (paper.sourceType || 'Paper'));
+
+    let actions = '';
+    if (id) {
+      actions += `<button class="paper-action-review" onclick="openPaperFile('${esc(id)}','preview')">Open Paper</button>`;
+      actions += `<button class="paper-action-download" onclick="openPaperFile('${esc(id)}','download')">Download</button>`;
+      if (adminUser() && isPrintable) actions += `<button class="paper-action-print" onclick="openPaperFile('${esc(id)}','print')">Print</button>`;
+    }
+
+    if (adminUser()) {
+      if (!isApprovedPaper(paper) && !isLockedPaper(paper)) {
+        actions += `<button class="paper-action-approve" onclick="updatePaperStatus('${esc(id)}','Approved')">Approve</button>`;
+      }
+      if (!isLockedPaper(paper)) {
+        actions += `<button class="paper-action-remarks" onclick="requestPaperCorrection('${esc(id)}')">Send Remarks / Return</button>`;
+      }
+      if (isApprovedPaper(paper)) {
+        actions += `<button class="paper-action-lock" onclick="updatePaperStatus('${esc(id)}','Locked')">Lock Final</button>`;
+      }
+      if (isLockedPaper(paper)) {
+        actions += `<button class="paper-action-unlock" onclick="updatePaperStatus('${esc(id)}','Approved')">Unlock</button>`;
+      }
+    } else if (isCorrectionPaper(paper)) {
+      actions += `<button class="paper-action-resubmit" onclick="selectCorrectionMode('${esc(paper.sourceType || 'Manual')}')">Create Corrected Version</button>`;
+    }
+
+    const adminRemark = paper.adminNote || paper.remarks || paper.comment || '';
+    const remarkHtml = adminRemark
+      ? `<div class="bgps-approval-note"><strong>Admin remarks:</strong> ${esc(adminRemark)}</div>`
+      : '';
+
+    return `<article class="compact-paper-card" id="paper-${esc(id)}">
+      <div class="paper-card-top">
+        <div>
+          <div class="paper-title">${esc(paper.className || '-')} · ${esc(paper.subject || '-')} · ${esc(paper.exam || '-')}</div>
+          <div class="paper-version">Title: ${esc(title)} · ${esc(formatLabel)} · V${esc(paper.version || 1)}</div>
+        </div>
+        <span class="paper-badge ${statusClass(paper.status)}">${esc(label)}</span>
+      </div>
+      <div class="compact-meta-row">
+        <span class="compact-meta-chip">Teacher ${esc(paper.teacherId || '-')}</span>
+        <span class="compact-meta-chip">${esc(paper.sourceType || 'Paper')}</span>
+        <span class="compact-meta-chip">${esc(paper.maxMarks || '-')} Marks</span>
+        <span class="compact-meta-chip">${esc(formatDate(paper.uploadedAt || paper.updatedAt || paper.createdAt))}</span>
+        ${paper.sourceType === 'Manual' ? `<span class="compact-meta-chip">${esc(paper.totalQuestions || 0)} items</span>` : ''}
+      </div>
+      <div class="compact-reference"><strong>Chapters:</strong> ${esc(paper.chapters || '-')}</div>
+      ${paper.note ? `<div class="compact-reference"><strong>Teacher note:</strong> ${esc(paper.note)}</div>` : ''}
+      ${remarkHtml}
+      <div class="paper-actions">${actions}</div>
+    </article>`;
+  };
+
+  window.renderPaperLibrary = renderPaperLibrary = function renderPaperLibraryHotfixV36() {
+    const list = document.getElementById('paperCardList');
+    if (!list) return;
+
+    ensureApprovalStatusOptions();
+
+    const allItems = getPaperLibraryItems();
+    updatePaperLibraryStats(allItems);
+
+    if (typeof updatePaperSubjectFilter === 'function') {
+      try { updatePaperSubjectFilter(); } catch (_) {}
+    }
+
+    const classFilter = document.getElementById('paperFilterClass')?.value || '';
+    const statusFilter = document.getElementById('paperFilterStatus')?.value || '';
+    const sourceFilter = document.getElementById('paperFilterSource')?.value || '';
+    const subjectFilter = document.getElementById('paperFilterSubject')?.value || '';
+    const searchText = (document.getElementById('paperFilterSearch')?.value || '').trim().toLowerCase();
+
+    const rank = {
+      'submitted': 0,
+      'pending': 0,
+      'pending approval': 0,
+      'pending for approval': 0,
+      'correction required': 1,
+      'approved': 2,
+      'locked': 3,
+      'draft': adminUser() ? 99 : 4,
+      'draft metadata': adminUser() ? 99 : 4
+    };
+
+    const papers = allItems
+      .filter(paper => (!classFilter || paper.className === classFilter)
+        && matchesStatusFilter(paper, statusFilter)
+        && (!sourceFilter || paper.sourceType === sourceFilter)
+        && (!subjectFilter || paper.subject === subjectFilter)
+        && (!searchText || [paperTitleOf(paper), paper.className, paper.subject, paper.exam, paper.teacherId, paper.status].some(value => safe(value).toLowerCase().includes(searchText))))
+      .sort((a, b) => (rank[statusNorm(a.status)] ?? 9) - (rank[statusNorm(b.status)] ?? 9)
+        || safe(b.uploadedAt || b.updatedAt || b.createdAt).localeCompare(safe(a.uploadedAt || a.updatedAt || a.createdAt)));
+
+    if (!papers.length) {
+      list.innerHTML = adminUser()
+        ? '<div class="paper-empty">No submitted papers match the selected filters. Drafts are hidden from Principal Approval until teacher clicks Submit Paper to Admin.</div>'
+        : '<div class="paper-empty">No question papers match the selected filters.</div>';
+      return;
+    }
+
+    list.innerHTML = papers.map(paper => {
+      if (!adminUser() && paper.isLocalDraft && typeof renderLocalDraftCard === 'function') return renderLocalDraftCard(paper);
+      if (!adminUser() && paper.isBackendDraft && typeof renderBackendDraftCard === 'function') return renderBackendDraftCard(paper);
+      return renderSubmittedPaperCard(paper);
+    }).join('');
+  };
+
+  function adminPaperStats() {
+    const papers = submittedPapersForAdmin();
+    return {
+      papers,
+      pending: papers.filter(isPendingPaper),
+      correction: papers.filter(isCorrectionPaper),
+      approved: papers.filter(isApprovedPaper),
+      locked: papers.filter(isLockedPaper)
+    };
+  }
+
+  function setSummaryCard(labelPart, value, detail, tone) {
+    const cards = [...document.querySelectorAll('#proHomeView .bgps-summary-tab')];
+    const card = cards.find(btn => safe(btn.querySelector('span')?.textContent).toLowerCase().includes(labelPart.toLowerCase()));
+    if (!card) return;
+    const strong = card.querySelector('strong');
+    const small = card.querySelector('small');
+    if (strong) strong.textContent = value;
+    if (small) small.textContent = detail;
+    card.classList.remove('good', 'warn', 'danger');
+    if (tone) card.classList.add(tone);
+  }
+
+  function groupPendingByClass(pending) {
+    const map = new Map();
+    pending.forEach(paper => {
+      const cls = paper.className || 'Unknown Class';
+      if (!map.has(cls)) map.set(cls, []);
+      map.get(cls).push(paper);
+    });
+    return [...map.entries()]
+      .map(([className, list]) => ({
+        className,
+        total: list.length,
+        first: list.slice().sort((a, b) => safe(a.uploadedAt).localeCompare(safe(b.uploadedAt)))[0]
+      }))
+      .sort((a, b) => b.total - a.total || safe(a.className).localeCompare(safe(b.className)));
+  }
+
+  function openApprovalButton(paper) {
+    const id = paperIdOf(paper);
+    return id ? `<button class="bgps-mini-link" type="button" onclick="openPaperFile('${esc(id)}','preview')">Open</button>` : '';
+  }
+
+  function pendingListHtml(stats) {
+    const selectedClass = window.__BGPS_DASH_CLASS_FILTER__ || '';
+    const groups = groupPendingByClass(stats.pending).filter(item => !selectedClass || item.className === selectedClass);
+    if (!groups.length) return `<div class="paper-empty">${selectedClass ? esc(selectedClass) + ' has no pending papers right now.' : 'No pending papers for approval right now.'}</div>`;
+    return '<div class="bgps-dashboard-list">' + groups.map(item => {
+      const first = item.first || {};
+      return `<div class="bgps-action-card is-paper">
+        <div>
+          <strong>${esc(item.className)}: ${esc(item.total)} pending for approval</strong>
+          <small>First pending: ${esc(first.subject || '-')} / ${esc(first.exam || '-')} · Teacher ${esc(first.teacherId || '-')}</small>
+          <div class="bgps-action-meta"><span>${esc(formatDate(first.uploadedAt))}</span><span>${esc(first.sourceType || 'Paper')}</span><span>V${esc(first.version || 1)}</span></div>
+        </div>
+        <button class="bgps-mini-link" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Submitted')">Open Queue</button>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  function notificationListHtml(stats) {
+    const items = [...stats.pending, ...stats.correction, ...stats.approved, ...stats.locked]
+      .sort((a, b) => safe(b.uploadedAt || b.updatedAt).localeCompare(safe(a.uploadedAt || a.updatedAt)))
+      .slice(0, 12);
+    if (!items.length) return '<div class="paper-empty">No submitted paper notifications yet. Drafts are hidden until teacher submission.</div>';
+    return '<div class="bgps-dashboard-list">' + items.map(paper => {
+      const key = isCorrectionPaper(paper) ? 'correction' : isApprovedPaper(paper) || isLockedPaper(paper) ? 'approved' : 'pending';
+      return `<div class="bgps-action-card is-paper ${key === 'correction' ? 'is-correction' : ''}">
+        <div>
+          <strong>${esc(paper.className || '-')} / ${esc(paper.subject || '-')} / ${esc(paper.exam || '-')}</strong>
+          <small>${esc(statusLabel(paper.status))} · Teacher ${esc(paper.teacherId || '-')} ${paper.adminNote ? '· Remarks added' : ''}</small>
+          <div class="bgps-action-meta"><span>${esc(paper.sourceType || 'Paper')}</span><span>V${esc(paper.version || 1)}</span><span>${esc(formatDate(paper.uploadedAt || paper.updatedAt))}</span></div>
+        </div>
+        <div class="paper-actions" style="margin:0;justify-content:flex-end;"><span class="bgps-status-badge ${key}">${esc(key === 'pending' ? 'pending' : key)}</span>${openApprovalButton(paper)}</div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  function remarksListHtml(stats) {
+    const items = [...stats.correction, ...stats.approved, ...stats.locked].filter(p => p.adminNote || isCorrectionPaper(p) || isApprovedPaper(p) || isLockedPaper(p));
+    if (!items.length) return '<div class="paper-empty">No remarks or approval activity yet.</div>';
+    return '<div class="bgps-dashboard-list">' + items.map(paper => {
+      const key = isCorrectionPaper(paper) ? 'correction' : 'approved';
+      return `<div class="bgps-action-card is-paper ${key === 'correction' ? 'is-correction' : ''}">
+        <div>
+          <strong>${esc(paper.className || '-')} / ${esc(paper.subject || '-')} / ${esc(paper.exam || '-')}</strong>
+          <small>${esc(statusLabel(paper.status))} · Teacher ${esc(paper.teacherId || '-')} · ${esc(paper.adminNote || 'No remarks added')}</small>
+          <div class="bgps-action-meta"><span>${esc(paper.sourceType || 'Paper')}</span><span>V${esc(paper.version || 1)}</span><span>${esc(formatDate(paper.uploadedAt || paper.updatedAt))}</span></div>
+        </div>
+        ${openApprovalButton(paper)}
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  function teacherProgressHtml(stats) {
+    const rows = typeof TEACHER_ASSIGNMENTS === 'object'
+      ? Object.entries(TEACHER_ASSIGNMENTS)
+          .filter(([teacher]) => teacher !== 'ADMIN')
+          .flatMap(([teacher, profile]) => {
+            const classes = [...new Set([...(profile.paperClasses || []), ...(profile.classTeacherOf || [])])];
+            return (classes.length ? classes : ['Unassigned']).map(className => ({ teacher, className }));
+          })
+      : [];
+
+    const byKey = new Map(rows.map(row => [`${row.teacher}|${row.className}`, { ...row, total:0, pending:0, correction:0, approved:0, locked:0, latest:null }]));
+    stats.papers.forEach(paper => {
+      const key = `${paper.teacherId || 'Unknown'}|${paper.className || 'Unassigned'}`;
+      if (!byKey.has(key)) byKey.set(key, { teacher:paper.teacherId || 'Unknown', className:paper.className || 'Unassigned', total:0, pending:0, correction:0, approved:0, locked:0, latest:null });
+      const item = byKey.get(key);
+      item.total += 1;
+      if (isPendingPaper(paper)) item.pending += 1;
+      if (isCorrectionPaper(paper)) item.correction += 1;
+      if (isApprovedPaper(paper)) item.approved += 1;
+      if (isLockedPaper(paper)) item.locked += 1;
+      if (!item.latest || safe(paper.uploadedAt || paper.updatedAt).localeCompare(safe(item.latest.uploadedAt || item.latest.updatedAt)) > 0) item.latest = paper;
+    });
+
+    const cards = [...byKey.values()].sort((a, b) => safe(a.teacher).localeCompare(safe(b.teacher), undefined, { numeric:true })).map(item => {
+      const finalCount = item.approved + item.locked;
+      const state = item.correction ? ['Correction Required','correction'] : item.pending ? ['Pending Review','pending'] : finalCount ? ['Approved / Final','approved'] : ['No Submitted Paper','locked'];
+      const latest = item.latest ? `${item.latest.subject || '-'} / ${item.latest.exam || '-'} · ${statusLabel(item.latest.status)}` : 'No submitted paper yet';
+      return `<article class="class-summary-card">
+        <div><strong>${esc(item.teacher)} / ${esc(item.className)}</strong><small>Latest: ${esc(latest)}</small></div>
+        <div class="class-summary-pills">
+          <button class="class-pill ${state[1]}" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','')">${esc(state[0])}</button>
+          <button class="class-pill pending" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Submitted')">Pending ${item.pending}</button>
+          <button class="class-pill correction" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Correction Required')">Correction ${item.correction}</button>
+          <button class="class-pill approved" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Approved')">Approved ${item.approved}</button>
+          <button class="class-pill locked" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Locked')">Locked ${item.locked}</button>
+        </div>
+      </article>`;
+    }).join('');
+    return `<div class="class-summary-grid">${cards || '<div class="paper-empty">No teacher progress available yet.</div>'}</div>`;
+  }
+
+  function cleanPrincipalHome() {
+    if (!adminUser()) return;
+    const home = document.getElementById('proHomeView');
+    if (!home || !home.classList.contains('active')) return;
+
+    const stats = adminPaperStats();
+    setSummaryCard('Paper Summary', stats.pending.length, 'Click to view class-wise papers pending for approval.', stats.pending.length ? 'warn' : '');
+    setSummaryCard('Remarks', stats.correction.length, 'Click to view returned papers and admin remarks.', stats.correction.length ? 'danger' : '');
+    setSummaryCard('Notifications', stats.pending.length + stats.correction.length + stats.approved.length + stats.locked.length, 'Latest submitted paper alerts only. Drafts are hidden.', stats.pending.length ? 'warn' : '');
+
+    const panel = home.querySelector('.bgps-dashboard-panel');
+    if (!panel) return;
+    const title = safe(panel.querySelector('h2')?.textContent).toLowerCase();
+
+    if (title.includes('paper summary')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Class-wise queue of papers waiting for Principal approval.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = pendingListHtml(stats);
+    } else if (title.includes('notification')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Only submitted paper movement appears here; teacher drafts are not shown.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = notificationListHtml(stats);
+    } else if (title.includes('teacher')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Teacher progress based on submitted papers only. Drafts are excluded.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = teacherProgressHtml(stats);
+    } else if (title.includes('remarks') || title.includes('correction')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Returned papers, approvals and remarks visible to teachers.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = remarksListHtml(stats);
+    } else if (title.includes('class')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Class-wise status based on submitted papers only.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = teacherProgressHtml(stats);
+    }
+  }
+
+  function afterRenderCleanup() {
+    setTimeout(() => {
+      try { cleanPrincipalHome(); } catch (error) { console.warn('BGPS principal dashboard cleanup failed', error); }
+      try { if (document.getElementById('paperView')?.classList.contains('active')) renderPaperLibrary(); } catch (error) { console.warn('BGPS approval cleanup failed', error); }
+    }, 180);
+    setTimeout(() => { try { cleanPrincipalHome(); } catch (_) {} }, 650);
+  }
+
+  window.bgpsOpenPaperApprovalForClassStatus = async function bgpsOpenPaperApprovalForClassStatusHotfixV36(className, status) {
+    const targetStatus = status || 'Submitted';
+    if (typeof switchTab === 'function') {
+      const result = switchTab(adminUser() ? 'approval' : 'papers');
+      try { await Promise.resolve(result); } catch (_) {}
+    }
+
+    setTimeout(() => {
+      const classFilter = document.getElementById('paperFilterClass');
+      if (classFilter) classFilter.value = className || '';
+      const statusFilter = document.getElementById('paperFilterStatus');
+      if (statusFilter) {
+        ensureApprovalStatusOptions();
+        statusFilter.value = targetStatus;
+      }
+      if (typeof renderPaperLibrary === 'function') renderPaperLibrary();
+    }, 220);
+  };
+  window.bgpsOpenPaperApprovalForClass = className => window.bgpsOpenPaperApprovalForClassStatus(className, 'Submitted');
+
+  const oldSwitchTab = window.switchTab;
+  if (typeof oldSwitchTab === 'function') {
+    window.switchTab = switchTab = function switchTabHotfixV36(tab) {
+      const result = oldSwitchTab.apply(this, arguments);
+      Promise.resolve(result).finally(() => {
+        if (adminUser() && (tab === 'home' || tab === 'approval' || tab === 'papers')) afterRenderCleanup();
+        if (adminUser() && (tab === 'approval' || tab === 'papers')) setTimeout(() => renderPaperLibrary(), 240);
+      });
+      return result;
+    };
+  }
+
+  const oldRefreshHome = window.bgpsProRefreshHome;
+  if (typeof oldRefreshHome === 'function') {
+    window.bgpsProRefreshHome = function bgpsProRefreshHomeHotfixV36() {
+      const result = oldRefreshHome.apply(this, arguments);
+      Promise.resolve(result).finally(afterRenderCleanup);
+      return result;
+    };
+  }
+
+  const oldShowPanel = window.bgpsShowDashboardPanel;
+  if (typeof oldShowPanel === 'function') {
+    window.bgpsShowDashboardPanel = function bgpsShowDashboardPanelHotfixV36(mode) {
+      const result = oldShowPanel.apply(this, arguments);
+      Promise.resolve(result).finally(afterRenderCleanup);
+      return result;
+    };
+  }
+
+  const oldDashboardFilter = window.bgpsDashboardFilterClass;
+  if (typeof oldDashboardFilter === 'function') {
+    window.bgpsDashboardFilterClass = function bgpsDashboardFilterClassHotfixV36(className) {
+      window.__BGPS_DASH_CLASS_FILTER__ = className || '';
+      const result = oldDashboardFilter.apply(this, arguments);
+      Promise.resolve(result).finally(afterRenderCleanup);
+      return result;
+    };
+  }
+
+  const oldLogin = window.loginTeacher;
+  if (typeof oldLogin === 'function') {
+    window.loginTeacher = loginTeacher = function loginTeacherHotfixV36() {
+      const result = oldLogin.apply(this, arguments);
+      Promise.resolve(result).finally(afterRenderCleanup);
+      return result;
+    };
+  }
+
+  const oldUpdatePaperStatus = window.updatePaperStatus;
+  if (typeof oldUpdatePaperStatus === 'function') {
+    window.updatePaperStatus = updatePaperStatus = async function updatePaperStatusHotfixV36(paperId, status, adminNote = '') {
+      const result = await oldUpdatePaperStatus.apply(this, arguments);
+      try {
+        questionPapers = [];
+        paperLibraryLoadedOnce = false;
+        if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true);
+        if (typeof bgpsProRefreshHome === 'function') bgpsProRefreshHome();
+      } catch (_) {}
+      return result;
+    };
+  }
+
+  const oldRequestCorrection = window.requestPaperCorrection;
+  window.requestPaperCorrection = requestPaperCorrection = async function requestPaperCorrectionHotfixV36(paperId) {
+    if (!adminUser()) return;
+    const note = prompt('Write remarks for teacher. This comment will be visible on teacher dashboard and paper card:');
+    if (note === null) return;
+    if (!note.trim()) {
+      alert('Remarks are required before returning the paper.');
+      return;
+    }
+    if (typeof oldUpdatePaperStatus === 'function') {
+      await oldUpdatePaperStatus.call(this, paperId, 'Correction Required', note.trim());
+    } else if (typeof oldRequestCorrection === 'function') {
+      await oldRequestCorrection.call(this, paperId);
+    }
+    try {
+      questionPapers = [];
+      paperLibraryLoadedOnce = false;
+      if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true);
+      if (typeof bgpsProRefreshHome === 'function') bgpsProRefreshHome();
+    } catch (_) {}
+  };
+
+  document.addEventListener('DOMContentLoaded', afterRenderCleanup);
+  afterRenderCleanup();
+})();
+</script>
+<!-- BGPS APPROVAL WORKFLOW HOTFIX V3.6
+Paste this whole block AFTER the existing bgpsProFinalPatchV35 script and BEFORE </body>.
+Purpose:
+1) Principal/Admin dashboard no longer shows drafts.
+2) Paper Approval shows only submitted/pending papers by default.
+3) Pending papers open for review and show Approve + Send Remarks buttons.
+4) Teacher sees Admin remarks on returned/correction papers.
+-->
+<style>
+  .paper-badge.pending-approval { background:#fef3c7; color:#92400e; }
+  .paper-action-remarks { background:#fee2e2; color:#991b1b; }
+  .paper-action-review { background:#dbeafe; color:#1e3a8a; }
+  .bgps-approval-note {
+    margin-top:8px;
+    padding:9px 10px;
+    border-radius:8px;
+    background:#fff7ed;
+    border:1px solid #fdba74;
+    color:#9a3412;
+    font-size:12px;
+    line-height:1.45;
+  }
+</style>
+
+<script>
+(function bgpsApprovalWorkflowHotfixV36(){
+  if (window.__BGPS_APPROVAL_HOTFIX_V36__) return;
+  window.__BGPS_APPROVAL_HOTFIX_V36__ = true;
+
+  function safe(value) { return String(value == null ? '' : value); }
+  function esc(value) {
+    if (typeof escapeHtml === 'function') return escapeHtml(value);
+    return safe(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+  function adminUser() {
+    try { return safe(currentId).toUpperCase() === 'ADMIN'; } catch (_) { return false; }
+  }
+  function statusNorm(status) {
+    return safe(status || 'Submitted').toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function isDraftPaper(paper) {
+    const status = statusNorm(paper && paper.status);
+    return Boolean(paper && (paper.isLocalDraft || paper.isBackendDraft || status.includes('draft')));
+  }
+  function isPendingPaper(paper) {
+    const status = statusNorm(paper && paper.status);
+    return ['submitted', 'pending', 'pending approval', 'pending for approval'].includes(status);
+  }
+  function isCorrectionPaper(paper) { return statusNorm(paper && paper.status) === 'correction required'; }
+  function isApprovedPaper(paper) { return statusNorm(paper && paper.status) === 'approved'; }
+  function isLockedPaper(paper) { return statusNorm(paper && paper.status) === 'locked'; }
+  function paperIdOf(paper) { return safe((paper && (paper.paperId || paper.draftId || paper.id)) || ''); }
+  function paperTitleOf(paper) {
+    if (typeof getPaperTitle === 'function') return getPaperTitle(paper);
+    return paper.title || paper.paperTitle || paper.fileName || `${paper.className || 'Class'} ${paper.subject || 'Subject'} ${paper.exam || 'Exam'}`;
+  }
+  function formatDate(value) {
+    if (typeof formatPaperDate === 'function') return formatPaperDate(value);
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? safe(value) : date.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  function statusLabel(status) {
+    if (isPendingPaper({ status })) return 'Pending for Approval';
+    return safe(status || 'Submitted');
+  }
+  function statusClass(status) {
+    if (isPendingPaper({ status })) return 'pending-approval';
+    if (typeof paperStatusClass === 'function') return paperStatusClass(status);
+    return statusNorm(status).replace(/\s+/g, '-');
+  }
+  function submittedPapersForAdmin() {
+    return (Array.isArray(questionPapers) ? questionPapers : []).filter(paper => !isDraftPaper(paper));
+  }
+  function submittedPapersForTeacher() {
+    return (Array.isArray(questionPapers) ? questionPapers : []).filter(paper => !paper.teacherId || paper.teacherId === currentId);
+  }
+  function normalizeLocalDraftForList(draft) {
+    if (typeof normalizeLocalDraftForLibrary === 'function') return normalizeLocalDraftForLibrary(draft);
+    return {
+      ...draft,
+      paperId: draft.draftId,
+      title: draft.title || draft.paperTitle || 'Untitled Draft',
+      status: draft.status || 'Draft',
+      sourceType: draft.sourceType || 'Manual',
+      uploadedAt: draft.updatedAt || draft.createdAt,
+      version: 'Draft',
+      isLocalDraft: true
+    };
+  }
+
+  window.getPaperLibraryItems = getPaperLibraryItems = function getPaperLibraryItemsHotfixV36() {
+    if (adminUser()) {
+      // Principal/Admin review desk must not show teacher drafts.
+      // Only papers actually submitted to Admin should enter approval workflow.
+      return submittedPapersForAdmin();
+    }
+
+    const submitted = submittedPapersForTeacher();
+    const seenIds = new Set(submitted.map(paperIdOf).filter(Boolean));
+
+    const cloudDrafts = (Array.isArray(backendPaperDrafts) ? backendPaperDrafts : [])
+      .filter(draft => draft.teacherId === currentId)
+      .filter(draft => !seenIds.has(paperIdOf(draft)))
+      .map(draft => ({
+        ...draft,
+        draftId: draft.draftId || draft.paperId,
+        paperId: draft.paperId || draft.draftId,
+        status: draft.status || 'Draft',
+        sourceType: draft.sourceType || 'Manual',
+        uploadedAt: draft.updatedAt || draft.createdAt,
+        isBackendDraft: true
+      }));
+
+    const cloudIds = new Set(cloudDrafts.map(paperIdOf).filter(Boolean));
+    const localDrafts = (typeof getLocalDrafts === 'function' ? getLocalDrafts() : [])
+      .filter(draft => !cloudIds.has(draft.draftId))
+      .map(normalizeLocalDraftForList);
+
+    return [...submitted, ...cloudDrafts, ...localDrafts];
+  };
+
+  window.updatePaperLibraryStats = updatePaperLibraryStats = function updatePaperLibraryStatsHotfixV36(items = getPaperLibraryItems()) {
+    const setValue = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    const setLabel = (id, label) => {
+      const el = document.getElementById(id);
+      const labelEl = el && el.nextElementSibling;
+      if (labelEl) labelEl.textContent = label;
+    };
+
+    if (adminUser()) {
+      const pending = items.filter(isPendingPaper).length;
+      const correction = items.filter(isCorrectionPaper).length;
+      const approved = items.filter(isApprovedPaper).length;
+      const locked = items.filter(isLockedPaper).length;
+
+      setLabel('paperStatDraft', 'Pending');
+      setLabel('paperStatPending', 'Correction');
+      setLabel('paperStatCorrection', 'Approved');
+      setLabel('paperStatApproved', 'Locked');
+
+      setValue('paperStatDraft', pending);
+      setValue('paperStatPending', correction);
+      setValue('paperStatCorrection', approved);
+      setValue('paperStatApproved', locked);
+      return;
+    }
+
+    setLabel('paperStatDraft', 'Draft');
+    setLabel('paperStatPending', 'Pending');
+    setLabel('paperStatCorrection', 'Correction');
+    setLabel('paperStatApproved', 'Approved');
+
+    setValue('paperStatDraft', items.filter(isDraftPaper).length);
+    setValue('paperStatPending', items.filter(isPendingPaper).length);
+    setValue('paperStatCorrection', items.filter(isCorrectionPaper).length);
+    setValue('paperStatApproved', items.filter(p => isApprovedPaper(p) || isLockedPaper(p)).length);
+  };
+
+  function ensureApprovalStatusOptions() {
+    const select = document.getElementById('paperFilterStatus');
+    if (!select) return;
+
+    const current = select.value;
+    const paperView = document.getElementById('paperView');
+    const approvalMode = adminUser() && paperView && paperView.classList.contains('pro-paper-approval');
+
+    if (adminUser()) {
+      const options = [
+        ['', 'All Review Statuses'],
+        ['Submitted', 'Pending for Approval'],
+        ['Correction Required', 'Correction Required'],
+        ['Approved', 'Approved'],
+        ['Locked', 'Locked']
+      ];
+      select.innerHTML = options.map(([value, label]) => `<option value="${esc(value)}">${esc(label)}</option>`).join('');
+
+      const valid = options.some(([value]) => value === current);
+      if (approvalMode && (!select.dataset.bgpsDefaulted || current === '' || current === 'Draft' || current === 'Draft Metadata')) {
+        select.value = 'Submitted';
+        select.dataset.bgpsDefaulted = '1';
+      } else {
+        select.value = valid ? current : '';
+      }
+      return;
+    }
+
+    const teacherOptions = [
+      ['', 'All Statuses'],
+      ['Draft', 'Draft'],
+      ['Draft Metadata', 'Upload Draft'],
+      ['Submitted', 'Pending for Approval'],
+      ['Correction Required', 'Correction Required'],
+      ['Approved', 'Approved'],
+      ['Locked', 'Locked']
+    ];
+    select.innerHTML = teacherOptions.map(([value, label]) => `<option value="${esc(value)}">${esc(label)}</option>`).join('');
+    select.value = teacherOptions.some(([value]) => value === current) ? current : '';
+  }
+
+  function matchesStatusFilter(paper, filter) {
+    if (!filter) return true;
+    if (filter === 'Submitted') return isPendingPaper(paper);
+    if (filter === 'Draft') return statusNorm(paper.status) === 'draft';
+    if (filter === 'Draft Metadata') return statusNorm(paper.status) === 'draft metadata';
+    return safe(paper.status) === filter;
+  }
+
+  window.renderSubmittedPaperCard = renderSubmittedPaperCard = function renderSubmittedPaperCardHotfixV36(paper) {
+    const id = paperIdOf(paper);
+    const mime = safe(paper.mimeType).toLowerCase();
+    const fileName = safe(paper.fileName).toLowerCase();
+    const isPdf = mime === 'application/pdf' || fileName.endsWith('.pdf');
+    const isHtml = mime === 'text/html' || fileName.endsWith('.html');
+    const isPrintable = isPdf || isHtml;
+    const label = statusLabel(paper.status);
+    const title = paperTitleOf(paper);
+    const formatLabel = isPdf ? 'PDF' : isHtml ? 'Portal Paper' : (fileName.endsWith('.docx') ? 'DOCX' : (paper.sourceType || 'Paper'));
+
+    let actions = '';
+    if (id) {
+      actions += `<button class="paper-action-review" onclick="openPaperFile('${esc(id)}','preview')">Open Paper</button>`;
+      actions += `<button class="paper-action-download" onclick="openPaperFile('${esc(id)}','download')">Download</button>`;
+      if (adminUser() && isPrintable) actions += `<button class="paper-action-print" onclick="openPaperFile('${esc(id)}','print')">Print</button>`;
+    }
+
+    if (adminUser()) {
+      if (!isApprovedPaper(paper) && !isLockedPaper(paper)) {
+        actions += `<button class="paper-action-approve" onclick="updatePaperStatus('${esc(id)}','Approved')">Approve</button>`;
+      }
+      if (!isLockedPaper(paper)) {
+        actions += `<button class="paper-action-remarks" onclick="requestPaperCorrection('${esc(id)}')">Send Remarks / Return</button>`;
+      }
+      if (isApprovedPaper(paper)) {
+        actions += `<button class="paper-action-lock" onclick="updatePaperStatus('${esc(id)}','Locked')">Lock Final</button>`;
+      }
+      if (isLockedPaper(paper)) {
+        actions += `<button class="paper-action-unlock" onclick="updatePaperStatus('${esc(id)}','Approved')">Unlock</button>`;
+      }
+    } else if (isCorrectionPaper(paper)) {
+      actions += `<button class="paper-action-resubmit" onclick="selectCorrectionMode('${esc(paper.sourceType || 'Manual')}')">Create Corrected Version</button>`;
+    }
+
+    const adminRemark = paper.adminNote || paper.remarks || paper.comment || '';
+    const remarkHtml = adminRemark
+      ? `<div class="bgps-approval-note"><strong>Admin remarks:</strong> ${esc(adminRemark)}</div>`
+      : '';
+
+    return `<article class="compact-paper-card" id="paper-${esc(id)}">
+      <div class="paper-card-top">
+        <div>
+          <div class="paper-title">${esc(paper.className || '-')} · ${esc(paper.subject || '-')} · ${esc(paper.exam || '-')}</div>
+          <div class="paper-version">Title: ${esc(title)} · ${esc(formatLabel)} · V${esc(paper.version || 1)}</div>
+        </div>
+        <span class="paper-badge ${statusClass(paper.status)}">${esc(label)}</span>
+      </div>
+      <div class="compact-meta-row">
+        <span class="compact-meta-chip">Teacher ${esc(paper.teacherId || '-')}</span>
+        <span class="compact-meta-chip">${esc(paper.sourceType || 'Paper')}</span>
+        <span class="compact-meta-chip">${esc(paper.maxMarks || '-')} Marks</span>
+        <span class="compact-meta-chip">${esc(formatDate(paper.uploadedAt || paper.updatedAt || paper.createdAt))}</span>
+        ${paper.sourceType === 'Manual' ? `<span class="compact-meta-chip">${esc(paper.totalQuestions || 0)} items</span>` : ''}
+      </div>
+      <div class="compact-reference"><strong>Chapters:</strong> ${esc(paper.chapters || '-')}</div>
+      ${paper.note ? `<div class="compact-reference"><strong>Teacher note:</strong> ${esc(paper.note)}</div>` : ''}
+      ${remarkHtml}
+      <div class="paper-actions">${actions}</div>
+    </article>`;
+  };
+
+  window.renderPaperLibrary = renderPaperLibrary = function renderPaperLibraryHotfixV36() {
+    const list = document.getElementById('paperCardList');
+    if (!list) return;
+
+    ensureApprovalStatusOptions();
+
+    const allItems = getPaperLibraryItems();
+    updatePaperLibraryStats(allItems);
+
+    if (typeof updatePaperSubjectFilter === 'function') {
+      try { updatePaperSubjectFilter(); } catch (_) {}
+    }
+
+    const classFilter = document.getElementById('paperFilterClass')?.value || '';
+    const statusFilter = document.getElementById('paperFilterStatus')?.value || '';
+    const sourceFilter = document.getElementById('paperFilterSource')?.value || '';
+    const subjectFilter = document.getElementById('paperFilterSubject')?.value || '';
+    const searchText = (document.getElementById('paperFilterSearch')?.value || '').trim().toLowerCase();
+
+    const rank = {
+      'submitted': 0,
+      'pending': 0,
+      'pending approval': 0,
+      'pending for approval': 0,
+      'correction required': 1,
+      'approved': 2,
+      'locked': 3,
+      'draft': adminUser() ? 99 : 4,
+      'draft metadata': adminUser() ? 99 : 4
+    };
+
+    const papers = allItems
+      .filter(paper => (!classFilter || paper.className === classFilter)
+        && matchesStatusFilter(paper, statusFilter)
+        && (!sourceFilter || paper.sourceType === sourceFilter)
+        && (!subjectFilter || paper.subject === subjectFilter)
+        && (!searchText || [paperTitleOf(paper), paper.className, paper.subject, paper.exam, paper.teacherId, paper.status].some(value => safe(value).toLowerCase().includes(searchText))))
+      .sort((a, b) => (rank[statusNorm(a.status)] ?? 9) - (rank[statusNorm(b.status)] ?? 9)
+        || safe(b.uploadedAt || b.updatedAt || b.createdAt).localeCompare(safe(a.uploadedAt || a.updatedAt || a.createdAt)));
+
+    if (!papers.length) {
+      list.innerHTML = adminUser()
+        ? '<div class="paper-empty">No submitted papers match the selected filters. Drafts are hidden from Principal Approval until teacher clicks Submit Paper to Admin.</div>'
+        : '<div class="paper-empty">No question papers match the selected filters.</div>';
+      return;
+    }
+
+    list.innerHTML = papers.map(paper => {
+      if (!adminUser() && paper.isLocalDraft && typeof renderLocalDraftCard === 'function') return renderLocalDraftCard(paper);
+      if (!adminUser() && paper.isBackendDraft && typeof renderBackendDraftCard === 'function') return renderBackendDraftCard(paper);
+      return renderSubmittedPaperCard(paper);
+    }).join('');
+  };
+
+  function adminPaperStats() {
+    const papers = submittedPapersForAdmin();
+    return {
+      papers,
+      pending: papers.filter(isPendingPaper),
+      correction: papers.filter(isCorrectionPaper),
+      approved: papers.filter(isApprovedPaper),
+      locked: papers.filter(isLockedPaper)
+    };
+  }
+
+  function setSummaryCard(labelPart, value, detail, tone) {
+    const cards = [...document.querySelectorAll('#proHomeView .bgps-summary-tab')];
+    const card = cards.find(btn => safe(btn.querySelector('span')?.textContent).toLowerCase().includes(labelPart.toLowerCase()));
+    if (!card) return;
+    const strong = card.querySelector('strong');
+    const small = card.querySelector('small');
+    if (strong) strong.textContent = value;
+    if (small) small.textContent = detail;
+    card.classList.remove('good', 'warn', 'danger');
+    if (tone) card.classList.add(tone);
+  }
+
+  function groupPendingByClass(pending) {
+    const map = new Map();
+    pending.forEach(paper => {
+      const cls = paper.className || 'Unknown Class';
+      if (!map.has(cls)) map.set(cls, []);
+      map.get(cls).push(paper);
+    });
+    return [...map.entries()]
+      .map(([className, list]) => ({
+        className,
+        total: list.length,
+        first: list.slice().sort((a, b) => safe(a.uploadedAt).localeCompare(safe(b.uploadedAt)))[0]
+      }))
+      .sort((a, b) => b.total - a.total || safe(a.className).localeCompare(safe(b.className)));
+  }
+
+  function openApprovalButton(paper) {
+    const id = paperIdOf(paper);
+    return id ? `<button class="bgps-mini-link" type="button" onclick="openPaperFile('${esc(id)}','preview')">Open</button>` : '';
+  }
+
+  function pendingListHtml(stats) {
+    const selectedClass = window.__BGPS_DASH_CLASS_FILTER__ || '';
+    const groups = groupPendingByClass(stats.pending).filter(item => !selectedClass || item.className === selectedClass);
+    if (!groups.length) return `<div class="paper-empty">${selectedClass ? esc(selectedClass) + ' has no pending papers right now.' : 'No pending papers for approval right now.'}</div>`;
+    return '<div class="bgps-dashboard-list">' + groups.map(item => {
+      const first = item.first || {};
+      return `<div class="bgps-action-card is-paper">
+        <div>
+          <strong>${esc(item.className)}: ${esc(item.total)} pending for approval</strong>
+          <small>First pending: ${esc(first.subject || '-')} / ${esc(first.exam || '-')} · Teacher ${esc(first.teacherId || '-')}</small>
+          <div class="bgps-action-meta"><span>${esc(formatDate(first.uploadedAt))}</span><span>${esc(first.sourceType || 'Paper')}</span><span>V${esc(first.version || 1)}</span></div>
+        </div>
+        <button class="bgps-mini-link" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Submitted')">Open Queue</button>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  function notificationListHtml(stats) {
+    const items = [...stats.pending, ...stats.correction, ...stats.approved, ...stats.locked]
+      .sort((a, b) => safe(b.uploadedAt || b.updatedAt).localeCompare(safe(a.uploadedAt || a.updatedAt)))
+      .slice(0, 12);
+    if (!items.length) return '<div class="paper-empty">No submitted paper notifications yet. Drafts are hidden until teacher submission.</div>';
+    return '<div class="bgps-dashboard-list">' + items.map(paper => {
+      const key = isCorrectionPaper(paper) ? 'correction' : isApprovedPaper(paper) || isLockedPaper(paper) ? 'approved' : 'pending';
+      return `<div class="bgps-action-card is-paper ${key === 'correction' ? 'is-correction' : ''}">
+        <div>
+          <strong>${esc(paper.className || '-')} / ${esc(paper.subject || '-')} / ${esc(paper.exam || '-')}</strong>
+          <small>${esc(statusLabel(paper.status))} · Teacher ${esc(paper.teacherId || '-')} ${paper.adminNote ? '· Remarks added' : ''}</small>
+          <div class="bgps-action-meta"><span>${esc(paper.sourceType || 'Paper')}</span><span>V${esc(paper.version || 1)}</span><span>${esc(formatDate(paper.uploadedAt || paper.updatedAt))}</span></div>
+        </div>
+        <div class="paper-actions" style="margin:0;justify-content:flex-end;"><span class="bgps-status-badge ${key}">${esc(key === 'pending' ? 'pending' : key)}</span>${openApprovalButton(paper)}</div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  function remarksListHtml(stats) {
+    const items = [...stats.correction, ...stats.approved, ...stats.locked].filter(p => p.adminNote || isCorrectionPaper(p) || isApprovedPaper(p) || isLockedPaper(p));
+    if (!items.length) return '<div class="paper-empty">No remarks or approval activity yet.</div>';
+    return '<div class="bgps-dashboard-list">' + items.map(paper => {
+      const key = isCorrectionPaper(paper) ? 'correction' : 'approved';
+      return `<div class="bgps-action-card is-paper ${key === 'correction' ? 'is-correction' : ''}">
+        <div>
+          <strong>${esc(paper.className || '-')} / ${esc(paper.subject || '-')} / ${esc(paper.exam || '-')}</strong>
+          <small>${esc(statusLabel(paper.status))} · Teacher ${esc(paper.teacherId || '-')} · ${esc(paper.adminNote || 'No remarks added')}</small>
+          <div class="bgps-action-meta"><span>${esc(paper.sourceType || 'Paper')}</span><span>V${esc(paper.version || 1)}</span><span>${esc(formatDate(paper.uploadedAt || paper.updatedAt))}</span></div>
+        </div>
+        ${openApprovalButton(paper)}
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  function teacherProgressHtml(stats) {
+    const rows = typeof TEACHER_ASSIGNMENTS === 'object'
+      ? Object.entries(TEACHER_ASSIGNMENTS)
+          .filter(([teacher]) => teacher !== 'ADMIN')
+          .flatMap(([teacher, profile]) => {
+            const classes = [...new Set([...(profile.paperClasses || []), ...(profile.classTeacherOf || [])])];
+            return (classes.length ? classes : ['Unassigned']).map(className => ({ teacher, className }));
+          })
+      : [];
+
+    const byKey = new Map(rows.map(row => [`${row.teacher}|${row.className}`, { ...row, total:0, pending:0, correction:0, approved:0, locked:0, latest:null }]));
+    stats.papers.forEach(paper => {
+      const key = `${paper.teacherId || 'Unknown'}|${paper.className || 'Unassigned'}`;
+      if (!byKey.has(key)) byKey.set(key, { teacher:paper.teacherId || 'Unknown', className:paper.className || 'Unassigned', total:0, pending:0, correction:0, approved:0, locked:0, latest:null });
+      const item = byKey.get(key);
+      item.total += 1;
+      if (isPendingPaper(paper)) item.pending += 1;
+      if (isCorrectionPaper(paper)) item.correction += 1;
+      if (isApprovedPaper(paper)) item.approved += 1;
+      if (isLockedPaper(paper)) item.locked += 1;
+      if (!item.latest || safe(paper.uploadedAt || paper.updatedAt).localeCompare(safe(item.latest.uploadedAt || item.latest.updatedAt)) > 0) item.latest = paper;
+    });
+
+    const cards = [...byKey.values()].sort((a, b) => safe(a.teacher).localeCompare(safe(b.teacher), undefined, { numeric:true })).map(item => {
+      const finalCount = item.approved + item.locked;
+      const state = item.correction ? ['Correction Required','correction'] : item.pending ? ['Pending Review','pending'] : finalCount ? ['Approved / Final','approved'] : ['No Submitted Paper','locked'];
+      const latest = item.latest ? `${item.latest.subject || '-'} / ${item.latest.exam || '-'} · ${statusLabel(item.latest.status)}` : 'No submitted paper yet';
+      return `<article class="class-summary-card">
+        <div><strong>${esc(item.teacher)} / ${esc(item.className)}</strong><small>Latest: ${esc(latest)}</small></div>
+        <div class="class-summary-pills">
+          <button class="class-pill ${state[1]}" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','')">${esc(state[0])}</button>
+          <button class="class-pill pending" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Submitted')">Pending ${item.pending}</button>
+          <button class="class-pill correction" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Correction Required')">Correction ${item.correction}</button>
+          <button class="class-pill approved" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Approved')">Approved ${item.approved}</button>
+          <button class="class-pill locked" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${esc(item.className)}','Locked')">Locked ${item.locked}</button>
+        </div>
+      </article>`;
+    }).join('');
+    return `<div class="class-summary-grid">${cards || '<div class="paper-empty">No teacher progress available yet.</div>'}</div>`;
+  }
+
+  function cleanPrincipalHome() {
+    if (!adminUser()) return;
+    const home = document.getElementById('proHomeView');
+    if (!home || !home.classList.contains('active')) return;
+
+    const stats = adminPaperStats();
+    setSummaryCard('Paper Summary', stats.pending.length, 'Click to view class-wise papers pending for approval.', stats.pending.length ? 'warn' : '');
+    setSummaryCard('Remarks', stats.correction.length, 'Click to view returned papers and admin remarks.', stats.correction.length ? 'danger' : '');
+    setSummaryCard('Notifications', stats.pending.length + stats.correction.length + stats.approved.length + stats.locked.length, 'Latest submitted paper alerts only. Drafts are hidden.', stats.pending.length ? 'warn' : '');
+
+    const panel = home.querySelector('.bgps-dashboard-panel');
+    if (!panel) return;
+    const title = safe(panel.querySelector('h2')?.textContent).toLowerCase();
+
+    if (title.includes('paper summary')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Class-wise queue of papers waiting for Principal approval.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = pendingListHtml(stats);
+    } else if (title.includes('notification')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Only submitted paper movement appears here; teacher drafts are not shown.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = notificationListHtml(stats);
+    } else if (title.includes('teacher')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Teacher progress based on submitted papers only. Drafts are excluded.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = teacherProgressHtml(stats);
+    } else if (title.includes('remarks') || title.includes('correction')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Returned papers, approvals and remarks visible to teachers.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = remarksListHtml(stats);
+    } else if (title.includes('class')) {
+      panel.querySelector('p') && (panel.querySelector('p').textContent = 'Class-wise status based on submitted papers only.');
+      const old = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (old) old.outerHTML = teacherProgressHtml(stats);
+    }
+  }
+
+  function afterRenderCleanup() {
+    setTimeout(() => {
+      try { cleanPrincipalHome(); } catch (error) { console.warn('BGPS principal dashboard cleanup failed', error); }
+      try { if (document.getElementById('paperView')?.classList.contains('active')) renderPaperLibrary(); } catch (error) { console.warn('BGPS approval cleanup failed', error); }
+    }, 180);
+    setTimeout(() => { try { cleanPrincipalHome(); } catch (_) {} }, 650);
+  }
+
+  window.bgpsOpenPaperApprovalForClassStatus = async function bgpsOpenPaperApprovalForClassStatusHotfixV36(className, status) {
+    const targetStatus = status || 'Submitted';
+    if (typeof switchTab === 'function') {
+      const result = switchTab(adminUser() ? 'approval' : 'papers');
+      try { await Promise.resolve(result); } catch (_) {}
+    }
+
+    setTimeout(() => {
+      const classFilter = document.getElementById('paperFilterClass');
+      if (classFilter) classFilter.value = className || '';
+      const statusFilter = document.getElementById('paperFilterStatus');
+      if (statusFilter) {
+        ensureApprovalStatusOptions();
+        statusFilter.value = targetStatus;
+      }
+      if (typeof renderPaperLibrary === 'function') renderPaperLibrary();
+    }, 220);
+  };
+  window.bgpsOpenPaperApprovalForClass = className => window.bgpsOpenPaperApprovalForClassStatus(className, 'Submitted');
+
+  const oldSwitchTab = window.switchTab;
+  if (typeof oldSwitchTab === 'function') {
+    window.switchTab = switchTab = function switchTabHotfixV36(tab) {
+      const result = oldSwitchTab.apply(this, arguments);
+      Promise.resolve(result).finally(() => {
+        if (adminUser() && (tab === 'home' || tab === 'approval' || tab === 'papers')) afterRenderCleanup();
+        if (adminUser() && (tab === 'approval' || tab === 'papers')) setTimeout(() => renderPaperLibrary(), 240);
+      });
+      return result;
+    };
+  }
+
+  const oldRefreshHome = window.bgpsProRefreshHome;
+  if (typeof oldRefreshHome === 'function') {
+    window.bgpsProRefreshHome = function bgpsProRefreshHomeHotfixV36() {
+      const result = oldRefreshHome.apply(this, arguments);
+      Promise.resolve(result).finally(afterRenderCleanup);
+      return result;
+    };
+  }
+
+  const oldShowPanel = window.bgpsShowDashboardPanel;
+  if (typeof oldShowPanel === 'function') {
+    window.bgpsShowDashboardPanel = function bgpsShowDashboardPanelHotfixV36(mode) {
+      const result = oldShowPanel.apply(this, arguments);
+      Promise.resolve(result).finally(afterRenderCleanup);
+      return result;
+    };
+  }
+
+  const oldDashboardFilter = window.bgpsDashboardFilterClass;
+  if (typeof oldDashboardFilter === 'function') {
+    window.bgpsDashboardFilterClass = function bgpsDashboardFilterClassHotfixV36(className) {
+      window.__BGPS_DASH_CLASS_FILTER__ = className || '';
+      const result = oldDashboardFilter.apply(this, arguments);
+      Promise.resolve(result).finally(afterRenderCleanup);
+      return result;
+    };
+  }
+
+  const oldLogin = window.loginTeacher;
+  if (typeof oldLogin === 'function') {
+    window.loginTeacher = loginTeacher = function loginTeacherHotfixV36() {
+      const result = oldLogin.apply(this, arguments);
+      Promise.resolve(result).finally(afterRenderCleanup);
+      return result;
+    };
+  }
+
+  const oldUpdatePaperStatus = window.updatePaperStatus;
+  if (typeof oldUpdatePaperStatus === 'function') {
+    window.updatePaperStatus = updatePaperStatus = async function updatePaperStatusHotfixV36(paperId, status, adminNote = '') {
+      const result = await oldUpdatePaperStatus.apply(this, arguments);
+      try {
+        questionPapers = [];
+        paperLibraryLoadedOnce = false;
+        if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true);
+        if (typeof bgpsProRefreshHome === 'function') bgpsProRefreshHome();
+      } catch (_) {}
+      return result;
+    };
+  }
+
+  const oldRequestCorrection = window.requestPaperCorrection;
+  window.requestPaperCorrection = requestPaperCorrection = async function requestPaperCorrectionHotfixV36(paperId) {
+    if (!adminUser()) return;
+    const note = prompt('Write remarks for teacher. This comment will be visible on teacher dashboard and paper card:');
+    if (note === null) return;
+    if (!note.trim()) {
+      alert('Remarks are required before returning the paper.');
+      return;
+    }
+    if (typeof oldUpdatePaperStatus === 'function') {
+      await oldUpdatePaperStatus.call(this, paperId, 'Correction Required', note.trim());
+    } else if (typeof oldRequestCorrection === 'function') {
+      await oldRequestCorrection.call(this, paperId);
+    }
+    try {
+      questionPapers = [];
+      paperLibraryLoadedOnce = false;
+      if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true);
+      if (typeof bgpsProRefreshHome === 'function') bgpsProRefreshHome();
+    } catch (_) {}
+  };
+
+  document.addEventListener('DOMContentLoaded', afterRenderCleanup);
+  afterRenderCleanup();
+})();
+</script>
 </body>
 </html>

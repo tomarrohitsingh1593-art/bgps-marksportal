@@ -1923,6 +1923,7 @@
         let editingRoll = "";
         let questionPapers = [];
         let backendPaperDrafts = [];
+        let paperLibraryLoadedOnce = false;
         let paperSettings = {
             emergencyLock: false,
             marksEntryEnabled: true,
@@ -2772,29 +2773,32 @@
         }
 
         async function loadQuestionPapers(force = false) {
-            if (!currentId || (!force && questionPapers.length)) {
+            // Fast path: command center and tab switching should not hit Apps Script every time.
+            // Refresh button / after submit / after approval still calls force=true.
+            if (!currentId || (!force && paperLibraryLoadedOnce)) {
                 renderPaperLibrary();
                 return;
             }
             const list = document.getElementById('paperCardList');
             const refresh = document.getElementById('paperRefreshBtn');
-            list.innerHTML = '<div class="paper-empty">Loading question papers...</div>';
-            refresh.disabled = true;
+            if (list) list.innerHTML = '<div class="paper-empty">Loading question papers...</div>';
+            if (refresh) refresh.disabled = true;
             try {
                 const result = await paperApi('listPapers');
                 questionPapers = Array.isArray(result.papers) ? result.papers : [];
                 await loadBackendPaperDrafts();
+                paperLibraryLoadedOnce = true;
                 renderPaperLibrary();
             } catch (error) {
                 console.error(error);
                 questionPapers = [];
                 backendPaperDrafts = [];
                 renderPaperLibrary();
-                if (!getPaperLibraryItems().length) {
+                if (list && !getPaperLibraryItems().length) {
                     list.innerHTML = `<div class="paper-empty">Could not load papers: ${escapeHtml(error.message)}</div>`;
                 }
             } finally {
-                refresh.disabled = false;
+                if (refresh) refresh.disabled = false;
             }
         }
 
@@ -4270,20 +4274,32 @@
         }
 
         function parseComposerToQuestions(editorHtml, editorText) {
-            const fallbackText = String(editorText || '').replace(/\u00a0/g, ' ');
+            const fallbackText = String(editorText || '').replace(/ /g, ' ');
             let lines = [];
             try {
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(`<div>${editorHtml || ''}</div>`, 'text/html');
-                doc.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
-                doc.querySelectorAll('p, div, li, h1, h2, h3, h4, tr').forEach(node => {
-                    const value = String(node.innerText || node.textContent || '').replace(/\u00a0/g, ' ').trim();
-                    if (value) lines.push(value);
-                });
+                const doc = parser.parseFromString(`<main id="paperRoot">${editorHtml || ''}</main>`, 'text/html');
+                const root = doc.getElementById('paperRoot');
+                if (root) {
+                    root.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+                    const blockSelector = 'p,li,h1,h2,h3,h4,tr,div';
+                    [...root.querySelectorAll(blockSelector)].forEach(node => {
+                        // CRITICAL: ignore wrapper/container divs. Otherwise the whole paper text is counted once
+                        // from the parent div and again from each child question line, making 40 appear as 80.
+                        const isContainer = [...node.children].some(child =>
+                            child.matches?.(blockSelector) || child.querySelector?.(blockSelector)
+                        );
+                        if (node === root || isContainer) return;
+                        if (node.classList?.contains('paper-instructions')) return;
+                        const value = String(node.innerText || node.textContent || '').replace(/ /g, ' ').trim();
+                        if (value) lines.push(value);
+                    });
+                }
             } catch (_) {
                 lines = [];
             }
             if (!lines.length) lines = fallbackText.split(/\n+/).map(line => line.trim()).filter(Boolean);
+
             const normalizedLines = [];
             lines.forEach(line => {
                 String(line || '').split(/\n+/).map(part => part.trim()).filter(Boolean).forEach(part => normalizedLines.push(part));
@@ -4292,20 +4308,21 @@
             const questions = [];
             let currentSection = 'Section A';
             let pendingText = '';
+            const markRegex = /\[\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*\]/g;
 
             normalizedLines.forEach(rawLine => {
                 const line = String(rawLine || '').replace(/\s+/g, ' ').trim();
                 if (!line) return;
-                if (isManualSectionLine(line) && !/\[\s*\d/.test(line)) {
+                if (isManualSectionLine(line) && !markRegex.test(line)) {
+                    markRegex.lastIndex = 0;
                     currentSection = normalizeManualSectionName(line, currentSection);
                     pendingText = '';
                     return;
                 }
-
-                const markRegex = /\[\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*\]/g;
+                markRegex.lastIndex = 0;
                 const tokens = [...line.matchAll(markRegex)];
                 if (!tokens.length) {
-                    if (!/^(instructions|general instructions|निर्देश)\b/i.test(line)) {
+                    if (!/^(instructions|general instructions|निर्देश)/i.test(line)) {
                         pendingText = pendingText ? `${pendingText} ${line}` : line;
                     }
                     return;
@@ -4753,7 +4770,39 @@
         function buildManualPreviewHtml(meta, bodyHtml) {
             const reading = inferReadingTime(meta.className, meta.maxMarks);
             const safeBody = sanitizeComposerHtmlClient(bodyHtml);
-            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(meta.className)} ${escapeHtml(meta.subject)} ${escapeHtml(meta.exam)}</title><style>@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,'Noto Serif Devanagari','Mangal',serif;color:#111;margin:0;background:#fff;font-size:14px;line-height:1.5}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.header{text-align:center;border-bottom:1.8px solid #111;padding-bottom:8px}.header h1{font-size:24px;margin:0}.exam{font-size:15px;font-weight:800;text-transform:uppercase;margin-top:3px}.term{font-size:13px;font-weight:800;margin-top:2px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;border-bottom:1px solid #555;padding:8px 0 9px;margin-bottom:12px;font-weight:700}.meta div:nth-child(even){text-align:right}.content h2.section-heading{display:flex;justify-content:space-between;margin:17px 0 8px;padding:6px 8px;border:1px solid #222;background:#f0f0f0;font-size:14px}.content h3{font-size:14px;margin:12px 0 6px}.content p{margin:6px 0}.paper-instructions{border:1px solid #777;padding:8px 12px;margin-bottom:12px}.paper-instructions h3{margin:0 0 5px}.paper-instructions ol{margin:4px 0 0 20px;padding:0}.question-line{position:relative;padding-right:48px;break-inside:avoid}.mark-token{float:right;font-weight:800}.or-line{text-align:center;font-weight:800}.content table{width:100%;border-collapse:collapse;margin:8px 0}.content td,.content th{border:1px solid #333;padding:6px}.diagram-box{min-height:120px;border:1.5px dashed #666;display:grid;place-items:center;color:#777;margin:9px 0}.page-break{page-break-after:always;border-top:1px dashed #777;margin:24px 0}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}.paper{padding:0 4px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(meta.boardPattern || inferBoardPattern(meta.className))} QUESTION PAPER</div><div class="term">Exam / Term: ${escapeHtml(meta.exam || '—')}</div></div><div class="meta"><div>Class: ${escapeHtml(meta.className)}</div><div>Subject: ${escapeHtml(meta.subject)}</div><div>Exam / Term: ${escapeHtml(meta.exam || '—')}</div><div>Maximum Marks: ${escapeHtml(meta.maxMarks)}</div><div>Time Allotted: ${escapeHtml(meta.timeAllowed)}</div><div>Reading Time: ${escapeHtml(reading)}</div><div>Date: ____________</div><div>Layout: ISC/ICSE-style school question paper</div></div><div class="content">${safeBody}</div></main></body></html>`;
+            const board = meta.boardPattern || inferBoardPattern(meta.className);
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(meta.className)} ${escapeHtml(meta.subject)} ${escapeHtml(meta.exam)}</title><style>
+                @page{size:A4 portrait;margin:12mm 14mm}
+                *{box-sizing:border-box}
+                body{font-family:Georgia,'Noto Serif Devanagari','Mangal',serif;color:#111;margin:0;background:#fff;font-size:12pt;line-height:1.38}
+                .print{position:sticky;top:0;background:#eef6ff;border-bottom:1px solid #b6ccdf;text-align:center;padding:8px;margin:0 0 10px;font-family:Arial,sans-serif}
+                .print button{padding:8px 14px;border:1px solid #173f68;border-radius:6px;background:#173f68;color:#fff;font-weight:700;cursor:pointer}
+                .paper{width:182mm;min-height:273mm;margin:0 auto;background:#fff}
+                .header{text-align:center;border-bottom:1.5px solid #111;padding-bottom:6px;margin-bottom:7px}
+                .header h1{font-size:18pt;letter-spacing:.4px;margin:0;font-weight:800}
+                .exam{font-size:11pt;font-weight:800;text-transform:uppercase;margin-top:2px}
+                .term{font-size:10.5pt;font-weight:700;margin-top:2px}
+                .meta{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;border-bottom:1px solid #555;padding:6px 0 7px;margin-bottom:9px;font-weight:700;font-size:10.5pt}
+                .meta div:nth-child(even){text-align:right}
+                .content{font-size:11.5pt;line-height:1.42}
+                .content h2.section-heading{display:flex;justify-content:space-between;align-items:center;margin:13px 0 6px;padding:4px 7px;border:1px solid #222;background:#f0f0f0;font-size:11pt;line-height:1.15;break-after:avoid}
+                .content h3{font-size:11pt;margin:9px 0 4px;break-after:avoid}
+                .content p{margin:4.5px 0;orphans:2;widows:2}
+                .paper-instructions{border:1px solid #777;padding:6px 10px;margin-bottom:9px;font-size:10.5pt;line-height:1.32;break-inside:avoid}
+                .paper-instructions h3{margin:0 0 4px;font-size:11pt}
+                .paper-instructions ol{margin:3px 0 0 18px;padding:0}
+                .paper-instructions li{margin:2px 0}
+                .question-line{position:relative;padding-right:14mm;break-inside:avoid;page-break-inside:avoid}
+                .mark-token{float:right;font-weight:800;margin-left:8px}
+                .or-line{text-align:center;font-weight:800;margin:5px 0;break-inside:avoid}
+                .content table{width:100%;border-collapse:collapse;margin:6px 0;break-inside:avoid}
+                .content td,.content th{border:1px solid #333;padding:4px 5px;color:#111;background:#fff;font-size:10.5pt;line-height:1.25}
+                .diagram-box{min-height:42mm;border:1.3px dashed #666;display:grid;place-items:center;color:#777;margin:6px 0 8px;padding:5mm;text-align:center;break-inside:avoid}
+                .diagram-image{max-width:100%;max-height:70mm;object-fit:contain;display:block;margin:5px auto;break-inside:avoid}
+                .page-break{page-break-after:always;border-top:1px dashed #777;margin:16px 0}
+                @media print{.print{display:none}body{font-size:12pt}.paper{width:auto;min-height:auto;margin:0}.content{font-size:11.5pt}}
+                @media(max-width:700px){.paper{width:100%;padding:0 4px}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}
+            </style></head><body><div class="print"><button onclick="window.print()">Print / Save PDF</button></div><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(board)} QUESTION PAPER</div><div class="term">${escapeHtml(meta.exam || '—')}</div></div><div class="meta"><div>Class: ${escapeHtml(meta.className)}</div><div>Subject: ${escapeHtml(meta.subject)}</div><div>Time Allotted: ${escapeHtml(meta.timeAllowed || inferPaperTime(meta.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(meta.maxMarks)}</div><div>Reading Time: ${escapeHtml(reading)}</div><div>Date: ____________</div></div><div class="content">${safeBody}</div></main></body></html>`;
         }
 
         function previewManualPaper() {
@@ -5397,7 +5446,7 @@
       </div>`;
   }
 
-  async function gatherStats() {
+  async function gatherStats(refresh = false) {
     const stats = {
       pendingPapers: 0,
       corrections: 0,
@@ -5416,14 +5465,14 @@
     };
 
     try {
-      if (typeof loadPaperSettings === 'function') await loadPaperSettings(true);
+      if (typeof loadPaperSettings === 'function') await loadPaperSettings(Boolean(refresh));
       stats.portal = getPortalStates();
     } catch (e) {
       stats.actions.push({ title:'Portal controls could not be refreshed', detail:e.message || e, status:'correction' });
     }
 
     try {
-      if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(true);
+      if (typeof loadQuestionPapers === 'function') await loadQuestionPapers(Boolean(refresh));
       const backendPapers = Array.isArray(questionPapers) ? questionPapers : [];
       const backendDrafts = Array.isArray(backendPaperDrafts) ? backendPaperDrafts : [];
       const localDrafts = !isAdminUser() && typeof getLocalDrafts === 'function'
@@ -5788,7 +5837,7 @@
       : 'Marks entry, review & print, question papers and admin corrections in one clean workspace.';
     host.innerHTML = buildTitle(title, subtitle) + '<div class="paper-empty">Refreshing command center...</div>';
 
-    const stats = refresh || !PRO.lastHomeStats ? await gatherStats() : PRO.lastHomeStats;
+    const stats = refresh || !PRO.lastHomeStats ? await gatherStats(Boolean(refresh)) : PRO.lastHomeStats;
     const sidePanel = isAdminUser() ? renderCommandControls(stats) : `
         <section class="bgps-pro-panel"><h2>Quick Moves</h2><p>Priority workflows for the current role.</p>
           <div class="bgps-pro-actions">

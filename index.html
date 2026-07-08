@@ -7381,5 +7381,325 @@ Purpose:
   afterRenderCleanup();
 })();
 </script>
+<!-- BGPS PRINCIPAL DASHBOARD APPROVAL CARDS HOTFIX V3.7
+Paste this block AFTER V3.6 hotfix and BEFORE </body>.
+Purpose:
+1) Principal dashboard removes duplicate Live Class Status / Teacher Progress focus.
+2) Principal dashboard shows approval workflow cards: Pending, Approved, Correction, Locked.
+3) Clicking any card opens the matching papers list.
+-->
+<style>
+  .bgps-approval-tabs {
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+    margin:16px 0;
+  }
+  .bgps-approval-tab {
+    position:relative;
+    overflow:hidden;
+    min-height:116px;
+    padding:16px;
+    text-align:left;
+    cursor:pointer;
+    border:1px solid rgba(169,199,227,.28);
+    border-radius:18px;
+    background:linear-gradient(180deg,rgba(42,78,117,.72),rgba(19,51,84,.88));
+    box-shadow:0 16px 40px rgba(2,18,35,.18), inset 0 1px 0 rgba(255,255,255,.05);
+    color:#fff;
+  }
+  .bgps-approval-tab::before {
+    content:'';
+    position:absolute;
+    inset:0 0 auto;
+    height:2px;
+    background:linear-gradient(90deg,transparent,rgba(246,201,14,.75),transparent);
+    opacity:.55;
+  }
+  .bgps-approval-tab span {
+    display:block;
+    color:#9fc7e8;
+    font-size:9px;
+    letter-spacing:.85px;
+    text-transform:uppercase;
+    font-weight:900;
+  }
+  .bgps-approval-tab strong {
+    display:block;
+    margin-top:8px;
+    color:#fff;
+    font-family:'Inconsolata',monospace;
+    font-size:30px;
+    line-height:1;
+  }
+  .bgps-approval-tab small {
+    display:block;
+    margin-top:9px;
+    color:#c7d9ea;
+    font-size:11px;
+    line-height:1.35;
+  }
+  .bgps-approval-tab.pending strong { color:#fcd34d; }
+  .bgps-approval-tab.approved strong { color:#86efac; }
+  .bgps-approval-tab.correction strong { color:#fca5a5; }
+  .bgps-approval-tab.locked strong { color:#cbd5e1; }
+  .bgps-approval-tab.active {
+    border-color:rgba(246,201,14,.75);
+    box-shadow:0 18px 46px rgba(146,94,0,.16);
+  }
+  .bgps-approval-combo {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    margin-top:10px;
+  }
+  .bgps-approval-combo b {
+    display:block;
+    padding:7px 8px;
+    border-radius:10px;
+    background:rgba(234,244,255,.10);
+    border:1px solid rgba(169,199,227,.24);
+    color:#fff;
+    font-family:'Inconsolata',monospace;
+    font-size:12px;
+  }
+  @media screen and (max-width:1100px) {
+    .bgps-approval-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media screen and (max-width:640px) {
+    .bgps-approval-tabs { grid-template-columns:1fr; }
+  }
+</style>
+
+<script>
+(function bgpsPrincipalApprovalDashboardHotfixV37(){
+  if (window.__BGPS_PRINCIPAL_APPROVAL_DASH_V37__) return;
+  window.__BGPS_PRINCIPAL_APPROVAL_DASH_V37__ = true;
+
+  let activeMode = 'pending';
+
+  function safe(value) { return String(value == null ? '' : value); }
+  function esc(value) {
+    if (typeof escapeHtml === 'function') return escapeHtml(value);
+    return safe(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+  function adminUser() {
+    try { return safe(currentId).toUpperCase() === 'ADMIN'; } catch (_) { return false; }
+  }
+  function norm(status) {
+    return safe(status || '').toLowerCase().replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function isDraft(paper) {
+    const status = norm(paper && paper.status);
+    return Boolean(paper && (paper.isLocalDraft || paper.isBackendDraft || status.includes('draft')));
+  }
+  function isPending(paper) {
+    return ['submitted','pending','pending approval','pending for approval'].includes(norm(paper && paper.status));
+  }
+  function isCorrection(paper) { return norm(paper && paper.status) === 'correction required'; }
+  function isApproved(paper) { return norm(paper && paper.status) === 'approved'; }
+  function isLocked(paper) { return norm(paper && paper.status) === 'locked'; }
+  function paperId(paper) { return safe((paper && (paper.paperId || paper.draftId || paper.id)) || ''); }
+  function paperDate(value) {
+    if (typeof formatPaperDate === 'function') return formatPaperDate(value);
+    if (!value) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? safe(value) : d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  function adminSubmittedPapers() {
+    return (Array.isArray(questionPapers) ? questionPapers : []).filter(paper => !isDraft(paper));
+  }
+  function counts() {
+    const papers = adminSubmittedPapers();
+    return {
+      papers,
+      pending: papers.filter(isPending),
+      approved: papers.filter(isApproved),
+      correction: papers.filter(isCorrection),
+      locked: papers.filter(isLocked)
+    };
+  }
+  function tab(mode, label, value, detail, tone) {
+    const active = activeMode === mode ? ' active' : '';
+    return `<button class="bgps-approval-tab ${tone || ''}${active}" type="button" onclick="bgpsPrincipalApprovalDashboard('${esc(mode)}')">
+      <span>${esc(label)}</span>
+      <strong>${esc(value)}</strong>
+      <small>${esc(detail)}</small>
+    </button>`;
+  }
+  function approvalTabs(c) {
+    return `<div class="bgps-approval-tabs">
+      ${tab('pending', 'Pending Approval', c.pending.length, 'Submitted papers waiting for Principal action.', 'pending')}
+      ${tab('approved', 'Approved Papers', c.approved.length, 'Papers approved by Principal.', 'approved')}
+      ${tab('correction', 'Returned / Remarks', c.correction.length, 'Papers returned to teachers with comments.', 'correction')}
+      ${tab('locked', 'Locked Final', c.locked.length, 'Final papers locked after approval.', 'locked')}
+    </div>`;
+  }
+  function selectedList(c) {
+    if (activeMode === 'approved') return c.approved;
+    if (activeMode === 'correction') return c.correction;
+    if (activeMode === 'locked') return c.locked;
+    return c.pending;
+  }
+  function panelTitle() {
+    if (activeMode === 'approved') return 'Approved Papers';
+    if (activeMode === 'correction') return 'Returned Papers & Remarks';
+    if (activeMode === 'locked') return 'Locked Final Papers';
+    return 'Pending for Approval';
+  }
+  function panelSubtitle() {
+    if (activeMode === 'approved') return 'Approved papers are listed here. You can open, download, print or lock final versions.';
+    if (activeMode === 'correction') return 'Returned papers with Admin remarks are visible to teachers for correction.';
+    if (activeMode === 'locked') return 'Locked papers are final versions. Unlock only if correction is required.';
+    return 'These submitted papers need Principal review. Open paper, then approve or send remarks.';
+  }
+  function statusLabel(paper) {
+    if (isPending(paper)) return 'Pending';
+    if (isCorrection(paper)) return 'Correction';
+    if (isApproved(paper)) return 'Approved';
+    if (isLocked(paper)) return 'Locked';
+    return safe(paper.status || 'Submitted');
+  }
+  function statusClass(paper) {
+    if (isPending(paper)) return 'pending';
+    if (isCorrection(paper)) return 'correction';
+    if (isApproved(paper)) return 'approved';
+    if (isLocked(paper)) return 'locked';
+    return 'pending';
+  }
+  function listHtml(c) {
+    const list = selectedList(c).slice().sort((a,b) =>
+      safe(b.uploadedAt || b.updatedAt || b.createdAt).localeCompare(safe(a.uploadedAt || a.updatedAt || a.createdAt))
+    );
+
+    if (!list.length) {
+      return `<div class="paper-empty">No ${esc(panelTitle().toLowerCase())} right now.</div>`;
+    }
+
+    return `<div class="bgps-dashboard-list">` + list.map(paper => {
+      const id = paperId(paper);
+      const open = id ? `<button class="bgps-mini-link" type="button" onclick="openPaperFile('${esc(id)}','preview')">Open Paper</button>` : '';
+      const approve = id && (isPending(paper) || isCorrection(paper))
+        ? `<button class="bgps-mini-link" type="button" onclick="updatePaperStatus('${esc(id)}','Approved')">Approve</button>`
+        : '';
+      const remarks = id && !isLocked(paper)
+        ? `<button class="bgps-mini-link" type="button" onclick="requestPaperCorrection('${esc(id)}')">Remarks</button>`
+        : '';
+      const lock = id && isApproved(paper)
+        ? `<button class="bgps-mini-link" type="button" onclick="updatePaperStatus('${esc(id)}','Locked')">Lock Final</button>`
+        : '';
+      return `<div class="bgps-action-card is-paper ${isCorrection(paper) ? 'is-correction' : ''}">
+        <div>
+          <strong>${esc(paper.className || '-')} / ${esc(paper.subject || '-')} / ${esc(paper.exam || '-')}</strong>
+          <small>${esc(statusLabel(paper))} · Teacher ${esc(paper.teacherId || '-')} · ${esc(paper.adminNote || paper.note || 'No remark')}</small>
+          <div class="bgps-action-meta">
+            <span>${esc(paper.sourceType || 'Paper')}</span>
+            <span>V${esc(paper.version || 1)}</span>
+            <span>${esc(paperDate(paper.uploadedAt || paper.updatedAt || paper.createdAt))}</span>
+            <span>${esc(paper.maxMarks || '-')} Marks</span>
+          </div>
+        </div>
+        <div class="paper-actions" style="margin:0;justify-content:flex-end;">
+          <span class="bgps-status-badge ${statusClass(paper)}">${esc(statusLabel(paper))}</span>
+          ${open}${approve}${remarks}${lock}
+        </div>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+
+  function renderPrincipalDashboard() {
+    if (!adminUser()) return;
+    const home = document.getElementById('proHomeView');
+    if (!home || !home.classList.contains('active')) return;
+
+    const c = counts();
+
+    // Replace old summary tabs: Live Class Status and Teacher Progress were confusing/duplicated.
+    const oldTabs = home.querySelector('.bgps-summary-tabs');
+    if (oldTabs) oldTabs.outerHTML = approvalTabs(c);
+
+    const panel = home.querySelector('.bgps-dashboard-panel');
+    if (panel) {
+      const h2 = panel.querySelector('h2');
+      const p = panel.querySelector('p');
+      if (h2) h2.textContent = panelTitle();
+      if (p) p.textContent = panelSubtitle();
+
+      const oldContent = panel.querySelector('.bgps-dashboard-list, .class-summary-grid, .paper-empty');
+      if (oldContent) oldContent.outerHTML = listHtml(c);
+    }
+
+    // Small status line in title area when available.
+    const titlebar = home.querySelector('.bgps-pro-titlebar p');
+    if (titlebar) {
+      titlebar.textContent = `Approval workflow: ${c.pending.length} pending · ${c.approved.length} approved · ${c.correction.length} returned · ${c.locked.length} locked. Drafts remain hidden until teacher submits to Admin.`;
+    }
+  }
+
+  window.bgpsPrincipalApprovalDashboard = function(mode) {
+    activeMode = mode || 'pending';
+    renderPrincipalDashboard();
+  };
+
+  window.bgpsOpenApprovalDashboardStatus = async function(status) {
+    if (typeof switchTab === 'function') {
+      const result = switchTab('approval');
+      try { await Promise.resolve(result); } catch (_) {}
+    }
+    setTimeout(() => {
+      const statusFilter = document.getElementById('paperFilterStatus');
+      if (statusFilter) statusFilter.value = status || 'Submitted';
+      if (typeof renderPaperLibrary === 'function') renderPaperLibrary();
+    }, 220);
+  };
+
+  function rerenderSoon() {
+    setTimeout(renderPrincipalDashboard, 180);
+    setTimeout(renderPrincipalDashboard, 650);
+  }
+
+  const oldSwitch = window.switchTab;
+  if (typeof oldSwitch === 'function') {
+    window.switchTab = switchTab = function bgpsSwitchTabV37() {
+      const result = oldSwitch.apply(this, arguments);
+      Promise.resolve(result).finally(rerenderSoon);
+      return result;
+    };
+  }
+
+  const oldRefresh = window.bgpsProRefreshHome;
+  if (typeof oldRefresh === 'function') {
+    window.bgpsProRefreshHome = function bgpsRefreshHomeV37() {
+      const result = oldRefresh.apply(this, arguments);
+      Promise.resolve(result).finally(rerenderSoon);
+      return result;
+    };
+  }
+
+  const oldShowPanel = window.bgpsShowDashboardPanel;
+  if (typeof oldShowPanel === 'function') {
+    window.bgpsShowDashboardPanel = function bgpsShowPanelV37(mode) {
+      const result = oldShowPanel.apply(this, arguments);
+      Promise.resolve(result).finally(() => {
+        activeMode = mode === 'approved' ? 'approved' : mode === 'correction' ? 'correction' : mode === 'locked' ? 'locked' : 'pending';
+        rerenderSoon();
+      });
+      return result;
+    };
+  }
+
+  const oldLogin = window.loginTeacher;
+  if (typeof oldLogin === 'function') {
+    window.loginTeacher = loginTeacher = function bgpsLoginV37() {
+      const result = oldLogin.apply(this, arguments);
+      Promise.resolve(result).finally(rerenderSoon);
+      return result;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', rerenderSoon);
+  rerenderSoon();
+})();
+</script>
 </body>
 </html>

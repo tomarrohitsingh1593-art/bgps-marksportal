@@ -8305,5 +8305,981 @@ Purpose:
   renderSoon();
 })();
 </script>
+<!-- BGPS PRINCIPAL COMMAND CENTER FINAL UI HOTFIX V4.0
+Paste this block AFTER V39 hotfix and BEFORE </body>.
+
+Purpose:
+1) Principal dashboard becomes a clean 4 x 4 command-card grid like the reference mockup.
+2) Removes Live Module Controls from dashboard only; Settings tab remains untouched.
+3) Avoids repeated/duplicate cards while keeping all essentials.
+4) Click any card to open its detail board/table below.
+5) Drafts stay hidden from Principal dashboard until teacher submits.
+-->
+<style>
+  body.bgps-v40-ready #proHomeView.bgps-v40-command-mode .bgps-approval-tabs,
+  body.bgps-v40-ready #proHomeView.bgps-v40-command-mode .bgps-summary-tabs,
+  body.bgps-v40-ready #proHomeView.bgps-v40-command-mode .bgps-pro-two-col,
+  body.bgps-v40-ready #proHomeView.bgps-v40-command-mode #bgpsClassProgressRestore {
+    display:none !important;
+  }
+
+  .bgps-v40-shell {
+    margin-top:14px;
+  }
+
+  .bgps-v40-toolbar {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin:12px 0 16px;
+  }
+
+  .bgps-v40-filters {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .bgps-v40-filters select,
+  .bgps-v40-filters input,
+  .bgps-v40-filters button {
+    min-height:38px;
+    border:1px solid rgba(169,199,227,.26);
+    border-radius:11px;
+    background:rgba(14,46,79,.92);
+    color:#eaf4ff;
+    padding:0 12px;
+    font-family:'Inconsolata',monospace;
+    font-size:12px;
+    outline:none;
+  }
+
+  .bgps-v40-filters button {
+    cursor:pointer;
+    font-weight:900;
+  }
+
+  .bgps-v40-updated {
+    color:#a9c7e3;
+    font-size:11px;
+    font-family:'Inconsolata',monospace;
+  }
+
+  .bgps-v40-grid {
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+    margin:14px 0 18px;
+  }
+
+  .bgps-v40-card {
+    position:relative;
+    overflow:hidden;
+    min-height:142px;
+    padding:16px;
+    border:1px solid rgba(169,199,227,.26);
+    border-radius:18px;
+    cursor:pointer;
+    color:#fff;
+    text-align:left;
+    background:linear-gradient(145deg,rgba(19,60,101,.96),rgba(8,32,60,.98));
+    box-shadow:0 18px 42px rgba(2,14,31,.22), inset 0 1px 0 rgba(255,255,255,.04);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+
+  .bgps-v40-card:hover {
+    transform:translateY(-3px);
+    border-color:rgba(246,201,14,.58);
+    box-shadow:0 22px 48px rgba(2,14,31,.32);
+  }
+
+  .bgps-v40-card.is-active {
+    border-color:rgba(246,201,14,.86);
+    box-shadow:0 20px 52px rgba(154,101,0,.18), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+
+  .bgps-v40-card::before {
+    content:'';
+    position:absolute;
+    inset:0 0 auto;
+    height:3px;
+    background:linear-gradient(90deg,transparent,var(--tile-accent,#f6c90e),transparent);
+    opacity:.85;
+  }
+
+  .bgps-v40-card::after {
+    content:'';
+    position:absolute;
+    right:-42px;
+    top:-42px;
+    width:124px;
+    height:124px;
+    border-radius:999px;
+    background:var(--tile-glow,rgba(246,201,14,.14));
+  }
+
+  .bgps-v40-card-head {
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+
+  .bgps-v40-icon {
+    display:grid;
+    place-items:center;
+    width:46px;
+    height:46px;
+    border-radius:14px;
+    background:var(--tile-soft,rgba(246,201,14,.16));
+    border:1px solid var(--tile-border,rgba(246,201,14,.32));
+    font-size:22px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  }
+
+  .bgps-v40-index {
+    color:#a9c7e3;
+    font-family:'Inconsolata',monospace;
+    font-size:13px;
+    letter-spacing:.08em;
+  }
+
+  .bgps-v40-card h3 {
+    position:relative;
+    z-index:1;
+    margin:12px 0 6px;
+    color:#eaf4ff;
+    font-size:16px;
+    line-height:1.2;
+  }
+
+  .bgps-v40-value {
+    position:relative;
+    z-index:1;
+    display:block;
+    color:var(--tile-accent,#f6c90e);
+    font-family:'Inconsolata',monospace;
+    font-size:29px;
+    font-weight:900;
+    line-height:1;
+  }
+
+  .bgps-v40-sub {
+    position:relative;
+    z-index:1;
+    display:block;
+    margin-top:8px;
+    color:#bfd6eb;
+    font-size:11px;
+    line-height:1.35;
+  }
+
+  .bgps-v40-open {
+    position:absolute;
+    right:14px;
+    bottom:12px;
+    z-index:1;
+    color:#8cd7ff;
+    font-family:'Inconsolata',monospace;
+    font-size:11px;
+    font-weight:900;
+  }
+
+  .bgps-v40-card[data-tone="violet"] { --tile-accent:#a78bfa; --tile-soft:rgba(167,139,250,.16); --tile-border:rgba(167,139,250,.36); --tile-glow:rgba(167,139,250,.16); }
+  .bgps-v40-card[data-tone="sky"] { --tile-accent:#60a5fa; --tile-soft:rgba(96,165,250,.16); --tile-border:rgba(96,165,250,.36); --tile-glow:rgba(96,165,250,.16); }
+  .bgps-v40-card[data-tone="teal"] { --tile-accent:#2dd4bf; --tile-soft:rgba(45,212,191,.16); --tile-border:rgba(45,212,191,.36); --tile-glow:rgba(45,212,191,.16); }
+  .bgps-v40-card[data-tone="red"] { --tile-accent:#fb7185; --tile-soft:rgba(251,113,133,.16); --tile-border:rgba(251,113,133,.36); --tile-glow:rgba(251,113,133,.16); }
+  .bgps-v40-card[data-tone="amber"] { --tile-accent:#f59e0b; --tile-soft:rgba(245,158,11,.17); --tile-border:rgba(245,158,11,.36); --tile-glow:rgba(245,158,11,.17); }
+  .bgps-v40-card[data-tone="green"] { --tile-accent:#22c55e; --tile-soft:rgba(34,197,94,.16); --tile-border:rgba(34,197,94,.36); --tile-glow:rgba(34,197,94,.16); }
+  .bgps-v40-card[data-tone="orange"] { --tile-accent:#fb923c; --tile-soft:rgba(251,146,60,.16); --tile-border:rgba(251,146,60,.36); --tile-glow:rgba(251,146,60,.16); }
+  .bgps-v40-card[data-tone="purple"] { --tile-accent:#c084fc; --tile-soft:rgba(192,132,252,.16); --tile-border:rgba(192,132,252,.36); --tile-glow:rgba(192,132,252,.16); }
+  .bgps-v40-card[data-tone="rose"] { --tile-accent:#f43f5e; --tile-soft:rgba(244,63,94,.16); --tile-border:rgba(244,63,94,.36); --tile-glow:rgba(244,63,94,.16); }
+  .bgps-v40-card[data-tone="blue"] { --tile-accent:#3b82f6; --tile-soft:rgba(59,130,246,.16); --tile-border:rgba(59,130,246,.36); --tile-glow:rgba(59,130,246,.16); }
+  .bgps-v40-card[data-tone="emerald"] { --tile-accent:#10b981; --tile-soft:rgba(16,185,129,.16); --tile-border:rgba(16,185,129,.36); --tile-glow:rgba(16,185,129,.16); }
+  .bgps-v40-card[data-tone="slate"] { --tile-accent:#cbd5e1; --tile-soft:rgba(203,213,225,.13); --tile-border:rgba(203,213,225,.30); --tile-glow:rgba(203,213,225,.12); }
+  .bgps-v40-card[data-tone="mint"] { --tile-accent:#5eead4; --tile-soft:rgba(94,234,212,.15); --tile-border:rgba(94,234,212,.34); --tile-glow:rgba(94,234,212,.15); }
+  .bgps-v40-card[data-tone="danger"] { --tile-accent:#ef4444; --tile-soft:rgba(239,68,68,.15); --tile-border:rgba(239,68,68,.34); --tile-glow:rgba(239,68,68,.16); }
+  .bgps-v40-card[data-tone="indigo"] { --tile-accent:#818cf8; --tile-soft:rgba(129,140,248,.15); --tile-border:rgba(129,140,248,.34); --tile-glow:rgba(129,140,248,.16); }
+  .bgps-v40-card[data-tone="gold"] { --tile-accent:#facc15; --tile-soft:rgba(250,204,21,.15); --tile-border:rgba(250,204,21,.34); --tile-glow:rgba(250,204,21,.16); }
+
+  .bgps-v40-panel {
+    margin-top:16px;
+    border:1px solid rgba(169,199,227,.28);
+    border-radius:20px;
+    background:rgba(13,43,75,.84);
+    box-shadow:0 18px 46px rgba(2,14,31,.22);
+    padding:18px;
+  }
+
+  .bgps-v40-panel-head {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+
+  .bgps-v40-panel-head h2 {
+    margin:0;
+    color:#f6c90e;
+    font-family:'EB Garamond',serif;
+    font-size:25px;
+  }
+
+  .bgps-v40-panel-head p {
+    margin:4px 0 0;
+    color:#cfe4f7;
+    font-size:12px;
+    line-height:1.45;
+  }
+
+  .bgps-v40-panel-tools {
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .bgps-v40-mini {
+    border:0;
+    border-radius:10px;
+    background:#eaf4ff;
+    color:#12395f;
+    cursor:pointer;
+    padding:8px 10px;
+    font-family:'Inconsolata',monospace;
+    font-size:11px;
+    font-weight:900;
+  }
+
+  .bgps-v40-mini.primary {
+    background:#f6c90e;
+    color:#14213d;
+  }
+
+  .bgps-v40-table-wrap {
+    overflow:auto;
+    border:1px solid rgba(169,199,227,.22);
+    border-radius:14px;
+  }
+
+  .bgps-v40-table {
+    width:100%;
+    min-width:940px;
+    border-collapse:collapse;
+    font-size:12px;
+  }
+
+  .bgps-v40-table th,
+  .bgps-v40-table td {
+    border-bottom:1px solid rgba(169,199,227,.16);
+    border-right:1px solid rgba(169,199,227,.12);
+    padding:10px;
+    color:#eaf4ff;
+    vertical-align:middle;
+    white-space:nowrap;
+  }
+
+  .bgps-v40-table th {
+    background:rgba(8,31,58,.72);
+    color:#cfe4f7;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+
+  .bgps-v40-table tr:hover td {
+    background:rgba(255,255,255,.035);
+  }
+
+  .bgps-v40-badge {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:58px;
+    padding:4px 7px;
+    border-radius:999px;
+    background:#eaf4ff;
+    color:#12395f;
+    font-family:'Inconsolata',monospace;
+    font-size:10px;
+    font-weight:900;
+  }
+
+  .bgps-v40-badge.pending { background:#fef3c7; color:#92400e; }
+  .bgps-v40-badge.approved { background:#dcfce7; color:#166534; }
+  .bgps-v40-badge.correction { background:#fee2e2; color:#b91c1c; }
+  .bgps-v40-badge.locked { background:#e2e8f0; color:#334155; }
+  .bgps-v40-badge.danger { background:#fee2e2; color:#b91c1c; }
+  .bgps-v40-badge.good { background:#dcfce7; color:#166534; }
+  .bgps-v40-badge.info { background:#dbeafe; color:#1d4ed8; }
+
+  .bgps-v40-empty {
+    padding:26px;
+    text-align:center;
+    border:1px dashed rgba(169,199,227,.35);
+    border-radius:14px;
+    color:#cfe4f7;
+    background:rgba(255,255,255,.025);
+  }
+
+  .bgps-v40-class-grid {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+  }
+
+  .bgps-v40-class-card {
+    padding:14px;
+    border:1px solid rgba(169,199,227,.24);
+    border-radius:16px;
+    background:linear-gradient(180deg,rgba(42,78,117,.74),rgba(13,43,75,.88));
+  }
+
+  .bgps-v40-class-card strong {
+    color:#fff;
+    font-size:15px;
+  }
+
+  .bgps-v40-class-card small {
+    display:block;
+    margin-top:4px;
+    color:#bcd4ea;
+    font-size:11px;
+  }
+
+  .bgps-v40-pills {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:10px;
+  }
+
+  .bgps-v40-pills span,
+  .bgps-v40-pills button {
+    border:0;
+    padding:5px 8px;
+    border-radius:999px;
+    background:#eaf4ff;
+    color:#315b82;
+    font-family:'Inconsolata',monospace;
+    font-size:10px;
+    font-weight:900;
+  }
+
+  .bgps-v40-pills button {
+    cursor:pointer;
+  }
+
+  body.bgps-theme-white .bgps-v40-card {
+    background:linear-gradient(145deg,#ffffff,#f4f8fd) !important;
+    color:#102a43 !important;
+    border-color:#bfd3e5 !important;
+    box-shadow:0 18px 42px rgba(34,61,87,.12) !important;
+  }
+
+  body.bgps-theme-white .bgps-v40-card h3,
+  body.bgps-theme-white .bgps-v40-table td,
+  body.bgps-theme-white .bgps-v40-class-card strong {
+    color:#12395f !important;
+  }
+
+  body.bgps-theme-white .bgps-v40-sub,
+  body.bgps-theme-white .bgps-v40-index,
+  body.bgps-theme-white .bgps-v40-updated,
+  body.bgps-theme-white .bgps-v40-panel-head p,
+  body.bgps-theme-white .bgps-v40-class-card small {
+    color:#486b8b !important;
+  }
+
+  body.bgps-theme-white .bgps-v40-panel,
+  body.bgps-theme-white .bgps-v40-class-card {
+    background:#ffffff !important;
+    border-color:#bfd3e5 !important;
+  }
+
+  body.bgps-theme-white .bgps-v40-table th {
+    background:#eaf2fb !important;
+    color:#315b82 !important;
+  }
+
+  body.bgps-theme-white .bgps-v40-filters select,
+  body.bgps-theme-white .bgps-v40-filters input,
+  body.bgps-theme-white .bgps-v40-filters button {
+    background:#ffffff !important;
+    color:#12395f !important;
+    border-color:#bfd3e5 !important;
+  }
+
+  @media screen and (max-width:1200px) {
+    .bgps-v40-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .bgps-v40-class-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+
+  @media screen and (max-width:820px) {
+    .bgps-v40-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .bgps-v40-class-grid { grid-template-columns:1fr; }
+  }
+
+  @media screen and (max-width:540px) {
+    .bgps-v40-grid { grid-template-columns:1fr; }
+  }
+</style>
+
+<script>
+(function bgpsPrincipalCommandCenterV40(){
+  if (window.__BGPS_PRINCIPAL_COMMAND_CENTER_V40__) return;
+  window.__BGPS_PRINCIPAL_COMMAND_CENTER_V40__ = true;
+
+  let activeView = 'classProgress';
+
+  function safe(v){ return String(v == null ? '' : v); }
+  function esc(v){
+    if (typeof escapeHtml === 'function') return escapeHtml(v);
+    return safe(v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+  function adminUser(){ try { return safe(window.currentId || currentId).toUpperCase() === 'ADMIN'; } catch(_) { return false; } }
+  function norm(s){ return safe(s).toLowerCase().replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim(); }
+  function isDraft(p){ const s = norm(p && p.status); return Boolean(p && (p.isLocalDraft || p.isBackendDraft || s.includes('draft'))); }
+  function isPendingPaper(p){ return ['submitted','pending','pending approval','pending for approval'].includes(norm(p && p.status)); }
+  function isCorrectionPaper(p){ return norm(p && p.status) === 'correction required'; }
+  function isApprovedPaper(p){ return norm(p && p.status) === 'approved'; }
+  function isLockedPaper(p){ return norm(p && p.status) === 'locked'; }
+  function isSubmittedMarks(r){ return ['submitted','submitted for review','pending approval','pending for approval'].includes(norm(r && (r.status || r.marksStatus || r.resultStatus))); }
+  function isApprovedMarks(r){ return norm(r && (r.status || r.marksStatus || r.resultStatus)) === 'approved'; }
+  function isCorrectionMarks(r){ return norm(r && (r.status || r.marksStatus || r.resultStatus)) === 'correction required'; }
+  function isLockedResult(r){ return ['locked','result locked','final locked'].includes(norm(r && (r.status || r.resultStatus || r.marksStatus))); }
+  function paperId(p){ return safe((p && (p.paperId || p.draftId || p.id)) || ''); }
+  function paperDate(v){
+    if (typeof formatPaperDate === 'function') return formatPaperDate(v);
+    if (!v) return '—';
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? safe(v) : d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  }
+  function pct(n,d){ return d ? Math.round((n/d)*1000)/10 : 0; }
+  function num(v){ const n = Number(v); return Number.isFinite(n) ? n : 0; }
+
+  function allClasses(){
+    try { if (Array.isArray(ALL_CLASSES)) return ALL_CLASSES; } catch(_) {}
+    return ["Playgroup","LKG","UKG","Class 1","Class 2","Class 3","Class 4","Class 5","Class 6","Class 7","Class 8","Class 9","Class 10","Class 11","Class 12"];
+  }
+
+  function allSubjects(){
+    const set = new Set();
+    submittedPapers().forEach(p => p.subject && set.add(p.subject));
+    collectMarksRows().forEach(r => (r.subject || r.subjectName) && set.add(r.subject || r.subjectName));
+    if (!set.size) ['English','Hindi','Maths','Science','Social Studies','Physics','Chemistry','Biology'].forEach(s => set.add(s));
+    return Array.from(set);
+  }
+
+  function teacherForClass(className){
+    try {
+      if (typeof TEACHER_ASSIGNMENTS === 'object') {
+        const found = Object.entries(TEACHER_ASSIGNMENTS).find(([tid,profile]) => {
+          if (tid === 'ADMIN') return false;
+          const cls = [...(profile.classTeacherOf || []), ...(profile.paperClasses || []), ...(profile.marksClasses || [])];
+          return cls.includes(className);
+        });
+        if (found) return found[0];
+      }
+    } catch(_) {}
+    try {
+      if (typeof mapping === 'object') {
+        const found = Object.entries(mapping).find(([tid,cls]) => tid !== 'ADMIN' && cls === className);
+        if (found) return found[0];
+      }
+    } catch(_) {}
+    return '—';
+  }
+
+  function teacherIds(){
+    const set = new Set();
+    try {
+      if (typeof TEACHER_ASSIGNMENTS === 'object') Object.keys(TEACHER_ASSIGNMENTS).forEach(t => t !== 'ADMIN' && set.add(t));
+    } catch(_) {}
+    submittedPapers().forEach(p => p.teacherId && p.teacherId !== 'ADMIN' && set.add(p.teacherId));
+    collectMarksRows().forEach(r => (r.teacherId || r.teacher) && set.add(r.teacherId || r.teacher));
+    return Array.from(set);
+  }
+
+  function submittedPapers(){
+    return (Array.isArray(window.questionPapers) ? window.questionPapers : []).filter(p => !isDraft(p));
+  }
+
+  function collectMarksRows(){
+    const candidates = [
+      window.marksRows, window.marksData, window.marksRecords, window.marksEntries, window.allMarksRecords,
+      window.studentMarks, window.resultRows, window.resultData, window.classResults, window.bgpsMarksRecords,
+      window.__BGPS_MARKS_CACHE__, window.__MARKS_CACHE__
+    ];
+    const rows = [];
+    candidates.forEach(arr => {
+      if (Array.isArray(arr)) arr.forEach(x => {
+        if (x && typeof x === 'object') rows.push(x);
+      });
+    });
+
+    // Try shallow global discovery only for obvious marks/result arrays.
+    try {
+      Object.keys(window).filter(k => /marks|result/i.test(k)).slice(0,80).forEach(k => {
+        const v = window[k];
+        if (Array.isArray(v) && v.length && v.length < 20000) {
+          v.forEach(x => { if (x && typeof x === 'object' && (x.className || x.class || x.subject || x.exam || x.roll || x.rollNo || x.marks || x.obtained)) rows.push(x); });
+        }
+      });
+    } catch(_) {}
+
+    const seen = new Set();
+    return rows.filter(r => {
+      const key = safe(r.id || r.rowId || '') + '|' + safe(r.className || r.class || '') + '|' + safe(r.subject || r.subjectName || '') + '|' + safe(r.exam || r.term || '') + '|' + safe(r.roll || r.rollNo || r.studentId || r.name || '');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function marksGroups(){
+    const passCut = Number(window.BGPS_PASS_PERCENT || window.passPercent || 33);
+    const map = new Map();
+
+    collectMarksRows().forEach(r => {
+      const className = r.className || r.class || r.standard || 'Unknown Class';
+      const subject = r.subject || r.subjectName || 'Unknown Subject';
+      const exam = r.exam || r.examName || r.term || r.testName || 'Current Term';
+      const teacher = r.teacherId || r.teacher || r.updatedBy || teacherForClass(className);
+      const key = `${className}|${subject}|${exam}`;
+      if (!map.has(key)) {
+        map.set(key, { className, subject, exam, teacher, total:0, entered:0, pending:0, pass:0, fail:0, absent:0, highest:null, lowest:null, sum:0, status:'Pending Entry' });
+      }
+      const g = map.get(key);
+      g.total += 1;
+
+      const absent = /absent|ab/i.test(safe(r.status || r.attendance || r.remarks));
+      const maxMarks = num(r.maxMarks || r.totalMarks || r.outOf || r.mm || 100) || 100;
+      const obtainedRaw = r.obtained ?? r.marks ?? r.score ?? r.mark ?? r.total ?? r.totalObtained;
+      const obtained = Number(obtainedRaw);
+
+      if (absent) {
+        g.absent += 1;
+      } else if (Number.isFinite(obtained)) {
+        g.entered += 1;
+        g.sum += obtained;
+        g.highest = g.highest == null ? obtained : Math.max(g.highest, obtained);
+        g.lowest = g.lowest == null ? obtained : Math.min(g.lowest, obtained);
+        const percent = maxMarks ? obtained / maxMarks * 100 : 0;
+        if (percent >= passCut) g.pass += 1;
+        else g.fail += 1;
+      } else {
+        g.pending += 1;
+      }
+
+      const st = norm(r.status || r.marksStatus || r.resultStatus);
+      if (st.includes('locked')) g.status = 'Locked';
+      else if (st === 'approved') g.status = 'Approved';
+      else if (st.includes('correction')) g.status = 'Correction Required';
+      else if (st.includes('submitted') || st.includes('pending approval')) g.status = 'Submitted';
+    });
+
+    return Array.from(map.values()).map(g => {
+      if (!g.pending && g.entered && g.status === 'Pending Entry') g.status = 'Submitted';
+      g.avg = g.entered ? Math.round((g.sum / g.entered) * 10) / 10 : 0;
+      g.passPercent = g.entered ? Math.round((g.pass / g.entered) * 1000) / 10 : 0;
+      return g;
+    });
+  }
+
+  function classRows(){
+    const classes = allClasses().map(className => ({
+      className,
+      teacher: teacherForClass(className),
+      papers:0, pendingPapers:0, returnedPapers:0, approvedPapers:0, lockedPapers:0,
+      marksPending:0, marksSubmitted:0, marksApproved:0,
+      passPercent:0, fail:0, latest:null
+    }));
+    const map = new Map(classes.map(c => [c.className, c]));
+
+    submittedPapers().forEach(p => {
+      const cls = p.className || 'Unassigned';
+      if (!map.has(cls)) {
+        const r = { className:cls, teacher:p.teacherId || '—', papers:0, pendingPapers:0, returnedPapers:0, approvedPapers:0, lockedPapers:0, marksPending:0, marksSubmitted:0, marksApproved:0, passPercent:0, fail:0, latest:null };
+        classes.push(r); map.set(cls,r);
+      }
+      const r = map.get(cls);
+      r.papers++;
+      if (isPendingPaper(p)) r.pendingPapers++;
+      if (isCorrectionPaper(p)) r.returnedPapers++;
+      if (isApprovedPaper(p)) r.approvedPapers++;
+      if (isLockedPaper(p)) r.lockedPapers++;
+      const stamp = safe(p.uploadedAt || p.updatedAt || p.createdAt);
+      const old = safe(r.latest && (r.latest.uploadedAt || r.latest.updatedAt || r.latest.createdAt));
+      if (!r.latest || stamp.localeCompare(old) > 0) r.latest = p;
+      if ((!r.teacher || r.teacher === '—') && p.teacherId) r.teacher = p.teacherId;
+    });
+
+    marksGroups().forEach(g => {
+      const cls = g.className || 'Unassigned';
+      if (!map.has(cls)) {
+        const r = { className:cls, teacher:g.teacher || '—', papers:0, pendingPapers:0, returnedPapers:0, approvedPapers:0, lockedPapers:0, marksPending:0, marksSubmitted:0, marksApproved:0, passPercent:0, fail:0, latest:null };
+        classes.push(r); map.set(cls,r);
+      }
+      const r = map.get(cls);
+      if (g.pending || norm(g.status) === 'pending entry') r.marksPending++;
+      if (norm(g.status) === 'submitted') r.marksSubmitted++;
+      if (norm(g.status) === 'approved' || norm(g.status) === 'locked') r.marksApproved++;
+      r.fail += g.fail;
+    });
+
+    classes.forEach(r => {
+      const group = marksGroups().filter(g => g.className === r.className && g.entered);
+      if (group.length) r.passPercent = Math.round((group.reduce((s,g)=>s+g.passPercent,0)/group.length)*10)/10;
+    });
+
+    return classes;
+  }
+
+  function paperCounts(){
+    const p = submittedPapers();
+    return {
+      total:p.length,
+      pending:p.filter(isPendingPaper),
+      returned:p.filter(isCorrectionPaper),
+      approved:p.filter(isApprovedPaper),
+      locked:p.filter(isLockedPaper)
+    };
+  }
+
+  function marksCounts(){
+    const g = marksGroups();
+    return {
+      total:g.length,
+      pending:g.filter(x => x.pending || norm(x.status) === 'pending entry'),
+      submitted:g.filter(x => norm(x.status) === 'submitted'),
+      correction:g.filter(x => norm(x.status) === 'correction required'),
+      approved:g.filter(x => norm(x.status) === 'approved'),
+      locked:g.filter(x => norm(x.status) === 'locked'),
+      fail:g.reduce((s,x)=>s+x.fail,0),
+      absent:g.reduce((s,x)=>s+x.absent,0),
+      entered:g.reduce((s,x)=>s+x.entered,0),
+      pass:g.reduce((s,x)=>s+x.pass,0)
+    };
+  }
+
+  function filteredClassRows(){
+    const cls = document.getElementById('bgpsV40ClassFilter')?.value || '';
+    return classRows().filter(r => !cls || r.className === cls);
+  }
+
+  function card(id, index, icon, title, value, sub, tone){
+    return `<button type="button" class="bgps-v40-card ${activeView===id?'is-active':''}" data-tone="${esc(tone)}" onclick="bgpsV40Open('${esc(id)}')">
+      <div class="bgps-v40-card-head">
+        <span class="bgps-v40-icon">${esc(icon)}</span>
+        <span class="bgps-v40-index">${String(index).padStart(2,'0')}</span>
+      </div>
+      <h3>${esc(title)}</h3>
+      <span class="bgps-v40-value">${esc(value)}</span>
+      <span class="bgps-v40-sub">${esc(sub)}</span>
+      <span class="bgps-v40-open">View Details →</span>
+    </button>`;
+  }
+
+  function buildCards(){
+    const pc = paperCounts();
+    const mc = marksCounts();
+    const cr = classRows();
+    const teachers = teacherIds();
+    const subjects = allSubjects();
+    const activeClasses = cr.filter(x => x.papers || x.marksPending || x.marksSubmitted || x.marksApproved).length;
+    const passRate = mc.entered ? pct(mc.pass, mc.entered) : 0;
+    const critical = pc.pending.length + pc.returned.length + mc.pending.length + mc.correction.length + mc.fail;
+    const subjectActive = subjects.filter(s => submittedPapers().some(p => p.subject === s) || marksGroups().some(g => g.subject === s)).length;
+
+    const cards = [
+      ['classProgress',1,'📊','Class Progress',`${activeClasses}/${cr.length}`,'Class-wise academic movement.','violet'],
+      ['teacherProgress',2,'👨‍🏫','Teacher Progress',`${teachers.length}`,'Teacher-wise pending and completed work.','sky'],
+      ['subjectProgress',3,'📚','Subject Coverage',`${subjectActive}/${subjects.length}`,'Subject-wise paper and marks coverage.','teal'],
+      ['criticalAlerts',4,'🔔','Critical Alerts',critical,'Urgent pending, returned, fail and missing work.','red'],
+
+      ['paperQueue',5,'⏳','Paper Queue',pc.pending.length,'Submitted papers waiting for approval.','amber'],
+      ['paperApproved',6,'✅','Paper Approved',pc.approved.length,'Papers checked and approved.','green'],
+      ['paperReturned',7,'↩️','Returned Papers',pc.returned.length,'Papers sent back with remarks.','orange'],
+      ['paperLocked',8,'🔒','Final Papers',pc.locked.length,'Locked final question papers.','purple'],
+
+      ['marksPending',9,'📝','Marks Pending',mc.pending.length,'Marks entry not completed/submitted.','rose'],
+      ['marksReview',10,'📨','Marks Review',mc.submitted.length,'Submitted marks waiting for review.','blue'],
+      ['marksCorrections',11,'🛠️','Marks Corrections',mc.correction.length,'Marks returned for correction.','danger'],
+      ['resultLocked',12,'🧾','Result Locked',mc.locked.length,'Final result groups locked.','slate'],
+
+      ['resultSummary',13,'📈','Result Summary',mc.entered ? `${passRate}%` : '—','Overall pass percentage.','mint'],
+      ['failRisk',14,'⚠️','Fail / At-risk',mc.fail,'Students requiring attention.','danger'],
+      ['classResult',15,'🏫','Class Result',`${cr.filter(x=>x.passPercent).length}/${cr.length}`,'Class-wise result comparison.','indigo'],
+      ['subjectResult',16,'📘','Subject Result',subjects.length,'Subject-wise result overview.','gold']
+    ];
+    return cards.map(c => card(...c)).join('');
+  }
+
+  function statusBadge(text){
+    const n = norm(text);
+    let cls = 'info';
+    if (n.includes('pending') || n.includes('submitted')) cls = 'pending';
+    if (n.includes('approved')) cls = 'approved';
+    if (n.includes('correction') || n.includes('returned')) cls = 'correction';
+    if (n.includes('locked')) cls = 'locked';
+    if (n.includes('fail') || n.includes('urgent')) cls = 'danger';
+    if (n.includes('good') || n.includes('pass')) cls = 'good';
+    return `<span class="bgps-v40-badge ${cls}">${esc(text)}</span>`;
+  }
+
+  function table(headers, rows){
+    if (!rows.length) return '<div class="bgps-v40-empty">No data available yet. Data will appear after teacher submission.</div>';
+    return `<div class="bgps-v40-table-wrap"><table class="bgps-v40-table"><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  }
+
+  function paperRow(p){
+    const id = paperId(p);
+    const status = isPendingPaper(p) ? 'Pending' : isCorrectionPaper(p) ? 'Returned' : isApprovedPaper(p) ? 'Approved' : isLockedPaper(p) ? 'Locked' : (p.status || 'Submitted');
+    const actions = id ? `
+      <button class="bgps-v40-mini" onclick="openPaperFile('${esc(id)}','preview')">Open</button>
+      ${!isApprovedPaper(p)&&!isLockedPaper(p)?`<button class="bgps-v40-mini primary" onclick="updatePaperStatus('${esc(id)}','Approved')">Approve</button>`:''}
+      ${!isLockedPaper(p)?`<button class="bgps-v40-mini" onclick="requestPaperCorrection('${esc(id)}')">Remarks</button>`:''}
+      ${isApprovedPaper(p)?`<button class="bgps-v40-mini" onclick="updatePaperStatus('${esc(id)}','Locked')">Lock</button>`:''}
+    ` : '—';
+    return `<tr>
+      <td>${esc(p.className||'-')}</td><td>${esc(p.subject||'-')}</td><td>${esc(p.teacherId||'-')}</td><td>${esc(p.exam||'-')}</td>
+      <td>${statusBadge(status)}</td><td>${esc(p.maxMarks||'-')}</td><td>${esc(paperDate(p.uploadedAt||p.updatedAt||p.createdAt))}</td><td>${actions}</td>
+    </tr>`;
+  }
+
+  function marksRow(g){
+    return `<tr>
+      <td>${esc(g.className)}</td><td>${esc(g.subject)}</td><td>${esc(g.teacher||'-')}</td><td>${esc(g.exam)}</td>
+      <td>${statusBadge(g.status)}</td><td>${esc(g.total)}</td><td>${esc(g.entered)}</td><td>${esc(g.pending)}</td>
+      <td>${esc(g.pass)}</td><td>${esc(g.fail)}</td><td>${esc(g.absent)}</td><td>${esc(g.passPercent)}%</td>
+      <td>${esc(g.avg||'-')}</td><td>${esc(g.highest==null?'-':g.highest)}</td><td>${esc(g.lowest==null?'-':g.lowest)}</td>
+    </tr>`;
+  }
+
+  function classGrid(rows){
+    if (!rows.length) return '<div class="bgps-v40-empty">No class data available yet.</div>';
+    return `<div class="bgps-v40-class-grid">${rows.map(r => {
+      const latest = r.latest ? `${r.latest.subject || '-'} / ${r.latest.exam || '-'} · ${r.latest.status || 'Submitted'} · ${paperDate(r.latest.uploadedAt || r.latest.updatedAt || r.latest.createdAt)}` : 'No submitted paper yet';
+      return `<article class="bgps-v40-class-card">
+        <strong>${esc(r.className)} ${r.teacher && r.teacher !== '—' ? '· ' + esc(r.teacher) : ''}</strong>
+        <small>Latest: ${esc(latest)}</small>
+        <div class="bgps-v40-pills">
+          <button onclick="bgpsOpenPaperApprovalForClassStatus && bgpsOpenPaperApprovalForClassStatus('${esc(r.className)}','Submitted')">Papers ${esc(r.papers)}</button>
+          <span>Pending ${esc(r.pendingPapers)}</span>
+          <span>Returned ${esc(r.returnedPapers)}</span>
+          <span>Approved ${esc(r.approvedPapers)}</span>
+          <span>Marks Pending ${esc(r.marksPending)}</span>
+          <span>Pass ${esc(r.passPercent || 0)}%</span>
+          <span>Fail ${esc(r.fail)}</span>
+        </div>
+      </article>`;
+    }).join('')}</div>`;
+  }
+
+  function teacherProgressRows(){
+    const teachers = teacherIds();
+    const papers = submittedPapers();
+    const marks = marksGroups();
+    return teachers.map(t => {
+      const tp = papers.filter(p => p.teacherId === t);
+      const tm = marks.filter(m => safe(m.teacher) === safe(t));
+      const pending = tp.filter(isPendingPaper).length + tm.filter(m => m.pending || norm(m.status)==='pending entry').length;
+      const returned = tp.filter(isCorrectionPaper).length + tm.filter(m => norm(m.status)==='correction required').length;
+      const completed = tp.filter(p => isApprovedPaper(p)||isLockedPaper(p)).length + tm.filter(m => ['approved','locked'].includes(norm(m.status))).length;
+      return `<tr><td>${esc(t)}</td><td>${esc(tp.length)}</td><td>${esc(tm.length)}</td><td>${statusBadge(pending ? 'Pending '+pending : 'Clear')}</td><td>${statusBadge(returned ? 'Returned '+returned : 'No Return')}</td><td>${esc(completed)}</td></tr>`;
+    });
+  }
+
+  function subjectProgressRows(){
+    return allSubjects().map(s => {
+      const p = submittedPapers().filter(x => x.subject === s);
+      const m = marksGroups().filter(x => x.subject === s);
+      const pending = p.filter(isPendingPaper).length + m.filter(x => x.pending || norm(x.status)==='pending entry').length;
+      const approved = p.filter(x => isApprovedPaper(x)||isLockedPaper(x)).length + m.filter(x => ['approved','locked'].includes(norm(x.status))).length;
+      const fail = m.reduce((sum,x)=>sum+x.fail,0);
+      return `<tr><td>${esc(s)}</td><td>${esc(p.length)}</td><td>${esc(m.length)}</td><td>${statusBadge(pending ? 'Pending '+pending : 'On Track')}</td><td>${esc(approved)}</td><td>${esc(fail)}</td></tr>`;
+    });
+  }
+
+  function classResultRows(){
+    return filteredClassRows().map(r => `<tr><td>${esc(r.className)}</td><td>${esc(r.teacher)}</td><td>${esc(r.papers)}</td><td>${esc(r.pendingPapers)}</td><td>${esc(r.approvedPapers+r.lockedPapers)}</td><td>${esc(r.marksPending)}</td><td>${esc(r.passPercent || 0)}%</td><td>${esc(r.fail)}</td><td>${statusBadge(r.fail ? 'Attention' : (r.passPercent ? 'Good' : 'No Result'))}</td></tr>`);
+  }
+
+  function subjectResultRows(){
+    return allSubjects().map(s => {
+      const g = marksGroups().filter(x => x.subject === s);
+      const entered = g.reduce((sum,x)=>sum+x.entered,0);
+      const pass = g.reduce((sum,x)=>sum+x.pass,0);
+      const fail = g.reduce((sum,x)=>sum+x.fail,0);
+      const avg = g.length ? Math.round((g.reduce((sum,x)=>sum+x.avg,0)/g.length)*10)/10 : 0;
+      return `<tr><td>${esc(s)}</td><td>${esc(g.length)}</td><td>${esc(entered)}</td><td>${esc(pass)}</td><td>${esc(fail)}</td><td>${esc(entered?pct(pass,entered):0)}%</td><td>${esc(avg||'-')}</td><td>${statusBadge(fail ? 'Review' : (entered ? 'Good' : 'No Result'))}</td></tr>`;
+    });
+  }
+
+  function alertsRows(){
+    const rows = [];
+    paperCounts().pending.forEach(p => rows.push(`<tr><td>Paper Approval</td><td>${esc(p.className||'-')}</td><td>${esc(p.subject||'-')}</td><td>${esc(p.teacherId||'-')}</td><td>${statusBadge('Pending')}</td><td>${esc(paperDate(p.uploadedAt||p.createdAt))}</td></tr>`));
+    paperCounts().returned.forEach(p => rows.push(`<tr><td>Returned Paper</td><td>${esc(p.className||'-')}</td><td>${esc(p.subject||'-')}</td><td>${esc(p.teacherId||'-')}</td><td>${statusBadge('Correction')}</td><td>${esc(p.adminNote||p.remarks||'Remarks sent')}</td></tr>`));
+    marksGroups().filter(g => g.pending || g.fail || norm(g.status)==='correction required').forEach(g => rows.push(`<tr><td>Marks/Result</td><td>${esc(g.className)}</td><td>${esc(g.subject)}</td><td>${esc(g.teacher||'-')}</td><td>${statusBadge(g.fail ? 'Fail '+g.fail : (g.pending ? 'Marks Pending' : g.status))}</td><td>${esc(g.exam)}</td></tr>`));
+    return rows;
+  }
+
+  function panelContent(){
+    const pc = paperCounts();
+    const mg = marksGroups();
+
+    const panels = {
+      classProgress:['📊 Class Progress','Class-wise submitted paper, marks and result movement. Drafts hidden.', classGrid(filteredClassRows())],
+      teacherProgress:['👨‍🏫 Teacher Progress','Teacher-wise work status across papers and marks.', table(['Teacher','Papers','Marks Groups','Pending','Returned','Completed'], teacherProgressRows())],
+      subjectProgress:['📚 Subject Coverage','Subject-wise academic completion and risk overview.', table(['Subject','Papers','Marks Groups','Pending','Completed','Fail Count'], subjectProgressRows())],
+      criticalAlerts:['🔔 Critical Alerts','Urgent items needing Principal attention.', table(['Area','Class','Subject','Teacher','Status','Note/Date'], alertsRows())],
+
+      paperQueue:['⏳ Paper Queue','Submitted papers waiting for Principal review.', table(['Class','Subject','Teacher','Exam','Status','Marks','Submitted On','Action'], pc.pending.map(paperRow))],
+      paperApproved:['✅ Paper Approved','Approved papers ready for final use/locking.', table(['Class','Subject','Teacher','Exam','Status','Marks','Approved On','Action'], pc.approved.map(paperRow))],
+      paperReturned:['↩️ Returned Papers','Papers returned to teacher with remarks.', table(['Class','Subject','Teacher','Exam','Status','Marks','Returned On','Action'], pc.returned.map(paperRow))],
+      paperLocked:['🔒 Final Papers','Locked final question papers.', table(['Class','Subject','Teacher','Exam','Status','Marks','Locked On','Action'], pc.locked.map(paperRow))],
+
+      marksPending:['📝 Marks Pending','Marks entry not completed or not submitted.', table(['Class','Subject','Teacher','Exam','Status','Students','Entered','Pending','Pass','Fail','Absent','Pass %','Avg','Highest','Lowest'], mg.filter(g=>g.pending || norm(g.status)==='pending entry').map(marksRow))],
+      marksReview:['📨 Marks Review','Submitted marks waiting for Principal review.', table(['Class','Subject','Teacher','Exam','Status','Students','Entered','Pending','Pass','Fail','Absent','Pass %','Avg','Highest','Lowest'], mg.filter(g=>norm(g.status)==='submitted').map(marksRow))],
+      marksCorrections:['🛠️ Marks Corrections','Marks/result groups returned for correction.', table(['Class','Subject','Teacher','Exam','Status','Students','Entered','Pending','Pass','Fail','Absent','Pass %','Avg','Highest','Lowest'], mg.filter(g=>norm(g.status)==='correction required').map(marksRow))],
+      resultLocked:['🧾 Result Locked','Final locked result groups.', table(['Class','Subject','Teacher','Exam','Status','Students','Entered','Pending','Pass','Fail','Absent','Pass %','Avg','Highest','Lowest'], mg.filter(g=>norm(g.status)==='locked').map(marksRow))],
+
+      resultSummary:['📈 Result Summary','Overall marks analysis with pass/fail, average, highest and lowest.', table(['Class','Subject','Teacher','Exam','Status','Students','Entered','Pending','Pass','Fail','Absent','Pass %','Avg','Highest','Lowest'], mg.map(marksRow))],
+      failRisk:['⚠️ Fail / At-risk Students','Fail and borderline risk counts by class-subject group.', table(['Class','Subject','Teacher','Exam','Status','Students','Entered','Pending','Pass','Fail','Absent','Pass %','Avg','Highest','Lowest'], mg.filter(g=>g.fail || g.passPercent < 50 && g.entered).map(marksRow))],
+      classResult:['🏫 Class-wise Result','Class-level result and work completion comparison.', table(['Class','Teacher','Papers','Paper Pending','Paper Approved/Locked','Marks Pending','Pass %','Fail','Status'], classResultRows())],
+      subjectResult:['📘 Subject-wise Result','Subject-level performance and risk comparison.', table(['Subject','Marks Groups','Students Entered','Pass','Fail','Pass %','Avg Marks','Status'], subjectResultRows())]
+    };
+
+    return panels[activeView] || panels.classProgress;
+  }
+
+  function classOptions(){
+    return ['<option value="">All Classes</option>'].concat(allClasses().map(c => `<option value="${esc(c)}">${esc(c)}</option>`)).join('');
+  }
+
+  function ensureShell(){
+    if (!adminUser()) return;
+    const home = document.getElementById('proHomeView');
+    if (!home) return;
+
+    document.body.classList.add('bgps-v40-ready');
+    home.classList.add('bgps-v40-command-mode');
+
+    let shell = document.getElementById('bgpsV40Shell');
+    if (!shell) {
+      shell = document.createElement('section');
+      shell.id = 'bgpsV40Shell';
+      shell.className = 'bgps-v40-shell';
+
+      const hero = home.querySelector('.bgps-pro-hero, .bgps-pro-titlebar, .bgps-command-hero');
+      if (hero && hero.parentNode) hero.parentNode.insertBefore(shell, hero.nextSibling);
+      else home.prepend(shell);
+    }
+
+    const currentClass = document.getElementById('bgpsV40ClassFilter')?.value || '';
+    const currentTerm = document.getElementById('bgpsV40TermFilter')?.value || '';
+
+    const panel = panelContent();
+
+    shell.innerHTML = `
+      <div class="bgps-v40-toolbar">
+        <div class="bgps-v40-filters">
+          <select id="bgpsV40TermFilter" onchange="bgpsV40Refresh()">
+            <option value="">All Terms / Exams</option>
+            <option value="Unit Test">Unit Test</option>
+            <option value="Half Yearly">Half Yearly</option>
+            <option value="Annual">Annual</option>
+          </select>
+          <select id="bgpsV40ClassFilter" onchange="bgpsV40Refresh()">${classOptions()}</select>
+          <button type="button" onclick="bgpsV40Refresh()">⟳ Refresh</button>
+          <button type="button" onclick="typeof switchTab==='function' && switchTab('approval')">Open Paper Approval</button>
+        </div>
+        <div class="bgps-v40-updated">Last updated: ${esc(new Date().toLocaleString('en-IN'))}</div>
+      </div>
+      <div class="bgps-v40-grid">${buildCards()}</div>
+      <section class="bgps-v40-panel">
+        <div class="bgps-v40-panel-head">
+          <div>
+            <h2>${esc(panel[0])}</h2>
+            <p>${esc(panel[1])}</p>
+          </div>
+          <div class="bgps-v40-panel-tools">
+            <button class="bgps-v40-mini" onclick="bgpsV40Refresh()">Refresh</button>
+            <button class="bgps-v40-mini primary" onclick="typeof switchTab==='function' && switchTab('approval')">Paper Approval</button>
+          </div>
+        </div>
+        ${panel[2]}
+      </section>
+    `;
+
+    const classFilter = document.getElementById('bgpsV40ClassFilter');
+    const termFilter = document.getElementById('bgpsV40TermFilter');
+    if (classFilter) classFilter.value = currentClass;
+    if (termFilter) termFilter.value = currentTerm;
+  }
+
+  window.bgpsV40Open = function(view){
+    activeView = view || 'classProgress';
+    ensureShell();
+    const shell = document.getElementById('bgpsV40Shell');
+    if (shell) shell.scrollIntoView({behavior:'smooth', block:'start'});
+  };
+
+  window.bgpsV40Refresh = function(){
+    ensureShell();
+  };
+
+  function renderSoon(){
+    setTimeout(ensureShell, 180);
+    setTimeout(ensureShell, 700);
+  }
+
+  const oldSwitch = window.switchTab;
+  if (typeof oldSwitch === 'function') {
+    window.switchTab = switchTab = function bgpsSwitchTabV40(){
+      const result = oldSwitch.apply(this, arguments);
+      Promise.resolve(result).finally(renderSoon);
+      return result;
+    };
+  }
+
+  const oldRefresh = window.bgpsProRefreshHome;
+  if (typeof oldRefresh === 'function') {
+    window.bgpsProRefreshHome = function bgpsRefreshHomeV40(){
+      const result = oldRefresh.apply(this, arguments);
+      Promise.resolve(result).finally(renderSoon);
+      return result;
+    };
+  }
+
+  const oldLogin = window.loginTeacher;
+  if (typeof oldLogin === 'function') {
+    window.loginTeacher = loginTeacher = function bgpsLoginV40(){
+      const result = oldLogin.apply(this, arguments);
+      Promise.resolve(result).finally(renderSoon);
+      return result;
+    };
+  }
+
+  const oldUpdate = window.updatePaperStatus;
+  if (typeof oldUpdate === 'function') {
+    window.updatePaperStatus = updatePaperStatus = async function bgpsUpdatePaperStatusV40(){
+      const result = await oldUpdate.apply(this, arguments);
+      renderSoon();
+      return result;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', renderSoon);
+  renderSoon();
+})();
+</script>
 </body>
 </html>

@@ -10777,6 +10777,1097 @@ What it does:
   mountSoon(false);
 })();
 </script>
+<!-- ============================================================================
+BGPS PRINCIPAL COMMAND CENTER - EXECUTIVE MIS FINAL V4.2
+Paste this block AFTER all old dashboard patches and BEFORE </body>.
+
+This version intentionally removes the "game card" look.
+It hides earlier V36-V41 / old Principal dashboard panels and renders one clean
+executive MIS-style dashboard:
+- Thin KPI strip
+- Action queue
+- Class analysis
+- Paper approval analysis
+- Marks/result analysis
+- Teacher and subject progress
+No fake backend overrides.
+============================================================================ -->
+
+<style id="bgpsPCCExecutiveMISV42CSS">
+  /* Hard reset only inside Principal home, so Settings/Marks/Paper tabs stay safe */
+  #proHomeView.bgps-pcc-exec-v42 > :not(.bgps-pro-titlebar):not(.bgps-pro-hero):not(.bgps-command-hero):not(#bgpsPCCExecutiveRoot) {
+    display: none !important;
+  }
+
+  #proHomeView.bgps-pcc-exec-v42 #bgpsPCCCleanRoot,
+  #proHomeView.bgps-pcc-exec-v42 #bgpsV40Shell,
+  #proHomeView.bgps-pcc-exec-v42 #bgpsClassProgressRestore,
+  #proHomeView.bgps-pcc-exec-v42 .bgps-approval-tabs,
+  #proHomeView.bgps-pcc-exec-v42 .bgps-summary-tabs,
+  #proHomeView.bgps-pcc-exec-v42 .bgps-pro-two-col,
+  #proHomeView.bgps-pcc-exec-v42 .bgps-dashboard-panel,
+  #proHomeView.bgps-pcc-exec-v42 .bgps-live-module-controls {
+    display: none !important;
+  }
+
+  #proHomeView.bgps-pcc-exec-v42 #bgpsPCCExecutiveRoot {
+    display: block !important;
+  }
+
+  #bgpsPCCExecutiveRoot {
+    margin-top: 14px;
+    color: #eaf4ff;
+    font-family: inherit;
+  }
+
+  .pcc42-shell {
+    border: 1px solid rgba(169,199,227,.22);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(10,37,66,.97), rgba(7,28,52,.98));
+    box-shadow: 0 18px 46px rgba(0,0,0,.22);
+    overflow: hidden;
+  }
+
+  .pcc42-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(169,199,227,.18);
+    background: rgba(5,22,43,.58);
+    flex-wrap: wrap;
+  }
+
+  .pcc42-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .pcc42-title small {
+    color: #f6c90e;
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-weight: 900;
+  }
+
+  .pcc42-title strong {
+    color: #fff;
+    font-size: 20px;
+    letter-spacing: .01em;
+  }
+
+  .pcc42-title span {
+    color: #a9c7e3;
+    font-size: 12px;
+  }
+
+  .pcc42-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .pcc42-controls select,
+  .pcc42-controls button {
+    height: 34px;
+    border: 1px solid rgba(169,199,227,.24);
+    border-radius: 8px;
+    background: rgba(13,43,75,.96);
+    color: #eaf4ff;
+    padding: 0 10px;
+    font-size: 12px;
+    font-family: 'Inconsolata', monospace;
+    outline: none;
+  }
+
+  .pcc42-controls button {
+    cursor: pointer;
+    font-weight: 900;
+  }
+
+  .pcc42-controls button.primary {
+    background: #f6c90e;
+    border-color: #f6c90e;
+    color: #172033;
+  }
+
+  .pcc42-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    border-bottom: 1px solid rgba(169,199,227,.18);
+    background: rgba(255,255,255,.025);
+  }
+
+  .pcc42-kpi {
+    min-height: 78px;
+    padding: 12px;
+    border-right: 1px solid rgba(169,199,227,.14);
+  }
+
+  .pcc42-kpi:last-child {
+    border-right: 0;
+  }
+
+  .pcc42-kpi span {
+    display: block;
+    color: #9dbddd;
+    font-size: 10px;
+    font-family: 'Inconsolata', monospace;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 900;
+  }
+
+  .pcc42-kpi strong {
+    display: block;
+    margin-top: 6px;
+    color: #fff;
+    font-family: 'Inconsolata', monospace;
+    font-size: 24px;
+    line-height: 1;
+  }
+
+  .pcc42-kpi small {
+    display: block;
+    margin-top: 6px;
+    color: #b9d1e8;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .pcc42-kpi.good strong { color: #86efac; }
+  .pcc42-kpi.warn strong { color: #facc15; }
+  .pcc42-kpi.bad strong { color: #fca5a5; }
+  .pcc42-kpi.info strong { color: #93c5fd; }
+
+  .pcc42-layout {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .pcc42-left {
+    border-right: 1px solid rgba(169,199,227,.18);
+    background: rgba(5,22,43,.22);
+  }
+
+  .pcc42-section {
+    padding: 14px;
+  }
+
+  .pcc42-section + .pcc42-section {
+    border-top: 1px solid rgba(169,199,227,.16);
+  }
+
+  .pcc42-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .pcc42-heading h3 {
+    margin: 0;
+    color: #f6c90e;
+    font-size: 16px;
+    font-family: 'EB Garamond', serif;
+  }
+
+  .pcc42-heading small {
+    color: #a9c7e3;
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+  }
+
+  .pcc42-inbox {
+    display: grid;
+    gap: 8px;
+    max-height: 460px;
+    overflow: auto;
+    padding-right: 2px;
+  }
+
+  .pcc42-action {
+    border: 1px solid rgba(169,199,227,.16);
+    border-left: 3px solid var(--line,#f6c90e);
+    border-radius: 10px;
+    padding: 9px;
+    background: rgba(255,255,255,.035);
+  }
+
+  .pcc42-action.paper { --line:#f59e0b; }
+  .pcc42-action.returned { --line:#fb923c; }
+  .pcc42-action.marks { --line:#60a5fa; }
+  .pcc42-action.risk { --line:#ef4444; }
+
+  .pcc42-action strong {
+    display: block;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .pcc42-action span {
+    display: block;
+    margin-top: 4px;
+    color: #b9d1e8;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .pcc42-action-tools {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .pcc42-btn {
+    border: 0;
+    border-radius: 7px;
+    padding: 5px 8px;
+    background: #eaf4ff;
+    color: #12395f;
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .pcc42-btn.primary {
+    background: #f6c90e;
+    color: #172033;
+  }
+
+  .pcc42-btn.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .pcc42-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(169,199,227,.16);
+    background: rgba(255,255,255,.025);
+  }
+
+  .pcc42-tab {
+    border: 1px solid rgba(169,199,227,.22);
+    border-radius: 999px;
+    background: rgba(234,244,255,.07);
+    color: #cfe4f7;
+    padding: 7px 10px;
+    cursor: pointer;
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .pcc42-tab.active {
+    background: #f6c90e;
+    color: #172033;
+    border-color: #f6c90e;
+  }
+
+  .pcc42-main-body {
+    padding: 14px;
+  }
+
+  .pcc42-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .pcc42-summary {
+    border: 1px solid rgba(169,199,227,.16);
+    border-radius: 12px;
+    background: rgba(255,255,255,.035);
+    padding: 10px;
+  }
+
+  .pcc42-summary span {
+    display: block;
+    color: #9dbddd;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-family: 'Inconsolata', monospace;
+    font-weight: 900;
+  }
+
+  .pcc42-summary strong {
+    display: block;
+    margin-top: 4px;
+    color: #fff;
+    font-size: 14px;
+  }
+
+  .pcc42-summary p {
+    margin: 5px 0 0;
+    color: #b9d1e8;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .pcc42-table-wrap {
+    overflow: auto;
+    border: 1px solid rgba(169,199,227,.18);
+    border-radius: 12px;
+  }
+
+  .pcc42-table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .pcc42-table th,
+  .pcc42-table td {
+    padding: 9px 10px;
+    border-right: 1px solid rgba(169,199,227,.10);
+    border-bottom: 1px solid rgba(169,199,227,.13);
+    color: #eaf4ff;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .pcc42-table th {
+    background: rgba(7,29,55,.94);
+    color: #cfe4f7;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .pcc42-table tr:hover td {
+    background: rgba(255,255,255,.035);
+  }
+
+  .pcc42-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    border-radius: 999px;
+    padding: 4px 7px;
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    font-weight: 900;
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+
+  .pcc42-badge.good { background:#dcfce7; color:#166534; }
+  .pcc42-badge.warn { background:#fef3c7; color:#92400e; }
+  .pcc42-badge.bad { background:#fee2e2; color:#b91c1c; }
+  .pcc42-badge.locked { background:#e2e8f0; color:#334155; }
+
+  .pcc42-empty {
+    padding: 24px;
+    text-align: center;
+    border: 1px dashed rgba(169,199,227,.26);
+    border-radius: 12px;
+    color: #b9d1e8;
+    background: rgba(255,255,255,.025);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .pcc42-empty strong {
+    color: #f6c90e;
+  }
+
+  .pcc42-note {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(246,201,14,.22);
+    background: rgba(246,201,14,.07);
+    color: #f8e7a7;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-shell {
+    background: #fff !important;
+    color: #12395f !important;
+    border-color: #bfd3e5 !important;
+  }
+
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-toolbar,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-left,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-tabs,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-summary,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-action {
+    background: #f7fbff !important;
+    border-color: #c7dcec !important;
+  }
+
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-title strong,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-kpi strong,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-summary strong,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-action strong,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-table td {
+    color: #12395f !important;
+  }
+
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-title span,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-kpi small,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-summary p,
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-action span {
+    color: #486b8b !important;
+  }
+
+  body.bgps-theme-white #bgpsPCCExecutiveRoot .pcc42-table th {
+    background: #eaf2fb !important;
+    color: #315b82 !important;
+  }
+
+  @media screen and (max-width: 1280px) {
+    .pcc42-kpi-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .pcc42-layout { grid-template-columns: 1fr; }
+    .pcc42-left { border-right: 0; border-bottom: 1px solid rgba(169,199,227,.18); }
+    .pcc42-inbox { max-height: 330px; }
+  }
+
+  @media screen and (max-width: 760px) {
+    .pcc42-kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pcc42-summary-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script id="bgpsPCCExecutiveMISV42JS">
+(function bgpsPCCExecutiveMISV42(){
+  if (window.__BGPS_PCC_EXEC_V42__) return;
+  window.__BGPS_PCC_EXEC_V42__ = true;
+
+  const state = {
+    view: 'overview',
+    loaded: false,
+    loading: false,
+    lastUpdated: null,
+    filters: { exam: '', className: '', subject: '' },
+    papers: [],
+    marks: [],
+    warning: ''
+  };
+
+  const PASS_PERCENT = Number(window.BGPS_PASS_PERCENT || 33);
+  const RISK_PERCENT = Number(window.BGPS_RISK_PASS_PERCENT || 50);
+
+  function safe(v){ return String(v == null ? '' : v); }
+  function esc(v){
+    if (typeof escapeHtml === 'function') return escapeHtml(v);
+    return safe(v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+  function get(name, fallback){
+    try { if (window[name] !== undefined) return window[name]; } catch(_) {}
+    try { const v = (0,eval)(name); return v === undefined ? fallback : v; } catch(_) { return fallback; }
+  }
+  function fn(name){ const f = get(name, null); return typeof f === 'function' ? f : null; }
+  function admin(){ return safe(get('currentId','')).toUpperCase() === 'ADMIN'; }
+  function norm(v){ return safe(v).toLowerCase().replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim(); }
+  function n(v){ const x = Number(v); return Number.isFinite(x) ? x : 0; }
+  function pct(a,b){ return b ? Math.round((a/b)*1000)/10 : 0; }
+  function dval(v){ const d = new Date(v); return v && !Number.isNaN(d.getTime()) ? d.getTime() : 0; }
+  function fmtDate(v){
+    if (!v) return '—';
+    if (typeof formatPaperDate === 'function') { try { return formatPaperDate(v); } catch(_){} }
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? safe(v) : d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  }
+  function age(v){
+    const t = dval(v);
+    if (!t) return '—';
+    const days = Math.floor((Date.now()-t)/86400000);
+    if (days <= 0) return 'Today';
+    if (days === 1) return '1 day';
+    return days + ' days';
+  }
+
+  function groupStatus(status){
+    const s = norm(status);
+    if (s.includes('draft')) return 'draft';
+    if (['submitted','pending','pending approval','pending for approval','submitted for review'].includes(s)) return 'pending';
+    if (s.includes('correction') || s.includes('return')) return 'returned';
+    if (s === 'approved') return 'approved';
+    if (s.includes('lock')) return 'locked';
+    return s || 'pending';
+  }
+
+  function allClasses(){
+    const set = new Set();
+    const arr = get('ALL_CLASSES', null);
+    if (Array.isArray(arr)) arr.forEach(x => set.add(x));
+    state.papers.forEach(x => x.className && set.add(x.className));
+    state.marks.forEach(x => x.className && set.add(x.className));
+    if (!set.size) ["Playgroup","LKG","UKG","Class 1","Class 2","Class 3","Class 4","Class 5","Class 6","Class 7","Class 8","Class 9","Class 10","Class 11","Class 12"].forEach(x => set.add(x));
+    return Array.from(set);
+  }
+
+  function teacherForClass(cls){
+    const assign = get('TEACHER_ASSIGNMENTS', null);
+    if (assign && typeof assign === 'object') {
+      const found = Object.entries(assign).find(([tid,p]) => {
+        if (tid === 'ADMIN') return false;
+        const list = [...((p&&p.classTeacherOf)||[]), ...((p&&p.paperClasses)||[]), ...((p&&p.marksClasses)||[])];
+        return list.includes(cls);
+      });
+      if (found) return found[0];
+    }
+    const paper = state.papers.find(p => p.className === cls && p.teacher !== '—');
+    return paper ? paper.teacher : '—';
+  }
+
+  function normalizePaper(x){
+    const rawStatus = x.status || '';
+    const g = groupStatus(rawStatus);
+    return {
+      raw: x,
+      id: safe(x.paperId || x.id || x.fileId || x.draftId || ''),
+      className: x.className || x.class || x.standard || '—',
+      subject: x.subject || x.subjectName || '—',
+      exam: x.exam || x.examName || x.term || '—',
+      teacher: x.teacherId || x.teacher || x.createdBy || x.updatedBy || '—',
+      group: g,
+      status: g === 'pending' ? 'Pending Approval' : g === 'returned' ? 'Correction Required' : g === 'approved' ? 'Approved' : g === 'locked' ? 'Locked' : (rawStatus || 'Submitted'),
+      maxMarks: x.maxMarks || x.totalMarks || x.marks || '—',
+      date: x.uploadedAt || x.submittedAt || x.updatedAt || x.createdAt || '',
+      remarks: x.adminNote || x.remarks || x.comment || x.note || '',
+      source: x.sourceType || x.type || 'Paper'
+    };
+  }
+
+  function readPapers(){
+    const q = get('questionPapers', null);
+    if (Array.isArray(q)) return q;
+    return [];
+  }
+
+  function looksMarks(x){
+    if (!x || typeof x !== 'object') return false;
+    const k = Object.keys(x).join(' ').toLowerCase();
+    return /(marks|mark|score|obtained|result|roll|student|pass|fail|absent|exam|term|subject|class)/.test(k);
+  }
+
+  function collectMarksRaw(){
+    const keys = ['marksRows','marksData','marksRecords','marksEntries','allMarksRecords','studentMarks','resultRows','resultData','classResults','bgpsMarksRecords','backendMarks','submittedMarks','__BGPS_MARKS_CACHE__','__MARKS_CACHE__'];
+    const rows = [];
+    keys.forEach(key => {
+      const v = get(key, null);
+      if (Array.isArray(v)) rows.push(...v.filter(looksMarks));
+      else if (v && typeof v === 'object') ['rows','data','records','items','results'].forEach(k => Array.isArray(v[k]) && rows.push(...v[k].filter(looksMarks)));
+    });
+    try {
+      Object.keys(window).filter(k => /marks|result/i.test(k)).slice(0,60).forEach(k => {
+        const v = window[k];
+        if (Array.isArray(v) && v.length && v.length < 25000) rows.push(...v.filter(looksMarks));
+      });
+    } catch(_) {}
+    const seen = new Set();
+    return rows.filter(r => {
+      const key = [r.id||'', r.className||r.class||'', r.subject||'', r.exam||r.term||'', r.roll||r.rollNo||r.studentId||r.name||''].join('|');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function statusMerge(current, next){
+    const rank = {'Pending Entry':1,'Submitted':2,'Correction Required':3,'Approved':4,'Locked':5};
+    const s = norm(next);
+    let label = 'Pending Entry';
+    if (s.includes('lock')) label = 'Locked';
+    else if (s === 'approved') label = 'Approved';
+    else if (s.includes('correction') || s.includes('return')) label = 'Correction Required';
+    else if (s.includes('submitted') || s.includes('review') || s.includes('pending approval')) label = 'Submitted';
+    return (rank[label] > rank[current]) ? label : current;
+  }
+
+  function normalizeMarks(){
+    const raw = collectMarksRaw();
+    const map = new Map();
+
+    raw.forEach(r => {
+      const cls = r.className || r.class || r.standard || '—';
+      const subject = r.subject || r.subjectName || '—';
+      const exam = r.exam || r.examName || r.term || 'Current Term';
+      const teacher = r.teacherId || r.teacher || r.updatedBy || teacherForClass(cls);
+      const key = [cls, subject, exam, teacher].join('|');
+      if (!map.has(key)) {
+        map.set(key, { className:cls, subject, exam, teacher, status:'Pending Entry', students:0, entered:0, pending:0, pass:0, fail:0, absent:0, sum:0, highest:null, lowest:null });
+      }
+      const g = map.get(key);
+      g.status = statusMerge(g.status, r.status || r.marksStatus || r.resultStatus || '');
+
+      const totalStudents = r.totalStudents ?? r.students ?? r.studentCount;
+      const entered = r.marksEntered ?? r.entered ?? r.submittedCount;
+      const pending = r.pending ?? r.pendingMarks ?? r.marksPending;
+      const pass = r.pass ?? r.passed ?? r.passCount;
+      const fail = r.fail ?? r.failed ?? r.failCount;
+      const absent = r.absent ?? r.absentCount;
+      const avg = r.avg ?? r.average ?? r.avgMarks;
+      const high = r.highest ?? r.highestMarks;
+      const low = r.lowest ?? r.lowestMarks;
+      const summary = [totalStudents, entered, pending, pass, fail, absent, avg].some(v => v !== undefined && v !== '');
+
+      if (summary && !(r.roll || r.rollNo || r.studentId || r.studentName)) {
+        const st = n(totalStudents);
+        const en = n(entered);
+        g.students += st || en || n(pass)+n(fail)+n(absent);
+        g.entered += en || Math.max(0, (st || 0)-n(pending));
+        g.pending += n(pending);
+        g.pass += n(pass);
+        g.fail += n(fail);
+        g.absent += n(absent);
+        if (avg !== undefined && (en || st)) g.sum += n(avg) * (en || st);
+        if (high !== undefined) g.highest = g.highest == null ? n(high) : Math.max(g.highest, n(high));
+        if (low !== undefined) g.lowest = g.lowest == null ? n(low) : Math.min(g.lowest, n(low));
+        return;
+      }
+
+      g.students++;
+      const st = norm(r.status || r.attendance || r.remarks);
+      const isAbsent = st.includes('absent') || st === 'ab' || safe(r.marks || r.obtained || '').toUpperCase() === 'AB';
+      const max = n(r.maxMarks || r.totalMarks || r.outOf || r.mm || 100) || 100;
+      const obtained = Number(r.obtained ?? r.marks ?? r.score ?? r.mark ?? r.totalObtained);
+      if (isAbsent) {
+        g.absent++;
+        g.entered++;
+      } else if (Number.isFinite(obtained)) {
+        g.entered++;
+        g.sum += obtained;
+        g.highest = g.highest == null ? obtained : Math.max(g.highest, obtained);
+        g.lowest = g.lowest == null ? obtained : Math.min(g.lowest, obtained);
+        if ((obtained/max)*100 >= PASS_PERCENT) g.pass++;
+        else g.fail++;
+      } else {
+        g.pending++;
+      }
+    });
+
+    return Array.from(map.values()).map(g => {
+      if (!g.pending && g.entered && g.status === 'Pending Entry') g.status = 'Submitted';
+      g.avg = g.entered ? Math.round((g.sum/g.entered)*10)/10 : 0;
+      g.passPercent = g.entered ? pct(g.pass,g.entered) : 0;
+      return g;
+    });
+  }
+
+  function applyFilter(x){
+    return (!state.filters.exam || x.exam === state.filters.exam)
+      && (!state.filters.className || x.className === state.filters.className)
+      && (!state.filters.subject || x.subject === state.filters.subject);
+  }
+
+  function papers(){ return state.papers.filter(applyFilter); }
+  function marks(){ return state.marks.filter(applyFilter); }
+
+  function paperStats(){
+    const p = papers();
+    return { total:p.length, pending:p.filter(x=>x.group==='pending'), approved:p.filter(x=>x.group==='approved'), returned:p.filter(x=>x.group==='returned'), locked:p.filter(x=>x.group==='locked') };
+  }
+
+  function marksStats(){
+    const m = marks();
+    return { total:m.length, pending:m.filter(x=>x.pending || norm(x.status)==='pending entry'), review:m.filter(x=>norm(x.status)==='submitted'), correction:m.filter(x=>norm(x.status)==='correction required'), approved:m.filter(x=>norm(x.status)==='approved'), locked:m.filter(x=>norm(x.status)==='locked'), pass:m.reduce((s,x)=>s+x.pass,0), entered:m.reduce((s,x)=>s+x.entered,0), fail:m.reduce((s,x)=>s+x.fail,0), absent:m.reduce((s,x)=>s+x.absent,0) };
+  }
+
+  function classRows(){
+    const map = new Map();
+    allClasses().forEach(cls => map.set(cls, { className:cls, teacher:teacherForClass(cls), paperPending:0, paperApproved:0, paperReturned:0, paperLocked:0, paperTotal:0, marksPending:0, marksReview:0, marksApproved:0, resultLocked:0, pass:0, entered:0, fail:0, absent:0, latest:null }));
+    papers().forEach(p => {
+      if (!map.has(p.className)) map.set(p.className, { className:p.className, teacher:p.teacher, paperPending:0, paperApproved:0, paperReturned:0, paperLocked:0, paperTotal:0, marksPending:0, marksReview:0, marksApproved:0, resultLocked:0, pass:0, entered:0, fail:0, absent:0, latest:null });
+      const r = map.get(p.className);
+      r.paperTotal++;
+      if (p.group === 'pending') r.paperPending++;
+      if (p.group === 'approved') r.paperApproved++;
+      if (p.group === 'returned') r.paperReturned++;
+      if (p.group === 'locked') r.paperLocked++;
+      if (!r.latest || dval(p.date) > dval(r.latest.date)) r.latest = p;
+      if ((!r.teacher || r.teacher === '—') && p.teacher !== '—') r.teacher = p.teacher;
+    });
+    marks().forEach(m => {
+      if (!map.has(m.className)) map.set(m.className, { className:m.className, teacher:m.teacher, paperPending:0, paperApproved:0, paperReturned:0, paperLocked:0, paperTotal:0, marksPending:0, marksReview:0, marksApproved:0, resultLocked:0, pass:0, entered:0, fail:0, absent:0, latest:null });
+      const r = map.get(m.className);
+      if (m.pending || norm(m.status)==='pending entry') r.marksPending++;
+      if (norm(m.status)==='submitted') r.marksReview++;
+      if (norm(m.status)==='approved') r.marksApproved++;
+      if (norm(m.status)==='locked') r.resultLocked++;
+      r.pass += m.pass;
+      r.entered += m.entered;
+      r.fail += m.fail;
+      r.absent += m.absent;
+    });
+    return Array.from(map.values()).map(r => {
+      r.passPercent = r.entered ? pct(r.pass,r.entered) : 0;
+      r.status = r.paperReturned || r.fail || r.marksPending ? 'Attention' : (r.paperPending || r.marksReview ? 'Pending' : (r.paperTotal || r.entered ? 'Clear' : 'No Data'));
+      return r;
+    });
+  }
+
+  function teachers(){
+    const set = new Set();
+    const assign = get('TEACHER_ASSIGNMENTS', null);
+    if (assign && typeof assign === 'object') Object.keys(assign).forEach(k => k !== 'ADMIN' && set.add(k));
+    papers().forEach(p => p.teacher && p.teacher !== '—' && set.add(p.teacher));
+    marks().forEach(m => m.teacher && m.teacher !== '—' && set.add(m.teacher));
+    return Array.from(set);
+  }
+
+  function teacherRows(){
+    return teachers().map(t => {
+      const p = papers().filter(x=>x.teacher===t);
+      const m = marks().filter(x=>x.teacher===t);
+      const classes = new Set([...p.map(x=>x.className), ...m.map(x=>x.className)]);
+      const pending = p.filter(x=>x.group==='pending').length + m.filter(x=>x.pending || norm(x.status)==='pending entry').length;
+      const returned = p.filter(x=>x.group==='returned').length + m.filter(x=>norm(x.status)==='correction required').length;
+      const done = p.filter(x=>['approved','locked'].includes(x.group)).length + m.filter(x=>['approved','locked'].includes(norm(x.status))).length;
+      return { teacher:t, classes:Array.from(classes).join(', ') || '—', paperPending:p.filter(x=>x.group==='pending').length, paperApproved:p.filter(x=>['approved','locked'].includes(x.group)).length, marksPending:m.filter(x=>x.pending || norm(x.status)==='pending entry').length, marksReview:m.filter(x=>norm(x.status)==='submitted').length, returned, done, status: returned ? 'Attention' : (pending ? 'Pending' : 'Clear') };
+    });
+  }
+
+  function subjectRows(){
+    const set = new Set([...papers().map(p=>p.subject), ...marks().map(m=>m.subject)].filter(x=>x && x!=='—'));
+    return Array.from(set).sort().map(subject => {
+      const p = papers().filter(x=>x.subject===subject);
+      const m = marks().filter(x=>x.subject===subject);
+      const cls = new Set([...p.map(x=>x.className), ...m.map(x=>x.className)]);
+      const pending = p.filter(x=>x.group==='pending').length + m.filter(x=>x.pending || norm(x.status)==='pending entry').length;
+      const completed = p.filter(x=>['approved','locked'].includes(x.group)).length + m.filter(x=>['approved','locked'].includes(norm(x.status))).length;
+      const entered = m.reduce((s,x)=>s+x.entered,0);
+      const pass = m.reduce((s,x)=>s+x.pass,0);
+      const fail = m.reduce((s,x)=>s+x.fail,0);
+      return { subject, classes:cls.size, papers:p.length, marks:m.length, pending, completed, passPercent:entered?pct(pass,entered):0, fail, status: fail || pending ? 'Review' : (completed ? 'Clear' : 'No Data') };
+    });
+  }
+
+  function inbox(){
+    const items = [];
+    paperStats().pending.forEach(p => items.push({ kind:'paper', title:'Paper approval pending', status:'Pending', className:p.className, subject:p.subject, teacher:p.teacher, exam:p.exam, note:`${p.source} · ${p.maxMarks} marks · ${age(p.date)}`, paper:p, priority:3 }));
+    paperStats().returned.forEach(p => items.push({ kind:'returned', title:'Paper returned with remarks', status:'Correction', className:p.className, subject:p.subject, teacher:p.teacher, exam:p.exam, note:p.remarks || 'Correction required', paper:p, priority:4 }));
+    marksStats().review.forEach(m => items.push({ kind:'marks', title:'Marks submitted for review', status:'Review', className:m.className, subject:m.subject, teacher:m.teacher, exam:m.exam, note:`${m.entered}/${m.students} entered · Pass ${m.passPercent}%`, marks:m, priority:3 }));
+    marksStats().pending.forEach(m => items.push({ kind:'marks', title:'Marks pending', status:'Pending', className:m.className, subject:m.subject, teacher:m.teacher, exam:m.exam, note:`${m.pending} pending · ${m.students} students`, marks:m, priority:2 }));
+    marks().filter(m => m.fail || (m.entered && m.passPercent < RISK_PERCENT)).forEach(m => items.push({ kind:'risk', title:'Result risk', status:'Risk', className:m.className, subject:m.subject, teacher:m.teacher, exam:m.exam, note:`Fail ${m.fail} · Absent ${m.absent} · Pass ${m.passPercent}%`, marks:m, priority:5 }));
+    return items.sort((a,b)=>b.priority-a.priority || dval(b.paper && b.paper.date)-dval(a.paper && a.paper.date));
+  }
+
+  async function load(force){
+    if (state.loading) return;
+    state.loading = true;
+    render();
+    try {
+      const loadPapers = fn('loadQuestionPapers');
+      if (loadPapers && (force || !readPapers().length || !state.loaded)) await Promise.resolve(loadPapers(true));
+      state.papers = readPapers()
+        .filter(x=>x && typeof x === 'object')
+        .filter(x=>!(x.isLocalDraft || x.isBackendDraft || groupStatus(x.status)==='draft'))
+        .map(normalizePaper)
+        .filter(x=>x.group!=='draft');
+
+      state.marks = normalizeMarks();
+      state.warning = state.marks.length ? '' : 'Marks/result source not detected yet. Result analysis will populate once marks data is available.';
+      state.loaded = true;
+      state.lastUpdated = new Date();
+    } catch(e) {
+      console.error('[PCC V42] load failed', e);
+      state.warning = 'Data load error. Check console/backend.';
+    } finally {
+      state.loading = false;
+      render();
+    }
+  }
+
+  function badge(text){
+    const s = norm(text);
+    let cls = '';
+    if (s.includes('clear') || s.includes('approved') || s.includes('good')) cls = 'good';
+    else if (s.includes('pending') || s.includes('review') || s.includes('submitted')) cls = 'warn';
+    else if (s.includes('risk') || s.includes('fail') || s.includes('correction') || s.includes('attention') || s.includes('return')) cls = 'bad';
+    else if (s.includes('lock')) cls = 'locked';
+    return `<span class="pcc42-badge ${cls}">${esc(text)}</span>`;
+  }
+
+  function kpi(label, value, note, cls){
+    return `<div class="pcc42-kpi ${cls||''}"><span>${esc(label)}</span><strong>${esc(value)}</strong><small>${esc(note)}</small></div>`;
+  }
+
+  function buildKpis(){
+    const ps = paperStats();
+    const ms = marksStats();
+    const cr = classRows();
+    const activeClasses = cr.filter(x=>x.paperTotal || x.entered || x.marksPending || x.marksReview).length;
+    const riskClasses = cr.filter(x=>x.status==='Attention').length;
+    const passRate = ms.entered ? pct(ms.pass, ms.entered) + '%' : '—';
+    return [
+      kpi('Action Queue', inbox().length, 'Total items requiring review', inbox().length ? 'bad' : 'good'),
+      kpi('Class Coverage', `${activeClasses}/${cr.length}`, `${riskClasses} classes need attention`, riskClasses ? 'warn':'info'),
+      kpi('Papers Pending', ps.pending.length, `Approved ${ps.approved.length} · Locked ${ps.locked.length}`, ps.pending.length ? 'warn':'good'),
+      kpi('Returned Papers', ps.returned.length, 'Teacher correction queue', ps.returned.length ? 'bad':'good'),
+      kpi('Marks Review', ms.review.length, `Pending ${ms.pending.length} · Groups ${ms.total}`, ms.review.length || ms.pending.length ? 'warn':'info'),
+      kpi('Result Risk', ms.fail, `Absent ${ms.absent} · Pass ${passRate}`, ms.fail ? 'bad':'good'),
+      kpi('Teachers Pending', teacherRows().filter(x=>x.status!=='Clear').length, `${teachers().length} teachers tracked`, teacherRows().some(x=>x.status!=='Clear')?'warn':'good'),
+      kpi('Subjects Review', subjectRows().filter(x=>x.status==='Review').length, `${subjectRows().length} subjects tracked`, subjectRows().some(x=>x.status==='Review')?'warn':'info')
+    ].join('');
+  }
+
+  function option(values, selected, first){
+    return `<option value="">${esc(first)}</option>` + values.map(v=>`<option value="${esc(v)}" ${selected===v?'selected':''}>${esc(v)}</option>`).join('');
+  }
+
+  function paperActions(p){
+    if (!p || !p.id) return '—';
+    const open = `<button class="pcc42-btn" onclick="BGPS_PCC_V42.openPaper('${esc(p.id)}')">Open</button>`;
+    const approve = (p.group==='pending' || p.group==='returned') ? `<button class="pcc42-btn primary" onclick="BGPS_PCC_V42.setStatus('${esc(p.id)}','Approved')">Approve</button>` : '';
+    const remarks = p.group !== 'locked' ? `<button class="pcc42-btn danger" onclick="BGPS_PCC_V42.remarks('${esc(p.id)}')">Remarks</button>` : '';
+    const lock = p.group === 'approved' ? `<button class="pcc42-btn" onclick="BGPS_PCC_V42.setStatus('${esc(p.id)}','Locked')">Lock</button>` : '';
+    return `<div class="pcc42-action-tools">${open}${approve}${remarks}${lock}</div>`;
+  }
+
+  function inboxList(){
+    const items = inbox().slice(0, 12);
+    if (!items.length) return `<div class="pcc42-empty"><strong>No action pending.</strong><br>Submitted papers, marks review and result risk will appear here.</div>`;
+    return `<div class="pcc42-inbox">` + items.map(i => `<article class="pcc42-action ${esc(i.kind)}">
+      <strong>${esc(i.title)} · ${badge(i.status)}</strong>
+      <span>${esc(i.className)} · ${esc(i.subject)} · ${esc(i.exam)}<br>Teacher: ${esc(i.teacher)} · ${esc(i.note)}</span>
+      ${i.paper ? paperActions(i.paper) : `<div class="pcc42-action-tools"><button class="pcc42-btn" onclick="BGPS_PCC_V42.view('${i.kind==='risk'?'risk':'marks'}')">View Details</button></div>`}
+    </article>`).join('') + `</div>`;
+  }
+
+  function table(headers, rows, empty){
+    if (!rows.length) return `<div class="pcc42-empty">${empty}</div>`;
+    return `<div class="pcc42-table-wrap"><table class="pcc42-table"><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  }
+
+  function paperRow(p){
+    return `<tr><td>${esc(p.className)}</td><td>${esc(p.subject)}</td><td>${esc(p.teacher)}</td><td>${esc(p.exam)}</td><td>${badge(p.status)}</td><td>${esc(p.maxMarks)}</td><td>${esc(fmtDate(p.date))}</td><td>${esc(p.remarks||'—')}</td><td>${paperActions(p)}</td></tr>`;
+  }
+
+  function marksRow(m){
+    return `<tr><td>${esc(m.className)}</td><td>${esc(m.subject)}</td><td>${esc(m.teacher)}</td><td>${esc(m.exam)}</td><td>${badge(m.status)}</td><td>${esc(m.students)}</td><td>${esc(m.entered)}</td><td>${esc(m.pending)}</td><td>${esc(m.pass)}</td><td>${esc(m.fail)}</td><td>${esc(m.absent)}</td><td>${esc(m.passPercent)}%</td><td>${esc(m.avg||'—')}</td><td>${esc(m.highest==null?'—':m.highest)}</td><td>${esc(m.lowest==null?'—':m.lowest)}</td></tr>`;
+  }
+
+  function overview(){
+    const cr = classRows();
+    const summaries = [
+      ['Academic Status', inbox().length ? 'Action Required' : 'On Track', inbox().length ? `${inbox().length} items pending in action queue.` : 'No pending action in current filters.'],
+      ['Paper Workflow', `${paperStats().pending.length} Pending`, `${paperStats().approved.length} approved, ${paperStats().returned.length} returned, ${paperStats().locked.length} locked.`],
+      ['Marks / Result', state.marks.length ? `${marksStats().total} Groups` : 'No Marks Data', state.marks.length ? `${marksStats().fail} fail, ${marksStats().absent} absent.` : 'Backend/global marks rows not detected yet.']
+    ];
+    const top = `<div class="pcc42-summary-grid">${summaries.map(s=>`<div class="pcc42-summary"><span>${esc(s[0])}</span><strong>${esc(s[1])}</strong><p>${esc(s[2])}</p></div>`).join('')}</div>`;
+    const rows = cr.map(r => `<tr><td>${esc(r.className)}</td><td>${esc(r.teacher)}</td><td>${badge(r.status)}</td><td>${esc(r.paperPending)}</td><td>${esc(r.paperApproved+r.paperLocked)}</td><td>${esc(r.paperReturned)}</td><td>${esc(r.marksPending)}</td><td>${esc(r.marksReview)}</td><td>${esc(r.passPercent)}%</td><td>${esc(r.fail)}</td></tr>`);
+    return top + table(['Class','Teacher','Status','Paper Pending','Paper Approved/Locked','Returned','Marks Pending','Marks Review','Pass %','Fail'], rows, 'No class data yet.');
+  }
+
+  function papersPanel(){
+    const rows = papers().sort((a,b)=>{
+      const rank = { returned:0, pending:1, approved:2, locked:3 };
+      return (rank[a.group]??9)-(rank[b.group]??9) || dval(b.date)-dval(a.date);
+    }).map(paperRow);
+    return table(['Class','Subject','Teacher','Exam','Status','Marks','Date','Remarks','Action'], rows, 'No submitted papers in current filters. Drafts are hidden for Principal.');
+  }
+
+  function marksPanel(){
+    if (!state.marks.length) return `<div class="pcc42-empty"><strong>Marks/result data not found yet.</strong><br>This dashboard will show class result, pass/fail, average, highest and lowest once marks rows are available from backend/global arrays.</div>`;
+    return table(['Class','Subject','Teacher','Exam','Status','Students','Entered','Pending','Pass','Fail','Absent','Pass %','Average','Highest','Lowest'], marks().map(marksRow), 'No marks rows match current filters.');
+  }
+
+  function riskPanel(){
+    if (!state.marks.length) return marksPanel();
+    const rows = marks().filter(m=>m.fail || m.absent || (m.entered && m.passPercent < RISK_PERCENT)).sort((a,b)=>b.fail-a.fail || a.passPercent-b.passPercent).map(m => `<tr><td>${esc(m.className)}</td><td>${esc(m.subject)}</td><td>${esc(m.teacher)}</td><td>${esc(m.exam)}</td><td>${esc(m.fail)}</td><td>${esc(m.absent)}</td><td>${esc(m.passPercent)}%</td><td>${esc(m.avg||'—')}</td><td>${badge(m.fail?'High Risk':(m.passPercent<RISK_PERCENT?'Low Pass %':'Watch'))}</td></tr>`);
+    return table(['Class','Subject','Teacher','Exam','Fail','Absent','Pass %','Avg','Risk'], rows, 'No result risk in current filters.');
+  }
+
+  function teachersPanel(){
+    const rows = teacherRows().map(t => `<tr><td>${esc(t.teacher)}</td><td>${esc(t.classes)}</td><td>${esc(t.paperPending)}</td><td>${esc(t.paperApproved)}</td><td>${esc(t.marksPending)}</td><td>${esc(t.marksReview)}</td><td>${esc(t.returned)}</td><td>${esc(t.done)}</td><td>${badge(t.status)}</td></tr>`);
+    return table(['Teacher','Classes','Paper Pending','Paper Approved','Marks Pending','Marks Review','Returned','Completed','Status'], rows, 'No teacher data available yet.');
+  }
+
+  function subjectsPanel(){
+    const rows = subjectRows().map(s => `<tr><td>${esc(s.subject)}</td><td>${esc(s.classes)}</td><td>${esc(s.papers)}</td><td>${esc(s.marks)}</td><td>${esc(s.pending)}</td><td>${esc(s.completed)}</td><td>${esc(s.passPercent)}%</td><td>${esc(s.fail)}</td><td>${badge(s.status)}</td></tr>`);
+    return table(['Subject','Classes','Papers','Marks Groups','Pending','Completed','Pass %','Fail','Status'], rows, 'No subject data available yet.');
+  }
+
+  function panel(){
+    const panels = {
+      overview: ['Executive Overview', overview()],
+      papers: ['Paper Approval Analysis', papersPanel()],
+      marks: ['Marks & Result Analysis', marksPanel()],
+      risk: ['Result Risk Analysis', riskPanel()],
+      teachers: ['Teacher Workload', teachersPanel()],
+      subjects: ['Subject Progress', subjectsPanel()]
+    };
+    return panels[state.view] || panels.overview;
+  }
+
+  function tabs(){
+    const list = [['overview','Overview'],['papers','Papers'],['marks','Marks/Result'],['risk','Risk'],['teachers','Teachers'],['subjects','Subjects']];
+    return list.map(([id,label]) => `<button class="pcc42-tab ${state.view===id?'active':''}" onclick="BGPS_PCC_V42.view('${id}')">${esc(label)}</button>`).join('');
+  }
+
+  function render(){
+    const home = document.getElementById('proHomeView');
+    if (!admin() || !home) return cleanup();
+
+    home.classList.add('bgps-pcc-exec-v42');
+
+    let root = document.getElementById('bgpsPCCExecutiveRoot');
+    if (!root) {
+      root = document.createElement('section');
+      root.id = 'bgpsPCCExecutiveRoot';
+      const title = home.querySelector('.bgps-pro-titlebar, .bgps-pro-hero, .bgps-command-hero');
+      if (title && title.parentNode) title.parentNode.insertBefore(root, title.nextSibling);
+      else home.prepend(root);
+    }
+
+    const p = panel();
+    const note = state.warning ? `<div class="pcc42-note">${esc(state.warning)}</div>` : '';
+    const loading = state.loading ? `<div class="pcc42-note">Refreshing live backend data...</div>` : '';
+
+    root.innerHTML = `<div class="pcc42-shell">
+      <div class="pcc42-toolbar">
+        <div class="pcc42-title">
+          <small>BGPS Academic MIS</small>
+          <strong>Principal Command Center</strong>
+          <span>Clean action dashboard: papers, marks, result risk, class progress and teacher workload.</span>
+        </div>
+        <div class="pcc42-controls">
+          <select onchange="BGPS_PCC_V42.filter('exam',this.value)">${option([...new Set([...state.papers.map(x=>x.exam), ...state.marks.map(x=>x.exam)].filter(x=>x&&x!=='—'))].sort(), state.filters.exam, 'All Terms')}</select>
+          <select onchange="BGPS_PCC_V42.filter('className',this.value)">${option(allClasses(), state.filters.className, 'All Classes')}</select>
+          <select onchange="BGPS_PCC_V42.filter('subject',this.value)">${option([...new Set([...state.papers.map(x=>x.subject), ...state.marks.map(x=>x.subject)].filter(x=>x&&x!=='—'))].sort(), state.filters.subject, 'All Subjects')}</select>
+          <button onclick="BGPS_PCC_V42.refresh(true)">Refresh</button>
+          <button class="primary" onclick="typeof switchTab==='function' && switchTab('approval')">Paper Approval</button>
+          <span style="color:#91b4d6;font-size:10px;font-family:'Inconsolata',monospace;">Updated: ${esc(state.lastUpdated ? state.lastUpdated.toLocaleString('en-IN') : 'Not loaded')}</span>
+        </div>
+      </div>
+
+      ${loading}
+      <div class="pcc42-kpi-strip">${buildKpis()}</div>
+
+      <div class="pcc42-layout">
+        <aside class="pcc42-left">
+          <div class="pcc42-section">
+            <div class="pcc42-heading"><h3>Action Queue</h3><small>${esc(inbox().length)} item(s)</small></div>
+            ${inboxList()}
+          </div>
+        </aside>
+
+        <main>
+          <div class="pcc42-tabs">${tabs()}</div>
+          <div class="pcc42-main-body">
+            <div class="pcc42-heading"><h3>${esc(p[0])}</h3><small>Pass rule ${PASS_PERCENT}%</small></div>
+            ${note}
+            ${p[1]}
+          </div>
+        </main>
+      </div>
+    </div>`;
+  }
+
+  function cleanup(){
+    const home = document.getElementById('proHomeView');
+    if (home) home.classList.remove('bgps-pcc-exec-v42');
+    const root = document.getElementById('bgpsPCCExecutiveRoot');
+    if (root) root.remove();
+  }
+
+  async function setStatus(id, status){
+    const updater = fn('updatePaperStatus');
+    if (!updater) return alert('updatePaperStatus() backend function not found.');
+    await Promise.resolve(updater(id, status));
+    await load(true);
+  }
+
+  async function remarks(id){
+    const correction = fn('requestPaperCorrection');
+    if (correction) {
+      await Promise.resolve(correction(id));
+      await load(true);
+      return;
+    }
+    const updater = fn('updatePaperStatus');
+    if (!updater) return alert('requestPaperCorrection/updatePaperStatus backend function not found.');
+    const note = prompt('Write remarks for teacher:');
+    if (note === null) return;
+    if (!note.trim()) return alert('Remarks required.');
+    await Promise.resolve(updater(id, 'Correction Required', note.trim()));
+    await load(true);
+  }
+
+  function openPaper(id){
+    const open = fn('openPaperFile');
+    if (!open) return alert('openPaperFile() function not found.');
+    return open(id, 'preview');
+  }
+
+  window.BGPS_PCC_V42 = {
+    view(id){ state.view = id || 'overview'; render(); },
+    filter(k,v){ state.filters[k] = v || ''; render(); },
+    refresh: load,
+    setStatus,
+    remarks,
+    openPaper,
+    render,
+    load,
+    state
+  };
+
+  function mount(force=false){
+    setTimeout(() => {
+      if (!admin()) return cleanup();
+      render();
+      if (!state.loaded || force) load(force);
+    }, 120);
+    setTimeout(() => { if (admin()) render(); }, 650);
+  }
+
+  const oldSwitch = fn('switchTab');
+  if (oldSwitch) {
+    window.switchTab = switchTab = function bgpsPCCSwitchV42(){
+      const r = oldSwitch.apply(this, arguments);
+      Promise.resolve(r).finally(() => mount(false));
+      return r;
+    };
+  }
+
+  const oldLogin = fn('loginTeacher');
+  if (oldLogin) {
+    window.loginTeacher = loginTeacher = function bgpsPCCLoginV42(){
+      const r = oldLogin.apply(this, arguments);
+      Promise.resolve(r).finally(() => mount(true));
+      return r;
+    };
+  }
+
+  const oldRefresh = fn('bgpsProRefreshHome');
+  if (oldRefresh) {
+    window.bgpsProRefreshHome = function bgpsPCCRefreshV42(){
+      const r = oldRefresh.apply(this, arguments);
+      Promise.resolve(r).finally(() => mount(true));
+      return r;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', () => mount(true));
+  mount(false);
+})();
+</script>
 
 </body>
 </html>

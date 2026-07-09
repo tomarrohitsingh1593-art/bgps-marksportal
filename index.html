@@ -1266,7 +1266,7 @@
         </div>
     </div>
 
-    <div class="app-shell" id="appShell">
+    <div class="app-shell" id="appShell" style="display:none;">
         <div class="app-header no-print">
             <div style="font-family:'EB Garamond'; color:var(--gold); font-size:22px; font-weight:bold;">BG PUBLIC SCHOOL</div>
             <div id="loggedInUser" style="color:var(--blue); font-size:12px;">User</div>
@@ -11880,5 +11880,90 @@ No fake backend overrides.
 })();
 </script>
 
+
+
+<!-- BGPS FINAL LOGIN VISIBILITY HOTFIX
+     Fixes: dashboard/nav/report area showing under the login card before authentication.
+     Keep this as the last script before </body>. -->
+<style id="bgpsLoginVisibilityFixCss">
+  #appShell.bgps-auth-locked { display: none !important; }
+</style>
+<script>
+(function bgpsFinalLoginVisibilityHotfix(){
+  if (window.__BGPS_FINAL_LOGIN_VISIBILITY_HOTFIX__) return;
+  window.__BGPS_FINAL_LOGIN_VISIBILITY_HOTFIX__ = true;
+
+  function byId(id){ return document.getElementById(id); }
+  function getAuthId(){
+    try { return String(currentId || '').trim(); }
+    catch (_) { return String(window.currentId || '').trim(); }
+  }
+  function showLoginOnly(){
+    var login = byId('loginPage');
+    var app = byId('appShell');
+    if (login) login.style.display = 'block';
+    if (app) {
+      app.classList.add('bgps-auth-locked');
+      app.style.display = 'none';
+    }
+  }
+  function showAppOnly(){
+    var login = byId('loginPage');
+    var app = byId('appShell');
+    if (login) login.style.display = 'none';
+    if (app) {
+      app.classList.remove('bgps-auth-locked');
+      app.style.display = 'block';
+    }
+  }
+  function loginIsHidden(){
+    var login = byId('loginPage');
+    return !!login && login.style.display === 'none';
+  }
+  function syncLoginState(){
+    if (getAuthId() && loginIsHidden()) showAppOnly();
+    else showLoginOnly();
+  }
+
+  // Initial page load must never show dashboard until successful login.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){
+      syncLoginState();
+      setTimeout(syncLoginState, 250);
+    });
+  } else {
+    syncLoginState();
+    setTimeout(syncLoginState, 250);
+  }
+
+  // Some older/pro patches wrap loginTeacher and run dashboard functions even after a failed login.
+  // This final wrapper allows appShell only when login actually succeeded.
+  var previousLogin = window.loginTeacher;
+  if (typeof previousLogin === 'function' && !previousLogin.__BGPS_FINAL_VISIBILITY_WRAPPED__) {
+    var wrappedLogin = async function(){
+      try {
+        var result = previousLogin.apply(this, arguments);
+        if (result && typeof result.then === 'function') await result;
+      } catch (err) {
+        showLoginOnly();
+        console.error('BGPS login failed inside wrapper:', err);
+        alert('Login error: ' + (err && err.message ? err.message : err));
+        return false;
+      }
+
+      if (getAuthId() && loginIsHidden()) {
+        showAppOnly();
+        return true;
+      }
+
+      showLoginOnly();
+      return false;
+    };
+    wrappedLogin.__BGPS_FINAL_VISIBILITY_WRAPPED__ = true;
+    window.loginTeacher = wrappedLogin;
+    try { loginTeacher = wrappedLogin; } catch (_) {}
+  }
+})();
+</script>
 </body>
 </html>

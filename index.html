@@ -9099,5 +9099,447 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
 })();
 </script>
 
+
+<!-- BGPS Paper Creator + Marks Entry Reliability Patch | 2026-07-10 -->
+<style id="bgpsPaperMarksReliabilityCss">
+  .optional-mini{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border-radius:999px;background:#E8F2FC;color:#315B82;font-size:10px;font-weight:800;vertical-align:middle}
+  #manualPasteSupportNote{margin:7px 0 0;padding:8px 10px;border:1px solid #C9D9E8;border-radius:8px;background:#F6FAFE;color:#405C76;font-size:11px;line-height:1.4}
+  #manualPasteSupportNote strong{color:#173F68}
+  .student-row.marks-invalid{background:#FFF3F3!important;border-left:4px solid #C93636!important}
+  .student-row.marks-invalid .m-input{border-color:#C93636!important;box-shadow:0 0 0 3px rgba(201,54,54,.10)!important}
+  .student-row.marks-valid .m-input:not(:disabled){border-color:#7AB58E!important}
+</style>
+<script id="bgpsPaperMarksReliabilityPatch">
+(function bgpsPaperMarksReliabilityPatch(){
+  if (window.__BGPS_PAPER_MARKS_RELIABILITY_PATCH__) return;
+  window.__BGPS_PAPER_MARKS_RELIABILITY_PATCH__ = true;
+
+  const PRE_PRIMARY_CHAPTER_VALUE = 'Not applicable (Pre-Primary)';
+  const SAFE_IMAGE_BYTES = 1.45 * 1024 * 1024;
+  const MAX_SOURCE_IMAGE_BYTES = 12 * 1024 * 1024;
+
+  function byId(id){ return document.getElementById(id); }
+  function normalizedClass(value){ return String(value || '').trim().toUpperCase().replace(/[._-]+/g,' ').replace(/\s+/g,' '); }
+  function isPrePrimaryClass(value){
+    const name = normalizedClass(value);
+    return ['PG','PLAYGROUP','PLAY GROUP','PRE NURSERY','PRE-NURSERY','NURSERY','LKG','UKG'].includes(name);
+  }
+  function chapterValueFor(className, value){
+    const clean = String(value || '').trim();
+    return clean || (isPrePrimaryClass(className) ? PRE_PRIMARY_CHAPTER_VALUE : '');
+  }
+  function currentUploadClass(){ return byId('paperClass')?.value || ''; }
+  function currentManualClass(){ return byId('manualClass')?.value || ''; }
+
+  function setChapterLabel(fieldId, prePrimary, manual){
+    const field = byId(fieldId);
+    if (!field) return;
+    const group = field.closest('.control-group');
+    const label = group?.querySelector('label');
+    field.required = false;
+    field.setAttribute('aria-required', prePrimary ? 'false' : 'true');
+    if (prePrimary) {
+      field.placeholder = 'Optional for PG / Playgroup / LKG / UKG. You may enter a theme or leave this blank.';
+      if (label) {
+        const desired = manual
+          ? 'Chapters / Syllabus Reference <span class="optional-mini">Optional for Pre-Primary</span>'
+          : 'Chapters / Theme <span class="optional-mini">Optional for Pre-Primary</span>';
+        if (label.innerHTML !== desired) label.innerHTML = desired;
+      }
+      try { if (typeof clearFieldError === 'function') clearFieldError(fieldId); } catch (_) {}
+    } else {
+      field.placeholder = manual
+        ? 'Required for Class 1 onwards. For Admin reference only; this will not print on the student paper.'
+        : 'Example: Chapter 1 – Matter; Chapter 2 – Atomic Structure';
+      if (label) {
+        const desired = manual
+          ? 'Chapters / Syllabus Reference <span class="required-mini">*</span>'
+          : 'Chapters Included <span class="required-mini">*</span>';
+        if (label.innerHTML !== desired) label.innerHTML = desired;
+      }
+    }
+  }
+
+  function syncChapterRequirementUI(){
+    setChapterLabel('paperChapters', isPrePrimaryClass(currentUploadClass()), false);
+    setChapterLabel('manualChapters', isPrePrimaryClass(currentManualClass()), true);
+  }
+
+  const originalValidateUploadForm = window.validateUploadForm;
+  if (typeof originalValidateUploadForm === 'function') {
+    window.validateUploadForm = function(requireFile = true){
+      const field = byId('paperChapters');
+      const prePrimary = isPrePrimaryClass(currentUploadClass());
+      const injected = Boolean(prePrimary && field && !field.value.trim());
+      if (injected) field.value = PRE_PRIMARY_CHAPTER_VALUE;
+      try {
+        const result = originalValidateUploadForm.call(this, requireFile);
+        if (result && prePrimary) result.chapters = chapterValueFor(result.className, result.chapters);
+        return result;
+      } finally {
+        if (injected && field) field.value = '';
+        syncChapterRequirementUI();
+      }
+    };
+    try { validateUploadForm = window.validateUploadForm; } catch (_) {}
+  }
+
+  const originalGetManualMetadata = window.getManualMetadata;
+  if (typeof originalGetManualMetadata === 'function') {
+    window.getManualMetadata = function(){
+      const meta = originalGetManualMetadata.apply(this, arguments) || {};
+      meta.chapters = chapterValueFor(meta.className, meta.chapters);
+      return meta;
+    };
+    try { getManualMetadata = window.getManualMetadata; } catch (_) {}
+  }
+
+  const originalValidateManualMetaFields = window.validateManualMetaFields;
+  if (typeof originalValidateManualMetaFields === 'function') {
+    window.validateManualMetaFields = function(){
+      syncChapterRequirementUI();
+      return originalValidateManualMetaFields.apply(this, arguments);
+    };
+    try { validateManualMetaFields = window.validateManualMetaFields; } catch (_) {}
+  }
+
+  function dataUrlByteSize(value){
+    const base64 = String(value || '').split(',')[1] || '';
+    return Math.ceil(base64.replace(/\s/g,'').length * 0.75);
+  }
+  function isSafeEmbeddedDataUrl(value){
+    return /^data:image\/(png|jpeg|webp);base64,/i.test(String(value || '')) && dataUrlByteSize(value) <= SAFE_IMAGE_BYTES;
+  }
+  function readBlobAsDataUrl(blob){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Could not read the pasted image.'));
+      reader.readAsDataURL(blob);
+    });
+  }
+  function loadImageFromBlob(blob){
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(blob);
+      const image = new Image();
+      image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+      image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not decode the pasted image.')); };
+      image.src = url;
+    });
+  }
+  async function compressImageBlob(blob){
+    if (!blob || !/^image\/(png|jpeg|webp)$/i.test(blob.type || '')) throw new Error('Only PNG, JPG and WEBP images are supported.');
+    if (blob.size > MAX_SOURCE_IMAGE_BYTES) throw new Error('Image is too large. Use an image below 12 MB.');
+
+    if (blob.size <= SAFE_IMAGE_BYTES) {
+      const direct = await readBlobAsDataUrl(blob);
+      if (isSafeEmbeddedDataUrl(direct)) return direct;
+    }
+
+    const image = await loadImageFromBlob(blob);
+    let width = image.naturalWidth || image.width;
+    let height = image.naturalHeight || image.height;
+    const maxDimension = 1800;
+    const initialScale = Math.min(1, maxDimension / Math.max(width, height));
+    width = Math.max(1, Math.round(width * initialScale));
+    height = Math.max(1, Math.round(height * initialScale));
+
+    for (let sizePass = 0; sizePass < 5; sizePass++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d', { alpha:false });
+      context.fillStyle = '#FFFFFF';
+      context.fillRect(0,0,width,height);
+      context.drawImage(image,0,0,width,height);
+      for (const quality of [0.92,0.84,0.74,0.64,0.54]) {
+        let value = canvas.toDataURL('image/webp', quality);
+        if (!/^data:image\/webp/i.test(value)) value = canvas.toDataURL('image/jpeg', quality);
+        if (isSafeEmbeddedDataUrl(value)) return value;
+      }
+      width = Math.max(480, Math.round(width * 0.78));
+      height = Math.max(320, Math.round(height * 0.78));
+    }
+    throw new Error('Image could not be compressed safely. Please crop it and try again.');
+  }
+  async function sourceToSafeDataUrl(src){
+    const value = String(src || '').trim();
+    if (!value) throw new Error('Image source is empty.');
+    if (isSafeEmbeddedDataUrl(value)) return value;
+    const response = await fetch(value, { mode:'cors', credentials:'omit', cache:'no-store' });
+    if (!response.ok) throw new Error('The document image could not be fetched.');
+    return compressImageBlob(await response.blob());
+  }
+
+  function safeEditorInsert(html){
+    if (typeof insertEditorHtml === 'function') {
+      insertEditorHtml(html);
+      return;
+    }
+    const editor = byId('manualPaperEditor');
+    if (!editor) return;
+    editor.focus();
+    document.execCommand('insertHTML', false, html);
+    try { if (typeof handleManualEditorInput === 'function') handleManualEditorInput(); } catch (_) {}
+  }
+
+  async function prepareGoogleDocsHtml(rawHtml, clipboardFiles){
+    const template = document.createElement('template');
+    template.innerHTML = String(rawHtml || '');
+    template.content.querySelectorAll('script,style,meta,link,title').forEach(node => node.remove());
+    const images = [...template.content.querySelectorAll('img')];
+    let imported = 0;
+    let failed = 0;
+    let fallbackIndex = 0;
+
+    for (const image of images) {
+      let safeSrc = '';
+      const fallbackFile = clipboardFiles[fallbackIndex] || clipboardFiles[0] || null;
+      try {
+        const source = image.getAttribute('src') || image.getAttribute('data-src') || '';
+        if (source) safeSrc = await sourceToSafeDataUrl(source);
+      } catch (_) {
+        if (fallbackFile) {
+          try { safeSrc = await compressImageBlob(fallbackFile); fallbackIndex += 1; } catch (_) {}
+        }
+      }
+      if (safeSrc) {
+        image.setAttribute('src', safeSrc);
+        image.setAttribute('alt', (image.getAttribute('alt') || 'Diagram').slice(0,80));
+        image.setAttribute('class','diagram-image');
+        const parent = image.parentElement;
+        if (!parent || !parent.classList.contains('diagram-box')) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'diagram-box';
+          image.replaceWith(wrapper);
+          wrapper.appendChild(image);
+        }
+        imported += 1;
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'diagram-box';
+        placeholder.textContent = 'Image could not be imported. Use the Image button to add this diagram.';
+        image.replaceWith(placeholder);
+        failed += 1;
+      }
+    }
+
+    let cleaned = template.innerHTML;
+    try {
+      if (typeof sanitizeComposerHtmlClient === 'function') cleaned = sanitizeComposerHtmlClient(cleaned);
+    } catch (_) {}
+    return { html:cleaned, imported, failed };
+  }
+
+  window.handleManualEditorPaste = async function(event){
+    event.preventDefault();
+    event.stopPropagation();
+    try { if (typeof saveManualEditorSelection === 'function') saveManualEditorSelection(); } catch (_) {}
+
+    const clipboard = event.clipboardData || window.clipboardData;
+    const items = [...(clipboard?.items || [])];
+    const imageFiles = items
+      .filter(item => item.kind === 'file' && /^image\/(png|jpeg|webp)$/i.test(item.type || ''))
+      .map(item => item.getAsFile())
+      .filter(Boolean);
+    const html = clipboard?.getData('text/html') || '';
+    const text = clipboard?.getData('text/plain') || '';
+    const note = byId('manualAutosaveNote');
+    if (note) note.textContent = 'Importing pasted content…';
+
+    try {
+      if (html) {
+        const prepared = await prepareGoogleDocsHtml(html, imageFiles);
+        if (prepared.html.trim()) safeEditorInsert(prepared.html);
+        else if (text) {
+          if (typeof insertEditorText === 'function') insertEditorText(text); else safeEditorInsert(String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>'));
+        }
+        if (note) note.textContent = prepared.failed
+          ? `Paste completed: ${prepared.imported} image(s) imported; ${prepared.failed} image(s) need the Image button.`
+          : `Paste completed${prepared.imported ? ` with ${prepared.imported} image(s)` : ''}. Draft autosave is active.`;
+        return;
+      }
+
+      if (imageFiles.length) {
+        const blocks = [];
+        for (const file of imageFiles) {
+          const src = await compressImageBlob(file);
+          blocks.push(`<div class="diagram-box"><img class="diagram-image" src="${src}" alt="Diagram"></div><p><br></p>`);
+        }
+        safeEditorInsert(blocks.join(''));
+        if (note) note.textContent = `${imageFiles.length} pasted image(s) imported successfully.`;
+        return;
+      }
+
+      if (text) {
+        if (typeof insertEditorText === 'function') insertEditorText(text);
+        else safeEditorInsert(String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>'));
+      }
+    } catch (error) {
+      console.error('BGPS paste import failed:', error);
+      if (text) {
+        try { if (typeof insertEditorText === 'function') insertEditorText(text); } catch (_) {}
+      }
+      if (note) note.textContent = `Text pasted, but an image could not be imported: ${error.message}`;
+      alert(`The text was preserved, but an image could not be imported. ${error.message}\nUse the Image button for that diagram.`);
+    }
+  };
+  try { handleManualEditorPaste = window.handleManualEditorPaste; } catch (_) {}
+
+  window.insertDiagramImage = async function(input){
+    const file = input?.files?.[0];
+    if (!file) return;
+    try {
+      const src = await compressImageBlob(file);
+      safeEditorInsert(`<div class="diagram-box"><img class="diagram-image" src="${src}" alt="Diagram"></div><p><br></p>`);
+      const note = byId('manualAutosaveNote');
+      if (note) note.textContent = 'Image inserted and optimized for A4 preview.';
+    } catch (error) {
+      alert(error.message || 'Could not insert this image.');
+    } finally {
+      try { input.value = ''; } catch (_) {}
+    }
+  };
+  try { insertDiagramImage = window.insertDiagramImage; } catch (_) {}
+
+  function installPasteSupportNote(){
+    if (byId('manualPasteSupportNote')) return;
+    const toolbar = document.querySelector('#paperCreatorPanel .paper-editor-toolbar');
+    if (!toolbar) return;
+    const note = document.createElement('div');
+    note.id = 'manualPasteSupportNote';
+    note.innerHTML = '<strong>Google Docs paste supported:</strong> copy text and diagrams together, click inside the paper, then press Ctrl+V. Large images are automatically optimized.';
+    toolbar.insertAdjacentElement('afterend', note);
+  }
+
+  function setMarksInputLimit(){
+    const max = Number(byId('maxMarks')?.value);
+    document.querySelectorAll('.m-input').forEach(input => {
+      input.setAttribute('inputmode','decimal');
+      input.setAttribute('min','0');
+      if (Number.isFinite(max) && max > 0) input.setAttribute('max', String(max));
+      else input.removeAttribute('max');
+    });
+  }
+  function validateOneMarksInput(input){
+    if (!input) return true;
+    const row = input.closest('.student-row');
+    const absent = row?.querySelector('.absent-input')?.checked;
+    const raw = String(input.value || '').trim();
+    const max = Number(byId('maxMarks')?.value);
+    let valid = true;
+    if (!absent && raw !== '') {
+      const marks = Number(raw);
+      valid = Number.isFinite(marks) && marks >= 0 && Number.isFinite(max) && max > 0 && marks <= max;
+    }
+    row?.classList.toggle('marks-invalid', !valid);
+    row?.classList.toggle('marks-valid', valid && !absent && raw !== '');
+    input.setAttribute('aria-invalid', valid ? 'false' : 'true');
+    return valid;
+  }
+  function auditMarksRows(showStatus){
+    setMarksInputLimit();
+    const invalid = [];
+    let entered = 0;
+    let absent = 0;
+    document.querySelectorAll('.m-input').forEach(input => {
+      const row = input.closest('.student-row');
+      const isAbsent = Boolean(row?.querySelector('.absent-input')?.checked);
+      if (isAbsent) absent += 1;
+      else if (String(input.value || '').trim() !== '') entered += 1;
+      if (!validateOneMarksInput(input)) invalid.push(input.dataset.roll || '?');
+    });
+    if (showStatus && typeof setEntryStatus === 'function') {
+      if (invalid.length) setEntryStatus(`Invalid marks in Roll ${invalid.slice(0,8).join(', ')}. Marks must be between 0 and Maximum Marks.`, 'error');
+      else if (entered || absent) setEntryStatus(`${entered} mark record(s) ready · ${absent} absent record(s). Save / Update will upsert the selected exam and component.`, 'info');
+    }
+    return { valid:invalid.length === 0, invalid, entered, absent };
+  }
+
+  const originalGenerateRows = window.generateRows;
+  if (typeof originalGenerateRows === 'function') {
+    window.generateRows = function(){
+      const result = originalGenerateRows.apply(this, arguments);
+      setMarksInputLimit();
+      return result;
+    };
+    try { generateRows = window.generateRows; } catch (_) {}
+  }
+
+  const originalToggleAbsent = window.toggleAbsent;
+  if (typeof originalToggleAbsent === 'function') {
+    window.toggleAbsent = function(checkbox){
+      const result = originalToggleAbsent.apply(this, arguments);
+      const input = document.querySelector(`.m-input[data-roll="${checkbox?.dataset?.roll || ''}"]`);
+      validateOneMarksInput(input);
+      auditMarksRows(true);
+      return result;
+    };
+    try { toggleAbsent = window.toggleAbsent; } catch (_) {}
+  }
+
+  const originalLoadExistingMarks = window.loadExistingMarks;
+  if (typeof originalLoadExistingMarks === 'function') {
+    window.loadExistingMarks = async function(){
+      const result = await originalLoadExistingMarks.apply(this, arguments);
+      setMarksInputLimit();
+      auditMarksRows(false);
+      return result;
+    };
+    try { loadExistingMarks = window.loadExistingMarks; } catch (_) {}
+  }
+
+  const originalSubmitData = window.submitData;
+  if (typeof originalSubmitData === 'function') {
+    window.submitData = async function(){
+      try {
+        if (typeof paperSettings !== 'undefined' && paperSettings && paperSettings.marksEntryEnabled === false) {
+          if (typeof setEntryStatus === 'function') setEntryStatus('Marks Entry is closed by Admin.', 'error');
+          alert('Marks Entry is currently closed by Admin.');
+          return;
+        }
+      } catch (_) {}
+      const audit = auditMarksRows(true);
+      if (!audit.valid) {
+        const first = document.querySelector('.student-row.marks-invalid .m-input');
+        first?.focus();
+        return;
+      }
+      return originalSubmitData.apply(this, arguments);
+    };
+    try { submitData = window.submitData; } catch (_) {}
+  }
+
+  function installReliabilityBindings(){
+    syncChapterRequirementUI();
+    installPasteSupportNote();
+    setMarksInputLimit();
+
+    ['paperClass','manualClass'].forEach(id => byId(id)?.addEventListener('change', () => {
+      syncChapterRequirementUI();
+      try { if (typeof updateManualChecks === 'function') updateManualChecks(); } catch (_) {}
+    }));
+    byId('maxMarks')?.addEventListener('input', () => auditMarksRows(true));
+    byId('studentContainer')?.addEventListener('input', event => {
+      if (event.target?.classList?.contains('m-input')) {
+        validateOneMarksInput(event.target);
+        auditMarksRows(true);
+      }
+    });
+    byId('tab-papers')?.addEventListener('click', () => setTimeout(() => {
+      syncChapterRequirementUI();
+      installPasteSupportNote();
+    }, 0));
+
+    const paperView = byId('paperView');
+    if (paperView && window.MutationObserver) {
+      new MutationObserver(() => syncChapterRequirementUI()).observe(paperView, { childList:true, subtree:true, attributes:true, attributeFilter:['style','class','disabled'] });
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installReliabilityBindings, { once:true });
+  else installReliabilityBindings();
+})();
+</script>
 </body>
 </html>

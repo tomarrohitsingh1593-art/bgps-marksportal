@@ -147,22 +147,6 @@
 
         /* Teacher task workspace shell */
         .bgps-teacher-shell {
-            --teacher-page-bg: #EAF0F6;
-            --teacher-shell-bg: #143A67;
-            --teacher-shell-bg-dark: #0F2E52;
-            --teacher-panel: #1D4878;
-            --teacher-panel-2: #255689;
-            --teacher-card: #173A63;
-            --teacher-card-soft: #204873;
-            --teacher-card-active: #2C5E93;
-            --teacher-border: #6F92B8;
-            --teacher-text-light: #F4F8FC;
-            --teacher-text-soft: #C7D6E6;
-            --teacher-text-main: #102A4C;
-            --teacher-accent: #E8A11A;
-            --teacher-success: #1C8F4E;
-            --teacher-warning: #D08912;
-            --teacher-danger: #D63C3C;
             display: grid;
             grid-template-columns: 210px minmax(0, 1fr);
             gap: 12px;
@@ -171,7 +155,7 @@
             border-radius: 18px;
             background:
                 radial-gradient(circle at top right, rgba(232, 161, 26, 0.12), transparent 28%),
-                linear-gradient(145deg, var(--teacher-shell-bg) 0%, var(--teacher-shell-bg-dark) 100%);
+                linear-gradient(145deg, var(--teacher-shell) 0%, var(--teacher-page-bg) 100%);
             border: 1px solid rgba(111, 146, 184, 0.38);
             box-shadow: 0 18px 34px rgba(10, 33, 58, 0.18);
         }
@@ -389,7 +373,7 @@
             border-radius: 10px;
         }
 
-        body.teacher-night {
+        #appShell.teacher-portal-theme.teacher-night {
             --teacher-dark-bg: #0E1726;
             --teacher-dark-surface: #172235;
             --teacher-dark-surface-2: #1D2A40;
@@ -401,65 +385,65 @@
             --teacher-dark-warning: #F2B85B;
             --teacher-dark-danger: #F07B7B;
         }
-        body.teacher-night:not(.admin-user) {
+        #appShell.teacher-portal-theme.teacher-night {
             background: var(--teacher-dark-bg);
             color: var(--teacher-dark-text);
         }
-        body.teacher-night:not(.admin-user) .card,
-        body.teacher-night:not(.admin-user) .bgps-pro-panel,
-        body.teacher-night:not(.admin-user) .bgps-teacher-nav,
-        body.teacher-night:not(.admin-user) .bgps-teacher-workspace,
-        body.teacher-night:not(.admin-user) .bgps-teacher-task,
-        body.teacher-night:not(.admin-user) .bgps-teacher-nav-btn,
-        body.teacher-night:not(.admin-user) .bgps-teacher-strip button,
-        body.teacher-night:not(.admin-user) .bgps-teacher-mobile-chips .chip-row button,
-        body.teacher-night:not(.admin-user) .bgps-teacher-night-toggle,
-        body.teacher-night:not(.admin-user) .bgps-status-filter,
-        body.teacher-night:not(.admin-user) .bgps-class-table tr,
-        body.teacher-night:not(.admin-user) .bgps-ops-table-wrap,
-        body.teacher-night:not(.admin-user) .bgps-acc-block {
+        #appShell.teacher-portal-theme.teacher-night .card,
+        #appShell.teacher-portal-theme.teacher-night .bgps-pro-panel,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-nav,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-workspace,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-task,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-nav-btn,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-strip button,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-mobile-chips .chip-row button,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-night-toggle,
+        #appShell.teacher-portal-theme.teacher-night .bgps-status-filter,
+        #appShell.teacher-portal-theme.teacher-night .bgps-class-table tr,
+        #appShell.teacher-portal-theme.teacher-night .bgps-ops-table-wrap,
+        #appShell.teacher-portal-theme.teacher-night .bgps-acc-block {
             background: var(--teacher-dark-surface);
             border-color: var(--teacher-dark-border);
             color: var(--teacher-dark-text);
             box-shadow: none;
         }
-        body.teacher-night:not(.admin-user) .bgps-pro-titlebar { background: linear-gradient(135deg, #122136, #1a2c44); }
-        body.teacher-night:not(.admin-user) .bgps-teacher-task .meta span,
-        body.teacher-night:not(.admin-user) .bgps-teacher-nav-btn .badge,
-        body.teacher-night:not(.admin-user) .bgps-teacher-nav-btn .icon,
-        body.teacher-night:not(.admin-user) .bgps-status-filter .status-count { background: var(--teacher-dark-surface-2); color: var(--teacher-dark-text); border-color: var(--teacher-dark-border); }
-        body.teacher-night:not(.admin-user) .bgps-teacher-nav-btn.is-active,
-        body.teacher-night:not(.admin-user) .bgps-teacher-mobile-chips .chip-row button.is-active { background: #244267; border-color: #365b86; color: var(--teacher-dark-text); }
-        body.teacher-night:not(.admin-user) .bgps-teacher-task .primary,
-        body.teacher-night:not(.admin-user) .btn-primary { background: #2b4f79; border-color: #3c6799; color: var(--teacher-dark-text); }
-        body.teacher-night:not(.admin-user) .mobile-marks-progress { background:#1d2a40; border-color:#30415B; color:#A9B7CA; }
-        body.teacher-night:not(.admin-user) .mobile-entry-actions { background:#172235; border-color:#30415B; }
-        body.teacher-night:not(.admin-user) .bgps-teacher-filter select,
-        body.teacher-night:not(.admin-user) .bgps-teacher-filter input,
-        body.teacher-night:not(.admin-user) .control-group input,
-        body.teacher-night:not(.admin-user) .control-group select,
-        body.teacher-night:not(.admin-user) .control-group textarea,
-        body.teacher-night:not(.admin-user) #studentContainer,
-        body.teacher-night:not(.admin-user) .student-row,
-        body.teacher-night:not(.admin-user) .student-row input,
-        body.teacher-night:not(.admin-user) .paper-filter-bar select,
-        body.teacher-night:not(.admin-user) .paper-filter-bar input {
+        #appShell.teacher-portal-theme.teacher-night .bgps-pro-titlebar { background: linear-gradient(135deg, #122136, #1a2c44); }
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-task .meta span,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-nav-btn .badge,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-nav-btn .icon,
+        #appShell.teacher-portal-theme.teacher-night .bgps-status-filter .status-count { background: var(--teacher-dark-surface-2); color: var(--teacher-dark-text); border-color: var(--teacher-dark-border); }
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-nav-btn.is-active,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-mobile-chips .chip-row button.is-active { background: #244267; border-color: #365b86; color: var(--teacher-dark-text); }
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-task .primary,
+        #appShell.teacher-portal-theme.teacher-night .btn-primary { background: #2b4f79; border-color: #3c6799; color: var(--teacher-dark-text); }
+        #appShell.teacher-portal-theme.teacher-night .mobile-marks-progress { background:#1d2a40; border-color:#30415B; color:#A9B7CA; }
+        #appShell.teacher-portal-theme.teacher-night .mobile-entry-actions { background:#172235; border-color:#30415B; }
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-filter select,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-filter input,
+        #appShell.teacher-portal-theme.teacher-night .control-group input,
+        #appShell.teacher-portal-theme.teacher-night .control-group select,
+        #appShell.teacher-portal-theme.teacher-night .control-group textarea,
+        #appShell.teacher-portal-theme.teacher-night #studentContainer,
+        #appShell.teacher-portal-theme.teacher-night .student-row,
+        #appShell.teacher-portal-theme.teacher-night .student-row input,
+        #appShell.teacher-portal-theme.teacher-night .paper-filter-bar select,
+        #appShell.teacher-portal-theme.teacher-night .paper-filter-bar input {
             background: var(--teacher-dark-surface-2);
             color: var(--teacher-dark-text);
             border-color: var(--teacher-dark-border);
         }
-        body.teacher-night:not(.admin-user) .bgps-teacher-workspace-head p,
-        body.teacher-night:not(.admin-user) .bgps-teacher-task small,
-        body.teacher-night:not(.admin-user) .bgps-teacher-task .meta span,
-        body.teacher-night:not(.admin-user) .paper-empty,
-        body.teacher-night:not(.admin-user) .bgps-pro-panel p,
-        body.teacher-night:not(.admin-user) .bgps-teacher-strip button span { color: var(--teacher-dark-muted); }
-        body.teacher-night:not(.admin-user) .bgps-teacher-workspace-head h2,
-        body.teacher-night:not(.admin-user) .bgps-teacher-task strong,
-        body.teacher-night:not(.admin-user) .bgps-pro-panel h2,
-        body.teacher-night:not(.admin-user) .tab-btn { color: var(--teacher-dark-text); }
-        body.teacher-night:not(.admin-user) .tab-btn.active { background: #203653; border-bottom-color: #78AEE8; }
-        body.teacher-night:not(.admin-user) *:focus-visible { outline: 2px solid #78AEE8; outline-offset: 2px; }
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-workspace-head p,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-task small,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-task .meta span,
+        #appShell.teacher-portal-theme.teacher-night .paper-empty,
+        #appShell.teacher-portal-theme.teacher-night .bgps-pro-panel p,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-strip button span { color: var(--teacher-dark-muted); }
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-workspace-head h2,
+        #appShell.teacher-portal-theme.teacher-night .bgps-teacher-task strong,
+        #appShell.teacher-portal-theme.teacher-night .bgps-pro-panel h2,
+        #appShell.teacher-portal-theme.teacher-night .tab-btn { color: var(--teacher-dark-text); }
+        #appShell.teacher-portal-theme.teacher-night .tab-btn.active { background: #203653; border-bottom-color: #78AEE8; }
+        #appShell.teacher-portal-theme.teacher-night *:focus-visible { outline: 2px solid #78AEE8; outline-offset: 2px; }
 
         @media (max-width: 1100px) {
             .bgps-teacher-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -2371,24 +2355,29 @@
            UNIFIED TEACHER PORTAL THEME
            Scoped to non-admin app shell only. Print remains untouched.
            ============================================================= */
-        body:not(.admin-user) #appShell {
+        #appShell.teacher-portal-theme {
             --teacher-bg: #123A67;
             --teacher-bg-dark: #0D2C50;
-            --teacher-panel: #1B4777;
+            --teacher-page-bg: #0E2F53;
+            --teacher-shell: #123D6B;
+            --teacher-panel: #1D4D7F;
+            --teacher-panel-soft: #2A5D91;
             --teacher-panel-2: #245789;
             --teacher-panel-3: #2D639A;
             --teacher-surface-light: #F7FAFD;
             --teacher-surface-soft: #EAF1F8;
             --teacher-border-dark: rgba(255,255,255,0.16);
-            --teacher-border-light: #A8BED5;
+            --teacher-border-light: #B8CADC;
             --teacher-text-light: #F4F8FC;
-            --teacher-text-soft: #D5E2EF;
+            --teacher-text-soft: #D6E2EE;
             --teacher-text-main: #102A4C;
-            --teacher-text-muted: #60748C;
-            --teacher-accent: #E8A11A;
-            --teacher-success: #1B8F4E;
-            --teacher-warning: #D08912;
-            --teacher-danger: #C83A3A;
+            --teacher-text-dark: #102A4C;
+            --teacher-text-muted: #60758D;
+            --teacher-muted: #60758D;
+            --teacher-accent: #E5A11A;
+            --teacher-success: #1C8F4E;
+            --teacher-warning: #C98311;
+            --teacher-danger: #C93D3D;
             background:
                 radial-gradient(circle at top right, rgba(232,161,26,.12), transparent 26%),
                 radial-gradient(circle at bottom left, rgba(43,94,146,.18), transparent 28%),
@@ -2398,334 +2387,334 @@
             overflow: hidden;
         }
 
-        body:not(.admin-user) #appShell .app-header {
+        #appShell.teacher-portal-theme .app-header {
             background: linear-gradient(135deg, var(--teacher-bg-dark) 0%, var(--teacher-bg) 52%, var(--teacher-panel-3) 100%);
             border: 1px solid rgba(255,255,255,.12);
             border-bottom: 2px solid var(--teacher-accent);
             box-shadow: 0 16px 28px rgba(7, 24, 43, .18);
         }
-        body:not(.admin-user) #appShell .app-brand-title,
-        body:not(.admin-user) #appShell .app-brand-subtitle,
-        body:not(.admin-user) #appShell .role-badge,
-        body:not(.admin-user) #appShell .app-header,
-        body:not(.admin-user) #appShell .app-header *:not(input):not(select):not(textarea) {
+        #appShell.teacher-portal-theme .app-brand-title,
+        #appShell.teacher-portal-theme .app-brand-subtitle,
+        #appShell.teacher-portal-theme .role-badge,
+        #appShell.teacher-portal-theme .app-header,
+        #appShell.teacher-portal-theme .app-header *:not(input):not(select):not(textarea) {
             color: var(--teacher-text-light);
         }
-        body:not(.admin-user) #appShell .role-badge {
+        #appShell.teacher-portal-theme .role-badge {
             background: rgba(255,255,255,.12);
             border-color: rgba(255,255,255,.18);
             color: var(--teacher-text-light);
         }
 
-        body:not(.admin-user) #appShell .nav-tabs {
+        #appShell.teacher-portal-theme .nav-tabs {
             background: linear-gradient(180deg, #103154 0%, #0D2948 100%);
             border-bottom: 1px solid rgba(255,255,255,.08);
             padding: 4px;
             gap: 4px;
         }
-        body:not(.admin-user) #appShell .tab-btn {
+        #appShell.teacher-portal-theme .tab-btn {
             color: var(--teacher-text-soft);
             border-radius: 10px;
             border-bottom: none;
             min-height: 46px;
         }
-        body:not(.admin-user) #appShell .tab-btn:hover {
+        #appShell.teacher-portal-theme .tab-btn:hover {
             color: var(--teacher-text-light);
             background: rgba(255,255,255,.08);
         }
-        body:not(.admin-user) #appShell .tab-btn.active {
+        #appShell.teacher-portal-theme .tab-btn.active {
             color: #fff;
             background: linear-gradient(180deg, rgba(45,99,154,.92) 0%, rgba(27,71,119,.96) 100%);
             box-shadow: inset 0 -2px 0 var(--teacher-accent);
         }
-        body:not(.admin-user) #appShell .tab-btn.logout-tab {
+        #appShell.teacher-portal-theme .tab-btn.logout-tab {
             color: #ffd4d4;
         }
 
-        body:not(.admin-user) #appShell .card.view-section,
-        body:not(.admin-user) #appShell #entryView,
-        body:not(.admin-user) #appShell #dashView,
-        body:not(.admin-user) #appShell #paperView {
+        #appShell.teacher-portal-theme .card.view-section,
+        #appShell.teacher-portal-theme #entryView,
+        #appShell.teacher-portal-theme #dashView,
+        #appShell.teacher-portal-theme #paperView {
             background: linear-gradient(180deg, rgba(27,71,119,.98) 0%, rgba(18,58,103,.98) 100%);
             border: 1px solid rgba(255,255,255,.12);
             border-radius: 18px;
             box-shadow: 0 18px 34px rgba(7, 24, 43, .18);
         }
 
-        body:not(.admin-user) #appShell #entryView,
-        body:not(.admin-user) #appShell #dashView {
+        #appShell.teacher-portal-theme #entryView,
+        #appShell.teacher-portal-theme #dashView {
             color: var(--teacher-text-light);
         }
-        body:not(.admin-user) #appShell #entryView label,
-        body:not(.admin-user) #appShell #dashView label,
-        body:not(.admin-user) #appShell #paperView label {
+        #appShell.teacher-portal-theme #entryView label,
+        #appShell.teacher-portal-theme #dashView label,
+        #appShell.teacher-portal-theme #paperView label {
             color: var(--teacher-text-soft);
         }
-        body:not(.admin-user) #appShell #entryView .control-group input,
-        body:not(.admin-user) #appShell #entryView .control-group select,
-        body:not(.admin-user) #appShell #entryView .control-group textarea,
-        body:not(.admin-user) #appShell #dashView .control-group input,
-        body:not(.admin-user) #appShell #dashView .control-group select,
-        body:not(.admin-user) #appShell #dashView .control-group textarea,
-        body:not(.admin-user) #appShell #paperView .control-group input,
-        body:not(.admin-user) #appShell #paperView .control-group select,
-        body:not(.admin-user) #appShell #paperView .control-group textarea {
+        #appShell.teacher-portal-theme #entryView .control-group input,
+        #appShell.teacher-portal-theme #entryView .control-group select,
+        #appShell.teacher-portal-theme #entryView .control-group textarea,
+        #appShell.teacher-portal-theme #dashView .control-group input,
+        #appShell.teacher-portal-theme #dashView .control-group select,
+        #appShell.teacher-portal-theme #dashView .control-group textarea,
+        #appShell.teacher-portal-theme #paperView .control-group input,
+        #appShell.teacher-portal-theme #paperView .control-group select,
+        #appShell.teacher-portal-theme #paperView .control-group textarea {
             background: var(--teacher-surface-light);
             border-color: var(--teacher-border-light);
             color: var(--teacher-text-main);
         }
-        body:not(.admin-user) #appShell #entryView .btn-primary,
-        body:not(.admin-user) #appShell #dashView .btn-primary,
-        body:not(.admin-user) #appShell #paperView .btn-primary,
-        body:not(.admin-user) #appShell .bgps-teacher-workspace .btn-primary,
-        body:not(.admin-user) #appShell .bgps-teacher-main .btn-primary {
+        #appShell.teacher-portal-theme #entryView .btn-primary,
+        #appShell.teacher-portal-theme #dashView .btn-primary,
+        #appShell.teacher-portal-theme #paperView .btn-primary,
+        #appShell.teacher-portal-theme .bgps-teacher-workspace .btn-primary,
+        #appShell.teacher-portal-theme .bgps-teacher-main .btn-primary {
             background: linear-gradient(180deg, var(--teacher-panel-3) 0%, var(--teacher-panel-2) 100%);
             border: 1px solid rgba(255,255,255,.18);
             color: #fff;
         }
-        body:not(.admin-user) #appShell #entryView .btn-secondary,
-        body:not(.admin-user) #appShell #dashView .btn-secondary,
-        body:not(.admin-user) #appShell #paperView .btn-secondary,
-        body:not(.admin-user) #appShell .bgps-teacher-workspace .btn-secondary,
-        body:not(.admin-user) #appShell .bgps-teacher-main .btn-secondary {
+        #appShell.teacher-portal-theme #entryView .btn-secondary,
+        #appShell.teacher-portal-theme #dashView .btn-secondary,
+        #appShell.teacher-portal-theme #paperView .btn-secondary,
+        #appShell.teacher-portal-theme .bgps-teacher-workspace .btn-secondary,
+        #appShell.teacher-portal-theme .bgps-teacher-main .btn-secondary {
             background: rgba(247,250,253,.96);
             border: 1px solid var(--teacher-border-light);
             color: var(--teacher-text-main);
         }
 
-        body:not(.admin-user) #appShell #entryView .entry-status,
-        body:not(.admin-user) #appShell #dashView #reportEmptyState,
-        body:not(.admin-user) #appShell .paper-status,
-        body:not(.admin-user) #appShell .paper-availability,
-        body:not(.admin-user) #appShell .mobile-marks-progress,
-        body:not(.admin-user) #appShell .bgps-teacher-load,
-        body:not(.admin-user) #appShell .paper-empty {
+        #appShell.teacher-portal-theme #entryView .entry-status,
+        #appShell.teacher-portal-theme #dashView #reportEmptyState,
+        #appShell.teacher-portal-theme .paper-status,
+        #appShell.teacher-portal-theme .paper-availability,
+        #appShell.teacher-portal-theme .mobile-marks-progress,
+        #appShell.teacher-portal-theme .bgps-teacher-load,
+        #appShell.teacher-portal-theme .paper-empty {
             background: rgba(255,255,255,.08);
             border-color: rgba(255,255,255,.18);
             color: var(--teacher-text-soft);
         }
 
-        body:not(.admin-user) #appShell #entryView #studentContainer {
+        #appShell.teacher-portal-theme #entryView #studentContainer {
             background: rgba(247,250,253,.98);
             border-color: var(--teacher-border-light);
             box-shadow: inset 0 1px 0 rgba(255,255,255,.32);
         }
-        body:not(.admin-user) #appShell #entryView .student-row {
+        #appShell.teacher-portal-theme #entryView .student-row {
             background: transparent;
             color: var(--teacher-text-main);
             border-bottom-color: #d5e2ef;
         }
-        body:not(.admin-user) #appShell #entryView .student-row input {
+        #appShell.teacher-portal-theme #entryView .student-row input {
             background: #fff;
             border-color: #b6cade;
             color: var(--teacher-text-main);
         }
-        body:not(.admin-user) #appShell #entryView .absent-toggle {
+        #appShell.teacher-portal-theme #entryView .absent-toggle {
             background: #fff3de;
             border-color: #f0c47c;
             color: #9a5c00;
         }
-        body:not(.admin-user) #appShell #entryView .mobile-entry-actions {
+        #appShell.teacher-portal-theme #entryView .mobile-entry-actions {
             background: rgba(247,250,253,.98);
             border-color: var(--teacher-border-light);
         }
 
-        body:not(.admin-user) #appShell #dashView #dashMain,
-        body:not(.admin-user) #appShell #dashView #analyticsPanel,
-        body:not(.admin-user) #appShell #dashView .dashboard-toolbar,
-        body:not(.admin-user) #appShell #dashView #reportMeta .meta-chip,
-        body:not(.admin-user) #appShell #dashView .report-empty-state,
-        body:not(.admin-user) #appShell #dashView .stat-box,
-        body:not(.admin-user) #appShell #dashView .mark-click-hint {
+        #appShell.teacher-portal-theme #dashView #dashMain,
+        #appShell.teacher-portal-theme #dashView #analyticsPanel,
+        #appShell.teacher-portal-theme #dashView .dashboard-toolbar,
+        #appShell.teacher-portal-theme #dashView #reportMeta .meta-chip,
+        #appShell.teacher-portal-theme #dashView .report-empty-state,
+        #appShell.teacher-portal-theme #dashView .stat-box,
+        #appShell.teacher-portal-theme #dashView .mark-click-hint {
             background: rgba(255,255,255,.08);
             border-color: rgba(255,255,255,.16);
             color: var(--teacher-text-soft);
         }
-        body:not(.admin-user) #appShell #dashView #reportMeta .meta-chip strong,
-        body:not(.admin-user) #appShell #dashView .stat-box h4,
-        body:not(.admin-user) #appShell #dashView .report-empty-state strong,
-        body:not(.admin-user) #appShell #dashView .mark-click-hint strong {
+        #appShell.teacher-portal-theme #dashView #reportMeta .meta-chip strong,
+        #appShell.teacher-portal-theme #dashView .stat-box h4,
+        #appShell.teacher-portal-theme #dashView .report-empty-state strong,
+        #appShell.teacher-portal-theme #dashView .mark-click-hint strong {
             color: var(--teacher-text-light);
         }
-        body:not(.admin-user) #appShell #dashView table,
-        body:not(.admin-user) #appShell #dashView .dashboard-table-wrap,
-        body:not(.admin-user) #appShell #dashView #resTable,
-        body:not(.admin-user) #appShell #dashView #resTable td,
-        body:not(.admin-user) #appShell #dashView #resTable th {
+        #appShell.teacher-portal-theme #dashView table,
+        #appShell.teacher-portal-theme #dashView .dashboard-table-wrap,
+        #appShell.teacher-portal-theme #dashView #resTable,
+        #appShell.teacher-portal-theme #dashView #resTable td,
+        #appShell.teacher-portal-theme #dashView #resTable th {
             background-color: #fff;
             color: var(--teacher-text-main);
         }
 
-        body:not(.admin-user) #appShell #paperView.premium-paper-view {
+        #appShell.teacher-portal-theme #paperView.premium-paper-view {
             background:
                 radial-gradient(circle at top right, rgba(232,161,26,.12), transparent 24%),
                 linear-gradient(145deg, var(--teacher-bg) 0%, var(--teacher-bg-dark) 100%);
             border-color: rgba(255,255,255,.12);
         }
-        body:not(.admin-user) #appShell #paperView .paper-panel,
-        body:not(.admin-user) #appShell #paperView .premium-panel,
-        body:not(.admin-user) #appShell #paperView .paper-composer-shell,
-        body:not(.admin-user) #appShell #paperView .paper-availability.premium-availability,
-        body:not(.admin-user) #appShell #paperView .paper-mode-buttons.premium-mode-switch,
-        body:not(.admin-user) #appShell #paperView .smart-blueprint,
-        body:not(.admin-user) #appShell #paperView .library-stat,
-        body:not(.admin-user) #appShell #paperView .composer-analysis-item {
+        #appShell.teacher-portal-theme #paperView .paper-panel,
+        #appShell.teacher-portal-theme #paperView .premium-panel,
+        #appShell.teacher-portal-theme #paperView .paper-composer-shell,
+        #appShell.teacher-portal-theme #paperView .paper-availability.premium-availability,
+        #appShell.teacher-portal-theme #paperView .paper-mode-buttons.premium-mode-switch,
+        #appShell.teacher-portal-theme #paperView .smart-blueprint,
+        #appShell.teacher-portal-theme #paperView .library-stat,
+        #appShell.teacher-portal-theme #paperView .composer-analysis-item {
             background: linear-gradient(180deg, rgba(29,72,120,.94) 0%, rgba(19,58,103,.96) 100%);
             border-color: rgba(255,255,255,.14);
             color: var(--teacher-text-light);
         }
-        body:not(.admin-user) #appShell #paperView .paper-panel h2,
-        body:not(.admin-user) #appShell #paperView .premium-panel-header h2,
-        body:not(.admin-user) #appShell #paperView .smart-blueprint h3,
-        body:not(.admin-user) #appShell #paperView .library-stat strong,
-        body:not(.admin-user) #appShell #paperView .composer-analysis-item strong,
-        body:not(.admin-user) #appShell #paperView .paper-status,
-        body:not(.admin-user) #appShell #paperView .paper-availability {
+        #appShell.teacher-portal-theme #paperView .paper-panel h2,
+        #appShell.teacher-portal-theme #paperView .premium-panel-header h2,
+        #appShell.teacher-portal-theme #paperView .smart-blueprint h3,
+        #appShell.teacher-portal-theme #paperView .library-stat strong,
+        #appShell.teacher-portal-theme #paperView .composer-analysis-item strong,
+        #appShell.teacher-portal-theme #paperView .paper-status,
+        #appShell.teacher-portal-theme #paperView .paper-availability {
             color: var(--teacher-text-light);
         }
-        body:not(.admin-user) #appShell #paperView .paper-panel-subtitle,
-        body:not(.admin-user) #appShell #paperView .premium-panel-header p,
-        body:not(.admin-user) #appShell #paperView .panel-kicker,
-        body:not(.admin-user) #appShell #paperView .upload-hint,
-        body:not(.admin-user) #appShell #paperView .paper-file-note,
-        body:not(.admin-user) #appShell #paperView .autosave-note,
-        body:not(.admin-user) #appShell #paperView .smart-blueprint p,
-        body:not(.admin-user) #appShell #paperView .library-stat span,
-        body:not(.admin-user) #appShell #paperView .composer-analysis-item span {
+        #appShell.teacher-portal-theme #paperView .paper-panel-subtitle,
+        #appShell.teacher-portal-theme #paperView .premium-panel-header p,
+        #appShell.teacher-portal-theme #paperView .panel-kicker,
+        #appShell.teacher-portal-theme #paperView .upload-hint,
+        #appShell.teacher-portal-theme #paperView .paper-file-note,
+        #appShell.teacher-portal-theme #paperView .autosave-note,
+        #appShell.teacher-portal-theme #paperView .smart-blueprint p,
+        #appShell.teacher-portal-theme #paperView .library-stat span,
+        #appShell.teacher-portal-theme #paperView .composer-analysis-item span {
             color: var(--teacher-text-soft);
         }
-        body:not(.admin-user) #appShell #paperView .upload-drop-zone,
-        body:not(.admin-user) #appShell #paperView .paper-file-box,
-        body:not(.admin-user) #appShell #paperView .paper-card,
-        body:not(.admin-user) #appShell #paperView .manual-question-card,
-        body:not(.admin-user) #appShell #paperView .paper-control-list .paper-control-tile,
-        body:not(.admin-user) #appShell #paperView .paper-meta,
-        body:not(.admin-user) #appShell #paperView .paper-chapters,
-        body:not(.admin-user) #appShell #paperView .paper-admin-note {
+        #appShell.teacher-portal-theme #paperView .upload-drop-zone,
+        #appShell.teacher-portal-theme #paperView .paper-file-box,
+        #appShell.teacher-portal-theme #paperView .paper-card,
+        #appShell.teacher-portal-theme #paperView .manual-question-card,
+        #appShell.teacher-portal-theme #paperView .paper-control-list .paper-control-tile,
+        #appShell.teacher-portal-theme #paperView .paper-meta,
+        #appShell.teacher-portal-theme #paperView .paper-chapters,
+        #appShell.teacher-portal-theme #paperView .paper-admin-note {
             background: var(--teacher-surface-light);
             border-color: var(--teacher-border-light);
             color: var(--teacher-text-main);
         }
-        body:not(.admin-user) #appShell #paperView .paper-title,
-        body:not(.admin-user) #appShell #paperView .manual-question-head strong,
-        body:not(.admin-user) #appShell #paperView .paper-meta strong,
-        body:not(.admin-user) #appShell #paperView .manual-question-card label,
-        body:not(.admin-user) #appShell #paperView .paper-admin-note {
+        #appShell.teacher-portal-theme #paperView .paper-title,
+        #appShell.teacher-portal-theme #paperView .manual-question-head strong,
+        #appShell.teacher-portal-theme #paperView .paper-meta strong,
+        #appShell.teacher-portal-theme #paperView .manual-question-card label,
+        #appShell.teacher-portal-theme #paperView .paper-admin-note {
             color: var(--teacher-text-main);
         }
-        body:not(.admin-user) #appShell #paperView .paper-version,
-        body:not(.admin-user) #appShell #paperView .paper-meta span,
-        body:not(.admin-user) #appShell #paperView .paper-source-badge {
+        #appShell.teacher-portal-theme #paperView .paper-version,
+        #appShell.teacher-portal-theme #paperView .paper-meta span,
+        #appShell.teacher-portal-theme #paperView .paper-source-badge {
             color: var(--teacher-text-muted);
         }
-        body:not(.admin-user) #appShell #paperView .manual-question-card input,
-        body:not(.admin-user) #appShell #paperView .manual-question-card select,
-        body:not(.admin-user) #appShell #paperView .manual-question-card textarea,
-        body:not(.admin-user) #appShell #paperView .creator-setup-grid input,
-        body:not(.admin-user) #appShell #paperView .creator-setup-grid select,
-        body:not(.admin-user) #appShell #paperView .creator-setup-grid textarea,
-        body:not(.admin-user) #appShell #paperView #paperUploadPanel input,
-        body:not(.admin-user) #appShell #paperView #paperUploadPanel select,
-        body:not(.admin-user) #appShell #paperView #paperUploadPanel textarea,
-        body:not(.admin-user) #appShell #paperView .editor-language,
-        body:not(.admin-user) #appShell #paperView .editor-tool {
+        #appShell.teacher-portal-theme #paperView .manual-question-card input,
+        #appShell.teacher-portal-theme #paperView .manual-question-card select,
+        #appShell.teacher-portal-theme #paperView .manual-question-card textarea,
+        #appShell.teacher-portal-theme #paperView .creator-setup-grid input,
+        #appShell.teacher-portal-theme #paperView .creator-setup-grid select,
+        #appShell.teacher-portal-theme #paperView .creator-setup-grid textarea,
+        #appShell.teacher-portal-theme #paperView #paperUploadPanel input,
+        #appShell.teacher-portal-theme #paperView #paperUploadPanel select,
+        #appShell.teacher-portal-theme #paperView #paperUploadPanel textarea,
+        #appShell.teacher-portal-theme #paperView .editor-language,
+        #appShell.teacher-portal-theme #paperView .editor-tool {
             background: #fff;
             border-color: #b7cddd;
             color: var(--teacher-text-main);
         }
-        body:not(.admin-user) #appShell #paperView .paper-document,
-        body:not(.admin-user) #appShell #paperView #manualPaperEditor,
-        body:not(.admin-user) #appShell #paperView #manualPaperEditor td,
-        body:not(.admin-user) #appShell #paperView #manualPaperEditor th {
+        #appShell.teacher-portal-theme #paperView .paper-document,
+        #appShell.teacher-portal-theme #paperView #manualPaperEditor,
+        #appShell.teacher-portal-theme #paperView #manualPaperEditor td,
+        #appShell.teacher-portal-theme #paperView #manualPaperEditor th {
             background: #fff;
             color: #111;
         }
 
-        body:not(.admin-user) #appShell .remark-card {
+        #appShell.teacher-portal-theme .remark-card {
             background: linear-gradient(180deg, rgba(247,250,253,.98) 0%, rgba(234,241,248,.96) 100%);
             border: 1px solid var(--teacher-border-light);
             box-shadow: 0 8px 20px rgba(7,24,43,.12);
         }
-        body:not(.admin-user) #appShell .remark-card h3 { color: var(--teacher-text-main); }
-        body:not(.admin-user) #appShell .remark-card p,
-        body:not(.admin-user) #appShell .remark-card .remark-meta { color: var(--teacher-text-muted); }
+        #appShell.teacher-portal-theme .remark-card h3 { color: var(--teacher-text-main); }
+        #appShell.teacher-portal-theme .remark-card p,
+        #appShell.teacher-portal-theme .remark-card .remark-meta { color: var(--teacher-text-muted); }
 
-        body:not(.admin-user) #appShell .modal-overlay {
+        #appShell.teacher-portal-theme .modal-overlay {
             background: rgba(8, 24, 42, .58);
             backdrop-filter: blur(3px);
         }
-        body:not(.admin-user) #appShell .edit-modal,
-        body:not(.admin-user) #appShell .breakdown-modal {
+        #appShell.teacher-portal-theme .edit-modal,
+        #appShell.teacher-portal-theme .breakdown-modal {
             background: linear-gradient(180deg, rgba(27,71,119,.98) 0%, rgba(18,58,103,.98) 100%);
             border-color: rgba(255,255,255,.12);
             color: var(--teacher-text-light);
             box-shadow: 0 24px 54px rgba(3, 14, 27, .28);
         }
-        body:not(.admin-user) #appShell .edit-modal-header h2,
-        body:not(.admin-user) #appShell .breakdown-header h2,
-        body:not(.admin-user) #appShell .breakdown-total,
-        body:not(.admin-user) #appShell .audit-cell strong {
+        #appShell.teacher-portal-theme .edit-modal-header h2,
+        #appShell.teacher-portal-theme .breakdown-header h2,
+        #appShell.teacher-portal-theme .breakdown-total,
+        #appShell.teacher-portal-theme .audit-cell strong {
             color: var(--teacher-text-light);
         }
-        body:not(.admin-user) #appShell .breakdown-subtitle,
-        body:not(.admin-user) #appShell .modal-note,
-        body:not(.admin-user) #appShell .breakdown-note {
+        #appShell.teacher-portal-theme .breakdown-subtitle,
+        #appShell.teacher-portal-theme .modal-note,
+        #appShell.teacher-portal-theme .breakdown-note {
             color: var(--teacher-text-soft);
         }
-        body:not(.admin-user) #appShell .edit-table,
-        body:not(.admin-user) #appShell .edit-table td,
-        body:not(.admin-user) #appShell .edit-table th,
-        body:not(.admin-user) #appShell .breakdown-card,
-        body:not(.admin-user) #appShell .breakdown-total {
+        #appShell.teacher-portal-theme .edit-table,
+        #appShell.teacher-portal-theme .edit-table td,
+        #appShell.teacher-portal-theme .edit-table th,
+        #appShell.teacher-portal-theme .breakdown-card,
+        #appShell.teacher-portal-theme .breakdown-total {
             background: var(--teacher-surface-light);
             color: var(--teacher-text-main);
             border-color: var(--teacher-border-light);
         }
-        body:not(.admin-user) #appShell .edit-table input[type="number"] {
+        #appShell.teacher-portal-theme .edit-table input[type="number"] {
             background: #fff;
             color: var(--teacher-text-main);
             border-color: #b7cddd;
         }
 
-        body:not(.admin-user) #appShell .bgps-ctx-panel,
-        body:not(.admin-user) #appShell .bgps-teacher-workspace,
-        body:not(.admin-user) #appShell .bgps-teacher-nav,
-        body:not(.admin-user) #appShell .bgps-teacher-task,
-        body:not(.admin-user) #appShell .bgps-teacher-strip button,
-        body:not(.admin-user) #appShell .bgps-teacher-mobile-chips .chip-row button {
+        #appShell.teacher-portal-theme .bgps-ctx-panel,
+        #appShell.teacher-portal-theme .bgps-teacher-workspace,
+        #appShell.teacher-portal-theme .bgps-teacher-nav,
+        #appShell.teacher-portal-theme .bgps-teacher-task,
+        #appShell.teacher-portal-theme .bgps-teacher-strip button,
+        #appShell.teacher-portal-theme .bgps-teacher-mobile-chips .chip-row button {
             box-shadow: 0 14px 24px rgba(7,24,43,.16);
         }
 
-        body.teacher-night:not(.admin-user) #appShell {
+        #appShell.teacher-portal-theme.teacher-night {
             background:
                 radial-gradient(circle at top right, rgba(120,174,232,.08), transparent 24%),
                 linear-gradient(145deg, #0E1726 0%, #132032 100%);
             box-shadow: 0 24px 48px rgba(2,10,18,.35);
         }
-        body.teacher-night:not(.admin-user) #appShell .app-header,
-        body.teacher-night:not(.admin-user) #appShell .nav-tabs,
-        body.teacher-night:not(.admin-user) #appShell #entryView,
-        body.teacher-night:not(.admin-user) #appShell #dashView,
-        body.teacher-night:not(.admin-user) #appShell #paperView,
-        body.teacher-night:not(.admin-user) #appShell .paper-panel,
-        body.teacher-night:not(.admin-user) #appShell .premium-panel,
-        body.teacher-night:not(.admin-user) #appShell .edit-modal,
-        body.teacher-night:not(.admin-user) #appShell .breakdown-modal {
+        #appShell.teacher-portal-theme.teacher-night .app-header,
+        #appShell.teacher-portal-theme.teacher-night .nav-tabs,
+        #appShell.teacher-portal-theme.teacher-night #entryView,
+        #appShell.teacher-portal-theme.teacher-night #dashView,
+        #appShell.teacher-portal-theme.teacher-night #paperView,
+        #appShell.teacher-portal-theme.teacher-night .paper-panel,
+        #appShell.teacher-portal-theme.teacher-night .premium-panel,
+        #appShell.teacher-portal-theme.teacher-night .edit-modal,
+        #appShell.teacher-portal-theme.teacher-night .breakdown-modal {
             border-color: rgba(255,255,255,.08);
         }
 
         @media screen and (max-width:768px) {
-            body:not(.admin-user) #appShell {
+            #appShell.teacher-portal-theme {
                 border-radius: 0;
                 box-shadow: none;
             }
-            body:not(.admin-user) #appShell .app-header,
-            body:not(.admin-user) #appShell #entryView,
-            body:not(.admin-user) #appShell #dashView,
-            body:not(.admin-user) #appShell #paperView {
+            #appShell.teacher-portal-theme .app-header,
+            #appShell.teacher-portal-theme #entryView,
+            #appShell.teacher-portal-theme #dashView,
+            #appShell.teacher-portal-theme #paperView {
                 border-radius: 16px;
             }
-            body:not(.admin-user) #appShell .nav-tabs { padding: 6px; gap: 6px; }
+            #appShell.teacher-portal-theme .nav-tabs { padding: 6px; gap: 6px; }
         }
 
     </style>
@@ -9653,8 +9642,13 @@
     }
 
     function applyTeacherNightTheme() {
+        const shell = document.getElementById('appShell');
         if (!currentId || isAdminUser()) {
             document.body.classList.remove('teacher-night');
+            if (shell) {
+                shell.classList.remove('teacher-night');
+                shell.classList.remove('teacher-portal-theme');
+            }
             return;
         }
         const pref = PRO.teacherNight;
@@ -9662,6 +9656,10 @@
             ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
             : Boolean(pref);
         document.body.classList.toggle('teacher-night', effective);
+        if (shell) {
+            shell.classList.add('teacher-portal-theme');
+            shell.classList.toggle('teacher-night', effective);
+        }
     }
 
     function loadTeacherNightTheme() {
@@ -10503,6 +10501,8 @@
   window.loginTeacher = loginTeacher = async function(){
     await originalLogin.apply(this, arguments);
         document.body.classList.toggle('admin-user', isAdminUser());
+        const shell = document.getElementById('appShell');
+        if (shell) shell.classList.toggle('teacher-portal-theme', !isAdminUser());
         loadTeacherNightTheme();
     ensureProViews();
     renderRoleTabs();

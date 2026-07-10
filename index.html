@@ -2367,6 +2367,367 @@
             }
         }
 
+        /* =============================================================
+           UNIFIED TEACHER PORTAL THEME
+           Scoped to non-admin app shell only. Print remains untouched.
+           ============================================================= */
+        body:not(.admin-user) #appShell {
+            --teacher-bg: #123A67;
+            --teacher-bg-dark: #0D2C50;
+            --teacher-panel: #1B4777;
+            --teacher-panel-2: #245789;
+            --teacher-panel-3: #2D639A;
+            --teacher-surface-light: #F7FAFD;
+            --teacher-surface-soft: #EAF1F8;
+            --teacher-border-dark: rgba(255,255,255,0.16);
+            --teacher-border-light: #A8BED5;
+            --teacher-text-light: #F4F8FC;
+            --teacher-text-soft: #D5E2EF;
+            --teacher-text-main: #102A4C;
+            --teacher-text-muted: #60748C;
+            --teacher-accent: #E8A11A;
+            --teacher-success: #1B8F4E;
+            --teacher-warning: #D08912;
+            --teacher-danger: #C83A3A;
+            background:
+                radial-gradient(circle at top right, rgba(232,161,26,.12), transparent 26%),
+                radial-gradient(circle at bottom left, rgba(43,94,146,.18), transparent 28%),
+                linear-gradient(145deg, var(--teacher-bg) 0%, var(--teacher-bg-dark) 100%);
+            border-radius: 20px;
+            box-shadow: 0 24px 48px rgba(8, 28, 51, .22);
+            overflow: hidden;
+        }
+
+        body:not(.admin-user) #appShell .app-header {
+            background: linear-gradient(135deg, var(--teacher-bg-dark) 0%, var(--teacher-bg) 52%, var(--teacher-panel-3) 100%);
+            border: 1px solid rgba(255,255,255,.12);
+            border-bottom: 2px solid var(--teacher-accent);
+            box-shadow: 0 16px 28px rgba(7, 24, 43, .18);
+        }
+        body:not(.admin-user) #appShell .app-brand-title,
+        body:not(.admin-user) #appShell .app-brand-subtitle,
+        body:not(.admin-user) #appShell .role-badge,
+        body:not(.admin-user) #appShell .app-header,
+        body:not(.admin-user) #appShell .app-header *:not(input):not(select):not(textarea) {
+            color: var(--teacher-text-light);
+        }
+        body:not(.admin-user) #appShell .role-badge {
+            background: rgba(255,255,255,.12);
+            border-color: rgba(255,255,255,.18);
+            color: var(--teacher-text-light);
+        }
+
+        body:not(.admin-user) #appShell .nav-tabs {
+            background: linear-gradient(180deg, #103154 0%, #0D2948 100%);
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            padding: 4px;
+            gap: 4px;
+        }
+        body:not(.admin-user) #appShell .tab-btn {
+            color: var(--teacher-text-soft);
+            border-radius: 10px;
+            border-bottom: none;
+            min-height: 46px;
+        }
+        body:not(.admin-user) #appShell .tab-btn:hover {
+            color: var(--teacher-text-light);
+            background: rgba(255,255,255,.08);
+        }
+        body:not(.admin-user) #appShell .tab-btn.active {
+            color: #fff;
+            background: linear-gradient(180deg, rgba(45,99,154,.92) 0%, rgba(27,71,119,.96) 100%);
+            box-shadow: inset 0 -2px 0 var(--teacher-accent);
+        }
+        body:not(.admin-user) #appShell .tab-btn.logout-tab {
+            color: #ffd4d4;
+        }
+
+        body:not(.admin-user) #appShell .card.view-section,
+        body:not(.admin-user) #appShell #entryView,
+        body:not(.admin-user) #appShell #dashView,
+        body:not(.admin-user) #appShell #paperView {
+            background: linear-gradient(180deg, rgba(27,71,119,.98) 0%, rgba(18,58,103,.98) 100%);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 18px;
+            box-shadow: 0 18px 34px rgba(7, 24, 43, .18);
+        }
+
+        body:not(.admin-user) #appShell #entryView,
+        body:not(.admin-user) #appShell #dashView {
+            color: var(--teacher-text-light);
+        }
+        body:not(.admin-user) #appShell #entryView label,
+        body:not(.admin-user) #appShell #dashView label,
+        body:not(.admin-user) #appShell #paperView label {
+            color: var(--teacher-text-soft);
+        }
+        body:not(.admin-user) #appShell #entryView .control-group input,
+        body:not(.admin-user) #appShell #entryView .control-group select,
+        body:not(.admin-user) #appShell #entryView .control-group textarea,
+        body:not(.admin-user) #appShell #dashView .control-group input,
+        body:not(.admin-user) #appShell #dashView .control-group select,
+        body:not(.admin-user) #appShell #dashView .control-group textarea,
+        body:not(.admin-user) #appShell #paperView .control-group input,
+        body:not(.admin-user) #appShell #paperView .control-group select,
+        body:not(.admin-user) #appShell #paperView .control-group textarea {
+            background: var(--teacher-surface-light);
+            border-color: var(--teacher-border-light);
+            color: var(--teacher-text-main);
+        }
+        body:not(.admin-user) #appShell #entryView .btn-primary,
+        body:not(.admin-user) #appShell #dashView .btn-primary,
+        body:not(.admin-user) #appShell #paperView .btn-primary,
+        body:not(.admin-user) #appShell .bgps-teacher-workspace .btn-primary,
+        body:not(.admin-user) #appShell .bgps-teacher-main .btn-primary {
+            background: linear-gradient(180deg, var(--teacher-panel-3) 0%, var(--teacher-panel-2) 100%);
+            border: 1px solid rgba(255,255,255,.18);
+            color: #fff;
+        }
+        body:not(.admin-user) #appShell #entryView .btn-secondary,
+        body:not(.admin-user) #appShell #dashView .btn-secondary,
+        body:not(.admin-user) #appShell #paperView .btn-secondary,
+        body:not(.admin-user) #appShell .bgps-teacher-workspace .btn-secondary,
+        body:not(.admin-user) #appShell .bgps-teacher-main .btn-secondary {
+            background: rgba(247,250,253,.96);
+            border: 1px solid var(--teacher-border-light);
+            color: var(--teacher-text-main);
+        }
+
+        body:not(.admin-user) #appShell #entryView .entry-status,
+        body:not(.admin-user) #appShell #dashView #reportEmptyState,
+        body:not(.admin-user) #appShell .paper-status,
+        body:not(.admin-user) #appShell .paper-availability,
+        body:not(.admin-user) #appShell .mobile-marks-progress,
+        body:not(.admin-user) #appShell .bgps-teacher-load,
+        body:not(.admin-user) #appShell .paper-empty {
+            background: rgba(255,255,255,.08);
+            border-color: rgba(255,255,255,.18);
+            color: var(--teacher-text-soft);
+        }
+
+        body:not(.admin-user) #appShell #entryView #studentContainer {
+            background: rgba(247,250,253,.98);
+            border-color: var(--teacher-border-light);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.32);
+        }
+        body:not(.admin-user) #appShell #entryView .student-row {
+            background: transparent;
+            color: var(--teacher-text-main);
+            border-bottom-color: #d5e2ef;
+        }
+        body:not(.admin-user) #appShell #entryView .student-row input {
+            background: #fff;
+            border-color: #b6cade;
+            color: var(--teacher-text-main);
+        }
+        body:not(.admin-user) #appShell #entryView .absent-toggle {
+            background: #fff3de;
+            border-color: #f0c47c;
+            color: #9a5c00;
+        }
+        body:not(.admin-user) #appShell #entryView .mobile-entry-actions {
+            background: rgba(247,250,253,.98);
+            border-color: var(--teacher-border-light);
+        }
+
+        body:not(.admin-user) #appShell #dashView #dashMain,
+        body:not(.admin-user) #appShell #dashView #analyticsPanel,
+        body:not(.admin-user) #appShell #dashView .dashboard-toolbar,
+        body:not(.admin-user) #appShell #dashView #reportMeta .meta-chip,
+        body:not(.admin-user) #appShell #dashView .report-empty-state,
+        body:not(.admin-user) #appShell #dashView .stat-box,
+        body:not(.admin-user) #appShell #dashView .mark-click-hint {
+            background: rgba(255,255,255,.08);
+            border-color: rgba(255,255,255,.16);
+            color: var(--teacher-text-soft);
+        }
+        body:not(.admin-user) #appShell #dashView #reportMeta .meta-chip strong,
+        body:not(.admin-user) #appShell #dashView .stat-box h4,
+        body:not(.admin-user) #appShell #dashView .report-empty-state strong,
+        body:not(.admin-user) #appShell #dashView .mark-click-hint strong {
+            color: var(--teacher-text-light);
+        }
+        body:not(.admin-user) #appShell #dashView table,
+        body:not(.admin-user) #appShell #dashView .dashboard-table-wrap,
+        body:not(.admin-user) #appShell #dashView #resTable,
+        body:not(.admin-user) #appShell #dashView #resTable td,
+        body:not(.admin-user) #appShell #dashView #resTable th {
+            background-color: #fff;
+            color: var(--teacher-text-main);
+        }
+
+        body:not(.admin-user) #appShell #paperView.premium-paper-view {
+            background:
+                radial-gradient(circle at top right, rgba(232,161,26,.12), transparent 24%),
+                linear-gradient(145deg, var(--teacher-bg) 0%, var(--teacher-bg-dark) 100%);
+            border-color: rgba(255,255,255,.12);
+        }
+        body:not(.admin-user) #appShell #paperView .paper-panel,
+        body:not(.admin-user) #appShell #paperView .premium-panel,
+        body:not(.admin-user) #appShell #paperView .paper-composer-shell,
+        body:not(.admin-user) #appShell #paperView .paper-availability.premium-availability,
+        body:not(.admin-user) #appShell #paperView .paper-mode-buttons.premium-mode-switch,
+        body:not(.admin-user) #appShell #paperView .smart-blueprint,
+        body:not(.admin-user) #appShell #paperView .library-stat,
+        body:not(.admin-user) #appShell #paperView .composer-analysis-item {
+            background: linear-gradient(180deg, rgba(29,72,120,.94) 0%, rgba(19,58,103,.96) 100%);
+            border-color: rgba(255,255,255,.14);
+            color: var(--teacher-text-light);
+        }
+        body:not(.admin-user) #appShell #paperView .paper-panel h2,
+        body:not(.admin-user) #appShell #paperView .premium-panel-header h2,
+        body:not(.admin-user) #appShell #paperView .smart-blueprint h3,
+        body:not(.admin-user) #appShell #paperView .library-stat strong,
+        body:not(.admin-user) #appShell #paperView .composer-analysis-item strong,
+        body:not(.admin-user) #appShell #paperView .paper-status,
+        body:not(.admin-user) #appShell #paperView .paper-availability {
+            color: var(--teacher-text-light);
+        }
+        body:not(.admin-user) #appShell #paperView .paper-panel-subtitle,
+        body:not(.admin-user) #appShell #paperView .premium-panel-header p,
+        body:not(.admin-user) #appShell #paperView .panel-kicker,
+        body:not(.admin-user) #appShell #paperView .upload-hint,
+        body:not(.admin-user) #appShell #paperView .paper-file-note,
+        body:not(.admin-user) #appShell #paperView .autosave-note,
+        body:not(.admin-user) #appShell #paperView .smart-blueprint p,
+        body:not(.admin-user) #appShell #paperView .library-stat span,
+        body:not(.admin-user) #appShell #paperView .composer-analysis-item span {
+            color: var(--teacher-text-soft);
+        }
+        body:not(.admin-user) #appShell #paperView .upload-drop-zone,
+        body:not(.admin-user) #appShell #paperView .paper-file-box,
+        body:not(.admin-user) #appShell #paperView .paper-card,
+        body:not(.admin-user) #appShell #paperView .manual-question-card,
+        body:not(.admin-user) #appShell #paperView .paper-control-list .paper-control-tile,
+        body:not(.admin-user) #appShell #paperView .paper-meta,
+        body:not(.admin-user) #appShell #paperView .paper-chapters,
+        body:not(.admin-user) #appShell #paperView .paper-admin-note {
+            background: var(--teacher-surface-light);
+            border-color: var(--teacher-border-light);
+            color: var(--teacher-text-main);
+        }
+        body:not(.admin-user) #appShell #paperView .paper-title,
+        body:not(.admin-user) #appShell #paperView .manual-question-head strong,
+        body:not(.admin-user) #appShell #paperView .paper-meta strong,
+        body:not(.admin-user) #appShell #paperView .manual-question-card label,
+        body:not(.admin-user) #appShell #paperView .paper-admin-note {
+            color: var(--teacher-text-main);
+        }
+        body:not(.admin-user) #appShell #paperView .paper-version,
+        body:not(.admin-user) #appShell #paperView .paper-meta span,
+        body:not(.admin-user) #appShell #paperView .paper-source-badge {
+            color: var(--teacher-text-muted);
+        }
+        body:not(.admin-user) #appShell #paperView .manual-question-card input,
+        body:not(.admin-user) #appShell #paperView .manual-question-card select,
+        body:not(.admin-user) #appShell #paperView .manual-question-card textarea,
+        body:not(.admin-user) #appShell #paperView .creator-setup-grid input,
+        body:not(.admin-user) #appShell #paperView .creator-setup-grid select,
+        body:not(.admin-user) #appShell #paperView .creator-setup-grid textarea,
+        body:not(.admin-user) #appShell #paperView #paperUploadPanel input,
+        body:not(.admin-user) #appShell #paperView #paperUploadPanel select,
+        body:not(.admin-user) #appShell #paperView #paperUploadPanel textarea,
+        body:not(.admin-user) #appShell #paperView .editor-language,
+        body:not(.admin-user) #appShell #paperView .editor-tool {
+            background: #fff;
+            border-color: #b7cddd;
+            color: var(--teacher-text-main);
+        }
+        body:not(.admin-user) #appShell #paperView .paper-document,
+        body:not(.admin-user) #appShell #paperView #manualPaperEditor,
+        body:not(.admin-user) #appShell #paperView #manualPaperEditor td,
+        body:not(.admin-user) #appShell #paperView #manualPaperEditor th {
+            background: #fff;
+            color: #111;
+        }
+
+        body:not(.admin-user) #appShell .remark-card {
+            background: linear-gradient(180deg, rgba(247,250,253,.98) 0%, rgba(234,241,248,.96) 100%);
+            border: 1px solid var(--teacher-border-light);
+            box-shadow: 0 8px 20px rgba(7,24,43,.12);
+        }
+        body:not(.admin-user) #appShell .remark-card h3 { color: var(--teacher-text-main); }
+        body:not(.admin-user) #appShell .remark-card p,
+        body:not(.admin-user) #appShell .remark-card .remark-meta { color: var(--teacher-text-muted); }
+
+        body:not(.admin-user) #appShell .modal-overlay {
+            background: rgba(8, 24, 42, .58);
+            backdrop-filter: blur(3px);
+        }
+        body:not(.admin-user) #appShell .edit-modal,
+        body:not(.admin-user) #appShell .breakdown-modal {
+            background: linear-gradient(180deg, rgba(27,71,119,.98) 0%, rgba(18,58,103,.98) 100%);
+            border-color: rgba(255,255,255,.12);
+            color: var(--teacher-text-light);
+            box-shadow: 0 24px 54px rgba(3, 14, 27, .28);
+        }
+        body:not(.admin-user) #appShell .edit-modal-header h2,
+        body:not(.admin-user) #appShell .breakdown-header h2,
+        body:not(.admin-user) #appShell .breakdown-total,
+        body:not(.admin-user) #appShell .audit-cell strong {
+            color: var(--teacher-text-light);
+        }
+        body:not(.admin-user) #appShell .breakdown-subtitle,
+        body:not(.admin-user) #appShell .modal-note,
+        body:not(.admin-user) #appShell .breakdown-note {
+            color: var(--teacher-text-soft);
+        }
+        body:not(.admin-user) #appShell .edit-table,
+        body:not(.admin-user) #appShell .edit-table td,
+        body:not(.admin-user) #appShell .edit-table th,
+        body:not(.admin-user) #appShell .breakdown-card,
+        body:not(.admin-user) #appShell .breakdown-total {
+            background: var(--teacher-surface-light);
+            color: var(--teacher-text-main);
+            border-color: var(--teacher-border-light);
+        }
+        body:not(.admin-user) #appShell .edit-table input[type="number"] {
+            background: #fff;
+            color: var(--teacher-text-main);
+            border-color: #b7cddd;
+        }
+
+        body:not(.admin-user) #appShell .bgps-ctx-panel,
+        body:not(.admin-user) #appShell .bgps-teacher-workspace,
+        body:not(.admin-user) #appShell .bgps-teacher-nav,
+        body:not(.admin-user) #appShell .bgps-teacher-task,
+        body:not(.admin-user) #appShell .bgps-teacher-strip button,
+        body:not(.admin-user) #appShell .bgps-teacher-mobile-chips .chip-row button {
+            box-shadow: 0 14px 24px rgba(7,24,43,.16);
+        }
+
+        body.teacher-night:not(.admin-user) #appShell {
+            background:
+                radial-gradient(circle at top right, rgba(120,174,232,.08), transparent 24%),
+                linear-gradient(145deg, #0E1726 0%, #132032 100%);
+            box-shadow: 0 24px 48px rgba(2,10,18,.35);
+        }
+        body.teacher-night:not(.admin-user) #appShell .app-header,
+        body.teacher-night:not(.admin-user) #appShell .nav-tabs,
+        body.teacher-night:not(.admin-user) #appShell #entryView,
+        body.teacher-night:not(.admin-user) #appShell #dashView,
+        body.teacher-night:not(.admin-user) #appShell #paperView,
+        body.teacher-night:not(.admin-user) #appShell .paper-panel,
+        body.teacher-night:not(.admin-user) #appShell .premium-panel,
+        body.teacher-night:not(.admin-user) #appShell .edit-modal,
+        body.teacher-night:not(.admin-user) #appShell .breakdown-modal {
+            border-color: rgba(255,255,255,.08);
+        }
+
+        @media screen and (max-width:768px) {
+            body:not(.admin-user) #appShell {
+                border-radius: 0;
+                box-shadow: none;
+            }
+            body:not(.admin-user) #appShell .app-header,
+            body:not(.admin-user) #appShell #entryView,
+            body:not(.admin-user) #appShell #dashView,
+            body:not(.admin-user) #appShell #paperView {
+                border-radius: 16px;
+            }
+            body:not(.admin-user) #appShell .nav-tabs { padding: 6px; gap: 6px; }
+        }
+
     </style>
 <base target="_blank">
 </head>

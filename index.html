@@ -2322,7 +2322,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzOz7rcsUlcm9AuGgxJGUN0aQlaSoS3_JKhU94a6pYfLxj7NoF6GcdMqeZybaA4v7nv/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw8h7A5cpW9cr36EbOkHPDrypEw8__XiHM6pmZ2U2Bn4hW9iBI1IYK-mWKX6MDk_lun/exec";
         
         const PASS_PERCENT = 33;
 
@@ -9791,7 +9791,7 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     removeTransientUi(template.content);
     const allowedTags = new Set(['DIV','P','BR','B','STRONG','I','EM','U','SUP','SUB','OL','UL','LI','H2','H3','H4','TABLE','THEAD','TBODY','TR','TH','TD','SPAN','HR','IMG']);
     const dangerous = new Set(['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','FORM','INPUT','BUTTON','TEXTAREA','SELECT','OPTION','LINK','META','BASE','SVG','MATH']);
-    const safeClasses = new Set(['paper-instructions','section-heading','question-line','mark-token','or-line','diagram-box','diagram-image','diagram-caption','q-placeholder','page-break','has-image']);
+    const safeClasses = new Set(['paper-instructions','section-heading','question-line','mark-token','or-line','diagram-box','diagram-image','diagram-caption','q-placeholder','page-break','has-image','bgps-image-row','bgps-single-image']);
 
     [...template.content.querySelectorAll('*')].forEach(node => {
       if (dangerous.has(node.tagName)) { node.remove(); return; }
@@ -9802,6 +9802,7 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
       const alt = node.tagName === 'IMG' ? String(node.getAttribute('alt') || 'Diagram').slice(0,80) : '';
       const colspan = (node.tagName === 'TD' || node.tagName === 'TH') ? Number(node.getAttribute('colspan')) : NaN;
       const rowspan = (node.tagName === 'TD' || node.tagName === 'TH') ? Number(node.getAttribute('rowspan')) : NaN;
+      const imageCols = node.classList.contains('bgps-image-row') ? Number(node.getAttribute('data-cols')) : NaN;
       const safeStyle = allowedStyle(node);
 
       [...node.attributes].forEach(attribute => node.removeAttribute(attribute.name));
@@ -9813,6 +9814,7 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
       }
       if (Number.isFinite(colspan) && colspan > 0) node.setAttribute('colspan',String(clamp(Math.round(colspan),1,10)));
       if (Number.isFinite(rowspan) && rowspan > 0) node.setAttribute('rowspan',String(clamp(Math.round(rowspan),1,10)));
+      if (classNames.includes('bgps-image-row') && Number.isFinite(imageCols)) node.setAttribute('data-cols',String(clamp(Math.round(imageCols),2,5)));
       if (safeStyle) node.setAttribute('style',safeStyle);
     });
     return template.innerHTML;
@@ -10934,628 +10936,641 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
   else installBindings();
 })();
 </script>
-
-<style id="bgps-isc-image-layout-v7-css">
-  /* BGPS ISC-style image layout and direct in-paper movement V7 */
-  #manualPaperEditor .diagram-box.has-image {
-    position: relative !important;
-    display: block !important;
-    max-width: 100% !important;
-    min-height: 0 !important;
-    margin: 14px auto !important;
-    padding: 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    text-align: center !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-    overflow: visible !important;
+<style id="bgps-board-image-layout-v8-css">
+  /* V8 - Board-style image layout. Keeps pasted image order, enables real drag movement,
+     and compacts picture-heavy primary/pre-primary papers into printable rows. */
+  #manualPaperEditor .bgps-image-row {
+    display:grid !important;
+    grid-template-columns:repeat(var(--bgps-cols, 3), minmax(0,1fr)) !important;
+    gap:10px !important;
+    align-items:stretch !important;
+    width:100% !important;
+    margin:10px 0 14px !important;
+    padding:7px !important;
+    border:1px dashed #b8c9d8 !important;
+    border-radius:9px !important;
+    background:#fbfdff !important;
+    break-inside:avoid !important;
+    page-break-inside:avoid !important;
   }
-  #manualPaperEditor .diagram-box.has-image > img.diagram-image,
+  #manualPaperEditor .bgps-image-row[data-cols="2"] { --bgps-cols:2; --bgps-cell-h:180px; }
+  #manualPaperEditor .bgps-image-row[data-cols="3"] { --bgps-cols:3; --bgps-cell-h:150px; }
+  #manualPaperEditor .bgps-image-row[data-cols="4"] { --bgps-cols:4; --bgps-cell-h:130px; }
+  #manualPaperEditor .bgps-image-row[data-cols="5"] { --bgps-cols:5; --bgps-cell-h:112px; }
+  #manualPaperEditor .bgps-image-row > .diagram-box.has-image {
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+    min-height:var(--bgps-cell-h,130px) !important;
+    height:var(--bgps-cell-h,130px) !important;
+    margin:0 !important;
+    padding:6px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border:1px solid #d4e0ea !important;
+    border-radius:7px !important;
+    background:#fff !important;
+    overflow:visible !important;
+  }
+  #manualPaperEditor .bgps-image-row > .diagram-box.has-image > img.diagram-image,
+  #manualPaperEditor .bgps-image-row > .diagram-box.has-image > img {
+    width:auto !important;
+    height:auto !important;
+    max-width:100% !important;
+    max-height:calc(var(--bgps-cell-h,130px) - 14px) !important;
+    object-fit:contain !important;
+    margin:auto !important;
+    display:block !important;
+  }
+  #manualPaperEditor > .diagram-box.has-image {
+    width:42% !important;
+    max-width:82mm !important;
+    min-height:0 !important;
+    margin:10px auto 14px !important;
+    padding:6px !important;
+    display:block !important;
+    border:1px solid #d4e0ea !important;
+    border-radius:7px !important;
+    background:#fff !important;
+    text-align:center !important;
+    break-inside:avoid !important;
+    page-break-inside:avoid !important;
+  }
+  #manualPaperEditor > .diagram-box.has-image > img.diagram-image,
+  #manualPaperEditor > .diagram-box.has-image > img {
+    width:auto !important;
+    height:auto !important;
+    max-width:100% !important;
+    max-height:58mm !important;
+    object-fit:contain !important;
+    margin:0 auto !important;
+    display:block !important;
+  }
   #manualPaperEditor .diagram-box.has-image > img {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: 430px !important;
-    height: auto !important;
-    margin: 0 auto !important;
-    object-fit: contain !important;
-    cursor: grab !important;
-    touch-action: none !important;
-    user-select: none !important;
-    -webkit-user-select: none !important;
-    -webkit-user-drag: none !important;
+    cursor:grab !important;
+    touch-action:none !important;
+    user-select:none !important;
+    -webkit-user-select:none !important;
+    -webkit-user-drag:none !important;
   }
-  #manualPaperEditor .diagram-box.has-image.is-image-selected > img,
-  #manualPaperEditor .diagram-box.has-image.bgps-v7-pointer-dragging > img {
-    cursor: grabbing !important;
+  #manualPaperEditor .diagram-box.has-image.bgps-v8-dragging > img { cursor:grabbing !important; }
+  #manualPaperEditor .diagram-box.has-image.bgps-v8-dragging {
+    opacity:.48 !important;
+    outline:2px dashed #174d78 !important;
+    box-shadow:none !important;
   }
-  #manualPaperEditor .diagram-box.has-image.is-image-selected {
-    outline: 2px solid #1e5f91 !important;
-    outline-offset: 4px !important;
-    box-shadow: 0 0 0 5px rgba(30,95,145,.10) !important;
+  #manualPaperEditor .bgps-v8-move-badge {
+    position:absolute;
+    left:5px;
+    top:5px;
+    z-index:25;
+    display:none;
+    min-height:25px;
+    padding:4px 7px;
+    border:1px solid #8eabc1;
+    border-radius:6px;
+    background:rgba(255,255,255,.97);
+    color:#173f68;
+    font:800 10px/1 Arial,sans-serif;
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
   }
-  #manualPaperEditor .diagram-caption {
-    margin: 6px 0 0 !important;
-    padding: 0 !important;
-    font-size: 11px !important;
-    line-height: 1.3 !important;
-    text-align: center !important;
+  #manualPaperEditor .diagram-box.has-image.is-image-selected > .bgps-v8-move-badge { display:block; }
+  #manualPaperEditor .bgps-v8-drop-marker {
+    width:100% !important;
+    height:5px !important;
+    min-height:5px !important;
+    margin:6px 0 !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:999px !important;
+    background:#e6a900 !important;
+    box-shadow:0 0 0 3px rgba(230,169,0,.18) !important;
+    pointer-events:none !important;
   }
-  #manualPaperEditor .bgps-v7-inline-image-tools {
-    position: absolute;
-    left: 50%;
-    top: -38px;
-    z-index: 30;
-    transform: translateX(-50%);
-    display: none;
-    align-items: center;
-    gap: 3px;
-    padding: 4px;
-    border: 1px solid #8eacc5;
-    border-radius: 8px;
-    background: rgba(255,255,255,.98);
-    box-shadow: 0 5px 16px rgba(13,52,83,.18);
-    white-space: nowrap;
-    font-family: Arial, sans-serif;
-    user-select: none;
+  #manualPaperEditor .bgps-image-row > .bgps-v8-drop-marker {
+    height:var(--bgps-cell-h,130px) !important;
+    min-height:var(--bgps-cell-h,130px) !important;
+    margin:0 !important;
+    border:2px dashed #e6a900 !important;
+    border-radius:7px !important;
+    background:#fff8d6 !important;
+    box-shadow:none !important;
   }
-  #manualPaperEditor .diagram-box.has-image.is-image-selected > .bgps-v7-inline-image-tools {
-    display: flex;
+  #manualPaperEditor .bgps-v8-keyboard-move {
+    outline:3px solid #e6a900 !important;
+    outline-offset:4px !important;
   }
-  #manualPaperEditor .bgps-v7-inline-image-tools button {
-    min-width: 27px;
-    height: 27px;
-    min-height: 27px;
-    padding: 0 7px;
-    border: 1px solid #c1d1df;
-    border-radius: 6px;
-    background: #f7fbff;
-    color: #173f68;
-    font-size: 10px;
-    font-weight: 800;
-    cursor: pointer;
+  #paperCreatorPanel .bgps-v8-status-note {
+    margin:8px 0 0;
+    padding:8px 10px;
+    border:1px solid #b9cfe0;
+    border-radius:8px;
+    background:#f5faff;
+    color:#244f73;
+    font-size:11px;
+    line-height:1.4;
+    font-weight:700;
   }
-  #manualPaperEditor .bgps-v7-inline-image-tools button:hover {
-    border-color: #1e5f91;
-    background: #eaf4fc;
+  #paperCreatorPanel .bgps-v8-auto-btn {
+    background:#f6c90e !important;
+    border-color:#d9ad00 !important;
+    color:#102a43 !important;
+    font-weight:900 !important;
   }
-  #manualPaperEditor .bgps-v7-inline-image-tools .drag-help {
-    padding: 0 7px;
-    color: #173f68;
-    font-size: 10px;
-    font-weight: 900;
-    cursor: grab;
-  }
-  #manualPaperEditor .bgps-v7-inline-image-tools .keyboard-active {
-    background: #fff3bf;
-    border-color: #d5a900;
-  }
-  #manualPaperEditor .bgps-v7-drop-line {
-    display: block !important;
-    width: 100% !important;
-    height: 0 !important;
-    min-height: 0 !important;
-    margin: 7px 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-top: 3px solid #e8a600 !important;
-    box-shadow: 0 1px 0 rgba(255,255,255,.9) !important;
-    pointer-events: none !important;
-  }
-  #manualPaperEditor .bgps-v7-drop-line::after {
-    content: 'Drop image here';
-    display: inline-block;
-    position: relative;
-    left: 50%;
-    top: -10px;
-    transform: translateX(-50%);
-    padding: 2px 7px;
-    border-radius: 999px;
-    background: #fff3bf;
-    color: #704d00;
-    font-family: Arial, sans-serif;
-    font-size: 9px;
-    font-weight: 900;
-  }
-  #manualPaperEditor .diagram-box.bgps-v7-pointer-dragging {
-    opacity: .58 !important;
-    outline: 2px dashed #173f68 !important;
-    box-shadow: none !important;
-  }
-  #paperCreatorPanel .bgps-v7-image-standard-note {
-    margin: 7px 0 0;
-    padding: 8px 10px;
-    border: 1px solid #bdd2e3;
-    border-radius: 8px;
-    background: #f4f9fd;
-    color: #244d70;
-    font-size: 11px;
-    line-height: 1.4;
-    font-weight: 700;
-  }
-  @media (max-width: 700px) {
-    #manualPaperEditor .diagram-box.has-image { margin-top: 13px !important; margin-bottom: 13px !important; }
-    #manualPaperEditor .bgps-v7-inline-image-tools { max-width: calc(100vw - 48px); overflow-x: auto; left: 0; transform: none; }
-    #manualPaperEditor .bgps-v7-inline-image-tools .drag-help { display: none; }
+  @media(max-width:700px){
+    #manualPaperEditor .bgps-image-row { gap:6px !important; padding:5px !important; }
+    #manualPaperEditor .bgps-image-row[data-cols="4"],
+    #manualPaperEditor .bgps-image-row[data-cols="5"] { grid-template-columns:repeat(3,minmax(0,1fr)) !important; --bgps-cell-h:105px; }
+    #manualPaperEditor > .diagram-box.has-image { width:72% !important; max-width:100% !important; }
   }
   @media print {
-    .bgps-v7-inline-image-tools,.bgps-v7-drop-line { display: none !important; }
-    #manualPaperEditor .diagram-box.has-image { margin-top: 3.5mm !important; margin-bottom: 3.5mm !important; outline: none !important; box-shadow: none !important; }
+    .bgps-v8-move-badge,.bgps-v8-drop-marker { display:none !important; }
   }
 </style>
-<script id="bgps-isc-image-layout-v7-js">
-(function bgpsIscImageLayoutV7(){
+<script id="bgps-board-image-layout-v8-js">
+(function bgpsBoardImageLayoutV8(){
   'use strict';
-  if (window.__BGPS_ISC_IMAGE_LAYOUT_V7__) return;
-  window.__BGPS_ISC_IMAGE_LAYOUT_V7__ = true;
+  if (window.__BGPS_BOARD_IMAGE_LAYOUT_V8__) return;
+  window.__BGPS_BOARD_IMAGE_LAYOUT_V8__=true;
 
-  const STANDARD_WIDTH = 62;
-  const MOBILE_WIDTH = 78;
-  const TRANSIENT = '[data-bgps-transient],.bgps-image-resize-handle,.bgps-image-drag-handle,.bgps-v7-inline-image-tools,.bgps-v7-drop-line';
-  const state = { pointer:null, dropLine:null, installed:false, normalizing:false, keyboardBox:null };
-  const byId = id => document.getElementById(id);
-  const getEditor = () => byId('manualPaperEditor');
-  const clamp = (n,min,max) => Math.min(max,Math.max(min,n));
+  const byId=id=>document.getElementById(id);
+  const getEditor=()=>byId('manualPaperEditor');
+  const TRANSIENT='.bgps-v8-move-badge,.bgps-v8-drop-marker,.bgps-image-resize-handle,.bgps-image-drag-handle,[data-bgps-transient]';
+  const state={normalizing:false,drag:null,marker:null,keyboardBox:null,observer:null};
+  const base={
+    sanitizer:window.sanitizeComposerHtmlClient,
+    previewBuilder:window.buildManualPreviewHtml,
+    preview:window.previewManualPaper,
+    auto:window.bgpsAutoFormatPaper,
+    autoPreview:window.bgpsAutoFormatAndPreview
+  };
 
   function replaceGlobal(name,fn){
-    try { window[name]=fn; } catch (_) {}
-    try { (0,eval)(`${name}=window.${name}`); } catch (_) {}
+    try{window[name]=fn;}catch(_){}
+    try{(0,eval)(`${name}=window.${name}`);}catch(_){}
   }
-
-  function directChildren(){
-    const ed=getEditor();
-    if (!ed) return [];
-    return [...ed.children].filter(node => !node.matches('.bgps-v7-drop-line,[data-bgps-transient]'));
+  function meaningful(node){
+    if(!node) return false;
+    if(node.querySelector?.('img,table,hr,.page-break')) return true;
+    return Boolean(String(node.textContent||'').replace(/\u200b/g,'').replace(/\u00a0/g,' ').trim());
   }
-
-  function topLevel(node){
-    const ed=getEditor();
-    if (!ed || !node) return null;
-    let current=node;
-    while (current.parentElement && current.parentElement!==ed) current=current.parentElement;
-    return current.parentElement===ed ? current : null;
+  function topLevel(root,node){
+    if(!root||!node) return null;
+    let cur=node;
+    while(cur.parentElement&&cur.parentElement!==root) cur=cur.parentElement;
+    return cur.parentElement===root?cur:null;
   }
-
-  function isVisuallyEmpty(node){
-    if (!node) return true;
-    if (node.querySelector?.('img,table,hr,.page-break')) return false;
-    return !String(node.textContent||'').replace(/\u200b/g,'').trim();
+  function isImageBox(node){return Boolean(node?.matches?.('.diagram-box.has-image')&&node.querySelector('img'));}
+  function removeTransient(root){
+    root?.querySelectorAll?.(TRANSIENT)?.forEach(n=>n.remove());
+    root?.querySelectorAll?.('.bgps-v8-dragging,.bgps-v8-keyboard-move')?.forEach(n=>n.classList.remove('bgps-v8-dragging','bgps-v8-keyboard-move'));
   }
-
-  function ensureBoxForImage(img){
-    if (!img) return null;
-    let box=img.closest('.diagram-box');
-    if (!box) {
-      box=document.createElement('div');
-      box.className='diagram-box has-image';
-      img.parentNode?.insertBefore(box,img);
-      box.appendChild(img);
-    }
-    box.classList.add('diagram-box','has-image');
-    img.classList.add('diagram-image');
-    img.setAttribute('alt',String(img.getAttribute('alt')||'Diagram').slice(0,80));
-    img.draggable=false;
-    return box;
-  }
-
-  function promoteBoxesToStandalone(){
-    const ed=getEditor();
-    if (!ed || state.normalizing) return [];
-    state.normalizing=true;
-    try {
-      const boxes=[...ed.querySelectorAll('img')].map(ensureBoxForImage).filter(Boolean);
-      const anchors=new Map();
-      const cleanup=new Set();
-      boxes.forEach(box => {
-        if (box.closest('table')) return;
-        const top=topLevel(box);
-        if (!top || top===box) return;
-        const anchor=anchors.get(top)||top;
-        anchor.insertAdjacentElement('afterend',box);
-        anchors.set(top,box);
-        cleanup.add(top);
-      });
-      cleanup.forEach(node => { if (node.isConnected && isVisuallyEmpty(node)) node.remove(); });
-      return boxes;
-    } finally { state.normalizing=false; }
-  }
-
-  function applyStandardStyle(box,forceWidth){
-    if (!box) return;
-    const img=box.querySelector('img');
-    if (!img) return;
-    const current=parseFloat(String(box.style.width||'').replace('%',''));
-    const width=forceWidth || !Number.isFinite(current) ? STANDARD_WIDTH : clamp(current,25,100);
-    box.classList.add('diagram-box','has-image');
-    box.style.width=`${width}%`;
-    box.style.maxWidth='100%';
-    box.style.minHeight='0px';
-    box.style.display='block';
-    box.style.marginLeft='auto';
-    box.style.marginRight='auto';
-    box.style.marginTop='14px';
-    box.style.marginBottom='14px';
-    box.style.padding='0px';
-    box.style.textAlign='center';
-    box.style.border='0px';
-    box.style.background='transparent';
-    box.style.breakInside='avoid';
-    box.style.pageBreakInside='avoid';
-    box.dataset.imageAlign='center';
-    box.draggable=false;
-    box.tabIndex=0;
-    box.setAttribute('role','group');
-    box.setAttribute('aria-label','Selected paper diagram. Drag the image to move it, or press Space then Arrow Up or Arrow Down.');
-    img.classList.add('diagram-image');
-    img.draggable=false;
-    img.style.width='100%';
-    img.style.maxWidth='100%';
-    img.style.height='auto';
-    img.style.display='block';
-    img.style.objectFit='contain';
-    img.style.marginLeft='auto';
-    img.style.marginRight='auto';
-    installInlineTools(box);
-  }
-
-  function normalizeImages(forceWidth,emit){
-    const ed=getEditor();
-    if (!ed) return [];
-    const boxes=promoteBoxesToStandalone();
-    boxes.forEach(box=>applyStandardStyle(box,Boolean(forceWidth)));
-    if (emit) emitEditorChange('Images standardized for ISC print layout.');
-    return boxes;
-  }
-
-  function selectBox(box,focus){
-    const ed=getEditor();
-    if (!ed || !box) return;
-    ed.querySelectorAll('.diagram-box.is-image-selected').forEach(node=>{ if(node!==box) node.classList.remove('is-image-selected'); });
-    box.classList.add('is-image-selected');
-    try {
-      const img=box.querySelector('img');
-      if (img && typeof window.handleManualEditorClick==='function') {
-        window.handleManualEditorClick({target:img,preventDefault(){},stopPropagation(){}});
-      }
-    } catch (_) {}
-    box.classList.add('is-image-selected');
-    installInlineTools(box);
-    if (focus) { try { box.focus({preventScroll:true}); } catch (_) { try{box.focus();}catch(__){} } }
-  }
-
-  function installInlineTools(box){
-    if (!box || box.querySelector(':scope > .bgps-v7-inline-image-tools')) return;
-    const tools=document.createElement('div');
-    tools.className='bgps-v7-inline-image-tools';
-    tools.dataset.bgpsTransient='true';
-    tools.contentEditable='false';
-    tools.innerHTML='<span class="drag-help" title="Drag the picture itself to move it">↕ Drag picture</span>'+
-      '<button type="button" data-act="up" title="Move image above previous question">↑</button>'+
-      '<button type="button" data-act="down" title="Move image below next question">↓</button>'+
-      '<button type="button" data-act="small" title="Set image width to 48%">48%</button>'+
-      '<button type="button" data-act="standard" title="Set standard ISC image width to 62%">Standard</button>'+
-      '<button type="button" data-act="wide" title="Set image width to 78%">78%</button>'+
-      '<button type="button" data-act="left" title="Align left">L</button>'+
-      '<button type="button" data-act="center" title="Align center">C</button>'+
-      '<button type="button" data-act="right" title="Align right">R</button>'+
-      '<button type="button" data-act="keys" title="Space then Arrow Up/Down to move">Space+Arrows</button>';
-    tools.addEventListener('pointerdown',event=>{ event.preventDefault(); event.stopPropagation(); });
-    tools.addEventListener('click',event=>{
-      event.preventDefault(); event.stopPropagation();
-      const act=event.target?.closest?.('button')?.dataset?.act;
-      if (!act) return;
-      selectBox(box,true);
-      if (act==='up') moveRelative(box,-1);
-      else if (act==='down') moveRelative(box,1);
-      else if (act==='small') setBoxWidth(box,48);
-      else if (act==='standard') setBoxWidth(box,STANDARD_WIDTH);
-      else if (act==='wide') setBoxWidth(box,78);
-      else if (act==='left'||act==='center'||act==='right') setBoxAlign(box,act);
-      else if (act==='keys') toggleKeyboardMode(box);
-    });
-    box.appendChild(tools);
-  }
-
-  function setBoxWidth(box,width){
-    if (!box) return;
-    box.style.width=`${clamp(Number(width)||STANDARD_WIDTH,25,100)}%`;
-    try { selectBox(box,false); if(typeof window.bgpsSetImageWidth==='function') window.bgpsSetImageWidth(width); } catch (_) {}
-    emitEditorChange(`Image width set to ${Math.round(Number(width)||STANDARD_WIDTH)}%.`);
-  }
-
-  function setBoxAlign(box,mode){
-    if (!box) return;
-    const align=['left','center','right'].includes(mode)?mode:'center';
-    box.dataset.imageAlign=align;
-    box.style.textAlign=align;
-    if (align==='left') { box.style.marginLeft='0px'; box.style.marginRight='auto'; }
-    else if (align==='right') { box.style.marginLeft='auto'; box.style.marginRight='0px'; }
-    else { box.style.marginLeft='auto'; box.style.marginRight='auto'; }
-    try { selectBox(box,false); if(typeof window.bgpsSetImageAlign==='function') window.bgpsSetImageAlign(align); } catch (_) {}
-    emitEditorChange(`Image aligned ${align}.`);
-  }
-
-  function moveRelative(box,direction){
-    const ed=getEditor();
-    if (!ed || !box) return;
-    normalizeImages(false,false);
-    const blocks=directChildren();
-    const index=blocks.indexOf(box);
-    if (index<0) return;
-    if (direction<0 && index>0) ed.insertBefore(box,blocks[index-1]);
-    else if (direction>0 && index<blocks.length-1) blocks[index+1].insertAdjacentElement('afterend',box);
-    else return;
-    selectBox(box,true);
-    emitEditorChange(direction<0?'Image moved upward.':'Image moved downward.');
-  }
-
-  function toggleKeyboardMode(box){
-    const tools=box?.querySelector(':scope > .bgps-v7-inline-image-tools');
-    const button=tools?.querySelector('[data-act="keys"]');
-    const active=state.keyboardBox===box;
-    if (state.keyboardBox) state.keyboardBox.classList.remove('bgps-v7-keyboard-move');
-    state.keyboardBox=active?null:box;
-    box?.classList.toggle('bgps-v7-keyboard-move',!active);
-    button?.classList.toggle('keyboard-active',!active);
-    if (!active) {
-      selectBox(box,true);
-      setEditorNote('Keyboard image move ON: use ↑/↓ to move, ←/→ to align, Space or Esc to exit.');
-    } else setEditorNote('Keyboard image move OFF.');
-  }
-
-  function setEditorNote(message){
-    const note=byId('manualAutosaveNote');
-    if (note) note.textContent=message;
-  }
-
-  function emitEditorChange(message){
-    const ed=getEditor();
-    if (!ed) return;
-    try { ed.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertReplacementText',data:null})); }
-    catch (_) { ed.dispatchEvent(new Event('input',{bubbles:true})); }
-    try { if(typeof window.handleManualEditorInput==='function') window.handleManualEditorInput(); } catch (_) {}
-    try { if(typeof window.saveManualEditorSelection==='function') window.saveManualEditorSelection(); } catch (_) {}
-    if (message) setEditorNote(message);
-  }
-
-  function ensureDropLine(){
-    if (state.dropLine?.isConnected) return state.dropLine;
-    const line=document.createElement('div');
-    line.className='bgps-v7-drop-line';
-    line.dataset.bgpsTransient='true';
-    line.contentEditable='false';
-    state.dropLine=line;
-    return line;
-  }
-
-  function updateDropPosition(clientY,box){
-    const ed=getEditor();
-    if (!ed) return;
-    const line=ensureDropLine();
-    const blocks=directChildren().filter(node=>node!==box && node!==line);
-    let before=null;
-    for (const block of blocks) {
-      const rect=block.getBoundingClientRect();
-      if (clientY < rect.top + rect.height/2) { before=block; break; }
-    }
-    if (before) ed.insertBefore(line,before);
-    else ed.appendChild(line);
-  }
-
-  function beginPointerDrag(event){
-    if (event.button!=null && event.button!==0) return;
-    const ed=getEditor();
-    const img=event.target?.closest?.('#manualPaperEditor .diagram-box.has-image > img');
-    if (!ed || !img) return;
-    const box=img.closest('.diagram-box.has-image');
-    if (!box) return;
-    selectBox(box,true);
-    state.pointer={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,box,img,moved:false};
-    try { img.setPointerCapture?.(event.pointerId); } catch (_) {}
-    window.addEventListener('pointermove',onPointerMove,{passive:false});
-    window.addEventListener('pointerup',endPointerDrag,{passive:false,once:true});
-    window.addEventListener('pointercancel',endPointerDrag,{passive:false,once:true});
-  }
-
-  function onPointerMove(event){
-    const drag=state.pointer;
-    if (!drag || (event.pointerId!=null && event.pointerId!==drag.pointerId)) return;
-    const distance=Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY);
-    if (!drag.moved && distance<6) return;
-    drag.moved=true;
-    event.preventDefault();
-    drag.box.classList.add('bgps-v7-pointer-dragging');
-    updateDropPosition(event.clientY,drag.box);
-  }
-
-  function endPointerDrag(event){
-    const drag=state.pointer;
-    if (!drag || (event.pointerId!=null && event.pointerId!==drag.pointerId)) return;
-    window.removeEventListener('pointermove',onPointerMove);
-    try { drag.img.releasePointerCapture?.(drag.pointerId); } catch (_) {}
-    if (drag.moved && state.dropLine?.isConnected) {
-      state.dropLine.parentNode.insertBefore(drag.box,state.dropLine);
-      state.dropLine.remove();
-      drag.box.classList.remove('bgps-v7-pointer-dragging');
-      selectBox(drag.box,true);
-      emitEditorChange('Image moved inside the paper.');
-    } else {
-      drag.box.classList.remove('bgps-v7-pointer-dragging');
-      state.dropLine?.remove();
-      selectBox(drag.box,true);
-    }
-    state.pointer=null;
-  }
-
-  function standardizeHtmlString(html){
-    const template=document.createElement('template');
-    template.innerHTML=String(html||'');
-    template.content.querySelectorAll(TRANSIENT).forEach(node=>node.remove());
-    [...template.content.querySelectorAll('img')].forEach(img=>{
+  function ensureBoxes(root){
+    if(!root) return [];
+    const boxes=[];
+    [...root.querySelectorAll('img')].forEach(img=>{
       let box=img.closest('.diagram-box');
-      if (!box) {
-        box=document.createElement('div');
+      if(!box){
+        box=root.ownerDocument.createElement('div');
         box.className='diagram-box has-image';
         img.parentNode?.insertBefore(box,img);
         box.appendChild(img);
       }
       box.classList.add('diagram-box','has-image');
-      box.style.width=`${STANDARD_WIDTH}%`;
-      box.style.maxWidth='100%';
-      box.style.minHeight='0px';
-      box.style.display='block';
-      box.style.marginLeft='auto';
-      box.style.marginRight='auto';
-      box.style.padding='0px';
-      box.style.textAlign='center';
-      box.style.breakInside='avoid';
-      box.style.pageBreakInside='avoid';
       img.classList.add('diagram-image');
-      img.style.width='100%'; img.style.maxWidth='100%'; img.style.height='auto'; img.style.display='block'; img.style.objectFit='contain'; img.style.margin='0 auto';
+      img.draggable=false;
+      box.draggable=false;
+      boxes.push(box);
     });
-    return template.innerHTML;
+    return boxes;
+  }
+  function splitOneNestedBox(root,box){
+    if(!root||!box||box.closest('table')||box.closest('.bgps-image-row')) return false;
+    const top=topLevel(root,box);
+    if(!top||top===box) return false;
+    const doc=root.ownerDocument;
+    try{
+      const beforeShell=top.cloneNode(false);
+      const afterShell=top.cloneNode(false);
+      beforeShell.removeAttribute?.('id'); afterShell.removeAttribute?.('id');
+      const beforeRange=doc.createRange();
+      beforeRange.selectNodeContents(top); beforeRange.setEndBefore(box);
+      beforeShell.appendChild(beforeRange.cloneContents());
+      const afterRange=doc.createRange();
+      afterRange.selectNodeContents(top); afterRange.setStartAfter(box);
+      afterShell.appendChild(afterRange.cloneContents());
+      top.parentNode.insertBefore(beforeShell,top);
+      top.parentNode.insertBefore(box,top);
+      top.parentNode.insertBefore(afterShell,top);
+      top.remove();
+      if(!meaningful(beforeShell)) beforeShell.remove();
+      if(!meaningful(afterShell)) afterShell.remove();
+      return true;
+    }catch(error){
+      console.warn('BGPS image-order split skipped',error);
+      top.insertAdjacentElement('afterend',box);
+      if(!meaningful(top)) top.remove();
+      return true;
+    }
+  }
+  function preserveImageOrder(root){
+    if(!root) return;
+    ensureBoxes(root);
+    let guard=0;
+    while(guard++<300){
+      const nested=[...root.querySelectorAll('.diagram-box.has-image')].find(box=>{
+        if(box.closest('table,.bgps-image-row')) return false;
+        return topLevel(root,box)!==box;
+      });
+      if(!nested||!splitOneNestedBox(root,nested)) break;
+    }
+    [...root.children].forEach(node=>{
+      if(!meaningful(node)&&!node.matches('.bgps-image-row,.diagram-box.has-image')) node.remove();
+    });
+  }
+  function flattenRows(root){
+    if(!root) return;
+    [...root.querySelectorAll('.bgps-image-row')].forEach(row=>{
+      const parent=row.parentNode;
+      [...row.children].filter(isImageBox).forEach(box=>parent.insertBefore(box,row));
+      row.remove();
+    });
+  }
+  function removeEmptySeparators(root){
+    const nodes=[...root.children];
+    nodes.forEach((node,index)=>{
+      if(meaningful(node)) return;
+      const prev=nodes[index-1],next=nodes[index+1];
+      if(isImageBox(prev)&&isImageBox(next)) node.remove();
+    });
+  }
+  function rowSizes(count){
+    if(count<=1) return [count];
+    const rows=Math.ceil(count/5);
+    const baseSize=Math.floor(count/rows);
+    let extra=count%rows;
+    return Array.from({length:rows},()=>baseSize+(extra-->0?1:0));
+  }
+  function decorateBox(box,inRow,force){
+    if(!box) return;
+    const img=box.querySelector('img'); if(!img) return;
+    box.classList.add('diagram-box','has-image');
+    box.draggable=false; box.tabIndex=0;
+    box.style.breakInside='avoid'; box.style.pageBreakInside='avoid';
+    img.draggable=false; img.classList.add('diagram-image');
+    if(inRow){
+      box.classList.remove('bgps-single-image');
+      box.style.width='100%'; box.style.maxWidth='none'; box.style.margin='0';
+      box.style.padding='6px'; box.style.textAlign='center';
+    }else{
+      box.classList.add('bgps-single-image');
+      const current=parseFloat(String(box.style.width||'').replace('%',''));
+      const width=force||!Number.isFinite(current)||current>80?42:Math.max(25,Math.min(80,current));
+      box.style.width=`${width}%`; box.style.maxWidth='82mm';
+      box.style.marginLeft='auto'; box.style.marginRight='auto';
+      box.style.marginTop='10px'; box.style.marginBottom='14px';
+      box.style.padding='6px'; box.style.textAlign='center';
+    }
+    installMoveBadge(box);
+  }
+  function layoutImageRows(root,force){
+    if(!root) return;
+    flattenRows(root);
+    preserveImageOrder(root);
+    removeEmptySeparators(root);
+    const children=[...root.children];
+    let i=0;
+    while(i<children.length){
+      if(!isImageBox(children[i])){i++;continue;}
+      const run=[];
+      let j=i;
+      while(j<children.length&&isImageBox(children[j])){run.push(children[j]);j++;}
+      if(run.length===1){decorateBox(run[0],false,force);i=j;continue;}
+      const sizes=rowSizes(run.length);
+      let offset=0;
+      const afterRun=run[run.length-1].nextSibling;
+      sizes.forEach(size=>{
+        const row=root.ownerDocument.createElement('div');
+        row.className='bgps-image-row';
+        row.dataset.cols=String(size);
+        row.style.setProperty('--bgps-cols',String(size));
+        if(afterRun&&afterRun.parentNode===root) root.insertBefore(row,afterRun); else root.appendChild(row);
+        run.slice(offset,offset+size).forEach(box=>{row.appendChild(box);decorateBox(box,true,true);});
+        offset+=size;
+      });
+      i=j;
+    }
+  }
+  function normalizeEditor(options={}){
+    const ed=getEditor(); if(!ed||state.normalizing) return;
+    state.normalizing=true;
+    try{
+      removeTransient(ed);
+      preserveImageOrder(ed);
+      if(options.group) layoutImageRows(ed,Boolean(options.force));
+      else ensureBoxes(ed).forEach(box=>decorateBox(box,Boolean(box.closest('.bgps-image-row')),false));
+      installGuaranteedMoveButtons();
+    }finally{state.normalizing=false;}
+  }
+  function storageReadyHtml(html){
+    const root=document.createElement('div');
+    root.innerHTML=String(html||'');
+    removeTransient(root);
+    preserveImageOrder(root);
+    layoutImageRows(root,true);
+    removeTransient(root);
+    cleanupRows(root);
+    return root.innerHTML;
+  }
+  if(typeof base.sanitizer==='function'){
+    replaceGlobal('sanitizeComposerHtmlClient',function(html){return base.sanitizer.call(this,storageReadyHtml(html));});
   }
 
-  function injectPreviewCss(html){
-    const extra=`
-      .content .diagram-box.has-image{width:${STANDARD_WIDTH}%!important;max-width:145mm!important;min-height:0!important;margin:3.5mm auto!important;padding:0!important;border:0!important;background:transparent!important;text-align:center!important;break-inside:avoid!important;page-break-inside:avoid!important;clear:both!important}
-      .content .diagram-box.has-image img,.content img.diagram-image{display:block!important;width:100%!important;max-width:100%!important;max-height:70mm!important;height:auto!important;margin:0 auto!important;object-fit:contain!important;break-inside:avoid!important;page-break-inside:avoid!important}
-      .content .diagram-box.has-image .diagram-caption{margin:1.2mm 0 0!important;padding:0!important;font-size:8.8pt!important;line-height:1.25!important;text-align:center!important}
-      .content p + .diagram-box.has-image,.content .question-line + .diagram-box.has-image{margin-top:3mm!important}
-      .content .diagram-box.has-image + p,.content .diagram-box.has-image + .question-line{margin-top:3mm!important}
-    `;
-    return String(html||'').replace('</style>',`${extra}</style>`);
+  function installMoveBadge(box){
+    if(!box||box.ownerDocument!==document||!getEditor()?.contains(box)||box.querySelector(':scope > .bgps-v8-move-badge')) return;
+    const badge=box.ownerDocument.createElement('span');
+    badge.className='bgps-v8-move-badge'; badge.dataset.bgpsTransient='1';
+    badge.contentEditable='false'; badge.textContent='↕ Drag';
+    badge.title='Drag this picture to another question position';
+    box.appendChild(badge);
   }
-
-  function wrapBefore(name,before,after){
-    const original=window[name];
-    if (typeof original!=='function' || original.__bgpsV7Wrapped) return;
-    const wrapped=function(){
-      try { before?.apply(this,arguments); } catch (error) { console.warn(`BGPS V7 before ${name}`,error); }
-      const result=original.apply(this,arguments);
-      if (after) Promise.resolve(result).finally(()=>setTimeout(()=>{ try{after();}catch(error){console.warn(`BGPS V7 after ${name}`,error);} },60));
-      return result;
-    };
-    wrapped.__bgpsV7Wrapped=true;
-    replaceGlobal(name,wrapped);
+  function selectBox(box,focus){
+    const ed=getEditor(); if(!ed||!box) return;
+    ed.querySelectorAll('.diagram-box.is-image-selected').forEach(n=>{if(n!==box)n.classList.remove('is-image-selected');});
+    try{
+      const img=box.querySelector('img');
+      if(img&&typeof window.handleManualEditorClick==='function') window.handleManualEditorClick({target:img,preventDefault(){},stopPropagation(){}});
+    }catch(_){}
+    box.classList.add('is-image-selected'); installMoveBadge(box);
+    if(focus){try{box.focus({preventScroll:true});}catch(_){try{box.focus();}catch(__){}}}
   }
-
-  function installFunctionWrappers(){
-    const previousBuild=window.buildManualPreviewHtml;
-    if (typeof previousBuild==='function' && !previousBuild.__bgpsV7Preview) {
-      const wrapped=function(meta,bodyHtml){ return injectPreviewCss(previousBuild.call(this,meta,standardizeHtmlString(bodyHtml))); };
-      wrapped.__bgpsV7Preview=true;
-      replaceGlobal('buildManualPreviewHtml',wrapped);
-    }
-
-    const previousPreview=window.previewManualPaper;
-    if (typeof previousPreview==='function' && !previousPreview.__bgpsV7Preview) {
-      const wrapped=function(){ normalizeImages(true,true); return previousPreview.apply(this,arguments); };
-      wrapped.__bgpsV7Preview=true;
-      replaceGlobal('previewManualPaper',wrapped);
-    }
-
-    const previousAuto=window.bgpsAutoFormatPaper;
-    if (typeof previousAuto==='function' && !previousAuto.__bgpsV7Auto) {
-      const wrapped=function(){ normalizeImages(true,false); const result=previousAuto.apply(this,arguments); setTimeout(()=>normalizeImages(true,false),0); return result; };
-      wrapped.__bgpsV7Auto=true;
-      replaceGlobal('bgpsAutoFormatPaper',wrapped);
-    }
-
-    const previousAutoPreview=window.bgpsAutoFormatAndPreview;
-    if (typeof previousAutoPreview==='function' && !previousAutoPreview.__bgpsV7Auto) {
-      const wrapped=function(){ normalizeImages(true,false); return previousAutoPreview.apply(this,arguments); };
-      wrapped.__bgpsV7Auto=true;
-      replaceGlobal('bgpsAutoFormatAndPreview',wrapped);
-    }
-
-    ['saveManualDraft','saveLocalDraft','submitManualPaper'].forEach(name=>wrapBefore(name,()=>normalizeImages(false,false),null));
-    ['loadDraftIntoComposer','loadBackendDraftIntoComposer','restoreManualDraft','applySuggestedPaperTemplate','insertDiagramImage'].forEach(name=>wrapBefore(name,null,()=>normalizeImages(false,false)));
+  function editorChanged(message){
+    const ed=getEditor(); if(!ed) return;
+    try{ed.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertReplacementText'}));}
+    catch(_){ed.dispatchEvent(new Event('input',{bubbles:true}));}
+    try{if(typeof window.handleManualEditorInput==='function')window.handleManualEditorInput();}catch(_){}
+    const note=byId('manualAutosaveNote'); if(note&&message)note.textContent=message;
   }
-
-  function installUiNote(){
-    const panel=byId('paperCreatorPanel');
-    const editor=getEditor();
-    if (!panel || !editor || panel.querySelector('.bgps-v7-image-standard-note')) return;
-    const note=document.createElement('div');
-    note.className='bgps-v7-image-standard-note';
-    note.textContent='Images: click a picture, then drag the picture itself to any question position. Auto Format & Preview standardizes every picture to 62% width, centered alignment and uniform print spacing. Keyboard: click image → Space → ↑/↓.';
-    editor.insertAdjacentElement('beforebegin',note);
-    const autoBtn=byId('bgpsAutoFormatPreviewBtn');
-    if (autoBtn) {
-      autoBtn.textContent='Auto Format ISC & Preview';
-      autoBtn.title='Standardize questions, sections, image size/position/spacing and open print-ready A4 preview';
-      autoBtn.addEventListener('click',()=>normalizeImages(true,false),true);
-    }
-    byId('bgpsAutoFormatToolbarBtn')?.addEventListener('click',()=>normalizeImages(true,false),true);
+  function cleanupRows(root){
+    [...root.querySelectorAll('.bgps-image-row')].forEach(row=>{
+      const boxes=[...row.children].filter(isImageBox);
+      if(!boxes.length){row.remove();return;}
+      if(boxes.length===1){row.parentNode.insertBefore(boxes[0],row);row.remove();decorateBox(boxes[0],false,false);return;}
+      row.dataset.cols=String(boxes.length); row.style.setProperty('--bgps-cols',String(boxes.length));
+      boxes.forEach(box=>decorateBox(box,true,true));
+    });
   }
-
-  function installEvents(){
-    const ed=getEditor();
-    if (!ed || ed.dataset.bgpsV7Installed) return;
-    ed.dataset.bgpsV7Installed='1';
-    ed.addEventListener('dragstart',event=>{
-      if (event.target?.closest?.('.diagram-box.has-image')) { event.preventDefault(); event.stopImmediatePropagation(); }
-    },true);
-    ed.addEventListener('pointerdown',beginPointerDrag,true);
-    ed.addEventListener('click',event=>{
-      const box=event.target?.closest?.('.diagram-box.has-image');
-      if (box) { selectBox(box,false); installInlineTools(box); }
-    },true);
-    ed.addEventListener('keydown',event=>{
-      const box=ed.querySelector('.diagram-box.has-image.is-image-selected');
-      if (!box) return;
-      if (event.key===' ' && (document.activeElement===box || state.keyboardBox===box)) {
-        event.preventDefault(); toggleKeyboardMode(box); return;
-      }
-      if (state.keyboardBox!==box) {
-        if (event.altKey && event.key==='ArrowUp') { event.preventDefault(); moveRelative(box,-1); }
-        else if (event.altKey && event.key==='ArrowDown') { event.preventDefault(); moveRelative(box,1); }
+  function ensureMarker(cell){
+    state.marker?.remove();
+    const marker=document.createElement('div'); marker.className='bgps-v8-drop-marker'; marker.dataset.bgpsTransient='1'; marker.contentEditable='false';
+    if(cell) marker.classList.add('cell');
+    state.marker=marker; return marker;
+  }
+  function candidateNodes(source){
+    const ed=getEditor(); if(!ed) return [];
+    const out=[];
+    [...ed.children].forEach(top=>{
+      if(top===source||top.contains(source)){
+        if(top.matches('.bgps-image-row')) [...top.children].filter(b=>isImageBox(b)&&b!==source).forEach(b=>out.push(b));
         return;
       }
-      if (event.key==='ArrowUp') { event.preventDefault(); moveRelative(box,-1); }
-      else if (event.key==='ArrowDown') { event.preventDefault(); moveRelative(box,1); }
-      else if (event.key==='ArrowLeft') { event.preventDefault(); setBoxAlign(box,'left'); }
-      else if (event.key==='ArrowRight') { event.preventDefault(); setBoxAlign(box,'right'); }
-      else if (event.key.toLowerCase()==='c') { event.preventDefault(); setBoxAlign(box,'center'); }
-      else if (event.key==='Escape') { event.preventDefault(); toggleKeyboardMode(box); }
-    },true);
-    document.addEventListener('pointerdown',event=>{
-      if (event.target?.closest?.('.diagram-box.has-image,#bgpsImageTools')) return;
-      state.keyboardBox=null;
-    },true);
-    if (window.MutationObserver) {
-      new MutationObserver(mutations=>{
-        if (state.normalizing || state.pointer) return;
-        const hasImageChange=mutations.some(m=>[...m.addedNodes].some(node=>node.nodeType===1 && (node.matches?.('img,.diagram-box')||node.querySelector?.('img'))));
-        if (hasImageChange) setTimeout(()=>normalizeImages(false,false),0);
-      }).observe(ed,{childList:true,subtree:true});
+      if(top.matches('.bgps-image-row')) [...top.children].filter(isImageBox).forEach(b=>out.push(b));
+      else if(!top.matches('.bgps-v8-drop-marker')) out.push(top);
+    });
+    return out;
+  }
+  function updateMarker(x,y,source){
+    const candidates=candidateNodes(source); if(!candidates.length){const m=ensureMarker(false);getEditor().appendChild(m);return;}
+    let best=null,bestScore=Infinity;
+    candidates.forEach(node=>{
+      const r=node.getBoundingClientRect();
+      if(!r.width&&!r.height)return;
+      const dx=x<r.left?r.left-x:x>r.right?x-r.right:0;
+      const dy=y<r.top?r.top-y:y>r.bottom?y-r.bottom:0;
+      const score=dy*4+dx;
+      if(score<bestScore){bestScore=score;best={node,r};}
+    });
+    if(!best)return;
+    const target=best.node;
+    const inRow=Boolean(target.closest('.bgps-image-row'));
+    const before=inRow?(x<best.r.left+best.r.width/2):(y<best.r.top+best.r.height/2);
+    const marker=ensureMarker(inRow);
+    if(before) target.parentNode.insertBefore(marker,target); else target.insertAdjacentElement('afterend',marker);
+  }
+  function beginDrag(event){
+    if(event.button!=null&&event.button!==0)return;
+    const target=event.target;
+    const img=target?.closest?.('#manualPaperEditor .diagram-box.has-image > img');
+    const badge=target?.closest?.('#manualPaperEditor .bgps-v8-move-badge');
+    const box=(img||badge)?.closest?.('.diagram-box.has-image');
+    if(!box)return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    selectBox(box,false);
+    state.drag={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,box,moved:false};
+    try{(img||badge).setPointerCapture?.(event.pointerId);}catch(_){}
+    window.addEventListener('pointermove',dragMove,{capture:true,passive:false});
+    window.addEventListener('pointerup',endDrag,{capture:true,passive:false,once:true});
+    window.addEventListener('pointercancel',endDrag,{capture:true,passive:false,once:true});
+  }
+  function dragMove(event){
+    const drag=state.drag;if(!drag||(event.pointerId!=null&&event.pointerId!==drag.pointerId))return;
+    const distance=Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY);
+    if(!drag.moved&&distance<5)return;
+    drag.moved=true; event.preventDefault(); event.stopImmediatePropagation();
+    drag.box.classList.add('bgps-v8-dragging');
+    updateMarker(event.clientX,event.clientY,drag.box);
+  }
+  function endDrag(event){
+    const drag=state.drag;if(!drag||(event.pointerId!=null&&event.pointerId!==drag.pointerId))return;
+    window.removeEventListener('pointermove',dragMove,true);
+    if(drag.moved&&state.marker?.isConnected){
+      const oldParent=drag.box.parentElement;
+      state.marker.replaceWith(drag.box);
+      drag.box.classList.remove('bgps-v8-dragging');
+      cleanupRows(getEditor());
+      if(oldParent?.classList?.contains('bgps-image-row'))cleanupRows(getEditor());
+      selectBox(drag.box,true);
+      editorChanged('Image moved. Draft autosave will preserve this exact position.');
+    }else{
+      drag.box.classList.remove('bgps-v8-dragging'); state.marker?.remove(); selectBox(drag.box,true);
     }
+    state.marker=null;state.drag=null;
+  }
+  function moveStep(box,direction){
+    const ed=getEditor();if(!ed||!box)return;
+    const row=box.closest('.bgps-image-row');
+    if(row){
+      const boxes=[...row.children].filter(isImageBox);const index=boxes.indexOf(box);
+      if(direction<0&&index>0)row.insertBefore(box,boxes[index-1]);
+      else if(direction>0&&index<boxes.length-1)boxes[index+1].insertAdjacentElement('afterend',box);
+      else if(direction<0)ed.insertBefore(box,row);
+      else row.insertAdjacentElement('afterend',box);
+    }else{
+      const tops=[...ed.children].filter(n=>!n.matches('.bgps-v8-drop-marker'));const index=tops.indexOf(box);
+      if(index<0)return;
+      const target=tops[index+(direction<0?-1:1)];if(!target)return;
+      if(target.matches('.bgps-image-row')){
+        const imgs=[...target.children].filter(isImageBox);
+        if(direction<0)target.appendChild(box);else target.insertBefore(box,imgs[0]||null);
+      }else if(direction<0)ed.insertBefore(box,target);else target.insertAdjacentElement('afterend',box);
+    }
+    cleanupRows(ed);selectBox(box,true);editorChanged(direction<0?'Image moved upward.':'Image moved downward.');
+  }
+  function selectedBox(){return getEditor()?.querySelector('.diagram-box.has-image.is-image-selected')||null;}
+  function installGuaranteedMoveButtons(){
+    const tools=byId('bgpsImageTools');if(!tools)return;
+    ['bgpsImgMoveUp','bgpsImgMoveDown'].forEach(id=>byId(id)?.remove());
+    if(byId('bgpsV8MoveUp'))return;
+    const anchor=tools.querySelector('strong');
+    const up=document.createElement('button');up.id='bgpsV8MoveUp';up.type='button';up.className='editor-tool move-tool';up.textContent='↑ Move';
+    const down=document.createElement('button');down.id='bgpsV8MoveDown';down.type='button';down.className='editor-tool move-tool';down.textContent='↓ Move';
+    up.addEventListener('click',()=>{const b=selectedBox();if(b)moveStep(b,-1);else alert('Click a picture first.');});
+    down.addEventListener('click',()=>{const b=selectedBox();if(b)moveStep(b,1);else alert('Click a picture first.');});
+    anchor?.insertAdjacentElement('afterend',down);anchor?.insertAdjacentElement('afterend',up);
   }
 
+  async function imageLoaded(src){
+    return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src;});
+  }
+  async function trimWhiteMargins(img){
+    const src=String(img?.getAttribute('src')||'');
+    if(!/^data:image\/(?:png|jpeg|webp);base64,/i.test(src))return false;
+    try{
+      const im=await imageLoaded(src);const w=im.naturalWidth,h=im.naturalHeight;if(w<40||h<40)return false;
+      const scale=Math.min(1,700/Math.max(w,h));const aw=Math.max(1,Math.round(w*scale)),ah=Math.max(1,Math.round(h*scale));
+      const scan=document.createElement('canvas');scan.width=aw;scan.height=ah;const ctx=scan.getContext('2d',{willReadFrequently:true});ctx.drawImage(im,0,0,aw,ah);
+      const data=ctx.getImageData(0,0,aw,ah).data;
+      const corner=(x,y)=>{const i=(y*aw+x)*4;return[data[i],data[i+1],data[i+2],data[i+3]];};
+      const cs=[corner(0,0),corner(aw-1,0),corner(0,ah-1),corner(aw-1,ah-1)];
+      const bg=cs.reduce((a,c)=>a.map((v,i)=>v+c[i]),[0,0,0,0]).map(v=>v/4);
+      let minX=aw,minY=ah,maxX=-1,maxY=-1;
+      for(let y=0;y<ah;y++)for(let x=0;x<aw;x++){
+        const i=(y*aw+x)*4,a=data[i+3];
+        const diff=Math.abs(data[i]-bg[0])+Math.abs(data[i+1]-bg[1])+Math.abs(data[i+2]-bg[2])+Math.abs(a-bg[3]);
+        const content=bg[3]<40?a>24:(a>24&&diff>52);
+        if(content){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}
+      }
+      if(maxX<0||maxY<0)return false;
+      const pad=Math.max(2,Math.round(Math.min(aw,ah)*.012));minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);maxX=Math.min(aw-1,maxX+pad);maxY=Math.min(ah-1,maxY+pad);
+      const cropW=maxX-minX+1,cropH=maxY-minY+1;
+      if(cropW/aw>.94&&cropH/ah>.94)return false;
+      const sx=Math.max(0,Math.floor(minX/scale)),sy=Math.max(0,Math.floor(minY/scale));
+      const sw=Math.min(w-sx,Math.ceil(cropW/scale)),sh=Math.min(h-sy,Math.ceil(cropH/scale));
+      const out=document.createElement('canvas');out.width=sw;out.height=sh;out.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,sw,sh);
+      let value=out.toDataURL('image/webp',.92);if(!/^data:image\/webp/i.test(value))value=out.toDataURL('image/png');
+      if(value.length<src.length*1.2){img.src=value;return true;}return false;
+    }catch(_){return false;}
+  }
+  async function trimAllImages(){
+    const images=[...(getEditor()?.querySelectorAll('img')||[])];let count=0;
+    for(const img of images)if(await trimWhiteMargins(img))count++;
+    return count;
+  }
+
+  function previewEnhance(html){
+    try{
+      const doc=new DOMParser().parseFromString(String(html||''),'text/html');
+      const content=doc.querySelector('.content');if(!content)return html;
+      removeTransient(content);preserveImageOrder(content);layoutImageRows(content,true);
+      const style=doc.createElement('style');style.id='bgps-v8-preview-style';style.textContent=`
+        @page{size:A4 portrait;margin:10mm 12mm 11mm}
+        .paper{width:186mm!important;max-width:100%!important}
+        .content{font-size:10.6pt!important;line-height:1.32!important}
+        .content p{margin:1.45mm 0!important}
+        .content .question-line{padding-right:14mm!important;min-height:5mm!important}
+        .content .bgps-image-row{display:grid!important;grid-template-columns:repeat(var(--bgps-cols,3),minmax(0,1fr))!important;gap:2.2mm!important;width:100%!important;margin:2.2mm 0 3mm!important;padding:0!important;border:0!important;background:transparent!important;break-inside:avoid!important;page-break-inside:avoid!important}
+        .content .bgps-image-row[data-cols="2"]{--bgps-cols:2;--bgps-print-h:42mm}.content .bgps-image-row[data-cols="3"]{--bgps-cols:3;--bgps-print-h:34mm}.content .bgps-image-row[data-cols="4"]{--bgps-cols:4;--bgps-print-h:28mm}.content .bgps-image-row[data-cols="5"]{--bgps-cols:5;--bgps-print-h:24mm}
+        .content .bgps-image-row>.diagram-box.has-image{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;max-width:none!important;height:var(--bgps-print-h,32mm)!important;min-height:var(--bgps-print-h,32mm)!important;margin:0!important;padding:1mm!important;border:.35mm solid #555!important;border-radius:0!important;background:#fff!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important}
+        .content .bgps-image-row>.diagram-box.has-image>img,.content .bgps-image-row img.diagram-image{display:block!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:calc(var(--bgps-print-h,32mm) - 2mm)!important;margin:auto!important;object-fit:contain!important}
+        .content>.diagram-box.has-image{display:block!important;width:42%!important;max-width:78mm!important;min-height:0!important;margin:2.4mm auto 3mm!important;padding:0!important;border:0!important;background:transparent!important;text-align:center!important;break-inside:avoid!important;page-break-inside:avoid!important}
+        .content>.diagram-box.has-image>img,.content>.diagram-box.has-image>img.diagram-image{display:block!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:48mm!important;margin:0 auto!important;object-fit:contain!important}
+        .content .diagram-caption{margin-top:1mm!important;font-size:8.5pt!important;text-align:center!important}
+        .content .question-line+.bgps-image-row,.content .question-line+.diagram-box.has-image{break-before:avoid!important;page-break-before:avoid!important}
+        .end-note{margin-top:3mm!important;padding-top:1.5mm!important}
+        @media print{.paper{width:auto!important}.bgps-image-row{break-inside:avoid!important}}
+      `;
+      doc.head.appendChild(style);
+      return '<!DOCTYPE html>'+doc.documentElement.outerHTML;
+    }catch(error){console.warn('BGPS V8 preview enhancement skipped',error);return html;}
+  }
+  if(typeof base.previewBuilder==='function'){
+    replaceGlobal('buildManualPreviewHtml',function(meta,bodyHtml){return previewEnhance(base.previewBuilder.call(this,meta,storageReadyHtml(bodyHtml)));});
+  }
+
+  async function autoFormat(openPreview){
+    const ed=getEditor();if(!ed)return false;
+    const btn=byId('bgpsV8AutoPreviewBtn');if(btn){btn.disabled=true;btn.textContent='Formatting…';}
+    const note=byId('manualAutosaveNote');if(note)note.textContent='Standardizing picture order, trimming empty margins and arranging printable rows…';
+    try{
+      normalizeEditor({group:false});
+      const trimmed=await trimAllImages();
+      if(typeof base.auto==='function')base.auto.call(window);
+      normalizeEditor({group:true,force:true});
+      editorChanged(`Board-style auto format applied${trimmed?` · ${trimmed} image margin(s) trimmed`:''}.`);
+      if(openPreview&&typeof base.preview==='function')base.preview.call(window);
+      return true;
+    }catch(error){console.error('BGPS V8 auto format failed',error);alert(`Auto format failed: ${error.message}`);return false;}
+    finally{if(btn){btn.disabled=false;btn.textContent='Auto Format & Preview';}}
+  }
+  replaceGlobal('bgpsAutoFormatPaper',()=>autoFormat(false));
+  replaceGlobal('bgpsAutoFormatAndPreview',()=>autoFormat(true));
+  if(typeof base.preview==='function')replaceGlobal('previewManualPaper',function(){normalizeEditor({group:true,force:true});return base.preview.apply(this,arguments);});
+
+  function wrapAfter(name,after){
+    const original=window[name];if(typeof original!=='function'||original.__bgpsV8Wrapped)return;
+    const wrapped=function(){const result=original.apply(this,arguments);Promise.resolve(result).finally(()=>setTimeout(after,80));return result;};
+    wrapped.__bgpsV8Wrapped=true;replaceGlobal(name,wrapped);
+  }
+  function installActionButton(){
+    if(byId('bgpsV8AutoPreviewBtn'))return;
+    const previewBtn=byId('manualProfessionalPreviewBtn');if(!previewBtn)return;
+    const btn=document.createElement('button');btn.id='bgpsV8AutoPreviewBtn';btn.type='button';btn.className='btn-secondary bgps-v8-auto-btn';btn.textContent='Auto Format & Preview';
+    btn.title='Compact pictures into board-style rows, standardize spacing and open A4 preview';
+    btn.addEventListener('click',()=>autoFormat(true));previewBtn.insertAdjacentElement('afterend',btn);
+  }
+  function replaceToolbarAuto(){
+    const old=byId('bgpsAutoFormatToolbarBtn');if(!old||old.dataset.bgpsV8)return;
+    const fresh=old.cloneNode(true);fresh.dataset.bgpsV8='1';fresh.title='Board-style auto format including compact image rows';fresh.addEventListener('click',()=>autoFormat(false));old.replaceWith(fresh);
+  }
+  function installStatusNote(){
+    const ed=getEditor();if(!ed||byId('bgpsV8StatusNote'))return;
+    const note=document.createElement('div');note.id='bgpsV8StatusNote';note.className='bgps-v8-status-note';
+    note.innerHTML='<strong>Picture editing:</strong> click any picture, then drag the picture itself. A yellow marker shows the exact drop position. Space then ↑/↓ also moves the selected picture. Auto Format groups consecutive pictures into compact printable rows instead of full-page images.';
+    ed.insertAdjacentElement('beforebegin',note);
+  }
+  function installEvents(){
+    const ed=getEditor();if(!ed||ed.dataset.bgpsV8Installed)return;ed.dataset.bgpsV8Installed='1';
+    ed.addEventListener('pointerdown',beginDrag,true);
+    ed.addEventListener('dragstart',event=>{if(event.target?.closest?.('.diagram-box.has-image')){event.preventDefault();event.stopImmediatePropagation();}},true);
+    ed.addEventListener('click',event=>{const box=event.target?.closest?.('.diagram-box.has-image');if(box)selectBox(box,false);},true);
+    ed.addEventListener('keydown',event=>{
+      const box=selectedBox();if(!box)return;
+      if(event.key===' '&&(document.activeElement===box||state.keyboardBox===box)){event.preventDefault();const active=state.keyboardBox===box;state.keyboardBox=active?null:box;box.classList.toggle('bgps-v8-keyboard-move',!active);const n=byId('manualAutosaveNote');if(n)n.textContent=active?'Keyboard image move OFF.':'Keyboard image move ON: use ↑/↓; Space or Esc exits.';return;}
+      if(state.keyboardBox!==box)return;
+      if(event.key==='ArrowUp'){event.preventDefault();moveStep(box,-1);}else if(event.key==='ArrowDown'){event.preventDefault();moveStep(box,1);}else if(event.key==='Escape'){event.preventDefault();state.keyboardBox=null;box.classList.remove('bgps-v8-keyboard-move');}
+    },true);
+    state.observer=new MutationObserver(mutations=>{
+      if(state.normalizing||state.drag)return;
+      const changed=mutations.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('img,.diagram-box')||n.querySelector?.('img'))));
+      if(changed)setTimeout(()=>normalizeEditor({group:false}),0);
+    });
+    state.observer.observe(ed,{childList:true,subtree:true});
+  }
   function install(){
-    if (state.installed) return;
-    state.installed=true;
-    installFunctionWrappers();
-    installUiNote();
-    installEvents();
-    normalizeImages(false,false);
+    installActionButton();replaceToolbarAuto();installStatusNote();installEvents();normalizeEditor({group:false});
+    installGuaranteedMoveButtons();
+    ['handleManualEditorPaste','insertDiagramImage','loadDraftIntoComposer','loadBackendDraftIntoComposer','restoreManualDraft','applySuggestedPaperTemplate','openPaperFile'].forEach(name=>wrapAfter(name,()=>normalizeEditor({group:false})));
   }
-
-  window.bgpsImageLayoutV7={
-    normalize:(force=true)=>normalizeImages(Boolean(force),false),
-    standardize:()=>normalizeImages(true,true),
-    moveUp:()=>{const box=getEditor()?.querySelector('.diagram-box.is-image-selected'); if(box)moveRelative(box,-1);},
-    moveDown:()=>{const box=getEditor()?.querySelector('.diagram-box.is-image-selected'); if(box)moveRelative(box,1);},
-    standardizeHtml:standardizeHtmlString,
-    injectPreviewCss
-  };
-
-  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',install,{once:true});
-  else install();
+  window.bgpsImageLayoutV8={normalize:()=>normalizeEditor({group:false}),format:()=>autoFormat(false),formatAndPreview:()=>autoFormat(true),moveUp:()=>{const b=selectedBox();if(b)moveStep(b,-1);},moveDown:()=>{const b=selectedBox();if(b)moveStep(b,1);},storageReadyHtml};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
 </script>
+
+<!-- BGPS V9 STORAGE/CANONICAL COMPATIBILITY FIX
+     Preserves compact image rows through draft/save/submit and keeps backend print output aligned. -->
 
 </body>
 </html>

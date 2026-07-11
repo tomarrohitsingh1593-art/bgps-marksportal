@@ -2084,9 +2084,9 @@
                         <section class="paper-panel paper-creator-panel premium-panel" id="paperCreatorPanel">
                             <div class="premium-panel-header">
                                 <div>
-                                    <div class="panel-kicker">Simple Document Composer</div>
+                                    <div class="panel-kicker">Professional Question Paper Studio</div>
                                     <h2>Create Question Paper</h2>
-                                    <p>Type or paste the complete paper on one page. Put intended marks in brackets such as <strong>[2]</strong>; the portal totals them automatically.</p>
+                                    <p>Create a print-ready school paper with Word-style editing, movable diagrams, section controls, Google Docs paste and one-click professional formatting. Put marks in brackets such as <strong>[2]</strong>.</p>
                                 </div>
                                 <div class="premium-icon-badge">✎</div>
                             </div>
@@ -2182,7 +2182,7 @@
                             <div class="composer-actions">
                                 <button class="btn-secondary" type="button" id="manualSaveDraftBtn" onclick="saveLocalDraft(true)">Save Draft</button>
                                 <button class="btn-secondary" type="button" onclick="runManualChecks(true)">Check Paper</button>
-                                <button class="btn-secondary" type="button" onclick="previewManualPaper()">A4 Preview</button>
+                                <button class="btn-secondary" type="button" id="manualProfessionalPreviewBtn" onclick="previewManualPaper()">Professional A4 Preview</button>
                                 <button class="btn-secondary" type="button" onclick="clearManualDraft()">Clear Draft</button>
                                 <button class="btn-secondary" type="button" onclick="duplicateCurrentDraft()">Duplicate Draft</button>
                                 <button class="btn-primary submit-created" type="button" id="manualSubmitBtn" onclick="submitManualPaper()">Submit Paper to Admin</button>
@@ -10133,6 +10133,805 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',installEditorBindings,{once:true});
   else installEditorBindings();
+})();
+</script>
+
+
+<style id="bgps-pro-word-editor-v6-css">
+  /* BGPS Professional Word-style editor V6 */
+  #paperCreatorPanel .bgps-pro-v6-group {
+    order:-10;
+    padding:4px 7px 4px 2px;
+    margin-right:4px;
+    border-right:1px solid #b7c9d8;
+    background:#edf5fc;
+    border-radius:8px;
+  }
+  #paperCreatorPanel .bgps-pro-v6-group .editor-tool {
+    min-width:auto;
+    padding:0 10px;
+    gap:5px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #paperCreatorPanel .bgps-pro-v6-group .editor-tool:disabled { opacity:.38; cursor:not-allowed; }
+  #paperCreatorPanel .bgps-pro-v6-group .auto-tool {
+    background:#173f68;
+    border-color:#173f68;
+    color:#fff;
+  }
+  #paperCreatorPanel .bgps-autoformat-main {
+    background:#f6c90e;
+    border-color:#e0b600;
+    color:#102a43;
+    font-weight:900;
+  }
+  #manualPaperEditor h2.section-heading {
+    position:relative;
+    padding-right:40px;
+    align-items:center;
+  }
+  #manualPaperEditor h2.section-heading > span:first-child { min-width:0; flex:1 1 auto; }
+  #manualPaperEditor h2.section-heading > span[data-bgps-section-total] {
+    flex:0 0 auto;
+    margin-left:12px;
+    white-space:nowrap;
+    user-select:none;
+  }
+  #manualPaperEditor .bgps-section-delete {
+    position:absolute;
+    right:5px;
+    top:50%;
+    transform:translateY(-50%);
+    width:27px;
+    height:27px;
+    min-height:27px;
+    border:1px solid #d8a9a9;
+    border-radius:6px;
+    background:#fff5f5;
+    color:#a61b1b;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:900;
+    line-height:1;
+    display:grid;
+    place-items:center;
+    z-index:4;
+  }
+  #manualPaperEditor .bgps-section-delete:hover { background:#fee2e2; border-color:#dc6666; }
+  #manualPaperEditor .diagram-box.has-image { position:relative; }
+  #manualPaperEditor .bgps-image-drag-handle {
+    position:absolute;
+    left:6px;
+    top:6px;
+    z-index:8;
+    min-width:76px;
+    height:27px;
+    padding:0 8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    border:1px solid #88aeca;
+    border-radius:7px;
+    background:rgba(255,255,255,.96);
+    color:#173f68;
+    font-family:Arial,sans-serif;
+    font-size:10px;
+    font-weight:800;
+    cursor:grab;
+    box-shadow:0 2px 7px rgba(15,53,83,.16);
+    user-select:none;
+  }
+  #manualPaperEditor .bgps-image-drag-handle:active { cursor:grabbing; }
+  #manualPaperEditor .diagram-box.bgps-image-dragging { opacity:.62; outline:2px dashed #173f68; }
+  #manualPaperEditor .bgps-drop-target { box-shadow:inset 0 3px 0 #f6c90e !important; }
+  #paperCreatorPanel .bgps-image-tools .move-tool { background:#f6f9fc; }
+  #paperCreatorPanel .bgps-format-success {
+    margin:8px 0 0;
+    padding:8px 10px;
+    border:1px solid #9fd4b3;
+    border-radius:9px;
+    background:#ecfdf3;
+    color:#166534;
+    font-size:11px;
+    font-weight:800;
+  }
+  #manualPaperEditor.bgps-formatting { opacity:.72; pointer-events:none; }
+  @media (max-width:700px) {
+    #paperCreatorPanel .bgps-pro-v6-group .editor-tool { padding:0 8px; font-size:10px; }
+    #paperCreatorPanel .bgps-pro-v6-group .tool-label { display:none; }
+    #manualPaperEditor .bgps-image-drag-handle { min-width:42px; font-size:0; }
+    #manualPaperEditor .bgps-image-drag-handle::after { content:'Move'; font-size:10px; }
+  }
+  @media print {
+    .bgps-pro-v6-group,.bgps-section-delete,.bgps-image-drag-handle,.bgps-drop-target { display:none !important; }
+  }
+</style>
+<script id="bgps-pro-word-editor-v6-js">
+(function bgpsProfessionalWordEditorV6(){
+  'use strict';
+  if (window.__BGPS_PRO_WORD_EDITOR_V6__) return;
+  window.__BGPS_PRO_WORD_EDITOR_V6__ = true;
+
+  const state = {
+    history:[],
+    index:-1,
+    historyTimer:null,
+    suppress:false,
+    decorating:false,
+    dragging:null,
+    dragBefore:'',
+    mutationObserver:null
+  };
+
+  const byId = id => document.getElementById(id);
+  const editor = () => byId('manualPaperEditor');
+  const esc = value => (typeof escapeHtml === 'function' ? escapeHtml(value) : String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])));
+  const transientSelector = '[data-bgps-transient],.bgps-section-delete,.bgps-image-drag-handle,.bgps-image-resize-handle';
+  const markPattern = /\[\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*\]/g;
+
+  function replaceGlobal(name, fn){
+    try { window[name] = fn; } catch (_) {}
+    try { (0,eval)(`${name}=window.${name}`); } catch (_) {}
+  }
+
+  function stripTransient(root){
+    if (!root) return;
+    root.querySelectorAll(transientSelector).forEach(node => node.remove());
+    root.querySelectorAll('.is-image-selected,.bgps-image-dragging,.bgps-drop-target').forEach(node => node.classList.remove('is-image-selected','bgps-image-dragging','bgps-drop-target'));
+    root.querySelectorAll('[draggable]').forEach(node => node.removeAttribute('draggable'));
+    root.querySelectorAll('[contenteditable="false"]').forEach(node => node.removeAttribute('contenteditable'));
+    root.querySelectorAll('[data-bgps-section-total]').forEach(node => node.removeAttribute('data-bgps-section-total'));
+  }
+
+  function cleanHtml(html){
+    const template = document.createElement('template');
+    template.innerHTML = String(html || '');
+    stripTransient(template.content);
+    try {
+      if (typeof sanitizeComposerHtmlClient === 'function') return sanitizeComposerHtmlClient(template.innerHTML);
+    } catch (_) {}
+    return template.innerHTML;
+  }
+
+  function currentSnapshot(){
+    const ed = editor();
+    return ed ? cleanHtml(ed.innerHTML) : '';
+  }
+
+  function historyLimit(snapshot){
+    const bytes = new Blob([snapshot]).size;
+    if (bytes > 3 * 1024 * 1024) return 4;
+    if (bytes > 1024 * 1024) return 7;
+    return 30;
+  }
+
+  function pushHistory(snapshot, force){
+    if (state.suppress) return;
+    const value = snapshot == null ? currentSnapshot() : String(snapshot);
+    if (!force && state.index >= 0 && state.history[state.index] === value) return;
+    if (state.index < state.history.length - 1) state.history.splice(state.index + 1);
+    state.history.push(value);
+    const limit = historyLimit(value);
+    while (state.history.length > limit) state.history.shift();
+    state.index = state.history.length - 1;
+    updateHistoryButtons();
+  }
+
+  function scheduleHistory(){
+    if (state.suppress || state.decorating || state.dragging) return;
+    clearTimeout(state.historyTimer);
+    state.historyTimer = setTimeout(() => pushHistory(null,false),220);
+  }
+
+  function resetHistory(){
+    clearTimeout(state.historyTimer);
+    state.history = [];
+    state.index = -1;
+    pushHistory(currentSnapshot(),true);
+  }
+
+  function restoreHistory(index){
+    const ed = editor();
+    if (!ed || index < 0 || index >= state.history.length) return;
+    state.suppress = true;
+    try {
+      ed.innerHTML = state.history[index];
+      state.index = index;
+      decorateEditor();
+      try { if (typeof updateManualChecks === 'function') updateManualChecks(); } catch (_) {}
+      try { if (typeof saveManualEditorSelection === 'function') saveManualEditorSelection(); } catch (_) {}
+      try {
+        const note = byId('manualAutosaveNote');
+        if (note) note.textContent = index < state.history.length - 1 ? 'Undo applied. Draft autosave is active.' : 'Redo applied. Draft autosave is active.';
+      } catch (_) {}
+    } finally {
+      state.suppress = false;
+      updateHistoryButtons();
+      try { if (typeof handleManualEditorInput === 'function') handleManualEditorInput(); } catch (_) {}
+    }
+  }
+
+  function undo(){ if (state.index > 0) restoreHistory(state.index - 1); }
+  function redo(){ if (state.index < state.history.length - 1) restoreHistory(state.index + 1); }
+  function updateHistoryButtons(){
+    const u = byId('bgpsUndoBtn');
+    const r = byId('bgpsRedoBtn');
+    if (u) u.disabled = state.index <= 0;
+    if (r) r.disabled = state.index < 0 || state.index >= state.history.length - 1;
+  }
+
+  function topLevelBlock(node){
+    const ed = editor();
+    if (!ed || !node) return null;
+    let current = node.nodeType === 1 ? node : node.parentElement;
+    while (current && current.parentElement && current.parentElement !== ed) current = current.parentElement;
+    return current && current.parentElement === ed ? current : null;
+  }
+
+  function textOf(node){ return String(node?.innerText || node?.textContent || '').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim(); }
+  function isSectionText(text){ return /^(?:section|part|खंड)\s*[-:]?\s*[a-z0-9\u0900-\u097f]+\b/i.test(String(text || '').trim()); }
+  function sectionTitle(text, fallback){
+    let value = String(text || '').replace(/[×✕]\s*$/,'').replace(/\s+/g,' ').trim();
+    value = value.replace(/\s+\d+(?:\.\d+)?\s*(?:marks?|अंक)\b.*$/i,'').trim();
+    return value || fallback || 'SECTION';
+  }
+  function tokenValue(token){
+    const raw = String(token || '').replace(/^\[|\]$/g,'').trim();
+    if (!raw) return 0;
+    return raw.split('+').reduce((sum, part) => sum + (Number(part.trim()) || 0),0);
+  }
+
+  function ensureSectionStructure(heading, sectionIndex){
+    if (!heading) return;
+    heading.classList.add('section-heading');
+    const existingSpans = [...heading.children].filter(node => node.tagName === 'SPAN' && !node.matches(transientSelector));
+    let titleSpan = existingSpans[0];
+    let totalSpan = existingSpans[1];
+    if (!titleSpan) {
+      titleSpan = document.createElement('span');
+      titleSpan.textContent = sectionTitle(textOf(heading), `SECTION ${String.fromCharCode(65 + sectionIndex)}`);
+      heading.textContent = '';
+      heading.appendChild(titleSpan);
+    } else {
+      const normalizedTitle = sectionTitle(textOf(titleSpan), `SECTION ${String.fromCharCode(65 + sectionIndex)}`);
+      if (titleSpan.textContent !== normalizedTitle) titleSpan.textContent = normalizedTitle;
+    }
+    if (!totalSpan) {
+      totalSpan = document.createElement('span');
+      totalSpan.textContent = '0 MARKS';
+      heading.appendChild(totalSpan);
+    }
+    totalSpan.dataset.bgpsSectionTotal = '1';
+    totalSpan.contentEditable = 'false';
+  }
+
+  function sectionMarks(heading){
+    let total = 0;
+    let node = heading.nextElementSibling;
+    while (node && !node.matches('h2.section-heading')) {
+      const tokens = [...String(node.textContent || '').matchAll(markPattern)];
+      tokens.forEach(match => { total += tokenValue(match[0]); });
+      node = node.nextElementSibling;
+    }
+    return total;
+  }
+
+  function refreshSectionTotals(root){
+    const host = root || editor();
+    if (!host) return;
+    const headings = [...host.querySelectorAll('h2.section-heading')];
+    headings.forEach((heading,index) => {
+      ensureSectionStructure(heading,index);
+      const total = sectionMarks(heading);
+      const span = heading.querySelector('span[data-bgps-section-total]') || [...heading.children].filter(n => n.tagName === 'SPAN')[1];
+      if (span) {
+        const nextTotal = `${Number.isInteger(total) ? total : total.toFixed(1)} MARKS`;
+        if (span.textContent !== nextTotal) span.textContent = nextTotal;
+      }
+    });
+  }
+
+  function deleteSection(heading){
+    const ed = editor();
+    if (!ed || !heading) return;
+    const startBlock = topLevelBlock(heading) || heading;
+    const children = [...ed.children];
+    const start = children.indexOf(startBlock);
+    if (start < 0) { heading.remove(); notifyChange('Section deleted.'); return; }
+    let end = children.length;
+    for (let i=start+1;i<children.length;i++) {
+      if (children[i].matches('h2.section-heading') || children[i].querySelector(':scope > h2.section-heading')) { end=i; break; }
+    }
+    const count = Math.max(1,end-start);
+    if (!confirm(`Delete this section and its ${Math.max(0,count-1)} content block(s)? You can use Undo immediately.`)) return;
+    const before = currentSnapshot();
+    for (let i=start;i<end;i++) children[i].remove();
+    pushHistory(before,true);
+    decorateEditor();
+    pushHistory(currentSnapshot(),true);
+    notifyChange('Section deleted. Use Undo to restore it.');
+  }
+
+  function decorateSections(){
+    const ed = editor();
+    if (!ed) return;
+    [...ed.querySelectorAll('h2.section-heading')].forEach((heading,index) => {
+      ensureSectionStructure(heading,index);
+      let button = heading.querySelector('.bgps-section-delete');
+      if (!button) {
+        button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'bgps-section-delete';
+        button.dataset.bgpsTransient = 'true';
+        button.contentEditable = 'false';
+        button.title = 'Delete this complete section';
+        button.setAttribute('aria-label','Delete this complete section');
+        button.textContent = '×';
+        button.addEventListener('mousedown', event => event.preventDefault());
+        button.addEventListener('click', event => {
+          event.preventDefault();
+          event.stopPropagation();
+          deleteSection(heading);
+        });
+        heading.appendChild(button);
+      }
+    });
+    refreshSectionTotals(ed);
+  }
+
+  function selectedImageBox(){
+    const ed = editor();
+    return ed?.querySelector('.diagram-box.has-image.is-image-selected') || null;
+  }
+
+  function decorateImages(){
+    const ed = editor();
+    if (!ed) return;
+    [...ed.querySelectorAll('.diagram-box')].forEach(box => {
+      const img = box.querySelector('img');
+      if (!img) return;
+      box.classList.add('has-image');
+      box.draggable = true;
+      let handle = box.querySelector('.bgps-image-drag-handle');
+      if (!handle) {
+        handle = document.createElement('span');
+        handle.className = 'bgps-image-drag-handle';
+        handle.dataset.bgpsTransient = 'true';
+        handle.contentEditable = 'false';
+        handle.textContent = '↕ Move image';
+        handle.title = 'Drag to move this image between questions';
+        handle.addEventListener('mousedown', event => {
+          event.stopPropagation();
+          try { img.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})); } catch (_) {}
+        });
+        box.appendChild(handle);
+      }
+    });
+  }
+
+  function decorateEditor(){
+    if (state.decorating) return;
+    state.decorating = true;
+    try { decorateSections(); decorateImages(); installImageMoveButtons(); }
+    finally { state.decorating = false; }
+  }
+
+  function moveSelectedImage(direction){
+    const ed = editor();
+    const box = selectedImageBox();
+    if (!ed || !box) { alert('Click an image first, then use Move Up or Move Down.'); return; }
+    const before = currentSnapshot();
+    const block = topLevelBlock(box) || box;
+    const siblings = [...ed.children].filter(node => !node.matches(transientSelector));
+    const index = siblings.indexOf(block);
+    if (index < 0) return;
+    if (direction < 0 && index > 0) ed.insertBefore(box, siblings[index-1]);
+    if (direction > 0 && index < siblings.length-1) siblings[index+1].insertAdjacentElement('afterend',box);
+    decorateEditor();
+    pushHistory(before,true);
+    pushHistory(currentSnapshot(),true);
+    notifyChange(direction < 0 ? 'Image moved upward.' : 'Image moved downward.');
+  }
+
+  function installImageMoveButtons(){
+    const tools = byId('bgpsImageTools');
+    if (!tools || byId('bgpsImgMoveUp')) return;
+    const anchor = tools.querySelector('strong');
+    const up = document.createElement('button');
+    up.id = 'bgpsImgMoveUp'; up.type='button'; up.className='editor-tool move-tool'; up.textContent='↑ Move Up';
+    up.title='Move selected image above the previous paragraph/question';
+    up.addEventListener('click',()=>moveSelectedImage(-1));
+    const down = document.createElement('button');
+    down.id = 'bgpsImgMoveDown'; down.type='button'; down.className='editor-tool move-tool'; down.textContent='↓ Move Down';
+    down.title='Move selected image below the next paragraph/question';
+    down.addEventListener('click',()=>moveSelectedImage(1));
+    anchor?.insertAdjacentElement('afterend',down);
+    anchor?.insertAdjacentElement('afterend',up);
+  }
+
+  function clearDropTargets(){ editor()?.querySelectorAll('.bgps-drop-target').forEach(n => n.classList.remove('bgps-drop-target')); }
+
+  function installDragAndDrop(){
+    const ed = editor();
+    if (!ed || ed.dataset.bgpsDragInstalled) return;
+    ed.dataset.bgpsDragInstalled = '1';
+    ed.addEventListener('dragstart', event => {
+      const box = event.target?.closest?.('.diagram-box.has-image');
+      if (!box || !ed.contains(box)) return;
+      state.dragging = box;
+      state.dragBefore = currentSnapshot();
+      box.classList.add('bgps-image-dragging');
+      try { event.dataTransfer.effectAllowed='move'; event.dataTransfer.setData('text/plain','BGPS_IMAGE_BLOCK'); } catch (_) {}
+    });
+    ed.addEventListener('dragover', event => {
+      if (!state.dragging) return;
+      event.preventDefault();
+      const target = topLevelBlock(event.target);
+      if (!target || target === state.dragging || target.contains(state.dragging)) return;
+      clearDropTargets();
+      target.classList.add('bgps-drop-target');
+      const rect = target.getBoundingClientRect();
+      const before = event.clientY < rect.top + rect.height / 2;
+      if (before) ed.insertBefore(state.dragging,target);
+      else target.insertAdjacentElement('afterend',state.dragging);
+    });
+    ed.addEventListener('drop', event => { if (state.dragging) event.preventDefault(); });
+    ed.addEventListener('dragend', () => {
+      if (!state.dragging) return;
+      state.dragging.classList.remove('bgps-image-dragging');
+      clearDropTargets();
+      decorateEditor();
+      pushHistory(state.dragBefore,true);
+      pushHistory(currentSnapshot(),true);
+      state.dragging=null; state.dragBefore='';
+      notifyChange('Image position updated.');
+    });
+  }
+
+  function findTrailingTextToken(element){
+    const walker = document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
+    const nodes=[]; while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (let i=nodes.length-1;i>=0;i--) {
+      const node=nodes[i];
+      const match=String(node.data||'').match(/\s*(\[\s*\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*\s*\])\s*$/);
+      if (match) {
+        node.data = node.data.slice(0, match.index).replace(/\s+$/,'');
+        return match[1].replace(/\s+/g,'');
+      }
+      if (String(node.data||'').trim()) break;
+    }
+    return '';
+  }
+
+  function normalizeQuestionBlock(node){
+    if (!node || !node.matches('p,div,li,h3,h4')) return;
+    const text = textOf(node);
+    if (!text) return;
+    if (/^(?:or|अथवा|या)$/i.test(text)) {
+      node.className = 'or-line';
+      node.textContent = /^(?:अथवा|या)$/i.test(text) ? text : 'OR';
+      return;
+    }
+    const existing = node.querySelector('.mark-token');
+    const hasToken = markPattern.test(text); markPattern.lastIndex=0;
+    const questionPrefix = /^(?:(?:q(?:uestion)?\.?\s*)?\d+[.)\-:]?|प्रश्न\s*\d+[.)।:\-]?|\([ivxlcdm]+\)|\([a-z]\))/i.test(text);
+    if (!hasToken && !questionPrefix) return;
+    if (node.tagName !== 'P') {
+      const p=document.createElement('p');
+      [...node.attributes].forEach(a=>p.setAttribute(a.name,a.value));
+      p.innerHTML=node.innerHTML;
+      node.replaceWith(p);
+      node=p;
+    }
+    node.classList.add('question-line');
+    if (!existing) {
+      const token=findTrailingTextToken(node);
+      if (token) {
+        const span=document.createElement('span');
+        span.className='mark-token'; span.textContent=token;
+        node.appendChild(document.createTextNode(' ')); node.appendChild(span);
+      }
+    } else {
+      const token=String(existing.textContent||'').match(markPattern)?.[0]; markPattern.lastIndex=0;
+      if (token) existing.textContent=token.replace(/\s+/g,'');
+    }
+  }
+
+  function normalizeSectionBlock(node,index){
+    const text=textOf(node);
+    if (!isSectionText(text)) return node;
+    let heading=node;
+    if (!(node.tagName==='H2' && node.classList.contains('section-heading'))) {
+      heading=document.createElement('h2');
+      heading.className='section-heading';
+      const title=document.createElement('span');
+      title.textContent=sectionTitle(text,`SECTION ${String.fromCharCode(65+index)}`);
+      const total=document.createElement('span'); total.textContent='0 MARKS';
+      heading.append(title,total);
+      node.replaceWith(heading);
+    }
+    ensureSectionStructure(heading,index);
+    return heading;
+  }
+
+  function collapseEmptyBlocks(root){
+    let lastEmpty=false;
+    [...root.children].forEach(node => {
+      const empty=!textOf(node) && !node.querySelector('img,table,hr') && !node.classList.contains('page-break');
+      if (empty && lastEmpty) node.remove();
+      else lastEmpty=empty;
+    });
+    while (root.firstElementChild && !textOf(root.firstElementChild) && !root.firstElementChild.querySelector('img,table,hr')) root.firstElementChild.remove();
+    while (root.lastElementChild && !textOf(root.lastElementChild) && !root.lastElementChild.querySelector('img,table,hr')) root.lastElementChild.remove();
+  }
+
+  function professionalFormatHtml(rawHtml){
+    const template=document.createElement('template');
+    template.innerHTML=cleanHtml(rawHtml);
+    const root=document.createElement('div');
+    root.append(template.content.cloneNode(true));
+    stripTransient(root);
+
+    let sectionIndex=0;
+    [...root.children].forEach(node => {
+      if (isSectionText(textOf(node))) { normalizeSectionBlock(node,sectionIndex++); return; }
+      normalizeQuestionBlock(node);
+    });
+    [...root.querySelectorAll('p,div,li,h3,h4')].forEach(normalizeQuestionBlock);
+    [...root.querySelectorAll('.diagram-box')].forEach(box => {
+      const image=box.querySelector('img');
+      if (!image) return;
+      box.classList.add('has-image');
+      if (!box.style.width) box.style.width='70%';
+      if (!box.style.marginLeft && !box.style.marginRight) { box.style.marginLeft='auto'; box.style.marginRight='auto'; }
+      box.style.maxWidth='100%'; box.style.minHeight='0'; box.style.display='block'; box.style.padding='6px';
+      box.style.breakInside='avoid'; box.style.pageBreakInside='avoid';
+      image.classList.add('diagram-image');
+      image.style.width='100%'; image.style.maxWidth='100%'; image.style.height='auto'; image.style.display='block'; image.style.objectFit='contain';
+    });
+    collapseEmptyBlocks(root);
+    refreshSectionTotals(root);
+    stripTransient(root);
+    return cleanHtml(root.innerHTML);
+  }
+
+  function notifyChange(message){
+    decorateEditor();
+    refreshSectionTotals(editor());
+    try { if (typeof updateManualChecks === 'function') updateManualChecks(); } catch (_) {}
+    try { if (typeof saveManualEditorSelection === 'function') saveManualEditorSelection(); } catch (_) {}
+    try { if (typeof handleManualEditorInput === 'function') handleManualEditorInput(); } catch (_) {}
+    if (message) {
+      const note=byId('manualAutosaveNote');
+      if (note) note.textContent=message;
+    }
+  }
+
+  function autoFormatCurrent(showMessage){
+    const ed=editor();
+    if (!ed) return false;
+    const before=currentSnapshot();
+    if (!textOf(ed)) { alert('Type or paste the paper first.'); return false; }
+    ed.classList.add('bgps-formatting');
+    try {
+      const formatted=professionalFormatHtml(ed.innerHTML);
+      state.suppress=true;
+      ed.innerHTML=formatted;
+      state.suppress=false;
+      decorateEditor();
+      pushHistory(before,true);
+      pushHistory(currentSnapshot(),true);
+      notifyChange('Professional auto-format applied. Preview is print-ready.');
+      if (showMessage) {
+        const checks=byId('manualChecks');
+        if (checks) checks.insertAdjacentHTML('afterbegin','<div class="bgps-format-success">✓ Auto aligned: sections, marks, question spacing, diagrams, tables and page-break safety.</div>');
+      }
+      return true;
+    } catch (error) {
+      console.error('BGPS auto format failed',error);
+      alert(`Auto format could not complete: ${error.message}`);
+      return false;
+    } finally { ed.classList.remove('bgps-formatting'); state.suppress=false; }
+  }
+
+  function buildProfessionalPreview(meta,bodyHtml){
+    const safeBody=professionalFormatHtml(bodyHtml);
+    const reading=(typeof inferReadingTime==='function' ? inferReadingTime(meta.className,meta.maxMarks) : '10 Minutes');
+    const board=(meta.boardPattern || (typeof inferBoardPattern==='function' ? inferBoardPattern(meta.className) : 'SCHOOL'));
+    const title=meta.title || meta.exam || `${meta.className||''} ${meta.subject||''}`.trim();
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title||'Question Paper')}</title><style>
+      @page{size:A4 portrait;margin:12mm 14mm 13mm}
+      *{box-sizing:border-box}
+      html,body{margin:0;padding:0;background:#fff;color:#111}
+      body{font-family:Georgia,'Noto Serif Devanagari','Nirmala UI','Mangal',serif;font-size:11.2pt;line-height:1.38;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .preview-bar{position:sticky;top:0;z-index:50;display:flex;justify-content:center;gap:8px;padding:9px;background:#eaf3fb;border-bottom:1px solid #b8ccdc;font-family:Arial,sans-serif}
+      .preview-bar button{padding:8px 15px;border:1px solid #153f68;border-radius:7px;background:#153f68;color:#fff;font-weight:800;cursor:pointer}
+      .paper{width:182mm;min-height:272mm;margin:0 auto;background:#fff}
+      .header{text-align:center;border-bottom:1.6px solid #111;padding:0 0 5mm;margin-bottom:3mm}
+      .school{font-size:18pt;font-weight:800;letter-spacing:.25px;line-height:1.05}
+      .board{font-size:9.5pt;font-weight:800;text-transform:uppercase;letter-spacing:.45px;margin-top:1.5mm}
+      .paper-title{font-size:11pt;font-weight:800;margin-top:1.5mm}
+      .meta{display:grid;grid-template-columns:1fr 1fr;gap:1.3mm 10mm;padding:2.4mm 0;border-bottom:1px solid #333;margin-bottom:3mm;font-size:10.2pt;font-weight:700}
+      .meta div:nth-child(even){text-align:right}
+      .content{font-size:11pt;line-height:1.4;overflow-wrap:anywhere}
+      .content h2.section-heading{display:flex;justify-content:space-between;align-items:center;gap:8mm;margin:4.2mm 0 2mm;padding:1.6mm 2.2mm;border:1px solid #222;background:#f1f1f1;font-size:10.7pt;line-height:1.15;text-transform:uppercase;break-after:avoid;page-break-after:avoid}
+      .content h2.section-heading>span:last-child{white-space:nowrap}
+      .content h3,.content h4{font-size:10.8pt;margin:3mm 0 1.2mm;break-after:avoid}
+      .content p{margin:1.8mm 0;orphans:2;widows:2}
+      .content .question-line{position:relative;padding-right:15mm;min-height:5.5mm;break-inside:avoid;page-break-inside:avoid;text-align:justify}
+      .content .mark-token{float:right;margin-right:-15mm;font-weight:800;white-space:nowrap}
+      .content .or-line{text-align:center;font-weight:800;margin:2mm 0;break-inside:avoid;page-break-inside:avoid}
+      .paper-instructions{border:1px solid #666;padding:2.2mm 3mm;margin:0 0 3mm;font-size:9.7pt;line-height:1.3;break-inside:avoid;page-break-inside:avoid}
+      .paper-instructions h3{margin:0 0 1.2mm;font-size:10.4pt}
+      .paper-instructions ol,.paper-instructions ul{margin:0 0 0 5mm;padding:0}
+      .paper-instructions li{margin:.7mm 0}
+      .content table{width:100%;border-collapse:collapse;table-layout:auto;margin:2.2mm 0;break-inside:avoid;page-break-inside:avoid}
+      .content th,.content td{border:1px solid #333;padding:1.6mm 1.8mm;background:#fff;color:#111;font-size:9.7pt;line-height:1.25;vertical-align:top}
+      .content th{font-weight:800;text-align:center;background:#f3f3f3}
+      .diagram-box{margin:2.5mm auto;break-inside:avoid!important;page-break-inside:avoid!important;text-align:center}
+      .diagram-box:not(.has-image){min-height:32mm;border:1px dashed #777;display:grid;place-items:center;color:#666;padding:3mm}
+      .diagram-box.has-image{min-height:0!important;border:0!important;padding:0!important;display:block!important;background:transparent!important}
+      .diagram-box.has-image .diagram-image,.diagram-image{width:100%;max-width:100%;max-height:78mm;height:auto;object-fit:contain;display:block;margin:0 auto;break-inside:avoid;page-break-inside:avoid}
+      .diagram-caption{margin-top:1mm;font-size:8.8pt;line-height:1.25;text-align:center;font-style:italic}
+      .page-break{page-break-after:always;break-after:page;border:0;margin:0;height:0}
+      .end-note{text-align:center;margin-top:6mm;padding-top:2mm;border-top:1px solid #999;font-size:8.8pt;font-weight:700}
+      @media print{.preview-bar{display:none!important}.paper{width:auto;min-height:auto;margin:0}.content h2.section-heading{background:#f1f1f1!important}}
+      @media(max-width:760px){body{font-size:10.5pt}.paper{width:100%;padding:0 8px}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}
+    </style></head><body><div class="preview-bar"><button onclick="window.print()">Print / Save PDF</button><button onclick="window.close()">Close Preview</button></div><main class="paper"><header class="header"><div class="school">BG PUBLIC SCHOOL</div><div class="board">${esc(board)} QUESTION PAPER</div><div class="paper-title">${esc(title||meta.exam||'EXAMINATION')}</div></header><section class="meta"><div>Class: ${esc(meta.className||'—')}</div><div>Subject: ${esc(meta.subject||'—')}</div><div>Time Allotted: ${esc(meta.timeAllowed || (typeof inferPaperTime==='function' ? inferPaperTime(meta.maxMarks) : '—'))}</div><div>Maximum Marks: ${esc(meta.maxMarks||'—')}</div><div>Reading Time: ${esc(reading||'—')}</div><div>Date: ${esc(meta.examDate||'____________')}</div></section><article class="content">${safeBody}</article><div class="end-note">— End of Question Paper —</div></main></body></html>`;
+  }
+
+  function openPreviewHtml(html,printNow){
+    const blob=new Blob([html],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    const win=window.open(url,'_blank');
+    if (!win) { URL.revokeObjectURL(url); alert('Pop-up blocked. Allow pop-ups for this portal.'); return; }
+    if (printNow) setTimeout(()=>{ try{win.focus();win.print();}catch(_){} },900);
+    setTimeout(()=>URL.revokeObjectURL(url),180000);
+  }
+
+  replaceGlobal('buildManualPreviewHtml',buildProfessionalPreview);
+  replaceGlobal('previewManualPaper',function(){
+    const ed=editor();
+    if (!ed || !textOf(ed)) { alert('Type or paste the paper before preview.'); return; }
+    let meta={};
+    try { meta=typeof getManualMetadata==='function' ? getManualMetadata() : {}; } catch (_) {}
+    openPreviewHtml(buildProfessionalPreview(meta,ed.innerHTML),false);
+  });
+
+  window.bgpsAutoFormatPaper=function(){ autoFormatCurrent(true); };
+  window.bgpsAutoFormatAndPreview=function(){ if (autoFormatCurrent(true)) window.previewManualPaper(); };
+  window.bgpsEditorUndo=undo;
+  window.bgpsEditorRedo=redo;
+  window.bgpsMoveSelectedImageUp=()=>moveSelectedImage(-1);
+  window.bgpsMoveSelectedImageDown=()=>moveSelectedImage(1);
+
+  function installToolbar(){
+    const toolbar=document.querySelector('#paperCreatorPanel .paper-editor-toolbar');
+    if (!toolbar) return;
+    if (!byId('bgpsProV6Toolbar')) {
+      const group=document.createElement('div');
+      group.id='bgpsProV6Toolbar';
+      group.className='toolbar-group bgps-pro-v6-group';
+      group.innerHTML=`<button class="editor-tool" id="bgpsUndoBtn" type="button" title="Undo last editor change (Ctrl+Z)">↶ <span class="tool-label">Undo</span></button><button class="editor-tool" id="bgpsRedoBtn" type="button" title="Redo last editor change (Ctrl+Y)">↷ <span class="tool-label">Redo</span></button><button class="editor-tool" id="bgpsAddSectionBtn" type="button" title="Add a new removable section">＋ <span class="tool-label">Section</span></button><button class="editor-tool auto-tool" id="bgpsAutoFormatToolbarBtn" type="button" title="Auto align and format the complete paper for A4 print">✓ <span class="tool-label">Auto Format</span></button>`;
+      toolbar.insertBefore(group,toolbar.firstChild);
+      byId('bgpsUndoBtn').addEventListener('click',undo);
+      byId('bgpsRedoBtn').addEventListener('click',redo);
+      byId('bgpsAddSectionBtn').addEventListener('click',()=>{
+        const before=currentSnapshot();
+        try { if (typeof insertEditorBlock==='function') insertEditorBlock('section'); }
+        catch (_) { editor()?.insertAdjacentHTML('beforeend','<h2 class="section-heading"><span>SECTION</span><span>0 MARKS</span></h2><p><br></p>'); }
+        setTimeout(()=>{ decorateEditor(); pushHistory(before,true); pushHistory(currentSnapshot(),true); notifyChange('New section added. Use × on the heading to delete it.'); },0);
+      });
+      byId('bgpsAutoFormatToolbarBtn').addEventListener('click',()=>autoFormatCurrent(true));
+    }
+    const actions=document.querySelector('#paperCreatorPanel .composer-actions');
+    if (actions && !byId('bgpsAutoFormatPreviewBtn')) {
+      const button=document.createElement('button');
+      button.id='bgpsAutoFormatPreviewBtn'; button.type='button'; button.className='btn-secondary bgps-autoformat-main';
+      button.textContent='Auto Format & Preview';
+      button.title='One click: align sections, spacing, marks, images and open professional A4 preview';
+      button.addEventListener('click',window.bgpsAutoFormatAndPreview);
+      const preview=byId('manualProfessionalPreviewBtn');
+      actions.insertBefore(button,preview || actions.children[2] || null);
+    }
+    updateHistoryButtons();
+  }
+
+  function wrapAfter(name,callback){
+    const original=window[name];
+    if (typeof original!=='function' || original.__bgpsV6Wrapped) return;
+    const wrapped=function(){
+      const result=original.apply(this,arguments);
+      Promise.resolve(result).finally(()=>setTimeout(callback,30));
+      return result;
+    };
+    wrapped.__bgpsV6Wrapped=true;
+    replaceGlobal(name,wrapped);
+  }
+
+  function enhancePaste(){
+    const original=window.handleManualEditorPaste;
+    if (typeof original!=='function' || original.__bgpsV6Paste) return;
+    const wrapped=async function(event){
+      const before=currentSnapshot();
+      const note=byId('manualAutosaveNote');
+      if (note) note.textContent='Importing from Google Docs / clipboard…';
+      try {
+        const result=await original.apply(this,arguments);
+        setTimeout(()=>{
+          decorateEditor();
+          pushHistory(before,true);
+          pushHistory(currentSnapshot(),true);
+          refreshSectionTotals(editor());
+          if (note) note.textContent='Paste complete. Google Docs formatting and copied images were normalized safely.';
+        },80);
+        return result;
+      } catch (error) {
+        console.error('BGPS professional paste failed',error);
+        if (note) note.textContent=`Paste issue: ${error.message}`;
+        throw error;
+      }
+    };
+    wrapped.__bgpsV6Paste=true;
+    replaceGlobal('handleManualEditorPaste',wrapped);
+  }
+
+  function enhanceManualOpenPreview(){
+    const original=window.openPaperFile;
+    if (typeof original!=='function' || original.__bgpsV6Open) return;
+    const wrapped=async function(paperId,mode){
+      const paper=(Array.isArray(window.questionPapers) ? window.questionPapers : (typeof questionPapers!=='undefined' && Array.isArray(questionPapers) ? questionPapers : [])).find(item=>String(item.paperId)===String(paperId));
+      const mayUseContent=paper && String(paper.sourceType).toLowerCase()==='manual' && mode!=='download' && (String(window.currentId||'').toUpperCase()==='ADMIN' || String(paper.status||'')==='Correction Required');
+      if (!mayUseContent) return original.apply(this,arguments);
+      const card=byId(`paper-${paperId}`); if (card) card.classList.add('paper-loading');
+      try {
+        const result=await paperApi('getPaperContent',{paperId});
+        const content=result.paper || {};
+        const html=buildProfessionalPreview({
+          title:content.title,className:content.className,subject:content.subject,exam:content.exam,maxMarks:content.maxMarks,
+          timeAllowed:content.timeAllowed,examDate:content.examDate,boardPattern:(typeof inferBoardPattern==='function'?inferBoardPattern(content.className):'SCHOOL')
+        },content.editorHtml||'');
+        openPreviewHtml(html,mode==='print');
+      } catch (error) {
+        console.warn('Professional content preview fallback',error);
+        return original.apply(this,arguments);
+      } finally { if (card) card.classList.remove('paper-loading'); }
+    };
+    wrapped.__bgpsV6Open=true;
+    replaceGlobal('openPaperFile',wrapped);
+  }
+
+  function installBindings(){
+    installToolbar();
+    enhancePaste();
+    enhanceManualOpenPreview();
+    decorateEditor();
+    installDragAndDrop();
+    const ed=editor();
+    if (!ed) return;
+    ed.addEventListener('input',()=>{ scheduleHistory(); setTimeout(()=>refreshSectionTotals(ed),0); });
+    ed.addEventListener('keydown',event=>{
+      const mod=event.ctrlKey||event.metaKey;
+      if (mod && !event.shiftKey && event.key.toLowerCase()==='z') { event.preventDefault(); undo(); }
+      else if (mod && (event.key.toLowerCase()==='y' || (event.shiftKey && event.key.toLowerCase()==='z'))) { event.preventDefault(); redo(); }
+    });
+    if (window.MutationObserver) {
+      state.mutationObserver=new MutationObserver(()=>{
+        if (state.suppress||state.decorating||state.dragging) return;
+        decorateEditor(); scheduleHistory();
+      });
+      state.mutationObserver.observe(ed,{childList:true,subtree:true,characterData:true});
+    }
+    ['loadDraftIntoComposer','loadBackendDraftIntoComposer','restoreManualDraft','clearManualDraft','clearManualDraftAfterSubmit'].forEach(name=>wrapAfter(name,()=>{decorateEditor();resetHistory();}));
+    ['applySuggestedPaperTemplate','insertDiagramImage'].forEach(name=>wrapAfter(name,()=>{decorateEditor();scheduleHistory();}));
+    resetHistory();
+  }
+
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',installBindings,{once:true});
+  else installBindings();
 })();
 </script>
 

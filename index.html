@@ -2336,7 +2336,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz313nW1LtKR67lnaHjBcY1IqL7VyHK8mnhupkebGGuQgm67eKVXNXeumrxgdgLGNbI/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyvOVWxwMBi6iOfApG9ZS6pp01_vPxyqQ9gdS4GXDnZBbFWmUInLfvkgZcZ4LqPZjpj/exec";
         
         const PASS_PERCENT = 33;
 
@@ -12309,5 +12309,367 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
 })();
 </script>
 
+<style id="bgps-final-qa-css">
+  #manualPaperEditor::after{content:"";display:block;clear:both}
+  #manualPaperEditor .diagram-box.has-image{cursor:grab;position:relative!important;box-sizing:border-box!important;min-height:0!important;height:auto!important;overflow:visible!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  #manualPaperEditor .diagram-box.has-image:active{cursor:grabbing}
+  #manualPaperEditor .diagram-box.has-image>img{display:block!important;width:100%!important;max-width:100%!important;height:auto!important;object-fit:contain!important;margin:0 auto!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-left,
+  #manualPaperEditor .diagram-box.has-image[data-layout="left"],
+  #manualPaperEditor .diagram-box.has-image[data-bgps-layout="left"]{display:block!important;float:left!important;clear:none!important;margin:4px 14px 8px 0!important;max-width:48%!important;text-align:center!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-right,
+  #manualPaperEditor .diagram-box.has-image[data-layout="right"],
+  #manualPaperEditor .diagram-box.has-image[data-bgps-layout="right"]{display:block!important;float:right!important;clear:none!important;margin:4px 0 8px 14px!important;max-width:48%!important;text-align:center!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-center,
+  #manualPaperEditor .diagram-box.has-image[data-layout="center"],
+  #manualPaperEditor .diagram-box.has-image[data-bgps-layout="center"]{display:block!important;float:none!important;clear:both!important;margin:9px auto 11px!important;text-align:center!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-docx-dragging,
+  #manualPaperEditor .diagram-box.has-image.bgps-v10-drag-source{opacity:.62!important;outline:2px dashed #1d6fb8!important;outline-offset:4px!important}
+  #manualPaperEditor .bgps-docx-caret-after{min-height:1.35em;margin:2px 0}
+  #manualPaperEditor h2.section-heading,#manualPaperEditor .page-break{clear:both}
+  #paperCreatorPanel .paper-document .content::after,.content::after{content:"";display:block;clear:both}
+  #paperCreatorPanel #bgpsV10ImageToolbar .v10-help::after{content:" Drag the image before a question, then choose Left or Right for text wrap. Press Enter on a selected image to continue typing after it.";display:block;font-weight:700;color:#325b80;margin-top:2px}
+  .bgps-teacher-focus-board{border:1px solid #bfd2e5;background:linear-gradient(180deg,#f8fbff,#edf5fb);border-radius:8px;padding:12px;margin:0 0 14px;box-shadow:0 6px 18px rgba(24,67,108,.07)}
+  .bgps-teacher-focus-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .bgps-teacher-focus-head h2{margin:0;color:#173f68;font-size:16px;letter-spacing:0;font-weight:900}
+  .bgps-teacher-focus-head span{font-size:11px;color:#54708a;font-weight:800}
+  .bgps-teacher-focus-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .bgps-teacher-focus-card{border:1px solid #cbdbe9;background:#fff;border-radius:8px;padding:9px;min-height:74px}
+  .bgps-teacher-focus-card strong{display:block;font-size:24px;line-height:1;color:#123b63;margin-bottom:5px}
+  .bgps-teacher-focus-card span{display:block;color:#475569;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0}
+  .bgps-teacher-focus-card small{display:block;color:#64748b;font-size:11px;margin-top:4px;line-height:1.25}
+  .bgps-teacher-focus-card.warn strong{color:#b45309}
+  .bgps-teacher-focus-card.danger strong{color:#b91c1c}
+  .bgps-teacher-focus-card.good strong{color:#047857}
+  .bgps-teacher-focus-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .bgps-teacher-focus-actions button{border:1px solid #9ab8d2;background:#fff;color:#173f68;border-radius:7px;padding:7px 10px;font-weight:850;font-size:12px;cursor:pointer}
+  .bgps-teacher-focus-actions button:first-child{background:#173f68;color:#fff;border-color:#173f68}
+  .bgps-teacher-focus-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .bgps-teacher-mini-list{border:1px solid #d4e1ed;background:#fff;border-radius:8px;padding:9px;min-height:86px}
+  .bgps-teacher-mini-list h3{margin:0 0 7px;color:#173f68;font-size:12px;text-transform:uppercase;letter-spacing:0;font-weight:900}
+  .bgps-teacher-mini-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid #eef3f7;font-size:12px;color:#334155}
+  .bgps-teacher-mini-row:first-of-type{border-top:0}
+  .bgps-teacher-mini-row b{font-weight:850;color:#123b63}
+  .bgps-teacher-mini-row span{color:#64748b;text-align:right}
+  @media(max-width:900px){
+    .bgps-teacher-focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .bgps-teacher-focus-list{grid-template-columns:1fr}
+  }
+  @media print{
+    #manualPaperEditor .diagram-box.has-image.bgps-img-left,.content .diagram-box.bgps-img-left{float:left!important;clear:none!important;margin:1mm 3mm 2mm 0!important}
+    #manualPaperEditor .diagram-box.has-image.bgps-img-right,.content .diagram-box.bgps-img-right{float:right!important;clear:none!important;margin:1mm 0 2mm 3mm!important}
+    #manualPaperEditor .diagram-box.has-image.bgps-img-center,.content .diagram-box.bgps-img-center{float:none!important;clear:both!important;margin:2mm auto 2.6mm!important}
+  }
+</style>
+<script id="bgps-final-qa-js">
+(function(){
+  'use strict';
+  if(window.__BGPS_FINAL_QA_FIX__) return;
+  window.__BGPS_FINAL_QA_FIX__=true;
+  const byId=id=>document.getElementById(id);
+  const esc=value=>String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  function expose(name,fn){window[name]=fn;try{(0,eval)(name+' = window.'+name)}catch(_){}}
+  function userId(){try{return String(currentId||'').trim()}catch(_){return String(window.currentId||'').trim()}}
+  function admin(){return userId().toUpperCase()==='ADMIN'}
+  function normId(id){return String(id||'').trim()}
+  function getCloudDrafts(){try{return Array.isArray(backendPaperDrafts)?backendPaperDrafts:[]}catch(_){return []}}
+  function getLocalDraftList(){try{return typeof getLocalDrafts==='function'?getLocalDrafts():[]}catch(_){return []}}
+  function setLocalDraftList(list){try{if(typeof setLocalDrafts==='function')setLocalDrafts(list)}catch(_){}}
+  function sameDraft(item,id){return normId(item&&item.draftId)===id||normId(item&&item.paperId)===id}
+  function setBusy(button,busy,text){
+    if(!button) return;
+    if(busy){button.dataset.bgpsOldText=button.textContent||'';button.disabled=true;button.textContent=text||'Working...'}
+    else{button.disabled=false;button.textContent=button.dataset.bgpsOldText||button.textContent||'Delete Draft';delete button.dataset.bgpsOldText}
+  }
+  async function refreshDraftViews(id){
+    try{backendPaperDrafts=getCloudDrafts().filter(item=>!sameDraft(item,id))}catch(_){}
+    try{setLocalDraftList(getLocalDraftList().filter(item=>!sameDraft(item,id)))}catch(_){}
+    try{if(byId('manualDraftId')&&normId(byId('manualDraftId').value)===id){if(typeof clearManualDraft==='function')clearManualDraft(false);else{byId('manualDraftId').value='';if(byId('manualPaperEditor'))byId('manualPaperEditor').innerHTML=''}}}catch(_){}
+    try{if(typeof loadBackendPaperDrafts==='function')await loadBackendPaperDrafts()}catch(_){}
+    try{if(typeof loadQuestionPapers==='function')await loadQuestionPapers(true)}catch(_){}
+    try{if(typeof renderPaperLibrary==='function')renderPaperLibrary()}catch(_){}
+    try{if(typeof bgpsProRefreshHome==='function'&&byId('proHomeView')?.classList.contains('active'))await bgpsProRefreshHome()}catch(_){}
+    setTimeout(enhanceTeacherDashboard,80);
+  }
+  async function finalDeleteBackendPaperDraft(draftId,opts){
+    opts=opts||{};
+    const id=normId(draftId);
+    if(!id){alert('Draft ID is missing. Refresh the paper library and try again.');return false}
+    if(!opts.skipConfirm&&!confirm('Delete this saved cloud draft? This cannot be undone.'))return false;
+    setBusy(opts.button,true,'Deleting...');
+    try{
+      const api=window.paperApi||((typeof paperApi==='function')?paperApi:null);
+      if(!api) throw new Error('Paper API is not ready.');
+      const result=await api('deletePaperDraft',{draftId:id});
+      if(result&&result.ok===false)throw new Error(result.error||'Draft delete failed.');
+      await refreshDraftViews(id);
+      return true;
+    }catch(error){
+      alert('Draft delete failed: '+(error&&error.message?error.message:error));
+      return false;
+    }finally{setBusy(opts.button,false)}
+  }
+  function finalDeleteLocalDraft(draftId,opts){
+    opts=opts||{};
+    const id=normId(draftId);
+    if(!id){alert('Draft ID is missing.');return false}
+    if(!opts.skipConfirm&&!confirm('Delete this draft from this device?'))return false;
+    const next=getLocalDraftList().filter(item=>!sameDraft(item,id));
+    setLocalDraftList(next);
+    try{if(byId('manualDraftId')&&normId(byId('manualDraftId').value)===id){if(typeof clearManualDraft==='function')clearManualDraft(false);else{byId('manualDraftId').value='';if(byId('manualPaperEditor'))byId('manualPaperEditor').innerHTML=''}}}catch(_){}
+    try{if(typeof renderPaperLibrary==='function')renderPaperLibrary()}catch(_){}
+    try{if(typeof bgpsProRefreshHome==='function'&&byId('proHomeView')?.classList.contains('active'))bgpsProRefreshHome()}catch(_){}
+    setTimeout(enhanceTeacherDashboard,80);
+    return true;
+  }
+  async function finalDeleteCurrentDraft(button){
+    const id=normId(byId('manualDraftId')?.value);
+    if(!id){alert('Save the draft first. Only a saved draft can be deleted.');return false}
+    const title=String(byId('manualPaperTitle')?.value||'this draft').trim()||'this draft';
+    if(!confirm('Delete '+title+'? This cannot be undone.'))return false;
+    const cloudHit=getCloudDrafts().some(item=>sameDraft(item,id));
+    const localHit=getLocalDraftList().some(item=>sameDraft(item,id));
+    if(cloudHit||!localHit)return finalDeleteBackendPaperDraft(id,{skipConfirm:true,button});
+    setBusy(button,true,'Deleting...');
+    try{return finalDeleteLocalDraft(id,{skipConfirm:true})}
+    finally{setBusy(button,false)}
+  }
+  expose('deleteBackendPaperDraft',finalDeleteBackendPaperDraft);
+  expose('deleteLocalDraft',finalDeleteLocalDraft);
+  document.addEventListener('click',function(event){
+    const button=event.target.closest?.('#bgpsV15DeleteCurrentDraft');
+    if(!button)return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    finalDeleteCurrentDraft(button);
+  },true);
+
+  const VALID_LAYOUTS=new Set(['left','right','center']);
+  const editor=()=>byId('manualPaperEditor');
+  function clamp(value,min,max){value=Number(value);return Math.max(min,Math.min(max,Number.isFinite(value)?value:min))}
+  function layoutOf(box){
+    const raw=String(box?.dataset?.bgpsLayout||box?.dataset?.layout||'').toLowerCase();
+    if(VALID_LAYOUTS.has(raw))return raw;
+    if(box?.classList?.contains('bgps-img-left'))return'left';
+    if(box?.classList?.contains('bgps-img-right'))return'right';
+    return'center';
+  }
+  function widthOf(box){
+    const styleWidth=String(box?.style?.width||'').replace('%','');
+    const raw=parseFloat(box?.dataset?.bgpsWidth||box?.dataset?.width||styleWidth||'');
+    return clamp(Number.isFinite(raw)?raw:34,8,75);
+  }
+  function ensureFlowAnchor(box){
+    if(!box||!box.parentNode)return;
+    const next=box.nextElementSibling;
+    if(next&&!(next.matches?.('.diagram-box.has-image,.page-break')))return;
+    const p=document.createElement('p');
+    p.className='bgps-docx-caret-after';
+    p.innerHTML='<br>';
+    box.insertAdjacentElement('afterend',p);
+  }
+  function applyImageLayout(box,layout,width){
+    if(!box)return;
+    const mode=VALID_LAYOUTS.has(layout)?layout:layoutOf(box);
+    let pct=clamp(width==null?widthOf(box):width,8,75);
+    if(mode!=='center')pct=Math.min(pct,48);
+    box.classList.add('diagram-box','has-image');
+    box.classList.remove('bgps-img-left','bgps-img-right','bgps-img-center');
+    box.classList.add('bgps-img-'+mode);
+    box.dataset.layout=mode;
+    box.dataset.bgpsLayout=mode;
+    box.dataset.width=String(Math.round(pct));
+    box.dataset.bgpsWidth=String(Math.round(pct));
+    box.style.setProperty('width',pct+'%','important');
+    box.style.setProperty('max-width',mode==='center'?'75%':'48%','important');
+    box.style.setProperty('min-height','0','important');
+    box.style.setProperty('height','auto','important');
+    box.style.setProperty('break-inside','avoid','important');
+    box.style.setProperty('page-break-inside','avoid','important');
+    box.style.setProperty('float',mode==='left'?'left':mode==='right'?'right':'none','important');
+    box.style.setProperty('clear',mode==='center'?'both':'none','important');
+    box.style.setProperty('margin',mode==='left'?'4px 14px 8px 0':mode==='right'?'4px 0 8px 14px':'9px auto 11px','important');
+    box.contentEditable='false';
+    const img=box.querySelector(':scope > img')||box.querySelector('img');
+    if(img){
+      img.classList.add('diagram-image');
+      img.draggable=false;
+      img.setAttribute('alt',String(img.getAttribute('alt')||'Diagram').slice(0,80));
+      img.style.setProperty('display','block','important');
+      img.style.setProperty('width','100%','important');
+      img.style.setProperty('max-width','100%','important');
+      img.style.setProperty('height','auto','important');
+      img.style.setProperty('object-fit','contain','important');
+      img.style.setProperty('margin','0 auto','important');
+    }
+    ensureFlowAnchor(box);
+  }
+  function normalizeImageLayouts(root){
+    root=root||editor();
+    if(!root||!root.querySelectorAll)return;
+    root.querySelectorAll('.diagram-box.has-image,img.diagram-image').forEach(node=>{
+      const box=node.matches?.('.diagram-box.has-image')?node:node.closest?.('.diagram-box');
+      if(box)applyImageLayout(box,layoutOf(box),widthOf(box));
+    });
+  }
+  function cleanStoredImageHtml(root){
+    if(!root||!root.querySelectorAll)return;
+    root.querySelectorAll('.bgps-v10-selected,.bgps-v20-selected,.bgps-v10-drag-source,.bgps-docx-dragging').forEach(node=>node.classList.remove('bgps-v10-selected','bgps-v20-selected','bgps-v10-drag-source','bgps-docx-dragging'));
+    root.querySelectorAll('.bgps-v10-resize-handle,.bgps-v20-resize-handle,[data-bgps-transient]').forEach(node=>node.remove());
+    root.querySelectorAll('[contenteditable],[draggable],[tabindex],[role],[aria-label]').forEach(node=>{
+      node.removeAttribute('contenteditable');
+      node.removeAttribute('draggable');
+      node.removeAttribute('tabindex');
+      node.removeAttribute('role');
+      node.removeAttribute('aria-label');
+    });
+  }
+  function placeCaretAfter(node){
+    const root=editor();
+    if(!root||!node)return;
+    let target=node.nextElementSibling;
+    if(!target||target.matches?.('.diagram-box.has-image,.page-break')){ensureFlowAnchor(node);target=node.nextElementSibling}
+    if(!target)return;
+    const range=document.createRange();
+    range.selectNodeContents(target);
+    range.collapse(true);
+    const sel=window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    target.focus?.();
+  }
+  document.addEventListener('keydown',function(event){
+    const box=document.activeElement?.closest?.('#manualPaperEditor .diagram-box.has-image')||editor()?.querySelector('.bgps-v10-selected,.bgps-v20-selected');
+    if(!box)return;
+    if(event.key==='Enter'){
+      event.preventDefault();
+      placeCaretAfter(box);
+    }
+  },true);
+  document.addEventListener('pointerup',()=>setTimeout(()=>normalizeImageLayouts(),0),true);
+  document.addEventListener('drop',()=>setTimeout(()=>normalizeImageLayouts(),0),true);
+  document.addEventListener('input',event=>{if(event.target?.id==='manualPaperEditor')setTimeout(()=>normalizeImageLayouts(),40)},true);
+  const oldSanitize=window.sanitizeComposerHtmlClient;
+  if(typeof oldSanitize==='function'){
+    expose('sanitizeComposerHtmlClient',function(html){
+      const out=oldSanitize.apply(this,arguments);
+      const tpl=document.createElement('template');
+      tpl.innerHTML=String(out||'');
+      normalizeImageLayouts(tpl.content);
+      cleanStoredImageHtml(tpl.content);
+      return tpl.innerHTML;
+    });
+  }
+  const oldPreview=window.buildManualPreviewHtml;
+  if(typeof oldPreview==='function'){
+    expose('buildManualPreviewHtml',function(meta,bodyHtml){
+      const tpl=document.createElement('template');
+      tpl.innerHTML=String(bodyHtml||'');
+      normalizeImageLayouts(tpl.content);
+      cleanStoredImageHtml(tpl.content);
+      return oldPreview.call(this,meta,tpl.innerHTML);
+    });
+  }
+  const oldAlign=window.bgpsSetImageAlign;
+  if(typeof oldAlign==='function'){
+    expose('bgpsSetImageAlign',function(mode){
+      const result=oldAlign.apply(this,arguments);
+      setTimeout(()=>normalizeImageLayouts(),0);
+      return result;
+    });
+  }
+  const oldWidth=window.bgpsSetImageWidth;
+  if(typeof oldWidth==='function'){
+    expose('bgpsSetImageWidth',function(value){
+      const result=oldWidth.apply(this,arguments);
+      setTimeout(()=>normalizeImageLayouts(),0);
+      return result;
+    });
+  }
+  function statusKey(status){
+    const s=String(status||'').toLowerCase();
+    if(s.includes('correction'))return'correction';
+    if(s.includes('approved')||s.includes('locked'))return'approved';
+    if(s.includes('submit')||s.includes('pending'))return'submitted';
+    if(s.includes('draft'))return'draft';
+    return s||'paper';
+  }
+  function teacherPapers(){
+    const uid=userId();
+    if(!uid||admin())return[];
+    const local=getLocalDraftList().map(item=>Object.assign({status:'Draft',uploadedAt:item.updatedAt||item.createdAt},item));
+    let papers=[];
+    try{papers=papers.concat(Array.isArray(questionPapers)?questionPapers:[])}catch(_){}
+    papers=papers.concat(getCloudDrafts(),local);
+    const seen=new Set();
+    return papers.filter(item=>{
+      if(item&&item.teacherId&&String(item.teacherId)!==uid)return false;
+      const id=normId(item?.draftId||item?.paperId||item?.title||JSON.stringify(item));
+      const key=statusKey(item?.status)+':'+id;
+      if(seen.has(key))return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  function assignedClasses(){
+    try{
+      if(typeof getMarksClassesForTeacher==='function')return getMarksClassesForTeacher(userId()).filter(Boolean);
+    }catch(_){}
+    try{return mapping&&mapping[userId()]?[mapping[userId()]]:[]}catch(_){return[]}
+  }
+  function recentRows(papers){
+    return papers.slice().sort((a,b)=>String(b.updatedAt||b.uploadedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.uploadedAt||a.createdAt||''))).slice(0,4);
+  }
+  function enhanceTeacherDashboard(){
+    const host=byId('proHomeContent');
+    if(!host||admin()||!byId('proHomeView')?.classList.contains('active'))return;
+    const papers=teacherPapers();
+    const draft=papers.filter(p=>statusKey(p.status)==='draft').length;
+    const submitted=papers.filter(p=>statusKey(p.status)==='submitted').length;
+    const correction=papers.filter(p=>statusKey(p.status)==='correction').length;
+    const approved=papers.filter(p=>statusKey(p.status)==='approved').length;
+    const classes=assignedClasses();
+    const marksEntered=(()=>{try{return Array.isArray(cachedMasterData)?Math.max(0,cachedMasterData.length-1):0}catch(_){return 0}})();
+    const old=byId('bgpsTeacherFocusBoard');
+    old?.remove();
+    const board=document.createElement('section');
+    board.id='bgpsTeacherFocusBoard';
+    board.className='bgps-teacher-focus-board no-print';
+    const recent=recentRows(papers).map(p=>`<div class="bgps-teacher-mini-row"><b>${esc(p.className||'-')} / ${esc(p.subject||'-')}</b><span>${esc(p.status||'Draft')}</span></div>`).join('')||'<div class="bgps-teacher-mini-row"><b>No paper activity yet</b><span>Start a draft</span></div>';
+    const classRows=classes.slice(0,5).map(c=>`<div class="bgps-teacher-mini-row"><b>${esc(c)}</b><span>${papers.filter(p=>String(p.className||'').toLowerCase()===String(c).toLowerCase()).length} papers</span></div>`).join('')||'<div class="bgps-teacher-mini-row"><b>No class mapped</b><span>Check login mapping</span></div>';
+    board.innerHTML=`<div class="bgps-teacher-focus-head"><h2>Teacher Workboard</h2><span>${esc(userId())}</span></div>
+      <div class="bgps-teacher-focus-grid">
+        <div class="bgps-teacher-focus-card"><strong>${marksEntered}</strong><span>Marks entered</span><small>Rows currently loaded in reports.</small></div>
+        <div class="bgps-teacher-focus-card warn"><strong>${draft}</strong><span>Draft papers</span><small>Saved locally or in cloud.</small></div>
+        <div class="bgps-teacher-focus-card warn"><strong>${submitted}</strong><span>Submitted</span><small>Awaiting approval.</small></div>
+        <div class="bgps-teacher-focus-card danger"><strong>${correction}</strong><span>Corrections</span><small>Returned by admin.</small></div>
+        <div class="bgps-teacher-focus-card good"><strong>${approved}</strong><span>Approved</span><small>Ready or locked papers.</small></div>
+      </div>
+      <div class="bgps-teacher-focus-actions"><button type="button" onclick="switchTab('entry')">Enter Marks</button><button type="button" onclick="switchTab('papers')">Create Paper</button><button type="button" onclick="switchTab('review')">Reports</button><button type="button" onclick="bgpsProRefreshHome()">Refresh</button></div>
+      <div class="bgps-teacher-focus-list"><div class="bgps-teacher-mini-list"><h3>Recent paper activity</h3>${recent}</div><div class="bgps-teacher-mini-list"><h3>Class / subject status</h3>${classRows}</div></div>`;
+    const title=host.querySelector('.bgps-pro-titlebar');
+    if(title)title.insertAdjacentElement('afterend',board);else host.prepend(board);
+  }
+  const prevSwitch=window.switchTab;
+  if(typeof prevSwitch==='function'){
+    expose('switchTab',function(mode){
+      const result=prevSwitch.apply(this,arguments);
+      Promise.resolve(result).finally(()=>setTimeout(enhanceTeacherDashboard,120));
+      return result;
+    });
+  }
+  const prevRefresh=window.bgpsProRefreshHome;
+  if(typeof prevRefresh==='function'){
+    expose('bgpsProRefreshHome',function(){
+      const result=prevRefresh.apply(this,arguments);
+      Promise.resolve(result).finally(()=>setTimeout(enhanceTeacherDashboard,120));
+      return result;
+    });
+  }
+  function boot(){normalizeImageLayouts();enhanceTeacherDashboard();setTimeout(()=>normalizeImageLayouts(),500)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
 </body>
 </html>

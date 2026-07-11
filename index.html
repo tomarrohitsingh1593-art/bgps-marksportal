@@ -3758,115 +3758,6 @@
             }).join('');
             const instructions = meta.instructions ? `<div class="instructions"><b>General Instructions:</b><ol>${meta.instructions.split(/\n+/).filter(Boolean).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ol></div>` : '';
             return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Question Paper Preview</title><style>@page{size:A4;margin:14mm}body{font-family:Georgia,serif;color:#111;margin:0}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:8px}.head h1{margin:0}.meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 15px;border:1px solid #111;padding:8px;margin:10px 0;font-weight:bold}.instructions{border:1px solid #777;padding:8px 12px}.section{display:flex;justify-content:space-between;background:#eee;border:1px solid #111;padding:6px 8px;margin-top:12px}.q{display:grid;grid-template-columns:38px 1fr 50px;gap:5px;padding:7px 2px;border-bottom:1px dotted #999;break-inside:avoid}.q> b:last-child{text-align:right}.or{text-align:center;font-weight:bold;margin:5px}.q small{display:block;color:#555;margin-top:4px}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.q{grid-template-columns:32px 1fr 42px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="head"><h1>BG PUBLIC SCHOOL</h1><b>${escapeHtml(meta.exam)} - ${escapeHtml(meta.boardPattern || inferBoardPattern(meta.className))} QUESTION PAPER</b></div><div class="meta"><span>Class: ${escapeHtml(meta.className)}</span><span>Subject: ${escapeHtml(meta.subject)}</span><span>Time: ${escapeHtml(meta.timeAllowed)}</span><span>Maximum Marks: ${escapeHtml(meta.maxMarks)}</span><span>Date: ${escapeHtml(meta.examDate || '__________')}</span><span>Chapters: ${escapeHtml(meta.chapters)}</span></div>${instructions}${sections}</main>
-<!-- BGPS V13 Teacher Paper Workflow Finalization -->
-<style id="bgps-v13-paper-workflow-css">
-  /* Simple creator: only paper details, normal toolbar, editor, preview and submit remain visible. */
-  #paperCreatorPanel .smart-blueprint,
-  #paperCreatorPanel .composer-analysis-bar,
-  #paperCreatorPanel .manual-marks-summary,
-  #paperCreatorPanel .manual-checks,
-  #paperCreatorPanel .bgps-v11-ruler-wrap,
-  #paperCreatorPanel .bgps-v11-editor-chrome { display:none !important; }
-  #paperCreatorPanel .paper-editor-toolbar { position:sticky; top:0; z-index:15; }
-  #paperCreatorPanel .paper-editor-toolbar .toolbar-group:nth-of-type(2),
-  #paperCreatorPanel .paper-editor-toolbar .toolbar-group:nth-of-type(3) { display:none !important; }
-  #paperCreatorPanel .paper-editor-toolbar .toolbar-group:nth-of-type(4) .editor-tool:nth-child(-n+5) { display:none !important; }
-  #paperCreatorPanel .bgps-essential-actions { justify-content:flex-end; gap:10px; }
-  #paperCreatorPanel .bgps-essential-actions button { min-width:150px; }
-  #manualPaperEditor .diagram-box.has-image { cursor:grab; user-select:none; touch-action:none; }
-  #manualPaperEditor .diagram-box.has-image:active { cursor:grabbing; }
-  #manualPaperEditor .diagram-box.has-image img { pointer-events:none; }
-  #manualPaperEditor .diagram-box.has-image.bgps-img-inline {
-    display:inline-flex !important; float:none !important; clear:none !important;
-    vertical-align:middle; margin:4px 7px !important; max-width:46% !important;
-  }
-  #bgpsV10ImageToolbar { gap:6px !important; padding:8px 10px !important; }
-  #bgpsV10ImageToolbar .v10-help { flex-basis:100%; }
-  @media(max-width:700px){
-    #paperCreatorPanel .bgps-essential-actions { display:grid; grid-template-columns:1fr; }
-    #paperCreatorPanel .bgps-essential-actions button { width:100%; min-width:0; }
-  }
-</style>
-<script id="bgps-v13-paper-workflow-js">
-(function(){
-  'use strict';
-  const byId=id=>document.getElementById(id);
-  function removeRulers(){
-    byId('bgpsV11RulerWrap')?.remove();
-    document.querySelectorAll('#paperCreatorPanel .bgps-v11-ruler-wrap').forEach(n=>n.remove());
-  }
-  function addImageTools(){
-    const toolbar=byId('bgpsV10ImageToolbar');
-    if(!toolbar || byId('bgpsV13Inline')) return;
-    const right=byId('bgpsV10-right');
-    const inline=document.createElement('button');
-    inline.type='button'; inline.id='bgpsV13Inline'; inline.textContent='Inline';
-    const auto=document.createElement('button');
-    auto.type='button'; auto.id='bgpsV13AutoAlign'; auto.textContent='Auto Align';
-    right?.insertAdjacentElement('afterend',inline);
-    inline.insertAdjacentElement('afterend',auto);
-    [inline,auto].forEach(b=>b.addEventListener('mousedown',e=>e.preventDefault()));
-    inline.addEventListener('click',()=>{
-      const box=document.querySelector('#manualPaperEditor .bgps-v10-selected');
-      if(!box) return;
-      box.classList.remove('bgps-img-left','bgps-img-right','bgps-img-center');
-      box.classList.add('bgps-img-inline');
-      box.dataset.layout='inline';
-      const width=Math.min(46,Math.max(15,parseFloat(box.style.width)||28));
-      box.style.width=width+'%'; box.style.maxWidth='46%';
-      window.handleManualEditorInput?.();
-      byId('manualAutosaveNote').textContent='Image placed inline with nearby text.';
-    });
-    auto.addEventListener('click',()=>{
-      const box=document.querySelector('#manualPaperEditor .bgps-v10-selected');
-      const editor=byId('manualPaperEditor');
-      if(!box||!editor) return;
-      const editorWidth=editor.getBoundingClientRect().width || 800;
-      const pct=Math.round((box.getBoundingClientRect().width/editorWidth)*100);
-      box.classList.remove('bgps-img-inline','bgps-img-left','bgps-img-right');
-      box.classList.add('bgps-img-center');
-      box.dataset.layout='center';
-      box.style.width=Math.max(22,Math.min(60,pct||34))+'%';
-      box.style.maxWidth='100%';
-      // Keep the image fully inside the printable editor and snap it to the nearest safe block.
-      const top=[...editor.children].find(n=>n===box || n.contains?.(box));
-      if(top && top!==box) editor.insertBefore(box,top.nextSibling);
-      window.handleManualEditorInput?.();
-      byId('manualAutosaveNote').textContent='Image auto-aligned inside the printable A4 area.';
-    });
-  }
-  function warnOverflow(){
-    const editor=byId('manualPaperEditor');
-    if(!editor) return;
-    let clipped=0;
-    const er=editor.getBoundingClientRect();
-    editor.querySelectorAll('.diagram-box.has-image').forEach(box=>{
-      const r=box.getBoundingClientRect();
-      const outside=r.left<er.left-1 || r.right>er.right+1;
-      box.classList.toggle('bgps-image-overflow-warning',outside);
-      if(outside) clipped++;
-    });
-    if(clipped){
-      const note=byId('manualAutosaveNote');
-      if(note) note.textContent=`Warning: ${clipped} image(s) cross the printable boundary. Select and use Auto Align.`;
-    }
-  }
-  const style=document.createElement('style');
-  style.textContent='.bgps-image-overflow-warning{outline:3px solid #dc2626!important;box-shadow:0 0 0 4px rgba(220,38,38,.15)!important}';
-  document.head.appendChild(style);
-  function install(){
-    removeRulers(); addImageTools(); warnOverflow();
-    const editor=byId('manualPaperEditor');
-    if(editor){
-      editor.addEventListener('input',()=>setTimeout(warnOverflow,20));
-      editor.addEventListener('pointerup',()=>setTimeout(warnOverflow,20));
-      new MutationObserver(()=>{removeRulers();addImageTools();setTimeout(warnOverflow,20)}).observe(document.body,{childList:true,subtree:true});
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
-})();
-</script>
-
 </body></html>`;
         }
 
@@ -12051,6 +11942,116 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
   function bind(){buildChrome();const e=editor();if(!e)return;e.addEventListener('keyup',saveRange);e.addEventListener('mouseup',saveRange);e.addEventListener('focus',saveRange);e.addEventListener('input',updateStatus);e.addEventListener('keydown',ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.shiftKey&&ev.key==='Enter'){ev.preventDefault();insertPageBreak()}});updateStatus();setTimeout(fitWidth,100)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
   window.addEventListener('resize',()=>{if(window.innerWidth<900)fitWidth()});
+})();
+</script>
+
+
+<!-- BGPS V13 Teacher Paper Workflow Finalization -->
+<style id="bgps-v13-paper-workflow-css">
+  /* Simple creator: only paper details, normal toolbar, editor, preview and submit remain visible. */
+  #paperCreatorPanel .smart-blueprint,
+  #paperCreatorPanel .composer-analysis-bar,
+  #paperCreatorPanel .manual-marks-summary,
+  #paperCreatorPanel .manual-checks,
+  #paperCreatorPanel .bgps-v11-ruler-wrap,
+  #paperCreatorPanel .bgps-v11-editor-chrome { display:none !important; }
+  #paperCreatorPanel .paper-editor-toolbar { position:sticky; top:0; z-index:15; }
+  #paperCreatorPanel .paper-editor-toolbar .toolbar-group:nth-of-type(2),
+  #paperCreatorPanel .paper-editor-toolbar .toolbar-group:nth-of-type(3) { display:none !important; }
+  #paperCreatorPanel .paper-editor-toolbar .toolbar-group:nth-of-type(4) .editor-tool:nth-child(-n+5) { display:none !important; }
+  #paperCreatorPanel .bgps-essential-actions { justify-content:flex-end; gap:10px; }
+  #paperCreatorPanel .bgps-essential-actions button { min-width:150px; }
+  #manualPaperEditor .diagram-box.has-image { cursor:grab; user-select:none; touch-action:none; }
+  #manualPaperEditor .diagram-box.has-image:active { cursor:grabbing; }
+  #manualPaperEditor .diagram-box.has-image img { pointer-events:none; }
+  #manualPaperEditor .diagram-box.has-image.bgps-img-inline {
+    display:inline-flex !important; float:none !important; clear:none !important;
+    vertical-align:middle; margin:4px 7px !important; max-width:46% !important;
+  }
+  #bgpsV10ImageToolbar { gap:6px !important; padding:8px 10px !important; }
+  #bgpsV10ImageToolbar .v10-help { flex-basis:100%; }
+  @media(max-width:700px){
+    #paperCreatorPanel .bgps-essential-actions { display:grid; grid-template-columns:1fr; }
+    #paperCreatorPanel .bgps-essential-actions button { width:100%; min-width:0; }
+  }
+</style>
+<script id="bgps-v13-paper-workflow-js">
+(function(){
+  'use strict';
+  const byId=id=>document.getElementById(id);
+  function removeRulers(){
+    byId('bgpsV11RulerWrap')?.remove();
+    document.querySelectorAll('#paperCreatorPanel .bgps-v11-ruler-wrap').forEach(n=>n.remove());
+  }
+  function addImageTools(){
+    const toolbar=byId('bgpsV10ImageToolbar');
+    if(!toolbar || byId('bgpsV13Inline')) return;
+    const right=byId('bgpsV10-right');
+    const inline=document.createElement('button');
+    inline.type='button'; inline.id='bgpsV13Inline'; inline.textContent='Inline';
+    const auto=document.createElement('button');
+    auto.type='button'; auto.id='bgpsV13AutoAlign'; auto.textContent='Auto Align';
+    right?.insertAdjacentElement('afterend',inline);
+    inline.insertAdjacentElement('afterend',auto);
+    [inline,auto].forEach(b=>b.addEventListener('mousedown',e=>e.preventDefault()));
+    inline.addEventListener('click',()=>{
+      const box=document.querySelector('#manualPaperEditor .bgps-v10-selected');
+      if(!box) return;
+      box.classList.remove('bgps-img-left','bgps-img-right','bgps-img-center');
+      box.classList.add('bgps-img-inline');
+      box.dataset.layout='inline';
+      const width=Math.min(46,Math.max(15,parseFloat(box.style.width)||28));
+      box.style.width=width+'%'; box.style.maxWidth='46%';
+      window.handleManualEditorInput?.();
+      byId('manualAutosaveNote').textContent='Image placed inline with nearby text.';
+    });
+    auto.addEventListener('click',()=>{
+      const box=document.querySelector('#manualPaperEditor .bgps-v10-selected');
+      const editor=byId('manualPaperEditor');
+      if(!box||!editor) return;
+      const editorWidth=editor.getBoundingClientRect().width || 800;
+      const pct=Math.round((box.getBoundingClientRect().width/editorWidth)*100);
+      box.classList.remove('bgps-img-inline','bgps-img-left','bgps-img-right');
+      box.classList.add('bgps-img-center');
+      box.dataset.layout='center';
+      box.style.width=Math.max(22,Math.min(60,pct||34))+'%';
+      box.style.maxWidth='100%';
+      // Keep the image fully inside the printable editor and snap it to the nearest safe block.
+      const top=[...editor.children].find(n=>n===box || n.contains?.(box));
+      if(top && top!==box) editor.insertBefore(box,top.nextSibling);
+      window.handleManualEditorInput?.();
+      byId('manualAutosaveNote').textContent='Image auto-aligned inside the printable A4 area.';
+    });
+  }
+  function warnOverflow(){
+    const editor=byId('manualPaperEditor');
+    if(!editor) return;
+    let clipped=0;
+    const er=editor.getBoundingClientRect();
+    editor.querySelectorAll('.diagram-box.has-image').forEach(box=>{
+      const r=box.getBoundingClientRect();
+      const outside=r.left<er.left-1 || r.right>er.right+1;
+      box.classList.toggle('bgps-image-overflow-warning',outside);
+      if(outside) clipped++;
+    });
+    if(clipped){
+      const note=byId('manualAutosaveNote');
+      if(note) note.textContent=`Warning: ${clipped} image(s) cross the printable boundary. Select and use Auto Align.`;
+    }
+  }
+  const style=document.createElement('style');
+  style.textContent='.bgps-image-overflow-warning{outline:3px solid #dc2626!important;box-shadow:0 0 0 4px rgba(220,38,38,.15)!important}';
+  document.head.appendChild(style);
+  function install(){
+    removeRulers(); addImageTools(); warnOverflow();
+    const editor=byId('manualPaperEditor');
+    if(editor){
+      editor.addEventListener('input',()=>setTimeout(warnOverflow,20));
+      editor.addEventListener('pointerup',()=>setTimeout(warnOverflow,20));
+      new MutationObserver(()=>{removeRulers();addImageTools();setTimeout(warnOverflow,20)}).observe(document.body,{childList:true,subtree:true});
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
 </script>
 

@@ -2336,7 +2336,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz4jEyCXc-xrfQzka7E1YsmESZAO9YVKkmfzzou0bzOW_OY7Sqvqtkogxm_-dx92YXw/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz313nW1LtKR67lnaHjBcY1IqL7VyHK8mnhupkebGGuQgm67eKVXNXeumrxgdgLGNbI/exec";
         
         const PASS_PERCENT = 33;
 
@@ -2884,7 +2884,7 @@
             setLoginError('');
             const loginPage = document.getElementById('loginPage');
             const appShell = document.getElementById('appShell');
-            if (loginPage) loginPage.style.display = 'block';
+            if (loginPage) loginPage.style.display = 'grid';
             if (appShell) {
                 appShell.classList.add('bgps-auth-locked');
                 appShell.style.display = 'none';
@@ -3295,6 +3295,7 @@
             if (!response.ok || result.ok === false) throw new Error(result.error || 'Request failed.');
             return result;
         }
+        window.paperApi = paperApi;
 
         async function loadPaperSettings(force = false) {
             if (!currentId) return;
@@ -3769,7 +3770,10 @@
                 return `<section><div class="section"><strong>${escapeHtml(section)}</strong><strong>${marks} Marks</strong></div>${items.map(item => `<div class="q"><b>Q.${item.number}</b><div>${escapeHtml(item.text).replace(/\n/g,'<br>')}${item.orText ? `<div class="or">OR</div>${escapeHtml(item.orText).replace(/\n/g,'<br>')}` : ''}<small>Chapter: ${escapeHtml(item.chapter)}</small></div><b>[${escapeHtml(item.marks)}]</b></div>`).join('')}</section>`;
             }).join('');
             const instructions = meta.instructions ? `<div class="instructions"><b>General Instructions:</b><ol>${meta.instructions.split(/\n+/).filter(Boolean).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ol></div>` : '';
-            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Question Paper Preview</title><style>@page{size:A4;margin:14mm}body{font-family:Georgia,serif;color:#111;margin:0}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:8px}.head h1{margin:0}.meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 15px;border:1px solid #111;padding:8px;margin:10px 0;font-weight:bold}.instructions{border:1px solid #777;padding:8px 12px}.section{display:flex;justify-content:space-between;background:#eee;border:1px solid #111;padding:6px 8px;margin-top:12px}.q{display:grid;grid-template-columns:38px 1fr 50px;gap:5px;padding:7px 2px;border-bottom:1px dotted #999;break-inside:avoid}.q> b:last-child{text-align:right}.or{text-align:center;font-weight:bold;margin:5px}.q small{display:block;color:#555;margin-top:4px}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.q{grid-template-columns:32px 1fr 42px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="head"><h1>BG PUBLIC SCHOOL</h1><b>${escapeHtml(meta.exam)} - ${escapeHtml(meta.boardPattern || inferBoardPattern(meta.className))} QUESTION PAPER</b></div><div class="meta"><span>Class: ${escapeHtml(meta.className)}</span><span>Subject: ${escapeHtml(meta.subject)}</span><span>Time: ${escapeHtml(meta.timeAllowed)}</span><span>Maximum Marks: ${escapeHtml(meta.maxMarks)}</span><span>Date: ${escapeHtml(meta.examDate || '__________')}</span><span>Chapters: ${escapeHtml(meta.chapters)}</span></div>${instructions}${sections}</main></body></html>`;
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Question Paper Preview</title><style>@page{size:A4;margin:14mm}body{font-family:Georgia,serif;color:#111;margin:0}.paper{max-width:190mm;margin:auto}.print{text-align:center;margin:10px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:8px}.head h1{margin:0}.meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 15px;border:1px solid #111;padding:8px;margin:10px 0;font-weight:bold}.instructions{border:1px solid #777;padding:8px 12px}.section{display:flex;justify-content:space-between;background:#eee;border:1px solid #111;padding:6px 8px;margin-top:12px}.q{display:grid;grid-template-columns:38px 1fr 50px;gap:5px;padding:7px 2px;border-bottom:1px dotted #999;break-inside:avoid}.q> b:last-child{text-align:right}.or{text-align:center;font-weight:bold;margin:5px}.q small{display:block;color:#555;margin-top:4px}@media print{.print{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}.q{grid-template-columns:32px 1fr 42px}}</style></head><body><div class="print"><button onclick="window.print()">Print Preview</button></div><main class="paper"><div class="head"><h1>BG PUBLIC SCHOOL</h1><b>${escapeHtml(meta.exam)} - ${escapeHtml(meta.boardPattern || inferBoardPattern(meta.className))} QUESTION PAPER</b></div><div class="meta"><span>Class: ${escapeHtml(meta.className)}</span><span>Subject: ${escapeHtml(meta.subject)}</span><span>Time: ${escapeHtml(meta.timeAllowed)}</span><span>Maximum Marks: ${escapeHtml(meta.maxMarks)}</span><span>Date: ${escapeHtml(meta.examDate || '__________')}</span><span>Chapters: ${escapeHtml(meta.chapters)}</span></div>${instructions}${sections}</main>
+
+
+</body></html>`;
         }
 
         function legacyPreviewManualPaper() {
@@ -12060,6 +12064,248 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     setInterval(()=>{syncDraftDeleteButton();correctOpenBanner();forceReadablePaper();},700);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',install,{once:true}); else install();
+})();
+</script>
+
+
+<!-- BGPS V17 FINAL LOGIN POPUP AUDIT FIX -->
+<script id="bgps-v17-login-popup-audit-fix">
+(function(){
+  'use strict';
+  if (window.__BGPS_V17_LOGIN_POPUP_FIX__) return;
+  window.__BGPS_V17_LOGIN_POPUP_FIX__ = true;
+
+  const nativeAlert = window.alert.bind(window);
+  let suppressWorkflowAlertsUntil = 0;
+  const workflowAlertPattern = /(workflow|question[- ]?paper|paper creator|pdf\/docx upload|submission|marks entry).*(closed|locked|disabled|admin)|(closed|locked|disabled).*(workflow|question[- ]?paper|paper creator|pdf\/docx upload|submission|marks entry)/i;
+
+  window.alert = function(message){
+    const text = String(message == null ? '' : message);
+    if (Date.now() < suppressWorkflowAlertsUntil && workflowAlertPattern.test(text)) {
+      console.warn('[BGPS] Suppressed stale login workflow alert:', text);
+      return;
+    }
+    return nativeAlert(text);
+  };
+
+  function beginLoginGuard(){
+    suppressWorkflowAlertsUntil = Date.now() + 12000;
+  }
+
+  function clearStaleWorkflowUi(){
+    const banner = document.getElementById('paperAvailabilityBanner');
+    if (!banner) return;
+    const text = String(banner.textContent || '');
+    const settings = (typeof window.paperSettings === 'object' && window.paperSettings) || {};
+    const permissions = (typeof window.paperPermissions === 'object' && window.paperPermissions) || {};
+    const openUpload = settings.emergencyLock !== true && settings.submissionEnabled !== false && settings.uploadEnabled !== false && permissions.canUpload !== false;
+    const openCreator = settings.emergencyLock !== true && settings.submissionEnabled !== false && settings.creatorEnabled !== false && permissions.canCreate !== false;
+    if ((openUpload || openCreator) && /(closed|locked|disabled)/i.test(text)) {
+      banner.classList.remove('locked','error','warning');
+      banner.classList.toggle('partial', !(openUpload && openCreator));
+      banner.textContent = openUpload && openCreator
+        ? 'Both PDF/DOCX Upload and Manual Paper Creator are open.'
+        : ('Available now: ' + (openUpload ? 'PDF/DOCX Upload' : 'Manual Paper Creator') + '.');
+    }
+  }
+
+  document.addEventListener('click', function(event){
+    if (event.target && event.target.closest && event.target.closest('#loginBtn')) beginLoginGuard();
+  }, true);
+  document.addEventListener('keydown', function(event){
+    if (event.key === 'Enter' && document.getElementById('loginPage') && document.getElementById('loginPage').style.display !== 'none') beginLoginGuard();
+  }, true);
+
+  const observer = new MutationObserver(function(){
+    const shell = document.getElementById('appShell');
+    if (shell && shell.style.display && shell.style.display !== 'none') {
+      suppressWorkflowAlertsUntil = Math.max(suppressWorkflowAlertsUntil, Date.now() + 5000);
+      setTimeout(clearStaleWorkflowUi, 0);
+      setTimeout(clearStaleWorkflowUi, 250);
+      setTimeout(clearStaleWorkflowUi, 1000);
+    }
+  });
+  observer.observe(document.documentElement, {subtree:true, attributes:true, attributeFilter:['style','class']});
+
+  const originalSelectPaperMode = window.selectPaperMode;
+  if (typeof originalSelectPaperMode === 'function') {
+    window.selectPaperMode = function(mode, silent){
+      const duringLogin = Date.now() < suppressWorkflowAlertsUntil;
+      return originalSelectPaperMode.call(this, mode, duringLogin ? true : silent);
+    };
+    try { (0,eval)('selectPaperMode = window.selectPaperMode'); } catch (_) {}
+  }
+})();
+</script>
+
+<!-- BGPS V20 SINGLE IMAGE RESIZE CONTROLLER -->
+<style id="bgps-v20-resize-css">
+#manualPaperEditor .diagram-box.has-image{position:relative!important;box-sizing:border-box!important;min-width:48px!important;height:auto!important;overflow:visible!important}
+#manualPaperEditor .diagram-box.has-image>img{display:block!important;width:100%!important;height:auto!important;max-width:100%!important;object-fit:contain!important}
+#manualPaperEditor .diagram-box.has-image.bgps-v20-selected{outline:2px solid #1d6fb8!important;outline-offset:3px!important}
+#manualPaperEditor .bgps-v20-resize-handle{position:absolute!important;right:-11px!important;bottom:-11px!important;width:24px!important;height:24px!important;border:3px solid #fff!important;border-radius:50%!important;background:#1d6fb8!important;box-shadow:0 2px 8px rgba(0,0,0,.35)!important;cursor:nwse-resize!important;touch-action:none!important;z-index:99999!important}
+</style>
+<script id="bgps-v20-resize-js">
+(function(){
+  'use strict';
+  if(window.__BGPS_V20_RESIZE__) return;
+  window.__BGPS_V20_RESIZE__=true;
+  const MIN=8, MAX=75;
+  let selected=null, drag=null, restoring=false;
+  const editor=()=>document.getElementById('manualPaperEditor');
+  const clamp=v=>Math.max(MIN,Math.min(MAX,Number(v)||MIN));
+  const boxOf=n=>n&&n.closest?n.closest('#manualPaperEditor .diagram-box.has-image'):null;
+  function savedWidth(box){
+    const raw=parseFloat(box.dataset.bgpsWidth||box.dataset.width||box.style.width||'');
+    if(Number.isFinite(raw)) return clamp(raw);
+    const ed=editor();
+    return ed?clamp(box.getBoundingClientRect().width/Math.max(1,ed.getBoundingClientRect().width)*100):34;
+  }
+  function applyWidth(box,pct,notify){
+    if(!box) return;
+    pct=clamp(pct);
+    restoring=true;
+    const val=String(Math.round(pct));
+    // Keep every legacy/current normalizer on the SAME source of truth.
+    box.dataset.width=val;
+    box.dataset.bgpsWidth=val;
+    box.style.setProperty('width',pct+'%','important');
+    box.style.setProperty('max-width','100%','important');
+    box.style.setProperty('min-width','48px','important');
+    box.style.setProperty('height','auto','important');
+    const img=box.querySelector(':scope > img')||box.querySelector('img');
+    if(img){
+      img.style.setProperty('width','100%','important');
+      img.style.setProperty('max-width','100%','important');
+      img.style.setProperty('height','auto','important');
+    }
+    ['bgpsV10Width','bgpsImageWidthSlider'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=val;});
+    ['bgpsV10WidthValue','bgpsImageWidthValue'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=val+'%';});
+    requestAnimationFrame(()=>{restoring=false;});
+    if(notify){
+      try{window.markManualPaperDirty?.();}catch(_){}
+      try{window.scheduleManualDraftAutosave?.();}catch(_){}
+      try{window.handleManualEditorInput?.();}catch(_){}
+    }
+  }
+  function clearSelection(){
+    const ed=editor(); if(!ed)return;
+    ed.querySelectorAll('.bgps-v20-selected').forEach(n=>n.classList.remove('bgps-v20-selected'));
+    ed.querySelectorAll('.bgps-v20-resize-handle').forEach(n=>n.remove());
+  }
+  function selectBox(box){
+    if(!box)return;
+    if(selected!==box) clearSelection();
+    selected=box;
+    box.classList.add('bgps-v20-selected');
+    let h=box.querySelector(':scope > .bgps-v20-resize-handle');
+    if(!h){h=document.createElement('span');h.className='bgps-v20-resize-handle';h.contentEditable='false';h.title='Drag to resize image';box.appendChild(h);}
+    applyWidth(box,savedWidth(box),false);
+  }
+  function start(e,handle){
+    const box=boxOf(handle),ed=editor(); if(!box||!ed)return;
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    selectBox(box);
+    drag={box,id:e.pointerId,startX:e.clientX,startPct:savedWidth(box),editorWidth:Math.max(1,ed.getBoundingClientRect().width)};
+    try{handle.setPointerCapture(e.pointerId);}catch(_){}
+  }
+  document.addEventListener('pointerdown',e=>{
+    const h=e.target.closest?.('.bgps-v20-resize-handle');
+    if(h){start(e,h);return;}
+    const box=boxOf(e.target);if(box)selectBox(box);
+  },true);
+  document.addEventListener('pointermove',e=>{
+    if(!drag||e.pointerId!==drag.id)return;
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    applyWidth(drag.box,drag.startPct+(e.clientX-drag.startX)/drag.editorWidth*100,false);
+  },true);
+  function finish(e){
+    if(!drag)return;
+    if(e&&e.pointerId!=null&&e.pointerId!==drag.id)return;
+    const box=drag.box;drag=null;
+    applyWidth(box,savedWidth(box),true);
+    // Re-assert after legacy input/normalization callbacks have finished.
+    const pct=savedWidth(box);
+    setTimeout(()=>applyWidth(box,pct,false),0);
+    setTimeout(()=>applyWidth(box,pct,false),120);
+    setTimeout(()=>applyWidth(box,pct,false),500);
+  }
+  document.addEventListener('pointerup',finish,true);
+  document.addEventListener('pointercancel',finish,true);
+  document.addEventListener('input',e=>{
+    if(!selected||!selected.isConnected)return;
+    if(e.target&&['bgpsV10Width','bgpsImageWidthSlider'].includes(e.target.id)){
+      e.stopPropagation();e.stopImmediatePropagation();applyWidth(selected,e.target.value,true);
+    }
+  },true);
+  // Any old normalizer that rewrites style.width is corrected from the persistent data value.
+  function installObserver(){
+    const ed=editor();if(!ed||ed.dataset.bgpsV20Observed==='1')return;
+    ed.dataset.bgpsV20Observed='1';
+    new MutationObserver(mutations=>{
+      if(restoring)return;
+      const boxes=new Set();
+      mutations.forEach(m=>{
+        const b=boxOf(m.target);if(b)boxes.add(b);
+        m.addedNodes&&m.addedNodes.forEach(n=>{if(n.nodeType===1){const b=boxOf(n);if(b)boxes.add(b);n.querySelectorAll?.('.diagram-box.has-image').forEach(x=>boxes.add(x));}});
+      });
+      boxes.forEach(box=>{
+        const pct=parseFloat(box.dataset.bgpsWidth||box.dataset.width||'');
+        if(Number.isFinite(pct)) applyWidth(box,pct,false);
+        else applyWidth(box,savedWidth(box),false);
+      });
+    }).observe(ed,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class','data-width','data-bgps-width']});
+  }
+  function boot(){installObserver();setTimeout(installObserver,300);setTimeout(installObserver,1200);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+
+
+<script id="bgps-final-router-audit-guard">
+(function(){
+  'use strict';
+  if (window.__BGPS_FINAL_ROUTER_AUDIT_GUARD__) return;
+  window.__BGPS_FINAL_ROUTER_AUDIT_GUARD__ = true;
+
+  let activeMode = 'home';
+  function tabId(mode){
+    const t = mode === 'dash' ? 'review' : mode;
+    if (t === 'reports' || t === 'review') return 'tab-review';
+    if (t === 'entry') return 'tab-entry';
+    if (t === 'papers') return 'tab-papers';
+    if (t === 'approval') return 'tab-approval';
+    if (t === 'settings' || t === 'controls') return 'tab-settings';
+    return 'tab-home';
+  }
+  function applyActiveTab(){
+    const id = tabId(activeMode);
+    document.querySelectorAll('.nav-tabs .tab-btn').forEach(button => button.classList.remove('active'));
+    const button = document.getElementById(id);
+    if (button) button.classList.add('active');
+  }
+  function expose(name, fn){
+    window[name] = fn;
+    try { (0, eval)(name + ' = window.' + name); } catch (_) {}
+  }
+  const previousSwitch = window.switchTab;
+  if (typeof previousSwitch === 'function') {
+    expose('switchTab', function bgpsFinalSwitchTab(mode){
+      activeMode = mode || activeMode || 'home';
+      const result = previousSwitch.apply(this, arguments);
+      Promise.resolve(result).finally(() => setTimeout(applyActiveTab, 0));
+      return result;
+    });
+  }
+  const previousRenderPaperLibrary = window.renderPaperLibrary;
+  if (typeof previousRenderPaperLibrary === 'function') {
+    expose('renderPaperLibrary', function bgpsFinalRenderPaperLibrary(){
+      const result = previousRenderPaperLibrary.apply(this, arguments);
+      setTimeout(applyActiveTab, 0);
+      return result;
+    });
+  }
+  document.addEventListener('DOMContentLoaded', () => setTimeout(applyActiveTab, 0), { once:true });
 })();
 </script>
 

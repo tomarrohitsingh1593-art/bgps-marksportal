@@ -10935,5 +10935,627 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
 })();
 </script>
 
+<style id="bgps-isc-image-layout-v7-css">
+  /* BGPS ISC-style image layout and direct in-paper movement V7 */
+  #manualPaperEditor .diagram-box.has-image {
+    position: relative !important;
+    display: block !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    margin: 14px auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    text-align: center !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    overflow: visible !important;
+  }
+  #manualPaperEditor .diagram-box.has-image > img.diagram-image,
+  #manualPaperEditor .diagram-box.has-image > img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 430px !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    object-fit: contain !important;
+    cursor: grab !important;
+    touch-action: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-user-drag: none !important;
+  }
+  #manualPaperEditor .diagram-box.has-image.is-image-selected > img,
+  #manualPaperEditor .diagram-box.has-image.bgps-v7-pointer-dragging > img {
+    cursor: grabbing !important;
+  }
+  #manualPaperEditor .diagram-box.has-image.is-image-selected {
+    outline: 2px solid #1e5f91 !important;
+    outline-offset: 4px !important;
+    box-shadow: 0 0 0 5px rgba(30,95,145,.10) !important;
+  }
+  #manualPaperEditor .diagram-caption {
+    margin: 6px 0 0 !important;
+    padding: 0 !important;
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    text-align: center !important;
+  }
+  #manualPaperEditor .bgps-v7-inline-image-tools {
+    position: absolute;
+    left: 50%;
+    top: -38px;
+    z-index: 30;
+    transform: translateX(-50%);
+    display: none;
+    align-items: center;
+    gap: 3px;
+    padding: 4px;
+    border: 1px solid #8eacc5;
+    border-radius: 8px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 5px 16px rgba(13,52,83,.18);
+    white-space: nowrap;
+    font-family: Arial, sans-serif;
+    user-select: none;
+  }
+  #manualPaperEditor .diagram-box.has-image.is-image-selected > .bgps-v7-inline-image-tools {
+    display: flex;
+  }
+  #manualPaperEditor .bgps-v7-inline-image-tools button {
+    min-width: 27px;
+    height: 27px;
+    min-height: 27px;
+    padding: 0 7px;
+    border: 1px solid #c1d1df;
+    border-radius: 6px;
+    background: #f7fbff;
+    color: #173f68;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  #manualPaperEditor .bgps-v7-inline-image-tools button:hover {
+    border-color: #1e5f91;
+    background: #eaf4fc;
+  }
+  #manualPaperEditor .bgps-v7-inline-image-tools .drag-help {
+    padding: 0 7px;
+    color: #173f68;
+    font-size: 10px;
+    font-weight: 900;
+    cursor: grab;
+  }
+  #manualPaperEditor .bgps-v7-inline-image-tools .keyboard-active {
+    background: #fff3bf;
+    border-color: #d5a900;
+  }
+  #manualPaperEditor .bgps-v7-drop-line {
+    display: block !important;
+    width: 100% !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 7px 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-top: 3px solid #e8a600 !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,.9) !important;
+    pointer-events: none !important;
+  }
+  #manualPaperEditor .bgps-v7-drop-line::after {
+    content: 'Drop image here';
+    display: inline-block;
+    position: relative;
+    left: 50%;
+    top: -10px;
+    transform: translateX(-50%);
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #fff3bf;
+    color: #704d00;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    font-weight: 900;
+  }
+  #manualPaperEditor .diagram-box.bgps-v7-pointer-dragging {
+    opacity: .58 !important;
+    outline: 2px dashed #173f68 !important;
+    box-shadow: none !important;
+  }
+  #paperCreatorPanel .bgps-v7-image-standard-note {
+    margin: 7px 0 0;
+    padding: 8px 10px;
+    border: 1px solid #bdd2e3;
+    border-radius: 8px;
+    background: #f4f9fd;
+    color: #244d70;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 700;
+  }
+  @media (max-width: 700px) {
+    #manualPaperEditor .diagram-box.has-image { margin-top: 13px !important; margin-bottom: 13px !important; }
+    #manualPaperEditor .bgps-v7-inline-image-tools { max-width: calc(100vw - 48px); overflow-x: auto; left: 0; transform: none; }
+    #manualPaperEditor .bgps-v7-inline-image-tools .drag-help { display: none; }
+  }
+  @media print {
+    .bgps-v7-inline-image-tools,.bgps-v7-drop-line { display: none !important; }
+    #manualPaperEditor .diagram-box.has-image { margin-top: 3.5mm !important; margin-bottom: 3.5mm !important; outline: none !important; box-shadow: none !important; }
+  }
+</style>
+<script id="bgps-isc-image-layout-v7-js">
+(function bgpsIscImageLayoutV7(){
+  'use strict';
+  if (window.__BGPS_ISC_IMAGE_LAYOUT_V7__) return;
+  window.__BGPS_ISC_IMAGE_LAYOUT_V7__ = true;
+
+  const STANDARD_WIDTH = 62;
+  const MOBILE_WIDTH = 78;
+  const TRANSIENT = '[data-bgps-transient],.bgps-image-resize-handle,.bgps-image-drag-handle,.bgps-v7-inline-image-tools,.bgps-v7-drop-line';
+  const state = { pointer:null, dropLine:null, installed:false, normalizing:false, keyboardBox:null };
+  const byId = id => document.getElementById(id);
+  const getEditor = () => byId('manualPaperEditor');
+  const clamp = (n,min,max) => Math.min(max,Math.max(min,n));
+
+  function replaceGlobal(name,fn){
+    try { window[name]=fn; } catch (_) {}
+    try { (0,eval)(`${name}=window.${name}`); } catch (_) {}
+  }
+
+  function directChildren(){
+    const ed=getEditor();
+    if (!ed) return [];
+    return [...ed.children].filter(node => !node.matches('.bgps-v7-drop-line,[data-bgps-transient]'));
+  }
+
+  function topLevel(node){
+    const ed=getEditor();
+    if (!ed || !node) return null;
+    let current=node;
+    while (current.parentElement && current.parentElement!==ed) current=current.parentElement;
+    return current.parentElement===ed ? current : null;
+  }
+
+  function isVisuallyEmpty(node){
+    if (!node) return true;
+    if (node.querySelector?.('img,table,hr,.page-break')) return false;
+    return !String(node.textContent||'').replace(/\u200b/g,'').trim();
+  }
+
+  function ensureBoxForImage(img){
+    if (!img) return null;
+    let box=img.closest('.diagram-box');
+    if (!box) {
+      box=document.createElement('div');
+      box.className='diagram-box has-image';
+      img.parentNode?.insertBefore(box,img);
+      box.appendChild(img);
+    }
+    box.classList.add('diagram-box','has-image');
+    img.classList.add('diagram-image');
+    img.setAttribute('alt',String(img.getAttribute('alt')||'Diagram').slice(0,80));
+    img.draggable=false;
+    return box;
+  }
+
+  function promoteBoxesToStandalone(){
+    const ed=getEditor();
+    if (!ed || state.normalizing) return [];
+    state.normalizing=true;
+    try {
+      const boxes=[...ed.querySelectorAll('img')].map(ensureBoxForImage).filter(Boolean);
+      const anchors=new Map();
+      const cleanup=new Set();
+      boxes.forEach(box => {
+        if (box.closest('table')) return;
+        const top=topLevel(box);
+        if (!top || top===box) return;
+        const anchor=anchors.get(top)||top;
+        anchor.insertAdjacentElement('afterend',box);
+        anchors.set(top,box);
+        cleanup.add(top);
+      });
+      cleanup.forEach(node => { if (node.isConnected && isVisuallyEmpty(node)) node.remove(); });
+      return boxes;
+    } finally { state.normalizing=false; }
+  }
+
+  function applyStandardStyle(box,forceWidth){
+    if (!box) return;
+    const img=box.querySelector('img');
+    if (!img) return;
+    const current=parseFloat(String(box.style.width||'').replace('%',''));
+    const width=forceWidth || !Number.isFinite(current) ? STANDARD_WIDTH : clamp(current,25,100);
+    box.classList.add('diagram-box','has-image');
+    box.style.width=`${width}%`;
+    box.style.maxWidth='100%';
+    box.style.minHeight='0px';
+    box.style.display='block';
+    box.style.marginLeft='auto';
+    box.style.marginRight='auto';
+    box.style.marginTop='14px';
+    box.style.marginBottom='14px';
+    box.style.padding='0px';
+    box.style.textAlign='center';
+    box.style.border='0px';
+    box.style.background='transparent';
+    box.style.breakInside='avoid';
+    box.style.pageBreakInside='avoid';
+    box.dataset.imageAlign='center';
+    box.draggable=false;
+    box.tabIndex=0;
+    box.setAttribute('role','group');
+    box.setAttribute('aria-label','Selected paper diagram. Drag the image to move it, or press Space then Arrow Up or Arrow Down.');
+    img.classList.add('diagram-image');
+    img.draggable=false;
+    img.style.width='100%';
+    img.style.maxWidth='100%';
+    img.style.height='auto';
+    img.style.display='block';
+    img.style.objectFit='contain';
+    img.style.marginLeft='auto';
+    img.style.marginRight='auto';
+    installInlineTools(box);
+  }
+
+  function normalizeImages(forceWidth,emit){
+    const ed=getEditor();
+    if (!ed) return [];
+    const boxes=promoteBoxesToStandalone();
+    boxes.forEach(box=>applyStandardStyle(box,Boolean(forceWidth)));
+    if (emit) emitEditorChange('Images standardized for ISC print layout.');
+    return boxes;
+  }
+
+  function selectBox(box,focus){
+    const ed=getEditor();
+    if (!ed || !box) return;
+    ed.querySelectorAll('.diagram-box.is-image-selected').forEach(node=>{ if(node!==box) node.classList.remove('is-image-selected'); });
+    box.classList.add('is-image-selected');
+    try {
+      const img=box.querySelector('img');
+      if (img && typeof window.handleManualEditorClick==='function') {
+        window.handleManualEditorClick({target:img,preventDefault(){},stopPropagation(){}});
+      }
+    } catch (_) {}
+    box.classList.add('is-image-selected');
+    installInlineTools(box);
+    if (focus) { try { box.focus({preventScroll:true}); } catch (_) { try{box.focus();}catch(__){} } }
+  }
+
+  function installInlineTools(box){
+    if (!box || box.querySelector(':scope > .bgps-v7-inline-image-tools')) return;
+    const tools=document.createElement('div');
+    tools.className='bgps-v7-inline-image-tools';
+    tools.dataset.bgpsTransient='true';
+    tools.contentEditable='false';
+    tools.innerHTML='<span class="drag-help" title="Drag the picture itself to move it">↕ Drag picture</span>'+
+      '<button type="button" data-act="up" title="Move image above previous question">↑</button>'+
+      '<button type="button" data-act="down" title="Move image below next question">↓</button>'+
+      '<button type="button" data-act="small" title="Set image width to 48%">48%</button>'+
+      '<button type="button" data-act="standard" title="Set standard ISC image width to 62%">Standard</button>'+
+      '<button type="button" data-act="wide" title="Set image width to 78%">78%</button>'+
+      '<button type="button" data-act="left" title="Align left">L</button>'+
+      '<button type="button" data-act="center" title="Align center">C</button>'+
+      '<button type="button" data-act="right" title="Align right">R</button>'+
+      '<button type="button" data-act="keys" title="Space then Arrow Up/Down to move">Space+Arrows</button>';
+    tools.addEventListener('pointerdown',event=>{ event.preventDefault(); event.stopPropagation(); });
+    tools.addEventListener('click',event=>{
+      event.preventDefault(); event.stopPropagation();
+      const act=event.target?.closest?.('button')?.dataset?.act;
+      if (!act) return;
+      selectBox(box,true);
+      if (act==='up') moveRelative(box,-1);
+      else if (act==='down') moveRelative(box,1);
+      else if (act==='small') setBoxWidth(box,48);
+      else if (act==='standard') setBoxWidth(box,STANDARD_WIDTH);
+      else if (act==='wide') setBoxWidth(box,78);
+      else if (act==='left'||act==='center'||act==='right') setBoxAlign(box,act);
+      else if (act==='keys') toggleKeyboardMode(box);
+    });
+    box.appendChild(tools);
+  }
+
+  function setBoxWidth(box,width){
+    if (!box) return;
+    box.style.width=`${clamp(Number(width)||STANDARD_WIDTH,25,100)}%`;
+    try { selectBox(box,false); if(typeof window.bgpsSetImageWidth==='function') window.bgpsSetImageWidth(width); } catch (_) {}
+    emitEditorChange(`Image width set to ${Math.round(Number(width)||STANDARD_WIDTH)}%.`);
+  }
+
+  function setBoxAlign(box,mode){
+    if (!box) return;
+    const align=['left','center','right'].includes(mode)?mode:'center';
+    box.dataset.imageAlign=align;
+    box.style.textAlign=align;
+    if (align==='left') { box.style.marginLeft='0px'; box.style.marginRight='auto'; }
+    else if (align==='right') { box.style.marginLeft='auto'; box.style.marginRight='0px'; }
+    else { box.style.marginLeft='auto'; box.style.marginRight='auto'; }
+    try { selectBox(box,false); if(typeof window.bgpsSetImageAlign==='function') window.bgpsSetImageAlign(align); } catch (_) {}
+    emitEditorChange(`Image aligned ${align}.`);
+  }
+
+  function moveRelative(box,direction){
+    const ed=getEditor();
+    if (!ed || !box) return;
+    normalizeImages(false,false);
+    const blocks=directChildren();
+    const index=blocks.indexOf(box);
+    if (index<0) return;
+    if (direction<0 && index>0) ed.insertBefore(box,blocks[index-1]);
+    else if (direction>0 && index<blocks.length-1) blocks[index+1].insertAdjacentElement('afterend',box);
+    else return;
+    selectBox(box,true);
+    emitEditorChange(direction<0?'Image moved upward.':'Image moved downward.');
+  }
+
+  function toggleKeyboardMode(box){
+    const tools=box?.querySelector(':scope > .bgps-v7-inline-image-tools');
+    const button=tools?.querySelector('[data-act="keys"]');
+    const active=state.keyboardBox===box;
+    if (state.keyboardBox) state.keyboardBox.classList.remove('bgps-v7-keyboard-move');
+    state.keyboardBox=active?null:box;
+    box?.classList.toggle('bgps-v7-keyboard-move',!active);
+    button?.classList.toggle('keyboard-active',!active);
+    if (!active) {
+      selectBox(box,true);
+      setEditorNote('Keyboard image move ON: use ↑/↓ to move, ←/→ to align, Space or Esc to exit.');
+    } else setEditorNote('Keyboard image move OFF.');
+  }
+
+  function setEditorNote(message){
+    const note=byId('manualAutosaveNote');
+    if (note) note.textContent=message;
+  }
+
+  function emitEditorChange(message){
+    const ed=getEditor();
+    if (!ed) return;
+    try { ed.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertReplacementText',data:null})); }
+    catch (_) { ed.dispatchEvent(new Event('input',{bubbles:true})); }
+    try { if(typeof window.handleManualEditorInput==='function') window.handleManualEditorInput(); } catch (_) {}
+    try { if(typeof window.saveManualEditorSelection==='function') window.saveManualEditorSelection(); } catch (_) {}
+    if (message) setEditorNote(message);
+  }
+
+  function ensureDropLine(){
+    if (state.dropLine?.isConnected) return state.dropLine;
+    const line=document.createElement('div');
+    line.className='bgps-v7-drop-line';
+    line.dataset.bgpsTransient='true';
+    line.contentEditable='false';
+    state.dropLine=line;
+    return line;
+  }
+
+  function updateDropPosition(clientY,box){
+    const ed=getEditor();
+    if (!ed) return;
+    const line=ensureDropLine();
+    const blocks=directChildren().filter(node=>node!==box && node!==line);
+    let before=null;
+    for (const block of blocks) {
+      const rect=block.getBoundingClientRect();
+      if (clientY < rect.top + rect.height/2) { before=block; break; }
+    }
+    if (before) ed.insertBefore(line,before);
+    else ed.appendChild(line);
+  }
+
+  function beginPointerDrag(event){
+    if (event.button!=null && event.button!==0) return;
+    const ed=getEditor();
+    const img=event.target?.closest?.('#manualPaperEditor .diagram-box.has-image > img');
+    if (!ed || !img) return;
+    const box=img.closest('.diagram-box.has-image');
+    if (!box) return;
+    selectBox(box,true);
+    state.pointer={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,box,img,moved:false};
+    try { img.setPointerCapture?.(event.pointerId); } catch (_) {}
+    window.addEventListener('pointermove',onPointerMove,{passive:false});
+    window.addEventListener('pointerup',endPointerDrag,{passive:false,once:true});
+    window.addEventListener('pointercancel',endPointerDrag,{passive:false,once:true});
+  }
+
+  function onPointerMove(event){
+    const drag=state.pointer;
+    if (!drag || (event.pointerId!=null && event.pointerId!==drag.pointerId)) return;
+    const distance=Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY);
+    if (!drag.moved && distance<6) return;
+    drag.moved=true;
+    event.preventDefault();
+    drag.box.classList.add('bgps-v7-pointer-dragging');
+    updateDropPosition(event.clientY,drag.box);
+  }
+
+  function endPointerDrag(event){
+    const drag=state.pointer;
+    if (!drag || (event.pointerId!=null && event.pointerId!==drag.pointerId)) return;
+    window.removeEventListener('pointermove',onPointerMove);
+    try { drag.img.releasePointerCapture?.(drag.pointerId); } catch (_) {}
+    if (drag.moved && state.dropLine?.isConnected) {
+      state.dropLine.parentNode.insertBefore(drag.box,state.dropLine);
+      state.dropLine.remove();
+      drag.box.classList.remove('bgps-v7-pointer-dragging');
+      selectBox(drag.box,true);
+      emitEditorChange('Image moved inside the paper.');
+    } else {
+      drag.box.classList.remove('bgps-v7-pointer-dragging');
+      state.dropLine?.remove();
+      selectBox(drag.box,true);
+    }
+    state.pointer=null;
+  }
+
+  function standardizeHtmlString(html){
+    const template=document.createElement('template');
+    template.innerHTML=String(html||'');
+    template.content.querySelectorAll(TRANSIENT).forEach(node=>node.remove());
+    [...template.content.querySelectorAll('img')].forEach(img=>{
+      let box=img.closest('.diagram-box');
+      if (!box) {
+        box=document.createElement('div');
+        box.className='diagram-box has-image';
+        img.parentNode?.insertBefore(box,img);
+        box.appendChild(img);
+      }
+      box.classList.add('diagram-box','has-image');
+      box.style.width=`${STANDARD_WIDTH}%`;
+      box.style.maxWidth='100%';
+      box.style.minHeight='0px';
+      box.style.display='block';
+      box.style.marginLeft='auto';
+      box.style.marginRight='auto';
+      box.style.padding='0px';
+      box.style.textAlign='center';
+      box.style.breakInside='avoid';
+      box.style.pageBreakInside='avoid';
+      img.classList.add('diagram-image');
+      img.style.width='100%'; img.style.maxWidth='100%'; img.style.height='auto'; img.style.display='block'; img.style.objectFit='contain'; img.style.margin='0 auto';
+    });
+    return template.innerHTML;
+  }
+
+  function injectPreviewCss(html){
+    const extra=`
+      .content .diagram-box.has-image{width:${STANDARD_WIDTH}%!important;max-width:145mm!important;min-height:0!important;margin:3.5mm auto!important;padding:0!important;border:0!important;background:transparent!important;text-align:center!important;break-inside:avoid!important;page-break-inside:avoid!important;clear:both!important}
+      .content .diagram-box.has-image img,.content img.diagram-image{display:block!important;width:100%!important;max-width:100%!important;max-height:70mm!important;height:auto!important;margin:0 auto!important;object-fit:contain!important;break-inside:avoid!important;page-break-inside:avoid!important}
+      .content .diagram-box.has-image .diagram-caption{margin:1.2mm 0 0!important;padding:0!important;font-size:8.8pt!important;line-height:1.25!important;text-align:center!important}
+      .content p + .diagram-box.has-image,.content .question-line + .diagram-box.has-image{margin-top:3mm!important}
+      .content .diagram-box.has-image + p,.content .diagram-box.has-image + .question-line{margin-top:3mm!important}
+    `;
+    return String(html||'').replace('</style>',`${extra}</style>`);
+  }
+
+  function wrapBefore(name,before,after){
+    const original=window[name];
+    if (typeof original!=='function' || original.__bgpsV7Wrapped) return;
+    const wrapped=function(){
+      try { before?.apply(this,arguments); } catch (error) { console.warn(`BGPS V7 before ${name}`,error); }
+      const result=original.apply(this,arguments);
+      if (after) Promise.resolve(result).finally(()=>setTimeout(()=>{ try{after();}catch(error){console.warn(`BGPS V7 after ${name}`,error);} },60));
+      return result;
+    };
+    wrapped.__bgpsV7Wrapped=true;
+    replaceGlobal(name,wrapped);
+  }
+
+  function installFunctionWrappers(){
+    const previousBuild=window.buildManualPreviewHtml;
+    if (typeof previousBuild==='function' && !previousBuild.__bgpsV7Preview) {
+      const wrapped=function(meta,bodyHtml){ return injectPreviewCss(previousBuild.call(this,meta,standardizeHtmlString(bodyHtml))); };
+      wrapped.__bgpsV7Preview=true;
+      replaceGlobal('buildManualPreviewHtml',wrapped);
+    }
+
+    const previousPreview=window.previewManualPaper;
+    if (typeof previousPreview==='function' && !previousPreview.__bgpsV7Preview) {
+      const wrapped=function(){ normalizeImages(true,true); return previousPreview.apply(this,arguments); };
+      wrapped.__bgpsV7Preview=true;
+      replaceGlobal('previewManualPaper',wrapped);
+    }
+
+    const previousAuto=window.bgpsAutoFormatPaper;
+    if (typeof previousAuto==='function' && !previousAuto.__bgpsV7Auto) {
+      const wrapped=function(){ normalizeImages(true,false); const result=previousAuto.apply(this,arguments); setTimeout(()=>normalizeImages(true,false),0); return result; };
+      wrapped.__bgpsV7Auto=true;
+      replaceGlobal('bgpsAutoFormatPaper',wrapped);
+    }
+
+    const previousAutoPreview=window.bgpsAutoFormatAndPreview;
+    if (typeof previousAutoPreview==='function' && !previousAutoPreview.__bgpsV7Auto) {
+      const wrapped=function(){ normalizeImages(true,false); return previousAutoPreview.apply(this,arguments); };
+      wrapped.__bgpsV7Auto=true;
+      replaceGlobal('bgpsAutoFormatAndPreview',wrapped);
+    }
+
+    ['saveManualDraft','saveLocalDraft','submitManualPaper'].forEach(name=>wrapBefore(name,()=>normalizeImages(false,false),null));
+    ['loadDraftIntoComposer','loadBackendDraftIntoComposer','restoreManualDraft','applySuggestedPaperTemplate','insertDiagramImage'].forEach(name=>wrapBefore(name,null,()=>normalizeImages(false,false)));
+  }
+
+  function installUiNote(){
+    const panel=byId('paperCreatorPanel');
+    const editor=getEditor();
+    if (!panel || !editor || panel.querySelector('.bgps-v7-image-standard-note')) return;
+    const note=document.createElement('div');
+    note.className='bgps-v7-image-standard-note';
+    note.textContent='Images: click a picture, then drag the picture itself to any question position. Auto Format & Preview standardizes every picture to 62% width, centered alignment and uniform print spacing. Keyboard: click image → Space → ↑/↓.';
+    editor.insertAdjacentElement('beforebegin',note);
+    const autoBtn=byId('bgpsAutoFormatPreviewBtn');
+    if (autoBtn) {
+      autoBtn.textContent='Auto Format ISC & Preview';
+      autoBtn.title='Standardize questions, sections, image size/position/spacing and open print-ready A4 preview';
+      autoBtn.addEventListener('click',()=>normalizeImages(true,false),true);
+    }
+    byId('bgpsAutoFormatToolbarBtn')?.addEventListener('click',()=>normalizeImages(true,false),true);
+  }
+
+  function installEvents(){
+    const ed=getEditor();
+    if (!ed || ed.dataset.bgpsV7Installed) return;
+    ed.dataset.bgpsV7Installed='1';
+    ed.addEventListener('dragstart',event=>{
+      if (event.target?.closest?.('.diagram-box.has-image')) { event.preventDefault(); event.stopImmediatePropagation(); }
+    },true);
+    ed.addEventListener('pointerdown',beginPointerDrag,true);
+    ed.addEventListener('click',event=>{
+      const box=event.target?.closest?.('.diagram-box.has-image');
+      if (box) { selectBox(box,false); installInlineTools(box); }
+    },true);
+    ed.addEventListener('keydown',event=>{
+      const box=ed.querySelector('.diagram-box.has-image.is-image-selected');
+      if (!box) return;
+      if (event.key===' ' && (document.activeElement===box || state.keyboardBox===box)) {
+        event.preventDefault(); toggleKeyboardMode(box); return;
+      }
+      if (state.keyboardBox!==box) {
+        if (event.altKey && event.key==='ArrowUp') { event.preventDefault(); moveRelative(box,-1); }
+        else if (event.altKey && event.key==='ArrowDown') { event.preventDefault(); moveRelative(box,1); }
+        return;
+      }
+      if (event.key==='ArrowUp') { event.preventDefault(); moveRelative(box,-1); }
+      else if (event.key==='ArrowDown') { event.preventDefault(); moveRelative(box,1); }
+      else if (event.key==='ArrowLeft') { event.preventDefault(); setBoxAlign(box,'left'); }
+      else if (event.key==='ArrowRight') { event.preventDefault(); setBoxAlign(box,'right'); }
+      else if (event.key.toLowerCase()==='c') { event.preventDefault(); setBoxAlign(box,'center'); }
+      else if (event.key==='Escape') { event.preventDefault(); toggleKeyboardMode(box); }
+    },true);
+    document.addEventListener('pointerdown',event=>{
+      if (event.target?.closest?.('.diagram-box.has-image,#bgpsImageTools')) return;
+      state.keyboardBox=null;
+    },true);
+    if (window.MutationObserver) {
+      new MutationObserver(mutations=>{
+        if (state.normalizing || state.pointer) return;
+        const hasImageChange=mutations.some(m=>[...m.addedNodes].some(node=>node.nodeType===1 && (node.matches?.('img,.diagram-box')||node.querySelector?.('img'))));
+        if (hasImageChange) setTimeout(()=>normalizeImages(false,false),0);
+      }).observe(ed,{childList:true,subtree:true});
+    }
+  }
+
+  function install(){
+    if (state.installed) return;
+    state.installed=true;
+    installFunctionWrappers();
+    installUiNote();
+    installEvents();
+    normalizeImages(false,false);
+  }
+
+  window.bgpsImageLayoutV7={
+    normalize:(force=true)=>normalizeImages(Boolean(force),false),
+    standardize:()=>normalizeImages(true,true),
+    moveUp:()=>{const box=getEditor()?.querySelector('.diagram-box.is-image-selected'); if(box)moveRelative(box,-1);},
+    moveDown:()=>{const box=getEditor()?.querySelector('.diagram-box.is-image-selected'); if(box)moveRelative(box,1);},
+    standardizeHtml:standardizeHtmlString,
+    injectPreviewCss
+  };
+
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',install,{once:true});
+  else install();
+})();
+</script>
+
 </body>
 </html>

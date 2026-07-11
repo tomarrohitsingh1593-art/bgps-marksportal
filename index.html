@@ -9541,5 +9541,600 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
   else installReliabilityBindings();
 })();
 </script>
+
+<style id="bgps-docx-image-editor-v5-css">
+  /* Professional DOCX-like image editing inside the paper composer. */
+  #paperCreatorPanel .paper-editor-toolbar { position:sticky; top:0; z-index:32; }
+  #paperCreatorPanel .bgps-docx-tool-group { border-left:1px solid rgba(148,163,184,.35); padding-left:8px; }
+  #paperCreatorPanel .bgps-image-tools {
+    display:none;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:7px;
+    padding:9px 10px;
+    border:1px solid #b8cee2;
+    border-top:0;
+    background:linear-gradient(180deg,#f8fbff,#edf5fc);
+    color:#183b61;
+    box-shadow:0 7px 18px rgba(15,42,76,.08);
+    position:sticky;
+    top:54px;
+    z-index:31;
+  }
+  #paperCreatorPanel .bgps-image-tools.is-visible { display:flex; }
+  #paperCreatorPanel .bgps-image-tools strong { font-size:12px; margin-right:2px; }
+  #paperCreatorPanel .bgps-image-tools .editor-tool { min-height:34px; padding:6px 9px; font-size:11px; }
+  #paperCreatorPanel .bgps-image-tools .danger-tool { color:#b42318; border-color:#efb4ae; background:#fff7f6; }
+  #paperCreatorPanel .bgps-image-tools .active-tool { color:#fff; background:#173f68; border-color:#173f68; }
+  #paperCreatorPanel .bgps-image-size-slider { width:128px; accent-color:#173f68; }
+  #paperCreatorPanel .bgps-image-size-value { min-width:39px; text-align:center; font-family:'Inconsolata',monospace; font-size:11px; font-weight:800; }
+  #paperCreatorPanel .bgps-document-meter {
+    margin-left:auto;
+    padding:6px 9px;
+    border-radius:999px;
+    border:1px solid #bed1e4;
+    background:#fff;
+    color:#315b82;
+    font-size:10px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  #paperCreatorPanel .bgps-document-meter.warn { color:#9a5b00; border-color:#edc986; background:#fffaf0; }
+  #paperCreatorPanel .bgps-document-meter.bad { color:#b42318; border-color:#efb4ae; background:#fff5f4; }
+  #manualPaperEditor .diagram-box.has-image {
+    min-height:0 !important;
+    display:block !important;
+    max-width:100% !important;
+    padding:6px !important;
+    border:1px solid #b8c9da !important;
+    background:#fff !important;
+    position:relative;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  #manualPaperEditor .diagram-box.has-image.is-image-selected {
+    outline:2px solid #2563eb;
+    outline-offset:3px;
+    box-shadow:0 0 0 6px rgba(37,99,235,.10);
+  }
+  #manualPaperEditor .diagram-box.has-image .diagram-image {
+    width:100% !important;
+    max-width:100% !important;
+    max-height:none !important;
+    height:auto !important;
+    object-fit:contain;
+    display:block !important;
+    user-select:none;
+    -webkit-user-drag:none;
+  }
+  #manualPaperEditor .bgps-image-resize-handle {
+    position:absolute;
+    right:-8px;
+    bottom:-8px;
+    width:18px;
+    height:18px;
+    border-radius:5px;
+    border:2px solid #fff;
+    background:#2563eb;
+    box-shadow:0 2px 8px rgba(15,42,76,.35);
+    cursor:nwse-resize;
+    touch-action:none;
+    z-index:5;
+  }
+  #manualPaperEditor .bgps-image-resize-handle::before {
+    content:'';
+    position:absolute;
+    inset:4px;
+    border-right:2px solid #fff;
+    border-bottom:2px solid #fff;
+  }
+  #manualPaperEditor .diagram-caption {
+    margin-top:5px;
+    color:#526b83;
+    font-size:11px;
+    line-height:1.3;
+    text-align:center;
+    font-style:italic;
+  }
+  @media(max-width:700px){
+    #paperCreatorPanel .bgps-image-tools { top:47px; }
+    #paperCreatorPanel .bgps-document-meter { width:100%; margin-left:0; text-align:center; }
+    #paperCreatorPanel .bgps-image-size-slider { flex:1; min-width:110px; }
+  }
+  @media print {
+    .bgps-image-tools,.bgps-image-resize-handle { display:none !important; }
+    .is-image-selected { outline:none !important; box-shadow:none !important; }
+  }
+</style>
+<script id="bgps-docx-image-editor-v5-js">
+(function bgpsDocxImageEditorV5(){
+  'use strict';
+  if (window.__BGPS_DOCX_IMAGE_EDITOR_V5__) return;
+  window.__BGPS_DOCX_IMAGE_EDITOR_V5__ = true;
+
+  const MAX_COMPOSER_PAYLOAD = 7.25 * 1024 * 1024;
+  const MIN_IMAGE_WIDTH = 20;
+  const DEFAULT_IMAGE_WIDTH = 70;
+  let selectedImageBox = null;
+  let resizeState = null;
+  let normalizeLock = false;
+  let meterTimer = null;
+
+  function byId(id){ return document.getElementById(id); }
+  function getEditor(){ return byId('manualPaperEditor'); }
+  function clamp(value, min, max){ return Math.min(max, Math.max(min, value)); }
+  function byteLength(value){ return new Blob([String(value || '')]).size; }
+  function safeDataImage(src){
+    try {
+      if (typeof safeRasterImageDataUrl === 'function') return safeRasterImageDataUrl(src);
+    } catch (_) {}
+    const value = String(src || '');
+    if (!/^data:image\/(png|jpeg|webp);base64,/i.test(value)) return false;
+    const b64 = value.split(',')[1] || '';
+    return Math.ceil(b64.replace(/\s/g,'').length * .75) <= 1.5 * 1024 * 1024;
+  }
+
+  function parsePercent(value, fallback){
+    const match = String(value || '').match(/^\s*(\d+(?:\.\d+)?)%\s*$/);
+    return match ? clamp(Number(match[1]) || fallback, MIN_IMAGE_WIDTH, 100) : fallback;
+  }
+
+  function applyPersistentImageStyle(box, width, align){
+    if (!box) return;
+    const pct = clamp(Number(width) || DEFAULT_IMAGE_WIDTH, MIN_IMAGE_WIDTH, 100);
+    const mode = ['left','center','right'].includes(align) ? align : 'center';
+    box.classList.add('diagram-box','has-image');
+    box.style.width = pct.toFixed(1).replace(/\.0$/,'') + '%';
+    box.style.maxWidth = '100%';
+    box.style.minHeight = '0px';
+    box.style.display = 'block';
+    box.style.padding = '6px';
+    box.style.textAlign = mode;
+    box.style.breakInside = 'avoid';
+    box.style.pageBreakInside = 'avoid';
+    if (mode === 'left') {
+      box.style.marginLeft = '0px';
+      box.style.marginRight = 'auto';
+    } else if (mode === 'right') {
+      box.style.marginLeft = 'auto';
+      box.style.marginRight = '0px';
+    } else {
+      box.style.marginLeft = 'auto';
+      box.style.marginRight = 'auto';
+    }
+    box.dataset.imageAlign = mode;
+    const image = box.querySelector('img');
+    if (image) {
+      image.classList.add('diagram-image');
+      image.alt = String(image.alt || 'Diagram').slice(0,80);
+      image.draggable = false;
+      image.style.width = '100%';
+      image.style.maxWidth = '100%';
+      image.style.height = 'auto';
+      image.style.display = 'block';
+      image.style.objectFit = 'contain';
+      image.style.marginLeft = 'auto';
+      image.style.marginRight = 'auto';
+    }
+  }
+
+  function inferAlign(box){
+    if (!box) return 'center';
+    if (box.dataset.imageAlign) return box.dataset.imageAlign;
+    const left = String(box.style.marginLeft || '');
+    const right = String(box.style.marginRight || '');
+    if (left === '0px' && right === 'auto') return 'left';
+    if (left === 'auto' && right === '0px') return 'right';
+    return 'center';
+  }
+
+  function normalizeAllDiagramBoxes(selectNewest){
+    if (normalizeLock) return [];
+    const editor = getEditor();
+    if (!editor) return [];
+    normalizeLock = true;
+    try {
+      const images = [...editor.querySelectorAll('img')];
+      const boxes = [];
+      images.forEach(image => {
+        if (!safeDataImage(image.getAttribute('src'))) {
+          image.remove();
+          return;
+        }
+        let box = image.closest('.diagram-box');
+        if (!box) {
+          box = document.createElement('div');
+          box.className = 'diagram-box has-image';
+          image.parentNode.insertBefore(box, image);
+          box.appendChild(image);
+        }
+        const width = parsePercent(box.style.width, DEFAULT_IMAGE_WIDTH);
+        applyPersistentImageStyle(box, width, inferAlign(box));
+        boxes.push(box);
+      });
+      if (selectNewest && boxes.length) selectImage(boxes[boxes.length - 1]);
+      scheduleDocumentMeter();
+      return boxes;
+    } finally {
+      normalizeLock = false;
+    }
+  }
+
+  function removeTransientUi(root){
+    if (!root) return;
+    root.querySelectorAll('[data-bgps-transient],.bgps-image-resize-handle').forEach(node => node.remove());
+    root.querySelectorAll('.is-image-selected').forEach(node => node.classList.remove('is-image-selected'));
+  }
+
+  function allowedStyle(node){
+    const out = [];
+    const style = node.style || {};
+    if (node.matches && node.matches('.diagram-box')) {
+      const width = parsePercent(style.width, NaN);
+      if (Number.isFinite(width)) out.push(`width:${width.toFixed(1).replace(/\.0$/,'')}%`);
+      out.push('max-width:100%','min-height:0px','display:block','padding:6px','break-inside:avoid','page-break-inside:avoid');
+      const align = inferAlign(node);
+      if (align === 'left') out.push('margin-left:0px','margin-right:auto','text-align:left');
+      else if (align === 'right') out.push('margin-left:auto','margin-right:0px','text-align:right');
+      else out.push('margin-left:auto','margin-right:auto','text-align:center');
+    } else if (node.tagName === 'IMG') {
+      out.push('width:100%','max-width:100%','height:auto','display:block','object-fit:contain','margin-left:auto','margin-right:auto');
+    } else if (node.matches && node.matches('.diagram-caption')) {
+      out.push('margin-top:5px','font-size:11px','line-height:1.3','text-align:center','font-style:italic');
+    }
+    return out.join(';');
+  }
+
+  function professionalSanitizer(html){
+    const template = document.createElement('template');
+    template.innerHTML = String(html || '');
+    removeTransientUi(template.content);
+    const allowedTags = new Set(['DIV','P','BR','B','STRONG','I','EM','U','SUP','SUB','OL','UL','LI','H2','H3','H4','TABLE','THEAD','TBODY','TR','TH','TD','SPAN','HR','IMG']);
+    const dangerous = new Set(['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','FORM','INPUT','BUTTON','TEXTAREA','SELECT','OPTION','LINK','META','BASE','SVG','MATH']);
+    const safeClasses = new Set(['paper-instructions','section-heading','question-line','mark-token','or-line','diagram-box','diagram-image','diagram-caption','q-placeholder','page-break','has-image']);
+
+    [...template.content.querySelectorAll('*')].forEach(node => {
+      if (dangerous.has(node.tagName)) { node.remove(); return; }
+      if (!allowedTags.has(node.tagName)) { node.replaceWith(...node.childNodes); return; }
+
+      const classNames = String(node.getAttribute('class') || '').split(/\s+/).filter(name => safeClasses.has(name));
+      const src = node.tagName === 'IMG' ? String(node.getAttribute('src') || '') : '';
+      const alt = node.tagName === 'IMG' ? String(node.getAttribute('alt') || 'Diagram').slice(0,80) : '';
+      const colspan = (node.tagName === 'TD' || node.tagName === 'TH') ? Number(node.getAttribute('colspan')) : NaN;
+      const rowspan = (node.tagName === 'TD' || node.tagName === 'TH') ? Number(node.getAttribute('rowspan')) : NaN;
+      const safeStyle = allowedStyle(node);
+
+      [...node.attributes].forEach(attribute => node.removeAttribute(attribute.name));
+      if (classNames.length) node.setAttribute('class',classNames.join(' '));
+      if (node.tagName === 'IMG') {
+        if (!safeDataImage(src)) { node.remove(); return; }
+        node.setAttribute('src',src);
+        node.setAttribute('alt',alt);
+      }
+      if (Number.isFinite(colspan) && colspan > 0) node.setAttribute('colspan',String(clamp(Math.round(colspan),1,10)));
+      if (Number.isFinite(rowspan) && rowspan > 0) node.setAttribute('rowspan',String(clamp(Math.round(rowspan),1,10)));
+      if (safeStyle) node.setAttribute('style',safeStyle);
+    });
+    return template.innerHTML;
+  }
+
+  function setGlobalFunction(name, fn){
+    try { window[name] = fn; } catch (_) {}
+    try { (0,eval)(`${name}=window.${name}`); } catch (_) {}
+  }
+  setGlobalFunction('sanitizeComposerHtmlClient', professionalSanitizer);
+
+  function getImageTools(){ return byId('bgpsImageTools'); }
+  function updateImageTools(){
+    const tools = getImageTools();
+    if (!tools) return;
+    const active = Boolean(selectedImageBox && selectedImageBox.isConnected);
+    tools.classList.toggle('is-visible', active);
+    tools.setAttribute('aria-hidden', active ? 'false' : 'true');
+    if (!active) return;
+    const width = parsePercent(selectedImageBox.style.width, DEFAULT_IMAGE_WIDTH);
+    const slider = byId('bgpsImageWidthSlider');
+    const value = byId('bgpsImageWidthValue');
+    if (slider) slider.value = String(Math.round(width));
+    if (value) value.textContent = `${Math.round(width)}%`;
+    const align = inferAlign(selectedImageBox);
+    ['left','center','right'].forEach(mode => byId(`bgpsImgAlign-${mode}`)?.classList.toggle('active-tool', mode === align));
+  }
+
+  function addResizeHandle(box){
+    box.querySelectorAll('.bgps-image-resize-handle').forEach(node => node.remove());
+    const handle = document.createElement('span');
+    handle.className = 'bgps-image-resize-handle';
+    handle.dataset.bgpsTransient = 'true';
+    handle.contentEditable = 'false';
+    handle.setAttribute('role','slider');
+    handle.setAttribute('aria-label','Resize selected image');
+    handle.addEventListener('pointerdown', beginResize);
+    box.appendChild(handle);
+  }
+
+  function selectImage(box){
+    if (!box || !box.querySelector('img')) return;
+    if (selectedImageBox && selectedImageBox !== box) {
+      selectedImageBox.classList.remove('is-image-selected');
+      selectedImageBox.querySelectorAll('.bgps-image-resize-handle').forEach(node => node.remove());
+    }
+    selectedImageBox = box;
+    selectedImageBox.classList.add('is-image-selected');
+    addResizeHandle(selectedImageBox);
+    updateImageTools();
+  }
+
+  function deselectImage(){
+    if (selectedImageBox) {
+      selectedImageBox.classList.remove('is-image-selected');
+      selectedImageBox.querySelectorAll('.bgps-image-resize-handle').forEach(node => node.remove());
+    }
+    selectedImageBox = null;
+    updateImageTools();
+  }
+
+  function notifyEditorChanged(){
+    try { if (typeof handleManualEditorInput === 'function') handleManualEditorInput(); } catch (_) {}
+    scheduleDocumentMeter();
+  }
+
+  function beginResize(event){
+    if (!selectedImageBox) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const editor = getEditor();
+    if (!editor) return;
+    const boxRect = selectedImageBox.getBoundingClientRect();
+    const editorRect = editor.getBoundingClientRect();
+    resizeState = {
+      pointerId:event.pointerId,
+      startX:event.clientX,
+      startWidth:boxRect.width,
+      editorWidth:Math.max(1,editorRect.width),
+      box:selectedImageBox,
+      handle:event.currentTarget
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    window.addEventListener('pointermove', resizeMove, { passive:false });
+    window.addEventListener('pointerup', resizeEnd, { passive:false, once:true });
+    window.addEventListener('pointercancel', resizeEnd, { passive:false, once:true });
+  }
+
+  function resizeMove(event){
+    if (!resizeState || event.pointerId !== resizeState.pointerId) return;
+    event.preventDefault();
+    const px = resizeState.startWidth + (event.clientX - resizeState.startX);
+    const pct = clamp(px / resizeState.editorWidth * 100, MIN_IMAGE_WIDTH, 100);
+    applyPersistentImageStyle(resizeState.box, pct, inferAlign(resizeState.box));
+    updateImageTools();
+  }
+
+  function resizeEnd(event){
+    if (!resizeState || (event.pointerId != null && event.pointerId !== resizeState.pointerId)) return;
+    try { resizeState.handle.releasePointerCapture?.(resizeState.pointerId); } catch (_) {}
+    window.removeEventListener('pointermove', resizeMove);
+    resizeState = null;
+    notifyEditorChanged();
+  }
+
+  function setSelectedWidth(value){
+    if (!selectedImageBox) return;
+    applyPersistentImageStyle(selectedImageBox, clamp(Number(value)||DEFAULT_IMAGE_WIDTH,MIN_IMAGE_WIDTH,100), inferAlign(selectedImageBox));
+    addResizeHandle(selectedImageBox);
+    updateImageTools();
+    notifyEditorChanged();
+  }
+
+  function setSelectedAlign(mode){
+    if (!selectedImageBox) return;
+    applyPersistentImageStyle(selectedImageBox, parsePercent(selectedImageBox.style.width,DEFAULT_IMAGE_WIDTH), mode);
+    addResizeHandle(selectedImageBox);
+    updateImageTools();
+    notifyEditorChanged();
+  }
+
+  function deleteSelectedImage(){
+    if (!selectedImageBox) return;
+    const target = selectedImageBox;
+    deselectImage();
+    target.remove();
+    notifyEditorChanged();
+  }
+
+  function toggleCaption(){
+    if (!selectedImageBox) return;
+    let caption = selectedImageBox.querySelector('.diagram-caption');
+    if (caption) caption.remove();
+    else {
+      caption = document.createElement('div');
+      caption.className = 'diagram-caption';
+      caption.contentEditable = 'true';
+      caption.textContent = 'Figure / Diagram caption';
+      selectedImageBox.appendChild(caption);
+      const range = document.createRange();
+      range.selectNodeContents(caption);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    addResizeHandle(selectedImageBox);
+    notifyEditorChanged();
+  }
+
+  function auditDocumentPayload(){
+    const editor = getEditor();
+    if (!editor) return { bytes:0, images:0, valid:true, label:'0 KB / 7.25 MB' };
+    normalizeAllDiagramBoxes(false);
+    const clean = professionalSanitizer(editor.innerHTML);
+    const bytes = byteLength(clean);
+    const images = (clean.match(/<img\b/gi) || []).length;
+    return {
+      bytes,
+      images,
+      valid:bytes <= MAX_COMPOSER_PAYLOAD,
+      label:`${bytes < 1024*1024 ? (bytes/1024).toFixed(0)+' KB' : (bytes/1024/1024).toFixed(2)+' MB'} / 7.25 MB · ${images} image${images===1?'':'s'}`
+    };
+  }
+
+  function updateDocumentMeter(){
+    const meter = byId('bgpsDocumentMeter');
+    if (!meter) return;
+    const audit = auditDocumentPayload();
+    meter.textContent = audit.label;
+    meter.classList.toggle('warn', audit.bytes > MAX_COMPOSER_PAYLOAD * .72 && audit.valid);
+    meter.classList.toggle('bad', !audit.valid);
+    meter.title = audit.valid ? 'Safe for frontend/backend draft and paper submission.' : 'Document is too large for the backend. Reduce image sizes or remove images.';
+  }
+
+  function scheduleDocumentMeter(){
+    clearTimeout(meterTimer);
+    meterTimer = setTimeout(updateDocumentMeter,120);
+  }
+
+  function installToolbar(){
+    const toolbar = document.querySelector('#paperCreatorPanel .paper-editor-toolbar');
+    if (!toolbar || byId('bgpsImageTools')) return;
+    const group = document.createElement('div');
+    group.className = 'toolbar-group bgps-docx-tool-group';
+    group.innerHTML = `
+      <button class="editor-tool" type="button" title="Undo" onmousedown="event.preventDefault()" onclick="editorCommand('undo')">↶</button>
+      <button class="editor-tool" type="button" title="Redo" onmousedown="event.preventDefault()" onclick="editorCommand('redo')">↷</button>
+      <button class="editor-tool" type="button" title="Align text left" onmousedown="event.preventDefault()" onclick="editorCommand('justifyLeft')">☰</button>
+      <button class="editor-tool" type="button" title="Center text" onmousedown="event.preventDefault()" onclick="editorCommand('justifyCenter')">≡</button>
+      <button class="editor-tool" type="button" title="Numbered list" onmousedown="event.preventDefault()" onclick="editorCommand('insertOrderedList')">1.</button>
+      <button class="editor-tool" type="button" title="Bulleted list" onmousedown="event.preventDefault()" onclick="editorCommand('insertUnorderedList')">•</button>`;
+    toolbar.appendChild(group);
+
+    const tools = document.createElement('div');
+    tools.id = 'bgpsImageTools';
+    tools.className = 'bgps-image-tools';
+    tools.setAttribute('aria-hidden','true');
+    tools.innerHTML = `
+      <strong>Selected image</strong>
+      <button class="editor-tool" type="button" onclick="bgpsSetImageWidth(35)">Small</button>
+      <button class="editor-tool" type="button" onclick="bgpsSetImageWidth(55)">Medium</button>
+      <button class="editor-tool" type="button" onclick="bgpsSetImageWidth(75)">Large</button>
+      <button class="editor-tool" type="button" onclick="bgpsSetImageWidth(100)">Full width</button>
+      <input class="bgps-image-size-slider" id="bgpsImageWidthSlider" type="range" min="20" max="100" step="1" value="70" aria-label="Image width" oninput="bgpsSetImageWidth(this.value)">
+      <span class="bgps-image-size-value" id="bgpsImageWidthValue">70%</span>
+      <button class="editor-tool" id="bgpsImgAlign-left" type="button" title="Align image left" onclick="bgpsSetImageAlign('left')">Left</button>
+      <button class="editor-tool" id="bgpsImgAlign-center" type="button" title="Center image" onclick="bgpsSetImageAlign('center')">Center</button>
+      <button class="editor-tool" id="bgpsImgAlign-right" type="button" title="Align image right" onclick="bgpsSetImageAlign('right')">Right</button>
+      <button class="editor-tool" type="button" onclick="bgpsToggleImageCaption()">Caption</button>
+      <button class="editor-tool danger-tool" type="button" onclick="bgpsDeleteSelectedImage()">Delete image</button>
+      <span class="bgps-document-meter" id="bgpsDocumentMeter">0 KB / 7.25 MB</span>`;
+    toolbar.insertAdjacentElement('afterend',tools);
+  }
+
+  window.bgpsSetImageWidth = setSelectedWidth;
+  window.bgpsSetImageAlign = setSelectedAlign;
+  window.bgpsDeleteSelectedImage = deleteSelectedImage;
+  window.bgpsToggleImageCaption = toggleCaption;
+
+  const previousClick = window.handleManualEditorClick;
+  const enhancedClick = function(event){
+    const image = event.target?.closest?.('img');
+    const box = image?.closest?.('.diagram-box') || event.target?.closest?.('.diagram-box.has-image');
+    if (box && box.querySelector('img')) {
+      event.preventDefault();
+      event.stopPropagation();
+      selectImage(box);
+      return;
+    }
+    deselectImage();
+    if (typeof previousClick === 'function') return previousClick.apply(this,arguments);
+  };
+  setGlobalFunction('handleManualEditorClick',enhancedClick);
+
+  const previousPaste = window.handleManualEditorPaste;
+  const enhancedPaste = async function(event){
+    const before = getEditor()?.querySelectorAll('img').length || 0;
+    const result = typeof previousPaste === 'function' ? await previousPaste.apply(this,arguments) : undefined;
+    setTimeout(() => {
+      const boxes = normalizeAllDiagramBoxes(false);
+      const after = getEditor()?.querySelectorAll('img').length || 0;
+      if (after > before && boxes.length) selectImage(boxes[boxes.length-1]);
+    },0);
+    return result;
+  };
+  setGlobalFunction('handleManualEditorPaste',enhancedPaste);
+
+  const previousInsertImage = window.insertDiagramImage;
+  const enhancedInsertImage = async function(input){
+    const before = getEditor()?.querySelectorAll('img').length || 0;
+    const result = typeof previousInsertImage === 'function' ? await previousInsertImage.apply(this,arguments) : undefined;
+    setTimeout(() => {
+      const boxes = normalizeAllDiagramBoxes(false);
+      const after = getEditor()?.querySelectorAll('img').length || 0;
+      if (after > before && boxes.length) selectImage(boxes[boxes.length-1]);
+    },50);
+    return result;
+  };
+  setGlobalFunction('insertDiagramImage',enhancedInsertImage);
+
+  function wrapPayloadGuard(name, alertUser){
+    const original = window[name];
+    if (typeof original !== 'function') return;
+    const wrapped = async function(){
+      const audit = auditDocumentPayload();
+      if (!audit.valid) {
+        const message = `Paper is ${(audit.bytes/1024/1024).toFixed(2)} MB. The safe frontend/backend limit is 7.25 MB. Reduce image width/file size or remove an image before saving/submitting.`;
+        try { if (typeof setManualDraftStatus === 'function') setManualDraftStatus(message,'error'); } catch (_) {}
+        if (alertUser) alert(message);
+        return null;
+      }
+      return original.apply(this,arguments);
+    };
+    setGlobalFunction(name,wrapped);
+  }
+  wrapPayloadGuard('saveManualDraft',false);
+  wrapPayloadGuard('saveLocalDraft',false);
+  wrapPayloadGuard('submitManualPaper',true);
+
+  const previousClear = window.clearManualDraft;
+  if (typeof previousClear === 'function') {
+    setGlobalFunction('clearManualDraft',function(){
+      deselectImage();
+      const result = previousClear.apply(this,arguments);
+      scheduleDocumentMeter();
+      return result;
+    });
+  }
+
+  function installEditorBindings(){
+    installToolbar();
+    const editor = getEditor();
+    if (!editor) return;
+    normalizeAllDiagramBoxes(false);
+    editor.addEventListener('input',scheduleDocumentMeter);
+    editor.addEventListener('keydown',event => {
+      if (event.key === 'Escape' && selectedImageBox) { event.preventDefault(); deselectImage(); }
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedImageBox && event.target === editor) {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) { event.preventDefault(); deleteSelectedImage(); }
+      }
+    });
+    document.addEventListener('pointerdown',event => {
+      if (!selectedImageBox) return;
+      if (event.target?.closest?.('#bgpsImageTools') || event.target?.closest?.('.diagram-box.has-image')) return;
+      deselectImage();
+    });
+    if (window.MutationObserver) {
+      new MutationObserver(mutations => {
+        if (normalizeLock) return;
+        if (mutations.some(m => [...m.addedNodes].some(node => node.nodeType === 1 && (node.matches?.('img') || node.querySelector?.('img'))))) {
+          setTimeout(() => normalizeAllDiagramBoxes(false),0);
+        }
+      }).observe(editor,{childList:true,subtree:true});
+    }
+    scheduleDocumentMeter();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',installEditorBindings,{once:true});
+  else installEditorBindings();
+})();
+</script>
+
 </body>
 </html>

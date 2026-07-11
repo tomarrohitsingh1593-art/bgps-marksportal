@@ -2322,7 +2322,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwF4F-Kk1z3R3-whoYY_oRpduLlBD4bhv4CAXbzqsbQdi_ezkycs7Hcsu3Dz09DT_LM/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCoZ6hQPEhyMtyeSLTwVRr6miZ8SslOJzCeTfXT9RiZocr7iSMmTgMEo4egU7gVSwC/exec";
         
         const PASS_PERCENT = 33;
 
@@ -11728,6 +11728,71 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
   function rebindButtons(){const map=[['manualProfessionalPreviewBtn',openPreview],['bgpsAutoFormatToolbarBtn',()=>autoFormat(false)],['bgpsAutoFormatPreviewBtn',()=>autoFormat(true)],['bgpsV8AutoPreviewBtn',()=>autoFormat(true)]];map.forEach(([id,fn])=>{const old=byId(id);if(!old)return;const clone=old.cloneNode(true);clone.onclick=null;clone.removeAttribute('onclick');clone.addEventListener('click',fn);old.replaceWith(clone)});const duplicate=byId('bgpsV8AutoPreviewBtn');if(duplicate&&byId('bgpsAutoFormatPreviewBtn'))duplicate.style.display='none'}
   function install(){if(state.installing)return;state.installing=true;try{installToolbar();bindEditor();setGlobal('handleManualEditorPaste',pasteHandler);const oldClick=window.handleManualEditorClick;setGlobal('handleManualEditorClick',function(event){const box=event.target?.closest?.('.diagram-box.has-image');if(box){event.preventDefault();selectBox(box,true);return}deselect();if(typeof oldClick==='function')return oldClick.apply(this,arguments)});setGlobal('sanitizeComposerHtmlClient',storageHtml);setGlobal('buildManualPreviewHtml',buildPreview);setGlobal('previewManualPaper',openPreview);setGlobal('bgpsAutoFormatPaper',()=>autoFormat(false));setGlobal('bgpsAutoFormatAndPreview',()=>autoFormat(true));setGlobal('updateComposerHeader',updateHeader);setGlobal('getManualMetadata',v10ManualMetadata);setGlobal('validateUploadForm',validateUpload);setGlobal('validateManualMetaFields',validateManual);setGlobal('getPaperControlMessage',controlMessage);setGlobal('applyPaperSettingsUI',applySettings);setGlobal('bgpsV10MoveImageUp',()=>moveStep(-1));setGlobal('bgpsV10MoveImageDown',()=>moveStep(1));rebindButtons();['paperClass','manualClass'].forEach(id=>byId(id)?.addEventListener('change',()=>{updateChapterUi();updateHeader()}));updateChapterUi();updateHeader();setTimeout(()=>{normalizeImages(false);try{applySettings()}catch(_){ }},150)}finally{state.installing=false}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
+</script>
+
+
+
+<!-- BGPS V11 PRODUCTION EDITOR ENHANCEMENTS -->
+<style id="bgps-v11-production-css">
+  #paperCreatorPanel .bgps-v11-editor-chrome{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;background:#eef4fa;border-bottom:1px solid #b9ccdd;color:#173b5f;font-size:11px;font-weight:800}
+  #paperCreatorPanel .bgps-v11-editor-chrome button,#paperCreatorPanel .bgps-v11-editor-chrome select{min-height:32px;border:1px solid #aec4d7;border-radius:7px;background:#fff;color:#173b5f;padding:4px 8px;font-weight:800;cursor:pointer}
+  #paperCreatorPanel .bgps-v11-editor-chrome button:hover{background:#e1edf8}
+  #paperCreatorPanel .bgps-v11-zoom{width:110px;accent-color:#173f68}
+  #paperCreatorPanel .bgps-v11-ruler-wrap{position:sticky;top:0;z-index:11;background:#dce7f2;padding:8px 18px 0}
+  #paperCreatorPanel .bgps-v11-ruler{position:relative;width:min(100%,820px);height:26px;margin:0 auto;background:repeating-linear-gradient(90deg,#fff 0,#fff 9px,#c3d0dc 10px);border:1px solid #9fb5c8;border-radius:4px;box-shadow:0 1px 3px rgba(15,42,76,.12);overflow:hidden}
+  #paperCreatorPanel .bgps-v11-ruler::before,#paperCreatorPanel .bgps-v11-ruler::after{content:'';position:absolute;top:0;bottom:0;width:58px;background:rgba(23,63,104,.16);border-right:1px solid #6f8fab}
+  #paperCreatorPanel .bgps-v11-ruler::before{left:0}
+  #paperCreatorPanel .bgps-v11-ruler::after{right:0;border-right:0;border-left:1px solid #6f8fab}
+  #paperCreatorPanel .bgps-v11-ruler-label{position:absolute;left:50%;top:5px;transform:translateX(-50%);font:800 10px Inconsolata,monospace;color:#365b7d;background:rgba(255,255,255,.82);padding:1px 6px;border-radius:8px}
+  #paperCreatorPanel .paper-document-stage{scroll-behavior:smooth}
+  #paperCreatorPanel .paper-document{transform-origin:top center;transition:transform .15s ease,width .15s ease;position:relative}
+  #paperCreatorPanel .paper-document::after{content:'A4 printable area';position:absolute;right:8px;bottom:6px;color:#94a3b8;font:700 9px Inconsolata,monospace;pointer-events:none}
+  #manualPaperEditor p{min-height:1.35em}
+  #manualPaperEditor .bgps-v11-selected-block{outline:2px solid #4a86b8;outline-offset:2px}
+  #manualPaperEditor .page-break{height:18px;border-top:2px dashed #7a8fa4;position:relative;clear:both;margin:18px 0;page-break-after:always}
+  #manualPaperEditor .page-break::after{content:'PAGE BREAK';position:absolute;left:50%;top:-8px;transform:translateX(-50%);background:#fff;color:#64748b;font:800 9px Inconsolata,monospace;padding:0 6px}
+  #manualPaperEditor img{user-select:none;-webkit-user-drag:none}
+  #paperCreatorPanel .bgps-v11-status{margin-left:auto;color:#456781;font:800 10px Inconsolata,monospace}
+  @media(max-width:700px){#paperCreatorPanel .bgps-v11-ruler-wrap{padding-left:8px;padding-right:8px}.bgps-v11-status{width:100%;margin-left:0}.paper-document{padding:38px 28px!important}}
+  @media print{#paperCreatorPanel .bgps-v11-editor-chrome,#paperCreatorPanel .bgps-v11-ruler-wrap{display:none!important}.paper-document{transform:none!important}}
+</style>
+<script id="bgps-v11-production-js">
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const editor=()=>$('manualPaperEditor');
+  const panel=()=>$('paperCreatorPanel');
+  let savedRange=null;
+  function saveRange(){const e=editor(),s=window.getSelection();if(e&&s&&s.rangeCount&&e.contains(s.anchorNode))savedRange=s.getRangeAt(0).cloneRange()}
+  function restoreRange(){const e=editor();if(!e)return false;e.focus();if(savedRange){const s=window.getSelection();s.removeAllRanges();s.addRange(savedRange);return true}return false}
+  function exec(cmd,val=null){restoreRange();document.execCommand(cmd,false,val);saveRange();notifyChange()}
+  function block(){const s=window.getSelection();let n=s&&s.anchorNode;if(n&&n.nodeType===3)n=n.parentElement;return n&&n.closest? n.closest('p,div,h2,h3,h4,li,td,th') : null}
+  function setLineHeight(v){restoreRange();const b=block();if(b){b.style.lineHeight=v;b.classList.add('bgps-v11-selected-block');setTimeout(()=>b.classList.remove('bgps-v11-selected-block'),500)}else exec('formatBlock','p');notifyChange()}
+  function setParagraphSpace(v){restoreRange();const b=block();if(b){b.style.marginBottom=v+'px';b.style.marginTop=Math.max(0,Math.round(v/2))+'px'}notifyChange()}
+  function insertHtml(html){restoreRange();document.execCommand('insertHTML',false,html);saveRange();notifyChange()}
+  function insertTable(){let r=prompt('Rows (1-12):','3');if(r===null)return;let c=prompt('Columns (1-8):','2');if(c===null)return;r=Math.min(12,Math.max(1,parseInt(r,10)||1));c=Math.min(8,Math.max(1,parseInt(c,10)||1));let h='<table><tbody>';for(let i=0;i<r;i++){h+='<tr>';for(let j=0;j<c;j++)h+='<td><br></td>';h+='</tr>'}h+='</tbody></table><p><br></p>';insertHtml(h)}
+  function insertPageBreak(){insertHtml('<div class="page-break" contenteditable="false"></div><p><br></p>')}
+  function setZoom(v){const doc=document.querySelector('#paperCreatorPanel .paper-document');const value=Math.min(140,Math.max(55,Number(v)||100));if(doc)doc.style.transform='scale('+(value/100)+')';const stage=document.querySelector('#paperCreatorPanel .paper-document-stage');if(stage){stage.style.paddingBottom=Math.max(18,(value-100)*8+18)+'px'}const out=$('bgpsV11ZoomValue');if(out)out.textContent=value+'%'}
+  function fitWidth(){const stage=document.querySelector('#paperCreatorPanel .paper-document-stage'),doc=document.querySelector('#paperCreatorPanel .paper-document');if(!stage||!doc)return;const available=Math.max(300,stage.clientWidth-44),base=820;setZoom(Math.min(110,Math.floor(available/base*100)))}
+  function notifyChange(){try{window.handleManualEditorInput&&window.handleManualEditorInput()}catch(_){ }updateStatus()}
+  function updateStatus(){const e=editor(),st=$('bgpsV11Status');if(!e||!st)return;const words=(e.innerText.trim().match(/\S+/g)||[]).length;const imgs=e.querySelectorAll('img').length;const tables=e.querySelectorAll('table').length;st.textContent=words+' words · '+imgs+' images · '+tables+' tables'}
+  function buildChrome(){const p=panel(),toolbar=p&&p.querySelector('.paper-editor-toolbar');if(!p||!toolbar||$('bgpsV11Chrome'))return;
+    const chrome=document.createElement('div');chrome.id='bgpsV11Chrome';chrome.className='bgps-v11-editor-chrome';chrome.innerHTML=`
+      <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)">Undo</button><button type="button" data-cmd="redo" title="Redo (Ctrl+Y)">Redo</button>
+      <select id="bgpsV11Line" title="Line spacing"><option value="1.15">Line 1.15</option><option value="1.3">Line 1.3</option><option value="1.5" selected>Line 1.5</option><option value="1.75">Line 1.75</option><option value="2">Line 2.0</option></select>
+      <select id="bgpsV11Para" title="Paragraph spacing"><option value="2">Para compact</option><option value="6" selected>Para normal</option><option value="10">Para open</option><option value="14">Para wide</option></select>
+      <button type="button" data-cmd="outdent">Outdent</button><button type="button" data-cmd="indent">Indent</button><button type="button" data-cmd="insertUnorderedList">Bullets</button><button type="button" data-cmd="insertOrderedList">Numbering</button>
+      <button type="button" id="bgpsV11Table">Table</button><button type="button" id="bgpsV11Break">Page Break</button>
+      <button type="button" id="bgpsV11Fit">Fit Width</button><input id="bgpsV11Zoom" class="bgps-v11-zoom" type="range" min="55" max="140" value="100"><output id="bgpsV11ZoomValue">100%</output><span id="bgpsV11Status" class="bgps-v11-status">0 words · 0 images · 0 tables</span>`;
+    toolbar.insertAdjacentElement('afterend',chrome);
+    chrome.querySelectorAll('[data-cmd]').forEach(b=>{b.addEventListener('mousedown',e=>e.preventDefault());b.onclick=()=>exec(b.dataset.cmd)});
+    $('bgpsV11Line').onchange=e=>setLineHeight(e.target.value);$('bgpsV11Para').onchange=e=>setParagraphSpace(e.target.value);$('bgpsV11Table').onclick=insertTable;$('bgpsV11Break').onclick=insertPageBreak;$('bgpsV11Fit').onclick=fitWidth;$('bgpsV11Zoom').oninput=e=>setZoom(e.target.value);
+    const stage=p.querySelector('.paper-document-stage');if(stage&&!$('bgpsV11RulerWrap')){const wrap=document.createElement('div');wrap.id='bgpsV11RulerWrap';wrap.className='bgps-v11-ruler-wrap';wrap.innerHTML='<div class="bgps-v11-ruler"><span class="bgps-v11-ruler-label">A4 · 13 mm safe margins</span></div>';stage.insertAdjacentElement('beforebegin',wrap)}
+  }
+  function bind(){buildChrome();const e=editor();if(!e)return;e.addEventListener('keyup',saveRange);e.addEventListener('mouseup',saveRange);e.addEventListener('focus',saveRange);e.addEventListener('input',updateStatus);e.addEventListener('keydown',ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.shiftKey&&ev.key==='Enter'){ev.preventDefault();insertPageBreak()}});updateStatus();setTimeout(fitWidth,100)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+  window.addEventListener('resize',()=>{if(window.innerWidth<900)fitWidth()});
 })();
 </script>
 

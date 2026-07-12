@@ -13326,6 +13326,16 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
 </script>
 <style id="bgps-principal-final-css">
   .bgps10-donut-wrap,.bgps10-summary{display:none!important}
+  body:not(.bgps-principal-final-active) .bgps10-grid-main{grid-template-columns:minmax(0,1fr)!important}
+  body:not(.bgps-principal-final-active) .bgps10-grid-main>.bgps10-panel{grid-column:1/-1!important}
+  body:not(.bgps-principal-final-active) .bgps10-grid-main>.bgps10-panel:has(.bgps10-donut-wrap),
+  body:not(.bgps-principal-final-active) .bgps10-grid-main>.bgps10-panel:has(.bgps10-actions),
+  body:not(.bgps-principal-final-active) .bgps10-grid-main>.bgps10-panel:empty{display:none!important}
+  body:not(.bgps-principal-final-active) .bgps10-class-table{min-width:640px}
+  body:not(.bgps-principal-final-active) .bgps10-panel h2,
+  body:not(.bgps-principal-final-active) .bgps10-kpi h3,
+  body:not(.bgps-principal-final-active) .bgps10-actions button{font-weight:900!important;color:#071d36!important}
+  body:not(.bgps-principal-final-active) .bgps10-panel{border-color:#cbdceb!important;box-shadow:0 10px 24px rgba(15,47,82,.06)!important}
   body.bgps-principal-final-active .bgps-pro-view.active{grid-template-columns:1fr!important}
   body.bgps-principal-final-active .bgps-right-panel{display:none!important}
   .pf-shell{display:flex;flex-direction:column;gap:14px}
@@ -13595,9 +13605,28 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     cleanupOldDashboard();
     return true;
   }
+  let dashboardCleanTimer = 0;
+  function installDashboardCleaner(){
+    if(window.__BGPS_FINAL_DASHBOARD_CLEANER__ || !document.body) return;
+    window.__BGPS_FINAL_DASHBOARD_CLEANER__ = true;
+    new MutationObserver(() => {
+      clearTimeout(dashboardCleanTimer);
+      dashboardCleanTimer = setTimeout(cleanupOldDashboard, 35);
+    }).observe(document.body,{childList:true,subtree:true});
+  }
   function cleanupOldDashboard(){
     document.querySelectorAll('.bgps10-donut-wrap,.bgps10-summary').forEach(n=>n.remove());
-    document.querySelectorAll('.bgps10-panel h2').forEach(h=>{ if(/Paper Status Overview|Quick Actions/i.test(h.textContent||'')) h.closest('.bgps10-panel')?.remove(); });
+    document.querySelectorAll('.bgps10-panel h2').forEach(h=>{
+      if(/Paper Status Overview|Quick Actions/i.test(h.textContent||'')) h.closest('.bgps10-panel')?.remove();
+    });
+    document.querySelectorAll('.bgps10-grid-main').forEach(grid=>{
+      grid.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
+      grid.querySelectorAll(':scope>.bgps10-panel').forEach(panel=>{
+        const heading = clean(panel.querySelector('h2')?.textContent);
+        if(/Paper Status Overview|Quick Actions/i.test(heading) || !clean(panel.textContent)) panel.remove();
+        else panel.style.setProperty('grid-column','1 / -1','important');
+      });
+    });
   }
   expose('bgpsPrincipalSetFilter', function(key,value){
     if(key === 'kpi') PF.kpi = PF.kpi === value ? '' : value;
@@ -13649,16 +13678,16 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     if(!editor) return;
     // DOM datasets are copied by cloneNode(true); expando properties are not. The old editor
     // code clones this node, so use an expando marker or the final image listener silently vanishes.
-    let resizing = false, normalizing = false;
+    const imageState = window.__BGPS_PF_IMAGE_STATE__ || (window.__BGPS_PF_IMAGE_STATE__ = {resizing:false, normalizing:false});
     if(!editor.__pfImageObserverBound){
       editor.__pfImageObserverBound = true;
       new MutationObserver(() => {
-        if(resizing || normalizing) return;
+        if(imageState.resizing || imageState.normalizing) return;
         setTimeout(() => {
-          if(resizing || normalizing) return;
-          normalizing = true;
+          if(imageState.resizing || imageState.normalizing) return;
+          imageState.normalizing = true;
           normalizeCurrentImages();
-          setTimeout(() => { normalizing = false; }, 80);
+          setTimeout(() => { imageState.normalizing = false; }, 80);
         }, 20);
       }).observe(editor,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class','data-width','data-bgps-width','data-layout','data-bgps-layout']});
     }
@@ -13705,6 +13734,7 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     }
     function normalizeCurrentImages(){
       const ed=currentEditor(); if(!ed) return;
+      ed.querySelectorAll('.bgps-v20-resize-handle,.bgps-v10-resize-handle,.bgps-image-resize-handle').forEach(n=>n.remove());
       ed.querySelectorAll('.diagram-box.has-image,img.diagram-image').forEach(node => {
         const box = node.matches?.('.diagram-box.has-image') ? node : node.closest('.diagram-box');
         if(box) applyBox(box, box.dataset.layout || box.dataset.bgpsLayout || 'right', pctWidth(box));
@@ -13728,14 +13758,15 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     }
     document.addEventListener('pointerdown', event => {
       const box = imageBox(event.target); if(!box) return;
+      const legacyResizeHandle = event.target.closest?.('.bgps-v20-resize-handle,.bgps-v10-resize-handle,.bgps-image-resize-handle');
       const ed=currentEditor(); if(!ed) return;
       event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
       select(box);
-      if(event.target.classList.contains('pf-img-handle')){
+      if(event.target.classList.contains('pf-img-handle') || legacyResizeHandle){
         const startX=event.clientX, startWidth=pctWidth(box), rootWidth=Math.max(1,ed.getBoundingClientRect().width);
-        resizing = true;
+        imageState.resizing = true;
         const move=e=>{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); const next=Math.max(12,Math.min(76,startWidth+((e.clientX-startX)/rootWidth*100))); applyBox(box, box.dataset.layout || box.dataset.bgpsLayout || 'right', next); };
-        const up=()=>{ window.removeEventListener('pointermove',move,true); resizing=false; changed(); reassert(box); };
+        const up=()=>{ window.removeEventListener('pointermove',move,true); imageState.resizing=false; changed(); reassert(box); };
         window.addEventListener('pointermove',move,{capture:true,passive:false}); window.addEventListener('pointerup',up,{once:true,capture:true}); return;
       }
       drag={box,startX:event.clientX,startY:event.clientY,moved:false};
@@ -13764,7 +13795,7 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
   expose('switchTab', async function(tab){ const result = typeof oldSwitch === 'function' ? oldSwitch.apply(this,arguments) : null; await Promise.resolve(result); if((tab === 'home' || tab === 'overview' || tab === undefined) && isPrincipal()) await renderPrincipal(false); setTimeout(()=>{ cleanupOldDashboard(); installImageFix(); },80); return result; });
   const oldLogin = window.loginTeacher;
   if(typeof oldLogin === 'function') expose('loginTeacher', async function(){ const result = await oldLogin.apply(this,arguments); setTimeout(()=>{ if(isPrincipal()) renderPrincipal(true); installImageFix(); cleanupOldDashboard(); },180); return result; });
-  function boot(){ installImageFix(); cleanupOldDashboard(); if(isPrincipal() && byId('proHomeContent')) renderPrincipal(false); }
+  function boot(){ installDashboardCleaner(); installImageFix(); cleanupOldDashboard(); if(isPrincipal() && byId('proHomeContent')) renderPrincipal(false); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true}); else boot();
 })();
 </script>

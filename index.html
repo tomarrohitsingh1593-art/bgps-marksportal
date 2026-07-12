@@ -2336,7 +2336,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxMwLH2rZjHWd9ABQ9X829MasfbKC5UEXJwLSdLDY79eTg1G-t_v82hyyOtrSAmhUTD/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbynrPG0HfLISVBMuGg1SRjnnwqpXwWm-yx_hcPo2CsmNdH9vOk4TKe3GKEvANdmsskq/exec";
         
         const PASS_PERCENT = 33;
 
@@ -13322,6 +13322,450 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
   }
   function boot(){removeFloatingTools();cleanupTeacherDashboard();watchComposerImages();try{window.updateComposerHeader?.()}catch(_){}setTimeout(cleanupTeacherDashboard,500)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+<style id="bgps-principal-final-css">
+  .bgps10-donut-wrap,.bgps10-summary{display:none!important}
+  body.bgps-principal-final-active .bgps-pro-view.active{grid-template-columns:1fr!important}
+  body.bgps-principal-final-active .bgps-right-panel{display:none!important}
+  .pf-shell{display:flex;flex-direction:column;gap:14px}
+  .pf-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;background:#fff;border:1px solid #cfe0ef;border-left:5px solid #174f82;border-radius:12px;padding:18px 20px;box-shadow:0 12px 30px rgba(15,47,82,.08)}
+  .pf-header h1{margin:0;color:#0d3155;font-size:26px;line-height:1.1;font-weight:900}
+  .pf-header p{margin:6px 0 0;color:#506984;font-size:13px;font-weight:600}
+  .pf-live-pill{white-space:nowrap;background:#edf6ff;border:1px solid #c8ddec;color:#0d3155;border-radius:9px;padding:9px 12px;font-weight:900;font-size:12px}
+  .pf-filters{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr auto;gap:10px;background:#fff;border:1px solid #d7e4ef;border-radius:10px;padding:12px;align-items:end}
+  .pf-filters label{display:flex;flex-direction:column;gap:5px;color:#31506e;font-size:11px;font-weight:900;text-transform:uppercase}
+  .pf-filters input,.pf-filters select{height:38px;border:1px solid #cbdceb;border-radius:8px;background:#f8fbff;color:#0d3155;padding:0 10px;font-weight:800;outline:none}
+  .pf-btn{border:1px solid #174f82;background:#174f82;color:#fff;border-radius:8px;min-height:38px;padding:8px 12px;font-weight:900;cursor:pointer}
+  .pf-btn.light{background:#f8fbff;color:#174f82;border-color:#cbdceb}
+  .pf-btn.green{background:#16824a;border-color:#16824a}
+  .pf-btn.amber{background:#b7791f;border-color:#b7791f}
+  .pf-btn.red{background:#b91c1c;border-color:#b91c1c}
+  .pf-btn:disabled{opacity:.55;cursor:not-allowed}
+  .pf-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .pf-kpi{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:#fff;border:1px solid #d7e4ef;border-radius:10px;padding:14px;cursor:pointer;box-shadow:0 10px 24px rgba(15,47,82,.06)}
+  .pf-kpi span{display:block;color:#31506e;font-size:12px;font-weight:900}
+  .pf-kpi strong{display:block;color:#071d36;font-size:26px;font-weight:900;line-height:1.05;margin-top:4px}
+  .pf-kpi small{display:block;color:#60758c;font-size:11px;font-weight:800;margin-top:4px}
+  .pf-kpi i{width:12px;height:46px;border-radius:10px;background:#2f73d9;flex:0 0 auto}
+  .pf-kpi.green i{background:#2f9b57}.pf-kpi.amber i{background:#f59e0b}.pf-kpi.red i{background:#e54848}
+  .pf-kpi.active{border-color:#174f82;box-shadow:0 0 0 3px rgba(23,79,130,.12)}
+  .pf-main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+  .pf-panel{background:#fff;border:1px solid #d7e4ef;border-radius:10px;padding:14px;box-shadow:0 10px 24px rgba(15,47,82,.06)}
+  .pf-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+  .pf-panel h2{margin:0;color:#0d3155;font-size:18px;font-weight:900}
+  .pf-panel p{margin:4px 0 0;color:#60758c;font-size:12px;font-weight:650}
+  .pf-table-wrap{overflow:auto;border:1px solid #e3edf6;border-radius:9px}
+  .pf-table{width:100%;border-collapse:collapse;background:#fff;min-width:920px}
+  .pf-table th{background:#edf5fc;color:#173f68;font-size:11px;text-transform:uppercase;text-align:left;padding:10px;font-weight:900;border-bottom:1px solid #d7e4ef}
+  .pf-table td{padding:10px;border-bottom:1px solid #edf2f7;color:#17324d;font-size:12px;vertical-align:middle;font-weight:650}
+  .pf-table td strong{font-weight:900;color:#071d36}
+  .pf-table td small{display:block;color:#60758c;font-size:11px;font-weight:700;margin-top:2px}
+  .pf-status{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;border:1px solid transparent;white-space:nowrap}
+  .pf-status.not-started{background:#f1f5f9;color:#475569;border-color:#d7e1ec}
+  .pf-status.in-progress{background:#eaf3ff;color:#175cd3;border-color:#bfdbfe}
+  .pf-status.submitted,.pf-status.review-due{background:#fff7ed;color:#b45309;border-color:#fed7aa}
+  .pf-status.correction-required{background:#fff1f2;color:#be123c;border-color:#fecdd3}
+  .pf-status.approved{background:#ecfdf3;color:#15803d;border-color:#bbf7d0}
+  .pf-status.overdue{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+  .pf-status.locked{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}
+  .pf-action-list{display:flex;flex-direction:column;gap:8px}
+  .pf-action-row,.pf-follow-row,.pf-recent-row{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;border:1px solid #dbe7f1;background:#f8fbff;border-radius:9px;padding:10px;cursor:pointer;color:#17324d}
+  .pf-action-row strong,.pf-follow-row strong,.pf-recent-row strong{display:block;color:#0d3155;font-size:13px;font-weight:900}
+  .pf-action-row small,.pf-follow-row small,.pf-recent-row small{display:block;color:#60758c;font-size:11px;font-weight:700;margin-top:2px}
+  .pf-action-row b{font-size:18px;color:#174f82}
+  .pf-empty{border:1px dashed #cbdceb;border-radius:9px;padding:12px;color:#60758c;background:#fbfdff;font-weight:750;font-size:12px}
+  .pf-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .pf-follow-list,.pf-recent-list,.pf-history-list{display:flex;flex-direction:column;gap:8px}
+  .pf-row-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+  .pf-row-actions .pf-btn{min-height:32px;padding:6px 9px;font-size:11px}
+  .pf-drawer-backdrop{position:fixed;inset:0;background:rgba(8,22,38,.28);z-index:9998;display:none}
+  .pf-drawer-backdrop.open{display:block}
+  .pf-drawer{position:fixed;top:0;right:0;width:min(760px,96vw);height:100vh;background:#f8fbff;border-left:1px solid #cbdceb;box-shadow:-20px 0 50px rgba(7,29,54,.22);z-index:9999;transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column}
+  .pf-drawer.open{transform:translateX(0)}
+  .pf-drawer-head{padding:18px 20px;background:#fff;border-bottom:1px solid #d7e4ef;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .pf-drawer-head h2{margin:0;color:#0d3155;font-size:22px;font-weight:900}
+  .pf-drawer-head p{margin:5px 0 0;color:#60758c;font-size:12px;font-weight:700}
+  .pf-drawer-body{padding:14px 16px 22px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+  .pf-drawer-section{background:#fff;border:1px solid #d7e4ef;border-radius:10px;padding:13px}
+  .pf-drawer-section h3{margin:0 0 8px;color:#0d3155;font-size:15px;font-weight:900}
+  .pf-mini-table{width:100%;border-collapse:collapse}
+  .pf-mini-table td,.pf-mini-table th{border-bottom:1px solid #edf2f7;padding:8px;text-align:left;font-size:12px;color:#17324d}
+  .pf-mini-table th{color:#31506e;font-size:11px;text-transform:uppercase}
+  #manualPaperEditor .diagram-box.has-image.pf-img-selected{outline:2px solid #1463a5!important;outline-offset:4px!important;box-shadow:0 8px 20px rgba(20,99,165,.18)!important}
+  #manualPaperEditor .diagram-box.has-image.pf-img-dragging{opacity:.62!important;outline:2px dashed #1463a5!important}
+  #manualPaperEditor .bgps-v20-resize-handle,
+  #manualPaperEditor .bgps-v10-resize-handle,
+  #manualPaperEditor .bgps-image-resize-handle{display:none!important;pointer-events:none!important}
+  #manualPaperEditor .pf-img-handle{position:absolute!important;right:-11px!important;bottom:-11px!important;width:24px!important;height:24px!important;background:#1463a5!important;border:3px solid #fff!important;border-radius:50%!important;box-shadow:0 2px 10px rgba(0,0,0,.32)!important;cursor:nwse-resize!important;touch-action:none!important;pointer-events:auto!important;z-index:2147483647!important}
+  #manualPaperEditor .pf-drop-marker{height:0;border-top:3px solid #1463a5;margin:4px 0;clear:both}
+  @media(max-width:1050px){.pf-filters{grid-template-columns:1fr 1fr}.pf-kpis{grid-template-columns:1fr 1fr}.pf-main,.pf-grid-2{grid-template-columns:1fr}}
+  @media(max-width:620px){.pf-header{flex-direction:column}.pf-filters,.pf-kpis{grid-template-columns:1fr}.pf-table{min-width:760px}.pf-drawer{width:100vw}}
+</style>
+<script id="bgps-principal-final-js">
+(function(){
+  'use strict';
+  if(window.__BGPS_PRINCIPAL_FINAL__) return;
+  window.__BGPS_PRINCIPAL_FINAL__ = true;
+  const PF = {model:null, activity:[], search:'', className:'All Classes', exam:'All Exams', status:'All Statuses', kpi:''};
+  const byId = id => document.getElementById(id);
+  const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const js = value => String(value == null ? '' : value).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' ');
+  const clean = value => String(value == null ? '' : value).trim();
+  const dateMs = value => { const d = value ? new Date(value) : null; return d && !Number.isNaN(d.getTime()) ? d.getTime() : 0; };
+  const currentUser = () => { try { return clean(currentId || window.currentId); } catch(_) { return clean(window.currentId); } };
+  const isPrincipal = () => currentUser().toUpperCase() === 'ADMIN';
+  function expose(name, fn){ window[name] = fn; try { (0,eval)(name + ' = window.' + name); } catch(_){} }
+  function getPapers(){ try { return Array.isArray(questionPapers) ? questionPapers : []; } catch(_) { return Array.isArray(window.questionPapers) ? window.questionPapers : []; } }
+  function getDrafts(){ try { return Array.isArray(backendPaperDrafts) ? backendPaperDrafts : []; } catch(_) { return []; } }
+  function getTeacherRows(){ try { return typeof teacherClassRows === 'function' ? teacherClassRows() : []; } catch(_) { return []; } }
+  function getDefaultSubjects(className){ try { return typeof getDefaultSubjectsForClass === 'function' ? getDefaultSubjectsForClass(className) : []; } catch(_) { return []; } }
+  function statusKey(status){ const s = clean(status).toLowerCase(); if(s.includes('correction')) return 'Correction Required'; if(s.includes('approved') || s.includes('locked')) return s.includes('locked') ? 'Locked' : 'Approved'; if(s.includes('submit')) return 'Review Due'; if(s.includes('draft')) return 'In Progress'; return s ? status : 'Not Started'; }
+  function relTime(value){ const ms = dateMs(value); if(!ms) return '-'; const diff = Date.now() - ms; const min = Math.max(1, Math.floor(diff/60000)); if(min < 60) return min + ' min ago'; const hr = Math.floor(min/60); if(hr < 24) return hr + ' hr ago'; const day = Math.floor(hr/24); return day + ' day' + (day === 1 ? '' : 's') + ' ago'; }
+  function fmtDate(value){ const ms = dateMs(value); if(!ms) return '-'; return new Date(ms).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+  function daysOver(value){ const ms = dateMs(value); if(!ms) return 0; const today = new Date(); today.setHours(0,0,0,0); const due = new Date(ms); due.setHours(0,0,0,0); return due < today ? Math.max(1, Math.floor((today - due)/86400000)) : 0; }
+  function newest(items, getter){ return items.reduce((best,item) => Math.max(best, dateMs(getter(item))), 0); }
+  function statusClass(label){ return clean(label).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'not-started'; }
+  function paperTitle(p){ return [p.className, p.subject, p.exam].filter(Boolean).join(' / ') || 'Paper'; }
+  async function loadPrincipalActivity(){
+    try {
+      if(typeof paperApi !== 'function') return PF.activity || [];
+      const result = await paperApi('listPrincipalActivity', {});
+      PF.activity = Array.isArray(result.activity) ? result.activity : [];
+    } catch(error) {
+      console.warn('Principal activity unavailable', error);
+      PF.activity = PF.activity || [];
+    }
+    return PF.activity;
+  }
+  async function loadData(force){
+    try { if(typeof loadPaperSettings === 'function') await loadPaperSettings(Boolean(force)); } catch(error) { console.warn(error); }
+    try { if(typeof loadQuestionPapers === 'function') await loadQuestionPapers(Boolean(force)); } catch(error) { console.warn(error); }
+    let marks = [];
+    try { if(typeof getMasterData === 'function') marks = await getMasterData({}, Boolean(force)); } catch(error) { console.warn('Marks data unavailable', error); }
+    await loadPrincipalActivity();
+    return buildModel(getPapers(), getDrafts(), Array.isArray(marks) ? marks.slice(1) : [], PF.activity);
+  }
+  function buildModel(papers, drafts, marks, activity){
+    const allPapers = [...papers, ...drafts].filter(Boolean);
+    const exams = Array.from(new Set(allPapers.map(p => clean(p.exam)).concat(marks.map(r => clean(r && r[4]))).filter(Boolean))).sort();
+    if(!PF.exam || (PF.exam !== 'All Exams' && !exams.includes(PF.exam))) PF.exam = exams[0] || 'All Exams';
+    const selectedPapers = allPapers.filter(p => PF.exam === 'All Exams' || clean(p.exam) === PF.exam);
+    const selectedMarks = marks.filter(r => PF.exam === 'All Exams' || clean(r && r[4]) === PF.exam);
+    const map = new Map();
+    function rowFor(className, teacher){
+      const cls = clean(className) || 'Unassigned';
+      if(!map.has(cls)) {
+        map.set(cls, {className:cls, teacher:clean(teacher)||'-', papers:[], marks:[], activity:[], expected:new Set(), completed:new Set(), paperSubjects:new Set()});
+      }
+      const row = map.get(cls);
+      if(teacher && row.teacher === '-') row.teacher = clean(teacher);
+      return row;
+    }
+    getTeacherRows().forEach(item => rowFor(item.className, item.teacher));
+    selectedPapers.forEach(p => { const row = rowFor(p.className, p.teacherId); row.papers.push(p); if(p.subject) row.paperSubjects.add(clean(p.subject)); });
+    selectedMarks.forEach(r => { const row = rowFor(r && r[2], r && r[1]); row.marks.push(r); if(r && r[3]) row.completed.add(clean(r[3])); });
+    map.forEach(row => {
+      getDefaultSubjects(row.className).forEach(s => row.expected.add(clean(s)));
+      row.paperSubjects.forEach(s => row.expected.add(s));
+      row.completed.forEach(s => row.expected.add(s));
+      row.activity = activity.filter(a => clean(a.className) === row.className || (clean(a.teacherId) && clean(a.teacherId) === clean(row.teacher)));
+      row.nonDraft = row.papers.filter(p => !/draft/i.test(clean(p.status)));
+      row.reviewDue = row.papers.filter(p => statusKey(p.status) === 'Review Due');
+      row.corrections = row.papers.filter(p => statusKey(p.status) === 'Correction Required');
+      row.approved = row.papers.filter(p => statusKey(p.status) === 'Approved' || statusKey(p.status) === 'Locked');
+      row.drafts = row.papers.filter(p => /draft/i.test(clean(p.status)));
+      row.completedSubjects = Array.from(row.completed).filter(Boolean).sort();
+      row.expectedSubjects = Array.from(row.expected).filter(Boolean).sort();
+      row.pendingSubjects = row.expectedSubjects.filter(s => !row.completed.has(s));
+      row.deadline = row.papers.map(p => p.examDate).filter(Boolean).sort()[0] || '';
+      row.overdueDays = daysOver(row.deadline) && (row.reviewDue.length || row.corrections.length || row.pendingSubjects.length || !row.nonDraft.length) ? daysOver(row.deadline) : 0;
+      row.lastUpdateMs = Math.max(newest(row.papers, p => p.updatedAt || p.uploadedAt || p.createdAt || p.examDate), newest(row.marks, r => r && r[0]), newest(row.activity, a => a.timestamp));
+      row.lastUpdate = row.lastUpdateMs ? new Date(row.lastUpdateMs).toISOString() : '';
+      row.lastReminder = row.activity.filter(a => clean(a.type).toLowerCase() === 'reminder').sort((a,b)=>dateMs(b.timestamp)-dateMs(a.timestamp))[0] || null;
+      row.comments = row.activity.filter(a => clean(a.type).toLowerCase() === 'comment').sort((a,b)=>dateMs(b.timestamp)-dateMs(a.timestamp));
+      row.status = deriveRowStatus(row);
+    });
+    const rows = Array.from(map.values()).sort((a,b) => clean(a.className).localeCompare(clean(b.className), undefined, {numeric:true}));
+    const latest = selectedPapers.filter(p => !/draft/i.test(clean(p.status))).sort((a,b)=>dateMs(b.updatedAt || b.uploadedAt)-dateMs(a.updatedAt || a.uploadedAt)).slice(0,8);
+    const totals = {
+      paperCompleted: rows.reduce((s,r)=>s+r.approved.length,0),
+      paperTotal: rows.reduce((s,r)=>s+r.nonDraft.length,0),
+      marksCompleted: rows.reduce((s,r)=>s+r.completedSubjects.length,0),
+      marksTotal: rows.reduce((s,r)=>s+r.expectedSubjects.length,0),
+      reviewDue: rows.reduce((s,r)=>s+r.reviewDue.length,0),
+      corrections: rows.reduce((s,r)=>s+r.corrections.length,0)
+    };
+    const terms = exams.map(exam => {
+      const pp = allPapers.filter(p => clean(p.exam) === exam);
+      const mm = marks.filter(r => clean(r && r[4]) === exam);
+      return {exam, papers:pp.length, approved:pp.filter(p=>statusKey(p.status)==='Approved'||statusKey(p.status)==='Locked').length, marks:mm.length, review:pp.filter(p=>statusKey(p.status)==='Review Due').length, corrections:pp.filter(p=>statusKey(p.status)==='Correction Required').length, latest:Math.max(newest(pp,p=>p.updatedAt||p.uploadedAt), newest(mm,r=>r&&r[0]))};
+    }).sort((a,b)=>b.latest-a.latest);
+    return {rows, papers:selectedPapers, marks:selectedMarks, activity, exams, latest, totals, terms};
+  }
+  function deriveRowStatus(row){
+    if(row.overdueDays) return 'Overdue';
+    if(row.corrections.length) return 'Correction Required';
+    if(row.reviewDue.length) return 'Review Due';
+    if(row.approved.length && !row.reviewDue.length && !row.corrections.length && !row.pendingSubjects.length) return 'Approved';
+    if(row.nonDraft.length) return 'Submitted';
+    if(row.drafts.length || row.completedSubjects.length) return 'In Progress';
+    return 'Not Started';
+  }
+  function filteredRows(model){
+    const q = clean(PF.search).toLowerCase();
+    return model.rows.filter(row => {
+      if(PF.className !== 'All Classes' && row.className !== PF.className) return false;
+      if(PF.status !== 'All Statuses' && row.status !== PF.status) return false;
+      if(PF.kpi === 'papers' && !row.nonDraft.length) return false;
+      if(PF.kpi === 'marks' && !row.completedSubjects.length) return false;
+      if(PF.kpi === 'review' && !row.reviewDue.length) return false;
+      if(PF.kpi === 'corrections' && !row.corrections.length) return false;
+      if(q && !(row.className + ' ' + row.teacher + ' ' + row.expectedSubjects.join(' ')).toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+  function actionRows(rows){
+    const out = [];
+    rows.forEach(row => {
+      if(row.reviewDue.length) out.push({label:'Paper review due', detail:row.reviewDue.length + ' submitted paper(s)', cls:'review-due', row});
+      if(row.corrections.length) out.push({label:'Correction pending', detail:row.corrections.length + ' returned paper(s)', cls:'correction-required', row});
+      if(row.overdueDays) out.push({label:'Paper/marks overdue', detail:'Overdue by ' + row.overdueDays + ' day(s)', cls:'overdue', row});
+      if(row.overdueDays && !row.lastUpdateMs) out.push({label:'Inactive after deadline', detail:'No teacher activity found', cls:'overdue', row});
+    });
+    return out;
+  }
+  function renderKpis(model){
+    const t = model.totals;
+    return '<section class="pf-kpis">' +
+      kpi('papers','Papers Submitted', t.paperCompleted + '/' + Math.max(t.paperTotal, t.paperCompleted), 'approved / submitted total', 'blue') +
+      kpi('marks','Marks Completed', t.marksCompleted + '/' + Math.max(t.marksTotal, t.marksCompleted), 'completed / tracked subjects', 'green') +
+      kpi('review','Review Due', t.reviewDue, 'papers waiting principal review', 'amber') +
+      kpi('corrections','Corrections Pending', t.corrections, 'returned to teachers', 'red') +
+      '</section>';
+  }
+  function kpi(key,label,value,sub,cls){ return '<button class="pf-kpi '+cls+' '+(PF.kpi===key?'active':'')+'" onclick="bgpsPrincipalSetFilter(\'kpi\',\''+key+'\')"><span><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong><small>'+esc(sub)+'</small></span><i></i></button>'; }
+  function renderFilters(model){
+    const classes = ['All Classes'].concat(model.rows.map(r=>r.className).filter(Boolean));
+    const statuses = ['All Statuses','Not Started','In Progress','Submitted','Review Due','Correction Required','Approved','Overdue'];
+    return '<section class="pf-filters">' +
+      '<label>Search<input value="'+esc(PF.search)+'" placeholder="Class, teacher, subject" oninput="bgpsPrincipalSetFilter(\'search\',this.value)"></label>' +
+      '<label>Exam / Term<select onchange="bgpsPrincipalSetFilter(\'exam\',this.value)"><option>All Exams</option>'+model.exams.map(e=>'<option value="'+esc(e)+'" '+(PF.exam===e?'selected':'')+'>'+esc(e)+'</option>').join('')+'</select></label>' +
+      '<label>Class<select onchange="bgpsPrincipalSetFilter(\'className\',this.value)">'+classes.map(c=>'<option value="'+esc(c)+'" '+(PF.className===c?'selected':'')+'>'+esc(c)+'</option>').join('')+'</select></label>' +
+      '<label>Status<select onchange="bgpsPrincipalSetFilter(\'status\',this.value)">'+statuses.map(s=>'<option value="'+esc(s)+'" '+(PF.status===s?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select></label>' +
+      '<button class="pf-btn light" onclick="bgpsPrincipalResetFilters()">Reset</button>' +
+      '</section>';
+  }
+  function renderTable(rows){
+    const body = rows.map(row => '<tr><td><strong>'+esc(row.className)+'</strong><small>'+esc(row.teacher||'-')+'</small></td><td><strong>'+row.nonDraft.length+'</strong><small>'+row.approved.length+' approved, '+row.reviewDue.length+' review</small></td><td><strong>'+row.completedSubjects.length+'/'+Math.max(row.expectedSubjects.length,row.completedSubjects.length)+'</strong><small>'+esc(row.pendingSubjects.slice(0,3).join(', ')||'No pending subject')+'</small></td><td>'+row.reviewDue.length+'</td><td>'+row.corrections.length+'</td><td>'+esc(row.deadline?fmtDate(row.deadline):'-')+(row.overdueDays?'<small>Overdue by '+row.overdueDays+' days</small>':'')+'</td><td><strong>'+esc(relTime(row.lastUpdate))+'</strong><small>'+esc(fmtDate(row.lastUpdate))+'</small></td><td><span class="pf-status '+statusClass(row.status)+'">'+esc(row.status)+(row.overdueDays?' by '+row.overdueDays+'d':'')+'</span></td><td><button class="pf-btn light" onclick="bgpsPrincipalOpenClass(\''+js(row.className)+'\')">Open</button></td></tr>').join('') || '<tr><td colspan="9"><div class="pf-empty">No classes match the selected filters.</div></td></tr>';
+    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Class-wise Tracking Table</h2><p>Main working table for paper review, marks completion and class follow-up.</p></div><span class="pf-live-pill">'+rows.length+' class(es)</span></div><div class="pf-table-wrap"><table class="pf-table"><thead><tr><th>Class / Teacher</th><th>Papers Submitted</th><th>Marks Completion</th><th>Review Due</th><th>Corrections</th><th>Deadline</th><th>Last Update</th><th>Status</th><th></th></tr></thead><tbody>'+body+'</tbody></table></div></section>';
+  }
+  function renderActions(rows){
+    const items = actionRows(rows);
+    const html = items.map(item => '<button class="pf-action-row" onclick="bgpsPrincipalOpenClass(\''+js(item.row.className)+'\')"><span><strong>'+esc(item.label)+'</strong><small>'+esc(item.row.className)+' / '+esc(item.row.teacher)+' - '+esc(item.detail)+'</small></span><b>&gt;</b></button>').join('');
+    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Action Required</h2><p>Only classes with real pending action are shown.</p></div></div><div class="pf-action-list">'+(html||'<div class="pf-empty">No pending action for this filter.</div>')+'</div></section>';
+  }
+  function pendingReason(row){ if(row.overdueDays) return 'Overdue by '+row.overdueDays+' day(s)'; if(row.corrections.length) return 'Correction pending'; if(row.reviewDue.length) return 'Paper review due'; if(row.pendingSubjects.length) return 'Marks subjects pending'; return 'No pending reason'; }
+  function renderFollow(rows){
+    const needs = rows.filter(r => r.reviewDue.length || r.corrections.length || r.overdueDays || r.pendingSubjects.length).slice(0,10);
+    const html = needs.map(row => '<div class="pf-follow-row"><span><strong>'+esc(row.teacher)+' / '+esc(row.className)+'</strong><small>'+esc(pendingReason(row))+' | Last reminder: '+esc(row.lastReminder?relTime(row.lastReminder.timestamp):'not sent')+'</small></span><span class="pf-row-actions"><button class="pf-btn light" onclick="bgpsPrincipalViewActivity(\''+js(row.className)+'\')">View Activity</button><button class="pf-btn amber" onclick="bgpsPrincipalSendReminder(\''+js(row.className)+'\')">Send Reminder</button><button class="pf-btn light" onclick="bgpsPrincipalAddComment(\''+js(row.className)+'\')">Add Comment</button><button class="pf-btn" onclick="bgpsPrincipalReviewPaper(\''+js(row.className)+'\')">Review Paper</button></span></div>').join('');
+    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Teacher Follow-up</h2><p>Pending reason, last reminder and shortcuts for principal action.</p></div></div><div class="pf-follow-list">'+(html||'<div class="pf-empty">No teacher follow-up required.</div>')+'</div></section>';
+  }
+  function renderLatest(model){
+    const html = model.latest.map(p => '<button class="pf-recent-row" onclick="bgpsPrincipalOpenPaper(\''+js(p.paperId)+'\')"><span><strong>'+esc(paperTitle(p))+'</strong><small>'+esc(p.teacherId||'-')+' | '+esc(p.status||'-')+' | '+esc(relTime(p.updatedAt||p.uploadedAt))+'</small></span><b>&gt;</b></button>').join('');
+    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Latest Submissions</h2><p>Clickable recent papers from the selected term.</p></div></div><div class="pf-recent-list">'+(html||'<div class="pf-empty">No latest submissions found.</div>')+'</div></section>';
+  }
+  function renderHistory(model){
+    const body = model.terms.map(t => '<tr><td><strong>'+esc(t.exam)+'</strong></td><td>'+t.approved+'/'+Math.max(t.papers,t.approved)+'</td><td>'+t.marks+'</td><td>'+t.review+'</td><td>'+t.corrections+'</td><td>'+esc(t.latest?relTime(t.latest):'-')+'</td></tr>').join('') || '<tr><td colspan="6"><div class="pf-empty">No term history found.</div></td></tr>';
+    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Term History / Export Repo</h2><p>Term progress summary built from paper and marks records.</p></div><div class="pf-row-actions"><button class="pf-btn green" onclick="bgpsPrincipalDownloadReport()">Download Term Progress Report</button>'+(isPrincipal()?'<button class="pf-btn light" onclick="switchTab(\'settings\')">Super Admin Settings</button>':'')+'</div></div><div class="pf-table-wrap"><table class="pf-table"><thead><tr><th>Term</th><th>Papers approved/total</th><th>Marks rows</th><th>Review</th><th>Corrections</th><th>Last update</th></tr></thead><tbody>'+body+'</tbody></table></div></section>';
+  }
+  function renderDashboard(model){
+    const rows = filteredRows(model);
+    return '<div class="pf-shell"><section class="pf-header"><div><h1>Principal Command Centre</h1><p>Exam-wise paper review, marks completion, deadlines and teacher follow-up.</p></div><span class="pf-live-pill">Real data only / '+esc(PF.exam)+'</span></section>'+renderFilters(model)+renderKpis(model)+'<section class="pf-main">'+renderTable(rows)+renderActions(rows)+'</section><section class="pf-grid-2">'+renderFollow(rows)+renderLatest(model)+'</section>'+renderHistory(model)+'<div id="pfDrawerBackdrop" class="pf-drawer-backdrop" onclick="bgpsPrincipalCloseDrawer()"></div><aside id="pfDrawer" class="pf-drawer" aria-live="polite"></aside></div>';
+  }
+  async function renderPrincipal(force){
+    if(!isPrincipal()) { document.body.classList.remove('bgps-principal-final-active'); return false; }
+    const host = byId('proHomeContent');
+    if(!host) return false;
+    document.body.classList.add('bgps-principal-final-active');
+    const side = byId('proRightPanel'); if(side) side.innerHTML = '';
+    host.innerHTML = '<div class="pf-shell"><section class="pf-header"><div><h1>Principal Command Centre</h1><p>Loading live paper and marks data...</p></div></section></div>';
+    PF.model = await loadData(force);
+    host.innerHTML = renderDashboard(PF.model);
+    cleanupOldDashboard();
+    return true;
+  }
+  function cleanupOldDashboard(){
+    document.querySelectorAll('.bgps10-donut-wrap,.bgps10-summary').forEach(n=>n.remove());
+    document.querySelectorAll('.bgps10-panel h2').forEach(h=>{ if(/Paper Status Overview|Quick Actions/i.test(h.textContent||'')) h.closest('.bgps10-panel')?.remove(); });
+  }
+  expose('bgpsPrincipalSetFilter', function(key,value){
+    if(key === 'kpi') PF.kpi = PF.kpi === value ? '' : value;
+    else { PF[key] = value || (key === 'status' ? 'All Statuses' : key === 'className' ? 'All Classes' : key === 'exam' ? 'All Exams' : ''); if(key === 'exam') PF.kpi = ''; }
+    if(key === 'exam') { renderPrincipal(false); return; }
+    if(PF.model) byId('proHomeContent').innerHTML = renderDashboard(PF.model);
+  });
+  expose('bgpsPrincipalResetFilters', function(){ PF.search=''; PF.className='All Classes'; PF.status='All Statuses'; PF.kpi=''; if(PF.model) byId('proHomeContent').innerHTML = renderDashboard(PF.model); });
+  function rowByClass(className){ return (PF.model?.rows||[]).find(r => r.className === className); }
+  expose('bgpsPrincipalOpenClass', function(className){
+    const row = rowByClass(className); if(!row) return;
+    const drawer = byId('pfDrawer'), backdrop = byId('pfDrawerBackdrop'); if(!drawer || !backdrop) return;
+    const paperRows = row.nonDraft.map(p => '<tr><td><strong>'+esc(p.subject||'-')+'</strong><small>'+esc(p.exam||'-')+'</small></td><td><span class="pf-status '+statusClass(statusKey(p.status))+'">'+esc(p.status||'-')+'</span></td><td>'+esc(relTime(p.updatedAt||p.uploadedAt))+'</td><td><button class="pf-btn light" onclick="bgpsPrincipalOpenPaper(\''+js(p.paperId)+'\')">Open</button></td></tr>').join('') || '<tr><td colspan="4">No submitted papers.</td></tr>';
+    const marksRows = row.expectedSubjects.map(s => '<tr><td>'+esc(s)+'</td><td><span class="pf-status '+(row.completed.has(s)?'approved':'not-started')+'">'+(row.completed.has(s)?'Completed':'Pending')+'</span></td></tr>').join('') || '<tr><td colspan="2">No subject data.</td></tr>';
+    const correctionRows = row.corrections.map(p => '<tr><td>'+esc(p.subject||'-')+'</td><td>'+esc(p.adminNote||'Correction requested')+'</td><td><button class="pf-btn light" onclick="bgpsPrincipalOpenPaper(\''+js(p.paperId)+'\')">Open</button></td></tr>').join('') || '<tr><td colspan="3">No returned papers.</td></tr>';
+    const comments = row.comments.map(c => '<tr><td>'+esc(fmtDate(c.timestamp))+'</td><td>'+esc(c.message)+'</td></tr>').join('') || '<tr><td colspan="2">No principal comments yet.</td></tr>';
+    const history = row.activity.slice(0,8).map(a => '<tr><td>'+esc(fmtDate(a.timestamp))+'</td><td>'+esc(a.type)+'</td><td>'+esc(a.message||a.subjects||'-')+'</td></tr>').join('') || '<tr><td colspan="3">No reminder/comment history.</td></tr>';
+    drawer.innerHTML = '<div class="pf-drawer-head"><div><h2>'+esc(row.className)+'</h2><p>'+esc(row.teacher)+' | '+esc(row.status)+' | Last activity '+esc(relTime(row.lastUpdate))+'</p></div><button class="pf-btn light" onclick="bgpsPrincipalCloseDrawer()">Close</button></div><div class="pf-drawer-body"><section class="pf-drawer-section"><h3>Principal Actions</h3><div class="pf-row-actions"><button class="pf-btn" onclick="bgpsPrincipalReviewPaper(\''+js(row.className)+'\')">Review</button><button class="pf-btn red" onclick="bgpsPrincipalReturnPaper(\''+js(row.className)+'\')">Return</button><button class="pf-btn green" onclick="bgpsPrincipalApprovePaper(\''+js(row.className)+'\')">Approve</button><button class="pf-btn light" onclick="bgpsPrincipalAddComment(\''+js(row.className)+'\')">Add Remark</button><button class="pf-btn amber" onclick="bgpsPrincipalSendReminder(\''+js(row.className)+'\')">Send Reminder</button></div></section><section class="pf-drawer-section"><h3>Submitted Papers</h3><table class="pf-mini-table"><tbody>'+paperRows+'</tbody></table></section><section class="pf-drawer-section"><h3>Marks Completion by Subject</h3><table class="pf-mini-table"><tbody>'+marksRows+'</tbody></table></section><section class="pf-drawer-section"><h3>Returned / Correction Papers</h3><table class="pf-mini-table"><tbody>'+correctionRows+'</tbody></table></section><section class="pf-drawer-section"><h3>Principal Remarks</h3><table class="pf-mini-table"><tbody>'+comments+'</tbody></table></section><section class="pf-drawer-section"><h3>Status / History</h3><table class="pf-mini-table"><tbody>'+history+'</tbody></table></section></div>';
+    backdrop.classList.add('open'); drawer.classList.add('open');
+  });
+  expose('bgpsPrincipalCloseDrawer', function(){ byId('pfDrawer')?.classList.remove('open'); byId('pfDrawerBackdrop')?.classList.remove('open'); });
+  expose('bgpsPrincipalOpenPaper', function(paperId){ if(!paperId) return; if(typeof bgpsOpenOverviewPaper === 'function') return bgpsOpenOverviewPaper(paperId); if(typeof openPaperFile === 'function') return openPaperFile(paperId,'preview'); });
+  function firstReviewPaper(row){ return row?.reviewDue?.[0] || row?.nonDraft?.[0] || null; }
+  expose('bgpsPrincipalReviewPaper', function(className){ const p = firstReviewPaper(rowByClass(className)); if(p) bgpsPrincipalOpenPaper(p.paperId); else alert('No paper found for review.'); });
+  expose('bgpsPrincipalApprovePaper', async function(className){ const p = firstReviewPaper(rowByClass(className)); if(!p) return alert('No paper found to approve.'); if(typeof updatePaperStatus === 'function') await updatePaperStatus(p.paperId,'Approved'); await renderPrincipal(true); bgpsPrincipalOpenClass(className); });
+  expose('bgpsPrincipalReturnPaper', function(className){ const p = firstReviewPaper(rowByClass(className)); if(!p) return alert('No paper found to return.'); if(typeof requestPaperCorrection === 'function') requestPaperCorrection(p.paperId); });
+  expose('bgpsPrincipalSendReminder', async function(className){
+    const row = rowByClass(className); if(!row) return;
+    try { await paperApi('sendReminder',{reminder:{teacherId:row.teacher,className:row.className,subjects:row.pendingSubjects.join(', '),message:'Principal reminder: '+pendingReason(row)}}); alert('Reminder sent/logged for '+row.teacher+'.'); await renderPrincipal(true); }
+    catch(error){ alert('Reminder failed: '+(error?.message||error)); }
+  });
+  expose('bgpsPrincipalAddComment', async function(className){
+    const row = rowByClass(className); if(!row) return;
+    const message = prompt('Add principal remark for '+row.className+':','');
+    if(!clean(message)) return;
+    try { await paperApi('addPrincipalComment',{comment:{teacherId:row.teacher,className:row.className,subjects:row.pendingSubjects.join(', '),message}}); await renderPrincipal(true); bgpsPrincipalOpenClass(className); }
+    catch(error){ alert('Comment failed: '+(error?.message||error)); }
+  });
+  expose('bgpsPrincipalViewActivity', function(className){ bgpsPrincipalOpenClass(className); });
+  expose('bgpsPrincipalDownloadReport', function(){
+    const rows = filteredRows(PF.model || {rows:[]});
+    const csv = ['Class,Teacher,Status,Papers Submitted,Papers Approved,Review Due,Corrections,Marks Completed,Marks Total,Deadline,Last Update'].concat(rows.map(r => [r.className,r.teacher,r.status,r.nonDraft.length,r.approved.length,r.reviewDue.length,r.corrections.length,r.completedSubjects.length,Math.max(r.expectedSubjects.length,r.completedSubjects.length),r.deadline,fmtDate(r.lastUpdate)].map(v => '"'+String(v).replace(/"/g,'""')+'"').join(','))).join('\r\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'BGPS_Term_Progress_Report.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+  });
+  function installImageFix(){
+    const editor = byId('manualPaperEditor');
+    if(!editor) return;
+    // DOM datasets are copied by cloneNode(true); expando properties are not. The old editor
+    // code clones this node, so use an expando marker or the final image listener silently vanishes.
+    let resizing = false, normalizing = false;
+    if(!editor.__pfImageObserverBound){
+      editor.__pfImageObserverBound = true;
+      new MutationObserver(() => {
+        if(resizing || normalizing) return;
+        setTimeout(() => {
+          if(resizing || normalizing) return;
+          normalizing = true;
+          normalizeCurrentImages();
+          setTimeout(() => { normalizing = false; }, 80);
+        }, 20);
+      }).observe(editor,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class','data-width','data-bgps-width','data-layout','data-bgps-layout']});
+    }
+    if(window.__BGPS_PF_IMAGE_EVENTS_BOUND__) return;
+    window.__BGPS_PF_IMAGE_EVENTS_BOUND__ = true;
+    let drag = null, marker = null;
+    function currentEditor(){ return byId('manualPaperEditor'); }
+    function imageBox(target){ const ed=currentEditor(); const box=target?.closest?.('#manualPaperEditor .diagram-box.has-image'); return box && ed?.contains(box) ? box : null; }
+    function pctWidth(box){ const raw=parseFloat(box.dataset.bgpsWidth||box.dataset.width||String(box.style.width||'').replace('%','')); return Math.max(12,Math.min(76,Number.isFinite(raw)?raw:34)); }
+    function changed(){ try{ window.handleManualEditorInput?.(); }catch(_){} try{ window.markManualPaperDirty?.(); }catch(_){} try{ window.scheduleManualDraftAutosave?.(); }catch(_){} }
+    function reassert(box){
+      const mode = box?.dataset?.layout || box?.dataset?.bgpsLayout || 'right';
+      const width = pctWidth(box);
+      [0,60,180,450,900].forEach(delay => setTimeout(() => applyBox(box, mode, width), delay));
+    }
+    function applyBox(box,mode,width){
+      if(!box) return;
+      mode = ['left','right','center','inline'].includes(mode) ? mode : (box.dataset.layout || box.dataset.bgpsLayout || 'right');
+      if(mode === 'floating') mode = 'right';
+      width = Math.max(12, Math.min(mode === 'center' ? 76 : 48, Number(width) || pctWidth(box)));
+      box.classList.add('diagram-box','has-image','bgps-img-'+mode);
+      box.classList.remove('bgps-img-floating','bgps-img-left','bgps-img-right','bgps-img-center','bgps-img-inline');
+      box.classList.add('bgps-img-'+mode);
+      box.dataset.layout = mode; box.dataset.bgpsLayout = mode; box.dataset.width = String(Math.round(width)); box.dataset.bgpsWidth = String(Math.round(width));
+      box.style.removeProperty('left'); box.style.removeProperty('top'); box.style.removeProperty('z-index');
+      box.style.setProperty('position','relative','important');
+      box.style.setProperty('width',width+'%','important');
+      box.style.setProperty('height','auto','important');
+      box.style.setProperty('min-height','0','important');
+      box.style.setProperty('break-inside','avoid','important');
+      box.style.setProperty('page-break-inside','avoid','important');
+      if(mode === 'left'){ box.style.setProperty('float','left','important'); box.style.setProperty('clear','none','important'); box.style.setProperty('margin','4px 14px 8px 0','important'); box.style.setProperty('max-width','48%','important'); }
+      else if(mode === 'right'){ box.style.setProperty('float','right','important'); box.style.setProperty('clear','none','important'); box.style.setProperty('margin','4px 0 8px 14px','important'); box.style.setProperty('max-width','48%','important'); }
+      else if(mode === 'inline'){ box.style.setProperty('display','inline-block','important'); box.style.setProperty('float','none','important'); box.style.setProperty('clear','none','important'); box.style.setProperty('vertical-align','middle','important'); box.style.setProperty('margin','0 8px 6px','important'); box.style.setProperty('max-width','42%','important'); }
+      else { box.style.setProperty('float','none','important'); box.style.setProperty('clear','both','important'); box.style.setProperty('margin','9px auto 11px','important'); box.style.setProperty('max-width','76%','important'); }
+      const img=box.querySelector('img'); if(img){ img.classList.add('diagram-image'); img.draggable=false; img.style.setProperty('display','block','important'); img.style.setProperty('width','100%','important'); img.style.setProperty('height','auto','important'); img.style.setProperty('max-width','100%','important'); img.style.setProperty('object-fit','contain','important'); }
+    }
+    function select(box){
+      const ed=currentEditor(); if(!ed||!box) return;
+      ed.querySelectorAll('.pf-img-selected').forEach(n=>{ if(n!==box)n.classList.remove('pf-img-selected'); });
+      box.querySelectorAll(':scope>.bgps-v20-resize-handle,:scope>.bgps-v10-resize-handle,:scope>.bgps-image-resize-handle').forEach(n=>n.remove());
+      box.classList.add('pf-img-selected'); applyBox(box, box.dataset.layout || box.dataset.bgpsLayout || 'right', pctWidth(box));
+      if(!box.querySelector(':scope>.pf-img-handle')){ const h=document.createElement('span'); h.className='pf-img-handle'; h.contentEditable='false'; h.setAttribute('data-bgps-transient','1'); box.appendChild(h); }
+    }
+    function normalizeCurrentImages(){
+      const ed=currentEditor(); if(!ed) return;
+      ed.querySelectorAll('.diagram-box.has-image,img.diagram-image').forEach(node => {
+        const box = node.matches?.('.diagram-box.has-image') ? node : node.closest('.diagram-box');
+        if(box) applyBox(box, box.dataset.layout || box.dataset.bgpsLayout || 'right', pctWidth(box));
+      });
+    }
+    function topChild(node){ const ed=currentEditor(); while(node && node.parentNode !== ed) node = node.parentNode; return node; }
+    function markerTarget(y,box){
+      const ed=currentEditor(); if(!ed) return null;
+      const blocks=[...ed.children].filter(n=>n!==box && !n.classList.contains('pf-drop-marker') && !n.matches?.('.pf-img-handle'));
+      return blocks.find(n=>{ const r=n.getBoundingClientRect(); return y < r.top + r.height/2; }) || blocks[blocks.length-1] || null;
+    }
+    function placeMarker(x,y,box){
+      const ed=currentEditor(); if(!ed) return;
+      if(!marker){ marker=document.createElement('div'); marker.className='pf-drop-marker'; marker.contentEditable='false'; marker.setAttribute('data-bgps-transient','1'); }
+      let target = topChild(document.elementFromPoint(x,y));
+      if(!target || target===box || !ed.contains(target) || target.classList.contains('pf-drop-marker')) target = markerTarget(y,box);
+      if(!target){ ed.appendChild(marker); return; }
+      const r=target.getBoundingClientRect();
+      if(y < r.top + r.height/2) ed.insertBefore(marker,target);
+      else ed.insertBefore(marker,target.nextSibling);
+    }
+    document.addEventListener('pointerdown', event => {
+      const box = imageBox(event.target); if(!box) return;
+      const ed=currentEditor(); if(!ed) return;
+      event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
+      select(box);
+      if(event.target.classList.contains('pf-img-handle')){
+        const startX=event.clientX, startWidth=pctWidth(box), rootWidth=Math.max(1,ed.getBoundingClientRect().width);
+        resizing = true;
+        const move=e=>{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); const next=Math.max(12,Math.min(76,startWidth+((e.clientX-startX)/rootWidth*100))); applyBox(box, box.dataset.layout || box.dataset.bgpsLayout || 'right', next); };
+        const up=()=>{ window.removeEventListener('pointermove',move,true); resizing=false; changed(); reassert(box); };
+        window.addEventListener('pointermove',move,{capture:true,passive:false}); window.addEventListener('pointerup',up,{once:true,capture:true}); return;
+      }
+      drag={box,startX:event.clientX,startY:event.clientY,moved:false};
+      box.style.pointerEvents='none';
+      const move=e=>{ if(!drag) return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); if(Math.abs(e.clientX-drag.startX)+Math.abs(e.clientY-drag.startY)>6){ drag.moved=true; box.classList.add('pf-img-dragging'); placeMarker(e.clientX,e.clientY,box); } };
+      const up=()=>{ window.removeEventListener('pointermove',move,true); box.style.pointerEvents=''; if(drag?.moved && marker?.parentNode){ marker.replaceWith(box); applyBox(box, 'right', Math.min(pctWidth(box),42)); box.classList.remove('pf-img-dragging'); const p=document.createElement('p'); p.innerHTML='<br>'; if(!box.nextElementSibling || box.nextElementSibling.matches('.diagram-box.has-image,.page-break')) box.insertAdjacentElement('afterend',p); changed(); } marker?.remove(); marker=null; drag=null; };
+      window.addEventListener('pointermove',move,{capture:true,passive:false}); window.addEventListener('pointerup',up,{once:true,capture:true});
+    }, true);
+    const oldSanitize = window.sanitizeComposerHtmlClient;
+    if(!window.__BGPS_PF_IMAGE_SANITIZE__ && typeof oldSanitize === 'function'){
+      window.__BGPS_PF_IMAGE_SANITIZE__ = true;
+      expose('sanitizeComposerHtmlClient', function(html){
+        const out = oldSanitize.apply(this, arguments);
+        const tpl = document.createElement('template'); tpl.innerHTML = String(out || '');
+        tpl.content.querySelectorAll('.pf-img-handle,.pf-drop-marker').forEach(n=>n.remove());
+        tpl.content.querySelectorAll('.pf-img-selected,.pf-img-dragging').forEach(n=>n.classList.remove('pf-img-selected','pf-img-dragging'));
+        tpl.content.querySelectorAll('.diagram-box.has-image').forEach(box=>applyBox(box, box.dataset.layout || box.dataset.bgpsLayout || 'right', pctWidth(box)));
+        return tpl.innerHTML;
+      });
+    }
+    normalizeCurrentImages();
+  }
+  const oldRefresh = window.bgpsProRefreshHome;
+  expose('bgpsProRefreshHome', function(){ return renderPrincipal(true).then(done => done || (typeof oldRefresh === 'function' ? oldRefresh() : null)); });
+  const oldSwitch = window.switchTab;
+  expose('switchTab', async function(tab){ const result = typeof oldSwitch === 'function' ? oldSwitch.apply(this,arguments) : null; await Promise.resolve(result); if((tab === 'home' || tab === 'overview' || tab === undefined) && isPrincipal()) await renderPrincipal(false); setTimeout(()=>{ cleanupOldDashboard(); installImageFix(); },80); return result; });
+  const oldLogin = window.loginTeacher;
+  if(typeof oldLogin === 'function') expose('loginTeacher', async function(){ const result = await oldLogin.apply(this,arguments); setTimeout(()=>{ if(isPrincipal()) renderPrincipal(true); installImageFix(); cleanupOldDashboard(); },180); return result; });
+  function boot(){ installImageFix(); cleanupOldDashboard(); if(isPrincipal() && byId('proHomeContent')) renderPrincipal(false); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true}); else boot();
 })();
 </script>
 </body>

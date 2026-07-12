@@ -2336,7 +2336,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyvOVWxwMBi6iOfApG9ZS6pp01_vPxyqQ9gdS4GXDnZBbFWmUInLfvkgZcZ4LqPZjpj/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxJH188jWJZM5hAw9TzW0me_eQTiqH9Wx2PJjVRHaAC40Pi_wEmO3-SbcpBwkV5sNyX/exec";
         
         const PASS_PERCENT = 33;
 
@@ -12668,6 +12668,449 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     });
   }
   function boot(){normalizeImageLayouts();enhanceTeacherDashboard();setTimeout(()=>normalizeImageLayouts(),500)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+<style id="bgps-final10-css">
+  #manualPaperEditor{position:relative!important;isolation:isolate}
+  #manualPaperEditor .diagram-box.has-image{will-change:left,top,width;box-sizing:border-box!important}
+  #manualPaperEditor .diagram-box.has-image.bgps10-selected{outline:2px solid #0f6fbd!important;outline-offset:4px!important;box-shadow:0 8px 24px rgba(15,111,189,.18)!important;z-index:30!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-inline,
+  #manualPaperEditor .diagram-box.has-image[data-layout="inline"]{display:inline-block!important;float:none!important;clear:none!important;position:static!important;vertical-align:middle!important;margin:0 8px 6px!important;max-width:42%!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-floating,
+  #manualPaperEditor .diagram-box.has-image[data-layout="floating"]{display:block!important;position:absolute!important;float:none!important;clear:none!important;margin:0!important;z-index:20!important;max-width:72%!important;background:#fff!important;box-shadow:0 5px 16px rgba(15,42,76,.14)!important}
+  #manualPaperEditor .diagram-box.has-image.bgps10-floating-drag{opacity:.76!important;outline:2px dashed #0f6fbd!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-left{clear:none!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-right{clear:none!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-center{clear:both!important}
+  #manualPaperEditor .bgps10-float-note{position:absolute;right:2px;top:2px;background:#0f6fbd;color:#fff;border-radius:5px;padding:2px 5px;font:800 9px Arial,sans-serif;pointer-events:none}
+  #bgpsV10ImageToolbar .bgps10-tool{border-color:#77a8ce!important;background:#fff!important;color:#123b63!important}
+  #bgpsV10ImageToolbar .bgps10-tool.active{background:#123b63!important;color:#fff!important}
+  .bgps10-dashboard{display:grid;gap:16px;margin-top:10px;color:#0b1d3a}
+  .bgps10-date-row{display:flex;justify-content:flex-end}
+  .bgps10-date-pill{border:1px solid #d7e2ee;background:#f8fbff;border-radius:8px;padding:8px 12px;color:#123b63;font-weight:850;font-size:12px}
+  .bgps10-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+  .bgps10-kpi{border:1px solid #d9e4ef;background:#fff;border-radius:8px;padding:16px 16px 14px;min-height:124px;box-shadow:0 8px 20px rgba(15,42,76,.06);display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;text-align:left;cursor:pointer}
+  .bgps10-kpi:hover{border-color:#9bbad8;box-shadow:0 10px 26px rgba(15,42,76,.11)}
+  .bgps10-icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900;font-size:16px}
+  .bgps10-kpi h3{margin:0 0 8px;font-size:13px;color:#10213d;font-weight:900}
+  .bgps10-kpi strong{display:block;font-size:26px;line-height:1;color:#0b1d3a;margin-bottom:7px}
+  .bgps10-kpi span{display:block;color:#51627a;font-size:12px;line-height:1.3}
+  .bgps10-progress{height:6px;background:#e8eef6;border-radius:99px;overflow:hidden;margin-top:9px;grid-column:1 / -1}
+  .bgps10-progress i{display:block;height:100%;background:#2973e6;border-radius:99px}
+  .bgps10-grid-main{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.85fr) minmax(260px,.65fr);gap:16px}
+  .bgps10-grid-bottom{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr) minmax(280px,.8fr);gap:16px}
+  .bgps10-panel{border:1px solid #dbe5ef;background:#fff;border-radius:8px;padding:15px;box-shadow:0 8px 20px rgba(15,42,76,.055);min-width:0}
+  .bgps10-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .bgps10-panel h2{margin:0;color:#0b1d3a;font-size:15px;font-weight:950}
+  .bgps10-panel-head button,.bgps10-mini-button{border:1px solid #cbdced;background:#f8fbff;color:#0b4ea2;border-radius:7px;padding:6px 10px;font-weight:850;font-size:11px;cursor:pointer}
+  .bgps10-class-table{width:100%;border-collapse:collapse;font-size:12px}
+  .bgps10-class-table th{background:#f5f8fb;color:#465a73;text-align:left;padding:9px;border-bottom:1px solid #e0e8f0;font-size:11px}
+  .bgps10-class-table td{padding:10px 9px;border-bottom:1px solid #edf2f7;vertical-align:middle}
+  .bgps10-bar{height:5px;background:#e8eef6;border-radius:99px;overflow:hidden;margin-top:4px;max-width:110px}
+  .bgps10-bar i{display:block;height:100%;background:#3dbb65;border-radius:99px}
+  .bgps10-pills{display:flex;gap:7px;align-items:center}
+  .bgps10-pill{min-width:26px;text-align:center;border-radius:8px;padding:4px 7px;font-weight:900;font-size:11px}
+  .bgps10-pill.submitted{background:#e6f8ec;color:#12813c}
+  .bgps10-pill.draft{background:#fff2de;color:#c26700}
+  .bgps10-pill.returned{background:#ffe8e8;color:#c52222}
+  .bgps10-donut-wrap{display:grid;grid-template-columns:160px 1fr;gap:18px;align-items:center;min-height:220px}
+  .bgps10-donut{width:150px;height:150px;border-radius:50%;display:grid;place-items:center;position:relative;margin:auto}
+  .bgps10-donut::after{content:"";position:absolute;inset:28px;border-radius:50%;background:#fff}
+  .bgps10-donut b{position:relative;z-index:1;font-size:26px;color:#0b1d3a}
+  .bgps10-donut small{position:relative;z-index:1;display:block;font-size:11px;color:#51627a;text-align:center;margin-top:30px}
+  .bgps10-legend{display:grid;gap:13px;font-size:12px}
+  .bgps10-legend span{display:flex;justify-content:space-between;gap:12px;color:#123b63}
+  .bgps10-dot{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px}
+  .bgps10-actions{display:grid;gap:8px}
+  .bgps10-actions button{border:1px solid #d7e2ee;border-radius:7px;background:#f9fbff;color:#0b4ea2;padding:9px 12px;text-align:left;font-weight:900;cursor:pointer}
+  .bgps10-actions button:nth-child(2){background:#eefaf2;color:#168340}
+  .bgps10-actions button:nth-child(3){background:#fff5e8;color:#c26700}
+  .bgps10-actions button:nth-child(4){background:#f2ecff;color:#6b38c7}
+  .bgps10-actions button:nth-child(5){background:#edf5ff;color:#0b66c3}
+  .bgps10-list{display:grid;gap:8px}
+  .bgps10-row{display:grid;grid-template-columns:8px 1fr auto;gap:10px;align-items:center;border-bottom:1px solid #edf2f7;padding:8px 0;font-size:12px}
+  .bgps10-row:last-child{border-bottom:0}
+  .bgps10-row b{color:#123b63}
+  .bgps10-row span{color:#51627a}
+  .bgps10-status-strip{width:8px;height:38px;border-radius:99px;background:#2973e6}
+  .bgps10-drafts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .bgps10-draft-card{border:1px solid #d9e4ef;background:#fff;border-radius:8px;padding:13px;display:grid;gap:10px}
+  .bgps10-draft-card h3{margin:0;color:#0b1d3a;font-size:14px}
+  .bgps10-draft-card p{margin:0;color:#51627a;font-size:12px}
+  .bgps10-draft-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .bgps10-draft-actions button{border:1px solid #bfd4e8;background:#f8fbff;color:#0b4ea2;border-radius:7px;padding:7px 10px;font-weight:900;font-size:11px;cursor:pointer}
+  .bgps10-draft-actions button.danger{border-color:#f3b8b8;background:#fff1f1;color:#b91c1c}
+  .bgps10-summary{display:grid;grid-template-columns:1fr repeat(4,minmax(120px,1fr)) 1fr;align-items:center;gap:12px;border:1px solid #dbe5ef;background:#f8fbff;border-radius:8px;padding:15px}
+  .bgps10-summary b{font-size:12px;color:#0b1d3a}
+  .bgps10-summary span{display:block;text-align:center;color:#51627a;font-size:12px;border-left:1px solid #d9e4ef}
+  .bgps10-summary strong{display:block;color:#0b1d3a;font-size:19px;margin-top:3px}
+  .bgps10-empty{border:1px dashed #ccd8e5;border-radius:8px;padding:14px;color:#64748b;background:#fafcff;font-size:12px}
+  @media(max-width:1180px){.bgps10-grid-main,.bgps10-grid-bottom{grid-template-columns:1fr}.bgps10-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.bgps10-drafts{grid-template-columns:1fr}.bgps10-summary{grid-template-columns:1fr 1fr}}
+  @media(max-width:720px){.bgps10-kpis{grid-template-columns:1fr}.bgps10-donut-wrap{grid-template-columns:1fr}.bgps10-class-table{min-width:560px}.bgps10-table-scroll{overflow:auto}.bgps10-summary{grid-template-columns:1fr}.bgps10-summary span{border-left:0;text-align:left}}
+  @media print{
+    .content{position:relative}
+    .content .diagram-box.bgps-img-floating{position:absolute!important;float:none!important;clear:none!important;margin:0!important;z-index:4!important;max-width:72%!important}
+    .content .diagram-box.bgps-img-inline{display:inline-block!important;float:none!important;clear:none!important;vertical-align:middle!important;margin:0 2mm 1mm!important;max-width:42%!important}
+  }
+</style>
+<script id="bgps-final10-js">
+(function(){
+  'use strict';
+  if(window.__BGPS_FINAL10__) return;
+  window.__BGPS_FINAL10__=true;
+  const byId=id=>document.getElementById(id);
+  const esc=value=>String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const escAttr=value=>esc(value).replace(/`/g,'&#096;');
+  function expose(name,fn){window[name]=fn;try{(0,eval)(name+' = window.'+name)}catch(_){}}
+  const editor=()=>byId('manualPaperEditor');
+  const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number.isFinite(Number(value))?Number(value):min));
+  let selectedBox=null, floatDrag=null, dashboardMarksPromise=null;
+
+  function boxOf(node){return node&&node.closest?node.closest('#manualPaperEditor .diagram-box.has-image,.diagram-box.has-image'):null}
+  function layoutOf(box){
+    const raw=String(box?.dataset?.bgpsLayout||box?.dataset?.layout||'').toLowerCase();
+    if(['inline','left','right','center','floating'].includes(raw))return raw;
+    if(box?.classList?.contains('bgps-img-floating'))return'floating';
+    if(box?.classList?.contains('bgps-img-inline'))return'inline';
+    if(box?.classList?.contains('bgps-img-left'))return'left';
+    if(box?.classList?.contains('bgps-img-right'))return'right';
+    return'center';
+  }
+  function widthOf(box){
+    const raw=parseFloat(box?.dataset?.bgpsWidth||box?.dataset?.width||String(box?.style?.width||'').replace('%',''));
+    return clamp(Number.isFinite(raw)?raw:34,8,75);
+  }
+  function xOf(box){const raw=parseFloat(box?.dataset?.bgpsX||box?.dataset?.x||String(box?.style?.left||'').replace('%',''));return clamp(Number.isFinite(raw)?raw:4,0,95)}
+  function yOf(box){const raw=parseFloat(box?.dataset?.bgpsY||box?.dataset?.y||String(box?.style?.top||'').replace('%',''));return clamp(Number.isFinite(raw)?raw:4,0,95)}
+  function selectBox(box){
+    if(!box)return;
+    editor()?.querySelectorAll('.bgps10-selected').forEach(node=>{if(node!==box)node.classList.remove('bgps10-selected')});
+    selectedBox=box;
+    box.classList.add('bgps10-selected');
+    syncToolbar();
+  }
+  function selected(){return selectedBox&&selectedBox.isConnected?selectedBox:(editor()?.querySelector('.bgps10-selected,.bgps-v10-selected,.bgps-v20-selected')||null)}
+  function removeFloatingBadge(box){box?.querySelectorAll?.(':scope > .bgps10-float-note').forEach(node=>node.remove())}
+  function ensureFloatingBadge(box){removeFloatingBadge(box);const badge=document.createElement('span');badge.className='bgps10-float-note';badge.textContent='Float';badge.contentEditable='false';box.appendChild(badge)}
+  function setImageBasics(box){
+    box.classList.add('diagram-box','has-image');
+    box.contentEditable='false';
+    const img=box.querySelector(':scope > img')||box.querySelector('img');
+    if(img){
+      img.classList.add('diagram-image');
+      img.draggable=false;
+      img.style.setProperty('display','block','important');
+      img.style.setProperty('width','100%','important');
+      img.style.setProperty('max-width','100%','important');
+      img.style.setProperty('height','auto','important');
+      img.style.setProperty('object-fit','contain','important');
+      img.style.setProperty('margin','0 auto','important');
+    }
+  }
+  function applyImageLayout(box,mode,state){
+    if(!box)return;
+    state=state||{};
+    mode=['inline','left','right','center','floating'].includes(mode)?mode:layoutOf(box);
+    let width=clamp(state.width??widthOf(box),8,75);
+    if(mode==='left'||mode==='right')width=Math.min(width,48);
+    if(mode==='inline')width=Math.min(width,42);
+    if(mode==='floating')width=Math.min(width,72);
+    const x=clamp(state.x??xOf(box),0,100-width);
+    const y=clamp(state.y??yOf(box),0,95);
+    setImageBasics(box);
+    box.classList.remove('bgps-img-left','bgps-img-right','bgps-img-center','bgps-img-inline','bgps-img-floating');
+    box.classList.add('bgps-img-'+mode);
+    box.dataset.layout=mode;
+    box.dataset.bgpsLayout=mode;
+    box.dataset.width=String(Math.round(width));
+    box.dataset.bgpsWidth=String(Math.round(width));
+    box.style.setProperty('width',width+'%','important');
+    box.style.setProperty('height','auto','important');
+    box.style.setProperty('break-inside','avoid','important');
+    box.style.setProperty('page-break-inside','avoid','important');
+    if(mode==='floating'){
+      box.dataset.x=String(Number(x.toFixed(2)));
+      box.dataset.y=String(Number(y.toFixed(2)));
+      box.dataset.bgpsX=String(Number(x.toFixed(2)));
+      box.dataset.bgpsY=String(Number(y.toFixed(2)));
+      box.style.setProperty('position','absolute','important');
+      box.style.setProperty('left',x+'%','important');
+      box.style.setProperty('top',y+'%','important');
+      box.style.setProperty('float','none','important');
+      box.style.setProperty('clear','none','important');
+      box.style.setProperty('margin','0','important');
+      box.style.setProperty('z-index',String(state.z||20),'important');
+      box.style.setProperty('max-width','72%','important');
+      ensureFloatingBadge(box);
+    }else{
+      delete box.dataset.x;delete box.dataset.y;delete box.dataset.bgpsX;delete box.dataset.bgpsY;
+      box.style.removeProperty('left');box.style.removeProperty('top');box.style.removeProperty('z-index');
+      box.style.setProperty('position','static','important');
+      removeFloatingBadge(box);
+      if(mode==='left'){
+        box.style.setProperty('display','block','important');box.style.setProperty('float','left','important');box.style.setProperty('clear','none','important');box.style.setProperty('margin','4px 14px 8px 0','important');box.style.setProperty('max-width','48%','important');
+      }else if(mode==='right'){
+        box.style.setProperty('display','block','important');box.style.setProperty('float','right','important');box.style.setProperty('clear','none','important');box.style.setProperty('margin','4px 0 8px 14px','important');box.style.setProperty('max-width','48%','important');
+      }else if(mode==='inline'){
+        box.style.setProperty('display','inline-block','important');box.style.setProperty('float','none','important');box.style.setProperty('clear','none','important');box.style.setProperty('vertical-align','middle','important');box.style.setProperty('margin','0 8px 6px','important');box.style.setProperty('max-width','42%','important');
+      }else{
+        box.style.setProperty('display','block','important');box.style.setProperty('float','none','important');box.style.setProperty('clear','both','important');box.style.setProperty('margin','9px auto 11px','important');box.style.setProperty('max-width','75%','important');
+      }
+    }
+  }
+  function normalizeImages(root){
+    root=root||editor();
+    if(!root||!root.querySelectorAll)return;
+    root.querySelectorAll('.diagram-box.has-image,img.diagram-image').forEach(node=>{
+      const box=node.matches?.('.diagram-box.has-image')?node:node.closest?.('.diagram-box');
+      if(box)applyImageLayout(box,layoutOf(box));
+    });
+  }
+  function markChanged(){
+    try{window.markManualPaperDirty?.()}catch(_){}
+    try{window.scheduleManualDraftAutosave?.()}catch(_){}
+    try{window.handleManualEditorInput?.()}catch(_){}
+  }
+  function syncToolbar(){
+    const mode=layoutOf(selected());
+    document.querySelectorAll('[data-bgps10-layout]').forEach(btn=>btn.classList.toggle('active',btn.dataset.bgps10Layout===mode));
+  }
+  function setSelectedLayout(mode){
+    const box=selected();
+    if(!box){alert('Select an image first.');return}
+    if(mode==='floating'){
+      const root=editor();
+      if(root){
+        const er=root.getBoundingClientRect(), br=box.getBoundingClientRect();
+        const x=(br.left-er.left)/Math.max(1,er.width)*100;
+        const y=(br.top-er.top)/Math.max(1,er.height)*100;
+        applyImageLayout(box,'floating',{x,y,width:widthOf(box)});
+      }else applyImageLayout(box,'floating');
+    }else applyImageLayout(box,mode);
+    selectBox(box);
+    markChanged();
+  }
+  expose('bgps10SetImageLayout',setSelectedLayout);
+  function installImageToolbar(){
+    const toolbar=byId('bgpsV10ImageToolbar');
+    if(!toolbar||byId('bgps10FloatBtn'))return;
+    const inline=document.createElement('button');
+    inline.type='button';inline.className='bgps10-tool';inline.dataset.bgps10Layout='inline';inline.textContent='Inline';inline.onclick=()=>setSelectedLayout('inline');
+    const floating=document.createElement('button');
+    floating.type='button';floating.id='bgps10FloatBtn';floating.className='bgps10-tool';floating.dataset.bgps10Layout='floating';floating.textContent='Floating';floating.onclick=()=>setSelectedLayout('floating');
+    const center=byId('bgpsV10-center');
+    if(center)center.insertAdjacentElement('afterend',floating);
+    if(center)center.insertAdjacentElement('afterend',inline);
+    else toolbar.append(inline,floating);
+  }
+  function beginFloatingDrag(event,box){
+    if(event.button!=null&&event.button!==0)return;
+    if(layoutOf(box)!=='floating')return;
+    if(event.target.closest?.('.bgps-v20-resize-handle,.bgps-v10-resize-handle,.diagram-caption'))return;
+    const root=editor();if(!root)return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    selectBox(box);
+    const er=root.getBoundingClientRect();
+    floatDrag={id:event.pointerId,box,startX:event.clientX,startY:event.clientY,startLeft:xOf(box),startTop:yOf(box),width:widthOf(box),rootWidth:Math.max(1,er.width),rootHeight:Math.max(1,er.height)};
+    box.classList.add('bgps10-floating-drag');
+    try{box.setPointerCapture(event.pointerId)}catch(_){}
+    window.addEventListener('pointermove',floatingMove,{capture:true,passive:false});
+    window.addEventListener('pointerup',endFloatingDrag,{capture:true,once:true});
+    window.addEventListener('pointercancel',endFloatingDrag,{capture:true,once:true});
+  }
+  function floatingMove(event){
+    const d=floatDrag;if(!d||event.pointerId!==d.id)return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    const x=clamp(d.startLeft+(event.clientX-d.startX)/d.rootWidth*100,0,100-d.width);
+    const y=clamp(d.startTop+(event.clientY-d.startY)/d.rootHeight*100,0,95);
+    applyImageLayout(d.box,'floating',{x,y,width:d.width});
+  }
+  function endFloatingDrag(event){
+    if(!floatDrag)return;
+    window.removeEventListener('pointermove',floatingMove,true);
+    const box=floatDrag.box;
+    box.classList.remove('bgps10-floating-drag');
+    floatDrag=null;
+    selectBox(box);
+    markChanged();
+    setTimeout(()=>applyImageLayout(box,'floating'),40);
+  }
+  document.addEventListener('pointerdown',event=>{
+    const box=boxOf(event.target);
+    if(!box)return;
+    selectBox(box);
+    beginFloatingDrag(event,box);
+  },true);
+  document.addEventListener('pointerup',()=>setTimeout(()=>normalizeImages(),90),true);
+  document.addEventListener('input',event=>{if(event.target?.id==='manualPaperEditor')setTimeout(()=>normalizeImages(),90)},true);
+
+  function collectStates(root){
+    const states=[];
+    root.querySelectorAll('.diagram-box.has-image').forEach((box,index)=>{
+      const img=box.querySelector('img');
+      states.push({src:img?.getAttribute('src')||'',index,layout:layoutOf(box),width:widthOf(box),x:xOf(box),y:yOf(box),classes:String(box.className||'')});
+    });
+    return states;
+  }
+  function stripEditorOnly(root){
+    root.querySelectorAll('.bgps10-selected,.bgps10-floating-drag,.bgps-v10-selected,.bgps-v20-selected,.bgps-v10-drag-source').forEach(node=>node.classList.remove('bgps10-selected','bgps10-floating-drag','bgps-v10-selected','bgps-v20-selected','bgps-v10-drag-source'));
+    root.querySelectorAll('.bgps-v10-resize-handle,.bgps-v20-resize-handle,.bgps10-float-note,[data-bgps-transient]').forEach(node=>node.remove());
+    root.querySelectorAll('[contenteditable],[draggable],[tabindex],[role],[aria-label]').forEach(node=>{node.removeAttribute('contenteditable');node.removeAttribute('draggable');node.removeAttribute('tabindex');node.removeAttribute('role');node.removeAttribute('aria-label')});
+  }
+  function reapplyStates(root,states){
+    const used=new Set();
+    root.querySelectorAll('.diagram-box.has-image').forEach((box,index)=>{
+      const src=box.querySelector('img')?.getAttribute('src')||'';
+      let state=states.find((item,i)=>!used.has(i)&&item.src&&item.src===src);
+      let stateIndex=states.indexOf(state);
+      if(!state){state=states[index];stateIndex=index}
+      if(state){used.add(stateIndex);applyImageLayout(box,state.layout,{width:state.width,x:state.x,y:state.y})}
+      else applyImageLayout(box,layoutOf(box));
+    });
+  }
+  const previousSanitize=window.sanitizeComposerHtmlClient;
+  function finalSanitize(html){
+    const raw=document.createElement('template');
+    raw.innerHTML=String(html||'');
+    normalizeImages(raw.content);
+    const states=collectStates(raw.content);
+    let cleaned=String(html||'');
+    if(typeof previousSanitize==='function')cleaned=previousSanitize.call(window,raw.innerHTML);
+    const out=document.createElement('template');
+    out.innerHTML=cleaned;
+    reapplyStates(out.content,states);
+    stripEditorOnly(out.content);
+    return out.innerHTML;
+  }
+  expose('sanitizeComposerHtmlClient',finalSanitize);
+  function previewCss(){
+    return '@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#fff;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.preview-bar{position:sticky;top:0;text-align:center;padding:7px;background:#edf5fc;border-bottom:1px solid #aac0d4;font-family:Arial;z-index:8}.preview-bar button{padding:8px 14px;border:0;border-radius:6px;background:#173f68;color:#fff;font-weight:800}.paper{width:184mm;margin:auto}.header{text-align:center;border-bottom:1.4px solid #111;padding-bottom:4px;margin-bottom:5px}.school{font-size:18pt;font-weight:900}.exam{font-size:12pt;font-weight:900;text-transform:uppercase;margin-top:1px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-size:9.8pt;font-weight:800}.meta div:nth-child(even){text-align:right}.content{position:relative;min-height:220mm;font-size:10.5pt;line-height:1.34}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0}.content .question-line{position:relative;padding-right:12mm;break-inside:avoid}.content .mark-token{float:right;font-weight:900}.content h2.section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt;break-after:avoid}.content table{width:100%;border-collapse:collapse;margin:4px 0;break-inside:avoid}.content td,.content th{border:1px solid #333;padding:3px 4px}.content .diagram-box.has-image{box-sizing:border-box;border:0!important;background:#fff!important;min-height:0!important;height:auto!important;padding:1mm!important;break-inside:avoid!important;page-break-inside:avoid!important}.content .diagram-box.has-image img{display:block!important;width:100%!important;height:auto!important;max-width:100%!important;max-height:42mm!important;object-fit:contain!important;margin:auto!important}.content .diagram-box.bgps-img-center{float:none!important;clear:both!important;max-width:62mm!important;margin:2mm auto 2.6mm!important}.content .diagram-box.bgps-img-left{float:left!important;clear:none!important;max-width:48mm!important;margin:1mm 3mm 2mm 0!important}.content .diagram-box.bgps-img-right{float:right!important;clear:none!important;max-width:48mm!important;margin:1mm 0 2mm 3mm!important}.content .diagram-box.bgps-img-inline{display:inline-block!important;float:none!important;clear:none!important;vertical-align:middle!important;max-width:42%!important;margin:0 2mm 1mm!important}.content .diagram-box.bgps-img-floating{position:absolute!important;float:none!important;clear:none!important;z-index:4!important;margin:0!important;max-width:72%!important}.content .or-line{text-align:center;font-weight:900}.content .page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.end-note{clear:both;text-align:center;margin-top:4mm;padding-top:1.5mm;border-top:1px solid #999;font-size:8.5pt;font-weight:800}@media print{.preview-bar{display:none}.paper{width:auto;margin:0}}@media(max-width:760px){.paper{width:100%;padding:0 6px}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}';
+  }
+  function buildPreview(meta,bodyHtml){
+    meta=meta||{};
+    const body=finalSanitize(bodyHtml);
+    const max=Number(meta.maxMarks)||0;
+    const time=meta.timeAllowed||(typeof inferPaperTime==='function'?inferPaperTime(max):'');
+    const reading=typeof inferReadingTime==='function'?inferReadingTime(meta.className,max):'';
+    const exam=meta.exam||meta.title||'QUESTION PAPER';
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(exam)+'</title><style>'+previewCss()+'</style></head><body><div class="preview-bar"><button onclick="window.print()">Print / Save PDF</button></div><main class="paper"><header class="header"><div class="school">BG PUBLIC SCHOOL</div><div class="exam">'+esc(exam)+'</div></header><section class="meta"><div>Class: '+esc(meta.className||'-')+'</div><div>Subject: '+esc(meta.subject||'-')+'</div><div>Time Allotted: '+esc(time||'-')+'</div><div>Maximum Marks: '+esc(max||'-')+'</div><div>Reading Time: '+esc(reading||'-')+'</div><div>Date: '+esc(meta.examDate||'____________')+'</div></section><article class="content">'+body+'</article><div class="end-note">End of Question Paper</div></main></body></html>';
+  }
+  expose('buildManualPreviewHtml',buildPreview);
+  expose('previewManualPaper',function(){
+    normalizeImages();
+    let meta={};
+    try{meta=typeof getManualMetadata==='function'?getManualMetadata():{}}catch(_){}
+    const html=buildPreview(meta,editor()?.innerHTML||'');
+    const blob=new Blob([html],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    const win=window.open(url,'_blank');
+    if(!win)alert('Pop-up blocked. Allow pop-ups for this portal.');
+    setTimeout(()=>URL.revokeObjectURL(url),180000);
+  });
+
+  function currentUser(){try{return String(currentId||'').trim()}catch(_){return String(window.currentId||'').trim()}}
+  function isAdmin(){return currentUser().toUpperCase()==='ADMIN'}
+  function getLocalDraftList(){try{return typeof getLocalDrafts==='function'?getLocalDrafts():[]}catch(_){return[]}}
+  function cloudDrafts(){try{return Array.isArray(backendPaperDrafts)?backendPaperDrafts:[]}catch(_){return[]}}
+  function allQuestionPapers(){try{return Array.isArray(questionPapers)?questionPapers:[]}catch(_){return[]}}
+  function paperStatus(status){const s=String(status||'').toLowerCase();if(s.includes('correction'))return'returned';if(s.includes('approved')||s.includes('locked'))return'approved';if(s.includes('submit')||s.includes('pending'))return'submitted';if(s.includes('draft'))return'draft';return'other'}
+  function draftId(item){return String(item?.draftId||item?.paperId||'').trim()}
+  function teacherPapers(){
+    const uid=currentUser();
+    const locals=getLocalDraftList().map(item=>Object.assign({status:'Draft',isLocalDraft:true,uploadedAt:item.updatedAt||item.createdAt},item));
+    const source=[...allQuestionPapers(),...cloudDrafts(),...locals];
+    const seen=new Set();
+    return source.filter(item=>{
+      if(!item)return false;
+      if(item.teacherId&&String(item.teacherId)!==uid)return false;
+      const id=String(item.paperId||item.draftId||item.title||JSON.stringify(item));
+      const key=paperStatus(item.status)+':'+id;
+      if(seen.has(key))return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  function marksRows(){
+    try{
+      if(Array.isArray(cachedMasterData)&&cachedMasterData.length>1)return cachedMasterData.slice(1);
+    }catch(_){}
+    return [];
+  }
+  function assignedClasses(){
+    try{if(typeof getMarksClassesForTeacher==='function')return getMarksClassesForTeacher(currentUser()).filter(Boolean)}catch(_){}
+    try{return mapping&&mapping[currentUser()]?[mapping[currentUser()]]:[]}catch(_){return[]}
+  }
+  function classSubjectRows(papers,marks){
+    const map=new Map();
+    const add=(className,subject)=>{
+      const key=String(className||'-')+'|'+String(subject||'-');
+      if(!map.has(key))map.set(key,{className:className||'-',subject:subject||'-',submitted:0,draft:0,returned:0,approved:0,marks:0,total:0});
+      return map.get(key);
+    };
+    papers.forEach(p=>{const row=add(p.className,p.subject);const st=paperStatus(p.status);if(st==='submitted')row.submitted++;else if(st==='draft')row.draft++;else if(st==='returned')row.returned++;else if(st==='approved')row.approved++});
+    marks.forEach(row=>{const r=add(row[2],row[3]);r.marks++});
+    assignedClasses().forEach(cls=>add(cls,'All Subjects'));
+    return Array.from(map.values()).sort((a,b)=>String(a.className).localeCompare(String(b.className))||String(a.subject).localeCompare(String(b.subject))).slice(0,6);
+  }
+  function estimateMarksStats(marks,papers){
+    const entered=marks.length;
+    const rolls=new Set(marks.map(row=>String(row[6]||'')).filter(Boolean));
+    const combos=new Set();
+    marks.forEach(row=>{if(row[2]||row[3]||row[4]||row[5])combos.add([row[2],row[3],row[4],row[5]].join('|'))});
+    papers.forEach(p=>{if(p.className||p.subject||p.exam)combos.add([p.className,p.subject,p.exam,''].join('|'))});
+    const target=rolls.size&&combos.size?rolls.size*combos.size:entered;
+    const pending=Math.max(0,target-entered);
+    const pct=target?Math.round(entered/target*100):0;
+    return{entered,target,pending,pct};
+  }
+  function formatDate(value){try{return value?new Date(value).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'-'}catch(_){return'-'}}
+  function statusColor(status){const st=paperStatus(status);return st==='returned'?'#ef4444':st==='approved'?'#42b961':st==='draft'?'#f59a23':st==='submitted'?'#42b961':'#2973e6'}
+  function dashboardHtml(){
+    const papers=teacherPapers(), drafts=papers.filter(p=>paperStatus(p.status)==='draft'), submitted=papers.filter(p=>paperStatus(p.status)==='submitted'), returned=papers.filter(p=>paperStatus(p.status)==='returned'), approved=papers.filter(p=>paperStatus(p.status)==='approved');
+    const marks=marksRows(), m=estimateMarksStats(marks,papers), classes=classSubjectRows(papers,marks);
+    const paperTotal=submitted.length+drafts.length+returned.length+approved.length;
+    const total=Math.max(1,paperTotal);
+    const a1=submitted.length/total*360,a2=a1+drafts.length/total*360,a3=a2+returned.length/total*360;
+    const donut='conic-gradient(#42b961 0deg '+a1+'deg,#f59a23 '+a1+'deg '+a2+'deg,#ef4444 '+a2+'deg '+a3+'deg,#8b55e6 '+a3+'deg 360deg)';
+    const classRows=classes.map(row=>{const target=Math.max(row.marks,row.submitted+row.draft+row.returned+row.approved,1);const pct=Math.min(100,Math.round(row.marks/target*100));return '<tr><td>'+esc(row.className)+'</td><td>'+esc(row.subject)+'</td><td><b>'+pct+'%</b><div class="bgps10-bar"><i style="width:'+pct+'%"></i></div></td><td><div class="bgps10-pills"><span class="bgps10-pill submitted">'+row.submitted+'</span><span class="bgps10-pill draft">'+row.draft+'</span><span class="bgps10-pill returned">'+row.returned+'</span></div></td><td><button class="bgps10-mini-button" type="button" onclick="switchTab(\'papers\')">Open</button></td></tr>'}).join('')||'<tr><td colspan="5"><div class="bgps10-empty">No class, paper or marks data loaded yet.</div></td></tr>';
+    const notifications=papers.slice().sort((a,b)=>String(b.updatedAt||b.uploadedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.uploadedAt||a.createdAt||''))).slice(0,5).map(p=>'<div class="bgps10-row"><i class="bgps10-status-strip" style="background:'+statusColor(p.status)+'"></i><div><b>'+esc(p.className||'-')+' '+esc(p.subject||'-')+'</b><br><span>'+esc(p.status||'Updated')+(p.adminNote?' - '+esc(p.adminNote):'')+'</span></div><span>'+esc(formatDate(p.updatedAt||p.uploadedAt||p.createdAt))+'</span></div>').join('')||'<div class="bgps10-empty">No notifications yet.</div>';
+    const tasks=[...returned.map(p=>['Review returned paper',p,'High']),...drafts.map(p=>['Complete draft',p,'Medium']),...(m.pending?[['Enter pending marks',{className:assignedClasses()[0]||'Class',subject:'Marks'},'High']]:[])].slice(0,4).map(item=>'<div class="bgps10-row"><i class="bgps10-status-strip" style="background:'+(item[2]==='High'?'#ef4444':'#f59a23')+'"></i><div><b>'+esc(item[0])+'</b><br><span>'+esc(item[1].className||'-')+' - '+esc(item[1].subject||'-')+'</span></div><span>'+esc(item[2])+'</span></div>').join('')||'<div class="bgps10-empty">No urgent tasks.</div>';
+    const deadlines=papers.filter(p=>p.examDate).slice().sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate))).slice(0,4).map(p=>'<div class="bgps10-row"><i class="bgps10-status-strip" style="background:#2973e6"></i><div><b>'+esc(p.exam||'Exam')+'</b><br><span>'+esc(p.className||'-')+' '+esc(p.subject||'-')+'</span></div><span>'+esc(formatDate(p.examDate))+'</span></div>').join('')||'<div class="bgps10-empty">No dated exam deadlines found.</div>';
+    const draftCards=drafts.slice(0,6).map(p=>{const id=draftId(p);return '<article class="bgps10-draft-card"><h3>'+esc(p.title||p.className+' '+p.subject+' Draft')+'</h3><p>'+esc(p.className||'-')+' / '+esc(p.subject||'-')+' / '+esc(p.exam||'-')+'</p><p>Saved '+esc(formatDate(p.updatedAt||p.uploadedAt||p.createdAt))+'</p><div class="bgps10-draft-actions"><button type="button" onclick="bgps10ContinueDraft(\''+escAttr(id)+'\')">Continue</button><button class="danger" type="button" onclick="bgps10DeleteDraft(\''+escAttr(id)+'\',event)">Delete</button></div></article>'}).join('')||'<div class="bgps10-empty">No draft papers. Create a paper to start a draft.</div>';
+    return '<div class="bgps10-dashboard"><div class="bgps10-date-row"><span class="bgps10-date-pill">'+esc(new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}))+'</span></div><section class="bgps10-kpis"><button class="bgps10-kpi" onclick="switchTab(\'entry\')"><i class="bgps10-icon" style="background:#2973e6">M</i><span><h3>Marks Entry Progress</h3><strong>'+m.pct+'%</strong><span>'+m.entered+'/'+m.target+' marks entered</span></span><div class="bgps10-progress"><i style="width:'+m.pct+'%"></i></div></button><button class="bgps10-kpi" onclick="switchTab(\'papers\')"><i class="bgps10-icon" style="background:#42b961">S</i><span><h3>Submitted Papers</h3><strong>'+submitted.length+'</strong><span>Papers submitted</span></span></button><button class="bgps10-kpi" onclick="switchTab(\'papers\')"><i class="bgps10-icon" style="background:#f59a23">D</i><span><h3>Draft Papers</h3><strong>'+drafts.length+'</strong><span>Drafts in progress</span></span></button><button class="bgps10-kpi" onclick="switchTab(\'remarks\')"><i class="bgps10-icon" style="background:#ef4444">R</i><span><h3>Returned Papers</h3><strong>'+returned.length+'</strong><span>Requires correction</span></span></button><button class="bgps10-kpi" onclick="switchTab(\'papers\')"><i class="bgps10-icon" style="background:#8b55e6">A</i><span><h3>Approvals</h3><strong>'+approved.length+'</strong><span>Papers approved</span></span></button></section><section class="bgps10-grid-main"><div class="bgps10-panel"><div class="bgps10-panel-head"><h2>Class & Subject Overview</h2><button type="button" onclick="switchTab(\'review\')">Open Marks</button></div><div class="bgps10-table-scroll"><table class="bgps10-class-table"><thead><tr><th>Class</th><th>Subject</th><th>Marks Entry</th><th>Papers</th><th></th></tr></thead><tbody>'+classRows+'</tbody></table></div></div><div class="bgps10-panel"><div class="bgps10-panel-head"><h2>Paper Status Overview</h2></div><div class="bgps10-donut-wrap"><div class="bgps10-donut" style="background:'+donut+'"><b>'+paperTotal+'</b><small>Total Papers</small></div><div class="bgps10-legend"><span><b><i class="bgps10-dot" style="background:#42b961"></i>Submitted</b>'+submitted.length+'</span><span><b><i class="bgps10-dot" style="background:#f59a23"></i>Draft</b>'+drafts.length+'</span><span><b><i class="bgps10-dot" style="background:#ef4444"></i>Returned</b>'+returned.length+'</span><span><b><i class="bgps10-dot" style="background:#8b55e6"></i>Approved</b>'+approved.length+'</span></div></div></div><div class="bgps10-panel"><div class="bgps10-panel-head"><h2>Quick Actions</h2></div><div class="bgps10-actions"><button onclick="switchTab(\'entry\')">Enter / Edit Marks</button><button onclick="switchTab(\'papers\');setTimeout(()=>typeof selectPaperMode===\'function\'&&selectPaperMode(\'creator\'),100)">Create New Paper</button><button onclick="switchTab(\'papers\')">View Draft Papers</button><button onclick="switchTab(\'papers\')">View Submitted Papers</button><button onclick="switchTab(\'papers\');setTimeout(()=>typeof selectPaperMode===\'function\'&&selectPaperMode(\'upload\'),100)">Upload Paper / File</button><button onclick="switchTab(\'review\')">Generate Reports</button></div></div></section><section class="bgps10-panel"><div class="bgps10-panel-head"><h2>Draft Papers</h2><button type="button" onclick="switchTab(\'papers\')">View All</button></div><div class="bgps10-drafts">'+draftCards+'</div></section><section class="bgps10-grid-bottom"><div class="bgps10-panel"><div class="bgps10-panel-head"><h2>Recent Notifications</h2></div><div class="bgps10-list">'+notifications+'</div></div><div class="bgps10-panel"><div class="bgps10-panel-head"><h2>Upcoming Tasks</h2></div><div class="bgps10-list">'+tasks+'</div></div><div class="bgps10-panel"><div class="bgps10-panel-head"><h2>Calendar & Deadlines</h2></div><div class="bgps10-list">'+deadlines+'</div></div></section><section class="bgps10-summary"><b>Today Summary</b><span>Marks Entered<strong>'+m.entered+'</strong></span><span>Marks Pending<strong>'+m.pending+'</strong></span><span>Papers Worked On<strong>'+papers.length+'</strong></span><span>Drafts<strong>'+drafts.length+'</strong></span><b>Keep the workflow current.</b></section></div>';
+  }
+  function renderDashboard10(){
+    const host=byId('proHomeContent');
+    if(!host||isAdmin()||!byId('proHomeView')?.classList.contains('active'))return;
+    const title=host.querySelector('.bgps-pro-titlebar');
+    if(!title)return;
+    Array.from(host.children).forEach(child=>{if(child!==title)child.remove()});
+    title.insertAdjacentHTML('afterend',dashboardHtml());
+    if(!marksRows().length&&typeof getMasterData==='function'&&!dashboardMarksPromise){
+      dashboardMarksPromise=getMasterData({},false).then(()=>{dashboardMarksPromise=null;renderDashboard10()}).catch(()=>{dashboardMarksPromise=null});
+    }
+  }
+  expose('bgps10ContinueDraft',function(id){
+    const cloud=cloudDrafts().some(item=>draftId(item)===String(id));
+    if(cloud&&typeof loadBackendDraftIntoComposer==='function')return loadBackendDraftIntoComposer(id);
+    if(typeof loadDraftIntoComposer==='function')return loadDraftIntoComposer(id);
+  });
+  expose('bgps10DeleteDraft',async function(id,event){
+    event?.preventDefault?.();event?.stopPropagation?.();
+    const button=event?.target;
+    const cloud=cloudDrafts().some(item=>draftId(item)===String(id));
+    try{
+      if(cloud&&typeof deleteBackendPaperDraft==='function')await deleteBackendPaperDraft(id,{button});
+      else if(typeof deleteLocalDraft==='function')deleteLocalDraft(id);
+      setTimeout(renderDashboard10,180);
+    }catch(error){alert('Draft delete failed: '+(error?.message||error))}
+  });
+  const prevRefresh=window.bgpsProRefreshHome;
+  if(typeof prevRefresh==='function')expose('bgpsProRefreshHome',function(){const result=prevRefresh.apply(this,arguments);Promise.resolve(result).finally(()=>setTimeout(renderDashboard10,180));return result});
+  const prevSwitch=window.switchTab;
+  if(typeof prevSwitch==='function')expose('switchTab',function(mode){const result=prevSwitch.apply(this,arguments);Promise.resolve(result).finally(()=>setTimeout(renderDashboard10,180));return result});
+  function boot(){installImageToolbar();normalizeImages();renderDashboard10();setTimeout(()=>{installImageToolbar();normalizeImages();renderDashboard10()},600)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>

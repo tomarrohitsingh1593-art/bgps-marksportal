@@ -7148,6 +7148,105 @@
     @media screen and (max-width:980px) {
         .bgps-highlights-strip { grid-template-columns:repeat(2,minmax(0,1fr)); }
     }
+  body.bgps-command-principal-active .bgps-pro-view.active{grid-template-columns:minmax(0,1fr)!important}
+  body.bgps-command-principal-active .bgps-right-panel{display:none!important}
+  /* Principal Command Centre — single authoritative dashboard implementation */
+  body.bgps-command-principal-active .bgps-pro-view.active{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  body.bgps-command-principal-active #proHomeContent{
+    width:100%;height:auto;min-height:100%;overflow:visible;padding:16px!important;
+  }
+  body.bgps-command-principal-active .bgps-right-panel{display:none!important}
+  .pcc-final-shell{display:flex;flex-direction:column;gap:13px;width:100%;max-width:none;color:#102a43}
+  .pcc-final-header{display:flex;justify-content:space-between;align-items:center;gap:16px;background:#fff;border:1px solid #c9dbea;border-left:5px solid #174f82;border-radius:12px;padding:17px 19px;box-shadow:0 8px 24px rgba(15,47,82,.065)}
+  .pcc-final-header h1{margin:0;color:#092d52;font-size:26px;line-height:1.08;font-weight:950}
+  .pcc-final-header p{margin:5px 0 0;color:#4b6681;font-size:13px;font-weight:700}
+  .pcc-final-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+  .pcc-final-live{white-space:nowrap;background:#edf6ff;border:1px solid #bed6e9;color:#0d3155;border-radius:8px;padding:8px 11px;font-weight:900;font-size:11px}
+  .pcc-final-filters{display:grid;grid-template-columns:minmax(190px,1.25fr) minmax(165px,1fr) minmax(155px,.85fr) minmax(165px,.9fr) auto auto;gap:9px;align-items:end;background:#fff;border:1px solid #d3e1ed;border-radius:10px;padding:11px}
+  .pcc-final-filters label{display:flex;flex-direction:column;gap:5px;color:#274968;font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.2px}
+  .pcc-final-filters input,.pcc-final-filters select{height:39px;border:1px solid #bdd0e1;border-radius:8px;background:#f8fbff;color:#082b4d;padding:0 10px;font-weight:800;outline:none}
+  .pcc-final-filters input:focus,.pcc-final-filters select:focus{border-color:#286699;box-shadow:0 0 0 3px rgba(40,102,153,.13)}
+  .pcc-final-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #174f82;background:#174f82;color:#fff;border-radius:8px;min-height:38px;padding:8px 12px;font-weight:900;cursor:pointer;white-space:nowrap}
+  .pcc-final-btn:hover{filter:brightness(.96)}
+  .pcc-final-btn:disabled{opacity:.48;cursor:not-allowed;filter:none}
+  .pcc-final-btn.light{background:#f8fbff;color:#124c7d;border-color:#bdd0e1}
+  .pcc-final-btn.green{background:#18834a;border-color:#18834a}
+  .pcc-final-btn.amber{background:#b66f08;border-color:#b66f08}
+  .pcc-final-btn.red{background:#bb2727;border-color:#bb2727}
+  .pcc-final-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+  .pcc-final-kpi{position:relative;display:block;text-align:left;background:#fff;border:1px solid #d3e1ed;border-radius:10px;padding:13px 27px 13px 14px;cursor:pointer;box-shadow:0 7px 19px rgba(15,47,82,.05);min-height:105px}
+  .pcc-final-kpi>span{display:block;color:#274968;font-size:11px;font-weight:950;text-transform:uppercase}
+  .pcc-final-kpi>strong{display:block;color:#071f38;font-size:26px;line-height:1;margin:8px 0 6px;font-weight:950}
+  .pcc-final-kpi>small{display:block;color:#526c84;font-size:10.5px;line-height:1.35;font-weight:800}
+  .pcc-final-kpi>i{position:absolute;right:9px;top:15px;bottom:15px;width:6px;border-radius:8px;background:#2976dd}
+  .pcc-final-kpi.green>i{background:#249951}.pcc-final-kpi.amber>i{background:#f19b0b}.pcc-final-kpi.red>i{background:#df3f48}
+  .pcc-final-kpi.active{border-color:#1d5f96;box-shadow:0 0 0 3px rgba(29,95,150,.13)}
+  .pcc-paper-status-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;background:#f7fbff;border:1px solid #cbddeb;border-radius:10px;padding:10px}
+  .pcc-paper-status-card{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;border:1px solid #d7e4ee;background:#fff;border-radius:9px;padding:10px 12px;cursor:pointer;color:#163b5e}
+  .pcc-paper-status-card strong{display:block;font-size:13px;font-weight:950}.pcc-paper-status-card small{display:block;margin-top:2px;color:#5a7187;font-size:10.5px;font-weight:750}.pcc-paper-status-card b{font-size:22px;color:#0c3459}
+  .pcc-paper-status-card.review{border-left:4px solid #e89b13}.pcc-paper-status-card.approved{border-left:4px solid #1f9852}.pcc-paper-status-card.correction{border-left:4px solid #dc3b45}.pcc-paper-status-card.active{background:#eaf4fc;border-color:#4f87b5}
+  .pcc-final-main{display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:13px;align-items:start}
+  .pcc-final-panel{background:#fff;border:1px solid #d3e1ed;border-radius:10px;padding:13px;box-shadow:0 7px 20px rgba(15,47,82,.05);min-width:0}
+  .pcc-final-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:9px}
+  .pcc-final-panel-head h2{margin:0;color:#092d52;font-size:17px;font-weight:950}
+  .pcc-final-panel-head p{margin:3px 0 0;color:#567089;font-size:11px;line-height:1.35;font-weight:700}
+  .pcc-final-panel-head>span{background:#edf6ff;border:1px solid #c6dceb;color:#174f82;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:900;white-space:nowrap}
+  .pcc-final-table-wrap{overflow:auto;border:1px solid #dfe9f2;border-radius:9px}
+  .pcc-final-table{width:100%;border-collapse:collapse;background:#fff;min-width:760px;margin:0;table-layout:fixed}
+  .pcc-final-table th{background:#eaf3fb;color:#173f68;font-size:10.5px;text-transform:uppercase;text-align:left;padding:10px 9px;font-weight:950;border-bottom:1px solid #ccdde9}
+  .pcc-final-table td{padding:10px 9px;border-bottom:1px solid #e8f0f6;color:#153450;font-size:12px;vertical-align:middle;font-weight:750;background:#fff;overflow-wrap:anywhere}
+  .pcc-final-table th:nth-child(1){width:17%}.pcc-final-table th:nth-child(2){width:31%}.pcc-final-table th:nth-child(3){width:31%}.pcc-final-table th:nth-child(4){width:21%}
+  .pcc-final-table tbody tr:nth-child(even) td{background:#fbfdff}
+  .pcc-final-table tbody tr:hover td{background:#f3f8fc!important}
+  .pcc-final-table td>strong{display:block;color:#071f38;font-size:13px;font-weight:950}
+  .pcc-final-table td>small{display:block;color:#5c7288;font-size:10.5px;font-weight:750;margin-top:3px}
+  .pcc-final-marks-cell,.pcc-final-paper-cell{display:block;width:100%;text-align:left;border:1px solid #d1dfeb;background:#f9fcff;border-radius:8px;padding:9px 10px;cursor:pointer;color:#163b5e}
+  .pcc-final-marks-cell:hover,.pcc-final-paper-cell:hover{border-color:#78a4c8;background:#f1f8fe}
+  .pcc-final-marks-cell>span,.pcc-final-paper-cell>span{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .pcc-final-marks-cell strong,.pcc-final-paper-cell strong{color:#071f38;font-size:13px;font-weight:950}
+  .pcc-final-marks-cell small,.pcc-final-paper-cell small{display:block;color:#47647e;font-size:10.5px;font-weight:800;margin-top:4px;white-space:normal}
+  .pcc-final-marks-cell small.pending{color:#9b5b00}
+  .pcc-paper-chip-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .pcc-paper-chip{display:inline-flex;border-radius:999px;padding:3px 6px;font-size:9.5px;font-weight:950;border:1px solid transparent}.pcc-paper-chip.review{background:#fff4df;color:#975900;border-color:#f1d2a2}.pcc-paper-chip.approved{background:#e8f8ee;color:#14723a;border-color:#bce2c9}.pcc-paper-chip.correction{background:#ffe9e9;color:#a91e1e;border-color:#f1bcbc}.pcc-paper-chip.none{background:#eef3f7;color:#4c6175;border-color:#d6e0e8}
+  .pcc-final-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:10px;font-style:normal;font-weight:950;border:1px solid transparent;white-space:nowrap}
+  .pcc-final-status.complete,.pcc-final-status.approved{background:#e8f8ee;color:#14723a;border-color:#bce2c9}
+  .pcc-final-status.pending,.pcc-final-status.marks-pending,.pcc-final-status.review{background:#fff4df;color:#975900;border-color:#f1d2a2}
+  .pcc-final-status.not-started,.pcc-final-status.other{background:#eef3f7;color:#4c6175;border-color:#d6e0e8}
+  .pcc-final-status.correction{background:#ffe9e9;color:#a91e1e;border-color:#f1bcbc}
+  .pcc-row-actions{display:flex;gap:6px;flex-wrap:wrap}.pcc-row-actions .pcc-final-btn{min-height:32px;padding:5px 8px;font-size:10px}
+  .pcc-final-action-list{display:flex;flex-direction:column;gap:8px;max-height:640px;overflow:auto;padding-right:2px}
+  .pcc-final-action{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;border:1px solid #d6e3ee;background:#f9fcff;border-radius:9px;padding:10px;cursor:pointer;color:#17324d}
+  .pcc-final-action.amber{border-left:4px solid #e89b13}.pcc-final-action.red{border-left:4px solid #dc3b45}.pcc-final-action.blue{border-left:4px solid #2b73cb}
+  .pcc-final-action strong{display:block;color:#092d52;font-size:12.5px;font-weight:950}.pcc-final-action small{display:block;color:#587088;font-size:10.5px;line-height:1.4;font-weight:750;margin-top:2px}.pcc-final-action b{font-size:20px;color:#174f82}
+  .pcc-final-empty{border:1px dashed #bdd0e1;border-radius:9px;padding:12px;color:#526b83;background:#fbfdff;font-size:11px;font-weight:800}
+  .pcc-final-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;border:1px solid #d3e1ed;border-radius:10px;padding:10px 12px}.pcc-final-footer small{color:#526b83;font-size:10.5px;font-weight:800}
+  .pcc-final-drawer-backdrop{position:fixed;inset:0;background:rgba(6,22,38,.34);z-index:99998;display:none}.pcc-final-drawer-backdrop.open{display:block}
+  .pcc-final-drawer{position:fixed;top:0;right:0;width:min(760px,97vw);height:100vh;background:#f7fbff;border-left:1px solid #bfd1e1;box-shadow:-20px 0 55px rgba(7,29,54,.24);z-index:99999;transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column}.pcc-final-drawer.compact{width:min(580px,97vw)}.pcc-final-drawer.open{transform:translateX(0)}
+  .pcc-final-drawer-head{padding:17px 19px;background:#fff;border-bottom:1px solid #d3e1ed;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.pcc-final-drawer-head h2{margin:0;color:#092d52;font-size:21px;font-weight:950}.pcc-final-drawer-head p{margin:5px 0 0;color:#587088;font-size:11.5px;font-weight:750}.pcc-final-drawer-body{padding:13px 15px 22px;overflow:auto;display:flex;flex-direction:column;gap:11px}
+  .pcc-final-drawer-card{background:#fff;border:1px solid #d3e1ed;border-radius:10px;padding:12px}.pcc-final-drawer-card h3{margin:0 0 9px;color:#092d52;font-size:14px;font-weight:950}
+  .pcc-final-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.pcc-final-meta span{background:#f5f9fc;border:1px solid #e0eaf2;border-radius:8px;padding:9px;color:#153450;font-size:11.5px;font-weight:800}.pcc-final-meta b{display:block;color:#587088;font-size:9.5px;text-transform:uppercase;margin-bottom:4px}
+  .pcc-final-subject-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}.pcc-final-subject-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #edf2f6;padding:7px 2px;color:#153450;font-size:11.5px;font-weight:800}.pcc-final-subject-list li.empty{color:#5f7489;font-style:italic}
+  .pcc-final-drawer-actions{display:flex;gap:7px;flex-wrap:wrap}
+  .pcc-paper-review-list{display:flex;flex-direction:column;gap:9px}.pcc-paper-review-card{background:#fff;border:1px solid #d6e3ed;border-radius:10px;padding:11px}.pcc-paper-review-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.pcc-paper-review-top strong{display:block;color:#092d52;font-size:13.5px;font-weight:950}.pcc-paper-review-top small{display:block;margin-top:3px;color:#587088;font-size:10.5px;font-weight:750}.pcc-paper-review-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.pcc-paper-review-actions .pcc-final-btn{min-height:33px;padding:6px 9px;font-size:10.5px}
+  .pcc-marks-overview-row{border:1px solid #dbe6ef;border-radius:9px;background:#fff;padding:10px}.pcc-marks-overview-row+.pcc-marks-overview-row{margin-top:8px}.pcc-marks-overview-row-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.pcc-marks-overview-row strong{color:#092d52;font-size:12.5px}.pcc-marks-overview-row p{margin:6px 0 0;color:#4f687f;font-size:10.8px;line-height:1.45;font-weight:750}
+  .pcc-paper-modal-backdrop{position:fixed;inset:0;z-index:100100;background:rgba(4,17,31,.7);display:none;align-items:center;justify-content:center;padding:18px}.pcc-paper-modal-backdrop.open{display:flex}
+  .pcc-paper-modal{width:min(1180px,98vw);height:min(92vh,920px);display:flex;flex-direction:column;background:#f4f8fc;border:1px solid #a9c1d5;border-radius:12px;overflow:hidden;box-shadow:0 26px 80px rgba(0,0,0,.38)}
+  .pcc-paper-modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 13px;background:#fff;border-bottom:1px solid #cad9e5}.pcc-paper-modal-head h2{margin:0;color:#092d52;font-size:16px;font-weight:950}.pcc-paper-modal-head small{display:block;margin-top:2px;color:#587088;font-size:10.5px;font-weight:750}.pcc-paper-modal-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.pcc-paper-modal-body{flex:1;min-height:0;padding:10px;display:flex;flex-direction:column}.pcc-paper-frame{width:100%;height:100%;border:1px solid #b9ccdc;border-radius:8px;background:#fff}.pcc-paper-modal-message{margin:auto;max-width:620px;text-align:center;background:#fff;border:1px solid #cbdbe8;border-radius:12px;padding:24px;color:#244663}.pcc-paper-modal-message h3{margin:0 0 8px;color:#092d52}.pcc-paper-modal-message p{margin:0;line-height:1.5;font-weight:700}
+  .pcc-edit-grid{display:grid;grid-template-columns:1.2fr .45fr .55fr;gap:9px;margin-bottom:9px}.pcc-edit-grid label,.pcc-edit-notes label{display:flex;flex-direction:column;gap:4px;color:#31536f;font-size:10px;font-weight:950;text-transform:uppercase}.pcc-edit-grid input,.pcc-edit-notes textarea{border:1px solid #b9ccdc;border-radius:8px;background:#fff;color:#102f4c;padding:9px;font:inherit;font-weight:750}.pcc-edit-notes{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}.pcc-edit-notes textarea{min-height:68px;resize:vertical;text-transform:none}
+  .pcc-edit-toolbar{display:flex;gap:5px;flex-wrap:wrap;padding:7px;background:#edf4fa;border:1px solid #c9d9e6;border-bottom:0;border-radius:8px 8px 0 0}.pcc-edit-toolbar button{min-width:33px;height:30px;border:1px solid #b7cad9;border-radius:6px;background:#fff;color:#123e65;font-weight:900;cursor:pointer}.pcc-edit-canvas{flex:1;min-height:0;overflow:auto;background:#fff;border:1px solid #b9ccdc;border-radius:0 0 8px 8px;padding:22px;font-family:Georgia,serif;color:#111;line-height:1.45;outline:none}.pcc-edit-canvas:focus{box-shadow:inset 0 0 0 2px rgba(27,92,144,.18)}
+  @media(max-width:1150px){.pcc-final-filters{grid-template-columns:1fr 1fr 1fr}.pcc-final-main{grid-template-columns:1fr}.pcc-final-action-list{max-height:none}.pcc-final-kpis{grid-template-columns:1fr 1fr}}
+  @media(max-width:720px){.pcc-final-header{flex-direction:column;align-items:flex-start}.pcc-final-header-actions{justify-content:flex-start}.pcc-final-filters,.pcc-final-kpis,.pcc-paper-status-strip{grid-template-columns:1fr}.pcc-final-table{min-width:680px}.pcc-final-drawer{width:100vw}.pcc-final-meta,.pcc-edit-grid,.pcc-edit-notes{grid-template-columns:1fr}.pcc-final-footer{align-items:flex-start;flex-direction:column}.pcc-paper-modal-backdrop{padding:0}.pcc-paper-modal{width:100vw;height:100vh;border-radius:0}.pcc-paper-modal-head{align-items:flex-start;flex-direction:column}.pcc-paper-modal-actions{justify-content:flex-start}}
+  #manualPaperEditor .diagram-box.has-image.pf-img-selected{outline:2px solid #1463a5!important;outline-offset:4px!important;box-shadow:0 8px 20px rgba(20,99,165,.18)!important}
+  #manualPaperEditor .diagram-box.has-image.pf-img-dragging{opacity:.62!important;outline:2px dashed #1463a5!important}
+  #manualPaperEditor .bgps-v20-resize-handle,#manualPaperEditor .bgps-v10-resize-handle,#manualPaperEditor .bgps-image-resize-handle{display:none!important;pointer-events:none!important}
+  #manualPaperEditor .pf-img-handle{position:absolute!important;right:-11px!important;bottom:-11px!important;width:24px!important;height:24px!important;background:#1463a5!important;border:3px solid #fff!important;border-radius:50%!important;box-shadow:0 2px 10px rgba(0,0,0,.32)!important;cursor:nwse-resize!important;touch-action:none!important;pointer-events:auto!important;z-index:2147483647!important}
+  #manualPaperEditor .pf-drop-marker{height:0;border-top:3px solid #1463a5;margin:4px 0;clear:both}
+  #bgps10FloatBtn,#bgpsV10ImageToolbar [data-bgps10-layout="floating"],#manualPaperEditor .bgps10-float-note{display:none!important}
+  #manualPaperEditor .diagram-box.has-image.bgps-img-floating,#manualPaperEditor .diagram-box.has-image[data-layout="floating"],#manualPaperEditor .diagram-box.has-image[data-bgps-layout="floating"]{position:static!important;float:right!important;clear:none!important;margin:4px 0 8px 14px!important;max-width:48%!important;box-shadow:none!important}
+  @media(max-width:1050px){.pcc-final-filters{grid-template-columns:1fr 1fr}.pcc-final-kpis{grid-template-columns:1fr 1fr}.pcc-final-main,.pcc-final-bottom{grid-template-columns:1fr}}
+  @media(max-width:650px){.pcc-final-header{flex-direction:column}.pcc-final-filters,.pcc-final-kpis{grid-template-columns:1fr}.pcc-final-table{min-width:720px}.pcc-final-drawer{width:100vw}.pcc-final-meta,.pcc-final-two-list{grid-template-columns:1fr}.pcc-final-footer{align-items:flex-start;flex-direction:column}}
 </style>
 
 <script>
@@ -8237,136 +8336,693 @@
     return { label:'Not started', cls:'muted' };
   }
 
-  function bgpsBuildPrincipalDashboard(stats, marksRows) {
-    const papers = Array.isArray(stats.allPapers) ? stats.allPapers : [];
-    const marks = Array.isArray(marksRows) ? marksRows.slice(1) : [];
-    const currentYear = bgpsAcademicYearFromDate(new Date());
-    const years = new Set([currentYear]);
-    papers.forEach(p => years.add(bgpsAcademicYearFromDate(p.uploadedAt || p.updatedAt)));
-    marks.forEach(r => years.add(bgpsAcademicYearFromDate(r && r[0])));
-    const yearOptions = Array.from(years).filter(Boolean).sort().reverse();
-    if (!PRO.dashboardAcademicYear) PRO.dashboardAcademicYear = yearOptions[0] || currentYear;
-
-    const examNames = new Set();
-    papers.forEach(p => { if (p.exam) examNames.add(String(p.exam).trim()); });
-    marks.forEach(r => { if (r && r[4]) examNames.add(String(r[4]).trim()); });
-    const exams = Array.from(examNames).filter(Boolean);
-    if (!PRO.dashboardExamFilter) {
-      const newestPaper = papers.slice().sort((a,b) => String(b.uploadedAt || '').localeCompare(String(a.uploadedAt || '')))[0];
-      PRO.dashboardExamFilter = newestPaper && newestPaper.exam ? String(newestPaper.exam) : (exams[0] || 'All Exams');
+  function bgpsPrincipalCommandState() {
+    if (!PRO.principalCommand) {
+      PRO.principalCommand = {
+        search: '', exam: '', className: 'All Classes', status: 'All Statuses', kpi: '',
+        paperSummaryOpen: false, paperStatus: '',
+        rawStats: null, rawMarksRows: [], model: null, reminderLog: [], previewFile: null,
+        searchTimer: null
+      };
     }
-    if (!PRO.dashboardClassFilter) PRO.dashboardClassFilter = 'All Classes';
-
-    const year = PRO.dashboardAcademicYear;
-    const exam = PRO.dashboardExamFilter;
-    const classFilter = PRO.dashboardClassFilter;
-    const yearPapers = papers.filter(p => bgpsAcademicYearFromDate(p.uploadedAt || p.updatedAt) === year);
-    const yearMarks = marks.filter(r => bgpsAcademicYearFromDate(r && r[0]) === year);
-    const selectedPapers = yearPapers.filter(p => (exam === 'All Exams' || String(p.exam || '') === exam) && (classFilter === 'All Classes' || String(p.className || '') === classFilter));
-    const selectedMarks = yearMarks.filter(r => (exam === 'All Exams' || String(r && r[4] || '') === exam) && (classFilter === 'All Classes' || String(r && r[2] || '') === classFilter));
-
-    const classMap = new Map();
-    teacherClassRows().forEach(x => classMap.set(x.className, {
-      className:x.className, teacher:x.teacher, paperSubjects:new Set(), markSubjects:new Set(),
-      papers:0, marksEntries:0, pendingReview:0, corrections:0, approved:0, drafts:0, latest:null
-    }));
-    selectedPapers.forEach(p => {
-      const cls = p.className || 'Unassigned';
-      if (!classMap.has(cls)) classMap.set(cls, { className:cls, teacher:p.teacherId || '—', paperSubjects:new Set(), markSubjects:new Set(), papers:0, marksEntries:0, pendingReview:0, corrections:0, approved:0, drafts:0, latest:null });
-      const row = classMap.get(cls);
-      row.teacher = p.teacherId || row.teacher;
-      row.papers += 1;
-      if (p.subject) row.paperSubjects.add(String(p.subject));
-      if (p.status === 'Submitted') row.pendingReview += 1;
-      if (p.status === 'Correction Required') row.corrections += 1;
-      if (p.status === 'Approved' || p.status === 'Locked') row.approved += 1;
-      if (paperStatusKey(p.status) === 'draft') row.drafts += 1;
-      const dt = p.updatedAt || p.uploadedAt;
-      if (!row.latest || String(dt || '') > String(row.latest || '')) row.latest = dt;
-    });
-    selectedMarks.forEach(r => {
-      const cls = String(r && r[2] || 'Unassigned');
-      if (!classMap.has(cls)) classMap.set(cls, { className:cls, teacher:String(r && r[1] || '—'), paperSubjects:new Set(), markSubjects:new Set(), papers:0, marksEntries:0, pendingReview:0, corrections:0, approved:0, drafts:0, latest:null });
-      const row = classMap.get(cls);
-      row.teacher = String(r && r[1] || row.teacher);
-      row.marksEntries += 1;
-      if (r && r[3]) row.markSubjects.add(String(r[3]));
-      const dt = r && r[0];
-      if (!row.latest || String(dt || '') > String(row.latest || '')) row.latest = dt;
-    });
-
-    let rows = Array.from(classMap.values()).sort((a,b) => bgpsClassOrder(a.className) - bgpsClassOrder(b.className));
-    if (classFilter !== 'All Classes') rows = rows.filter(r => r.className === classFilter);
-
-    const termMap = new Map();
-    exams.forEach(e => termMap.set(e, { exam:e, paperClasses:new Set(), markClasses:new Set(), pending:0, corrections:0, latest:null }));
-    yearPapers.forEach(p => {
-      const e = String(p.exam || 'Unspecified');
-      if (!termMap.has(e)) termMap.set(e, { exam:e, paperClasses:new Set(), markClasses:new Set(), pending:0, corrections:0, latest:null });
-      const t = termMap.get(e); t.paperClasses.add(p.className || '');
-      if (p.status === 'Submitted') t.pending += 1;
-      if (p.status === 'Correction Required') t.corrections += 1;
-      if (!t.latest || String(p.uploadedAt || '') > String(t.latest || '')) t.latest = p.uploadedAt;
-    });
-    yearMarks.forEach(r => {
-      const e = String(r && r[4] || 'Unspecified');
-      if (!termMap.has(e)) termMap.set(e, { exam:e, paperClasses:new Set(), markClasses:new Set(), pending:0, corrections:0, latest:null });
-      const t = termMap.get(e); t.markClasses.add(String(r && r[2] || ''));
-      if (!t.latest || String(r && r[0] || '') > String(t.latest || '')) t.latest = r && r[0];
-    });
-    const termRows = Array.from(termMap.values()).filter(t => t.paperClasses.size || t.markClasses.size).sort((a,b) => String(b.latest || '').localeCompare(String(a.latest || '')));
-
-    const actionRows = rows.filter(r => r.pendingReview || r.corrections || (!r.paperSubjects.size && !r.markSubjects.size)).sort((a,b) => (b.corrections-a.corrections) || (b.pendingReview-a.pendingReview) || bgpsClassOrder(a.className)-bgpsClassOrder(b.className)).slice(0,8);
-    const recent = [...selectedPapers.map(p => ({type:'Paper', className:p.className, subject:p.subject, teacher:p.teacherId, date:p.updatedAt || p.uploadedAt, status:p.status})), ...selectedMarks.map(r => ({type:'Marks', className:r[2], subject:r[3], teacher:r[1], date:r[0], status:'Submitted'}))].sort((a,b) => String(b.date || '').localeCompare(String(a.date || ''))).slice(0,7);
-
-    const rowHtml = rows.map(r => {
-      const st = bgpsDashboardStatus(r);
-      return `<tr>
-        <td><strong>${html(r.className)}</strong></td><td>${html(r.teacher || '—')}</td>
-        <td><strong>${r.paperSubjects.size}</strong><small>${r.papers ? `${r.papers} records` : 'No submission'}</small></td>
-        <td><strong>${r.markSubjects.size}</strong><small>${r.marksEntries ? `${r.marksEntries} entries` : 'No marks'}</small></td>
-        <td class="num-warn">${r.pendingReview}</td><td class="num-danger">${r.corrections}</td>
-        <td>${bgpsDashboardDate(r.latest)}</td><td><span class="pc-status ${st.cls}">${st.label}</span></td>
-        <td><button class="pc-link-btn" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${html(r.className)}','')">Open</button></td>
-      </tr>`;
-    }).join('');
-
-    const termHtml = termRows.map(t => `<tr class="${t.exam === exam ? 'is-selected' : ''}" onclick="bgpsSetDashboardExam('${html(t.exam)}')">
-      <td><strong>${html(t.exam)}</strong></td><td>${t.paperClasses.size} classes</td><td>${t.markClasses.size} classes</td><td>${t.pending}</td><td>${t.corrections}</td><td>${bgpsDashboardDate(t.latest)}</td>
-    </tr>`).join('') || '<tr><td colspan="6">No term data found for this academic year.</td></tr>';
-
-    const actionHtml = actionRows.map(r => `<button class="pc-action-row" type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${html(r.className)}','')"><span><strong>${html(r.className)} · ${html(r.teacher)}</strong><small>${r.corrections ? `${r.corrections} correction(s)` : r.pendingReview ? `${r.pendingReview} paper(s) awaiting review` : 'No paper or marks activity'}</small></span><b>›</b></button>`).join('') || '<div class="pc-empty">No urgent action for this filter.</div>';
-    const recentHtml = recent.map(x => `<div class="pc-recent-row"><span class="pc-dot ${x.type === 'Marks' ? 'marks' : ''}"></span><div><strong>${html(x.className || '—')} · ${html(x.subject || '—')}</strong><small>${html(x.type)} by ${html(x.teacher || '—')} · ${bgpsDashboardDate(x.date)}</small></div></div>`).join('') || '<div class="pc-empty">No recent submission.</div>';
-
-    return `
-      <div class="pc-filterbar">
-        <label>Academic Year<select onchange="bgpsSetDashboardYear(this.value)">${yearOptions.map(y => `<option value="${html(y)}" ${y===year?'selected':''}>${html(y)}</option>`).join('')}</select></label>
-        <label>Exam / Term<select onchange="bgpsSetDashboardExam(this.value)"><option>All Exams</option>${exams.map(e => `<option value="${html(e)}" ${e===exam?'selected':''}>${html(e)}</option>`).join('')}</select></label>
-        <label>Class<select onchange="bgpsSetDashboardClass(this.value)"><option>All Classes</option>${teacherClassRows().map(x => `<option value="${html(x.className)}" ${x.className===classFilter?'selected':''}>${html(x.className)}</option>`).join('')}</select></label>
-        <button class="pc-refresh" type="button" onclick="bgpsProRefreshHome()">Refresh</button>
-      </div>
-      <section class="pc-panel pc-term-panel"><div class="pc-panel-head"><div><h2>Exam / Term Progress</h2><p>Class coverage for papers and marks in ${html(year)}.</p></div></div><div class="pc-table-wrap"><table class="pc-table"><thead><tr><th>Exam / Term</th><th>Paper classes</th><th>Marks classes</th><th>Review due</th><th>Corrections</th><th>Last update</th></tr></thead><tbody>${termHtml}</tbody></table></div></section>
-      <section class="pc-panel pc-class-panel"><div class="pc-panel-head"><div><h2>Class-wise Tracking</h2><p>Submitted subjects, marks activity and principal actions for ${html(exam)}.</p></div><span>${rows.length} classes</span></div><div class="pc-table-wrap"><table class="pc-table pc-class-table"><thead><tr><th>Class</th><th>Teacher</th><th>Paper subjects</th><th>Marks subjects</th><th>Review due</th><th>Corrections</th><th>Last update</th><th>Status</th><th></th></tr></thead><tbody>${rowHtml}</tbody></table></div></section>
-      <section class="pc-panel"><div class="pc-panel-head"><div><h2>Teacher Follow-up</h2><p>Teachers needing attention in the selected term.</p></div></div><div class="pc-follow-grid">${rows.filter(r=>r.pendingReview||r.corrections).slice(0,6).map(r=>`<div class="pc-follow-row"><span><strong>${html(r.teacher)} · ${html(r.className)}</strong><small>${r.pendingReview} review due · ${r.corrections} correction</small></span><button type="button" onclick="bgpsOpenPaperApprovalForClassStatus('${html(r.className)}','')">Review</button></div>`).join('') || '<div class="pc-empty">No teacher follow-up required.</div>'}</div></section>
-      <div id="pcRightPanelData" data-actions="${encodeURIComponent(actionHtml)}" data-recent="${encodeURIComponent(recentHtml)}"></div>`;
+    return PRO.principalCommand;
   }
+
+  function bgpsPccDateMs(value) {
+    const date = value ? new Date(value) : null;
+    return date && !Number.isNaN(date.getTime()) ? date.getTime() : 0;
+  }
+
+  function bgpsPccRelativeTime(value) {
+    const ms = bgpsPccDateMs(value);
+    if (!ms) return 'No activity';
+    const minutes = Math.max(1, Math.floor((Date.now() - ms) / 60000));
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hr ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days === 1 ? '' : 's'} ago`;
+  }
+
+  function bgpsPccFormatDate(value) {
+    const ms = bgpsPccDateMs(value);
+    return ms ? new Date(ms).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+  }
+
+  function bgpsPccNormalizeSubject(value) {
+    const raw = safeText(value).trim();
+    if (!raw) return '';
+    const key = raw.toUpperCase()
+      .replace(/&/g, ' AND ')
+      .replace(/[._-]+/g, ' ')
+      .replace(/\s*\/\s*/g, '/')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (/^(GK|G K|GENERAL KNOWLEDGE|MORAL SCIENCE|MSC|M SC)$/.test(key) ||
+        (key.includes('GK') && (key.includes('MORAL') || key.includes('MSC'))) ||
+        (key.includes('GENERAL KNOWLEDGE') && key.includes('MORAL'))) return 'GK/Moral Science';
+    if (key.includes('ENGLISH LANGUAGE') || key === 'ENG LANGUAGE' || key === 'ENGLISH LANG') return 'English Language';
+    if (key.includes('ENGLISH LITERATURE') || key === 'ENG LITERATURE' || key === 'ENGLISH LIT') return 'English Literature';
+    if (key === 'ENGLISH' || key === 'ENG') return 'English';
+    if (key === 'HINDI') return 'Hindi';
+    if (/^(MATH|MATHS|MATHEMATICS)$/.test(key)) return 'Maths';
+    if (/^(EVS|ENVIRONMENTAL STUDIES|ENVIRONMENT STUDIES)$/.test(key)) return 'EVS';
+    if (/^(SST|SOCIAL STUDIES|SOCIAL SCIENCE)$/.test(key)) return 'SST';
+    if (key === 'HISTORY/CIVICS' || key === 'HISTORY AND CIVICS' || key === 'HISTORY CIVICS') return 'History/Civics';
+    if (key === 'GEOGRAPHY' || key === 'GEO') return 'Geography';
+    if (key === 'PHYSICS' || key === 'PHY') return 'Physics';
+    if (key === 'CHEMISTRY' || key === 'CHEM') return 'Chemistry';
+    if (key === 'BIOLOGY' || key === 'BIO') return 'Biology';
+    if (key === 'SCIENCE' || key === 'GENERAL SCIENCE') return 'Science';
+    if (/^(COMPUTER|COMPUTERS|COMPUTER SCIENCE|INFORMATION TECHNOLOGY|IT|ICT)$/.test(key)) return 'Computer';
+    if (/^(ACCOUNT|ACCOUNTS|ACCOUNTANCY)$/.test(key)) return 'Account';
+    if (/^(BUSINESS|BUSINESS STUDIES)$/.test(key)) return 'Business';
+    if (/^(ECONOMICS|ECONOMY)$/.test(key)) return 'Economics';
+    return raw.replace(/\s+/g, ' ').trim();
+  }
+
+  function bgpsPccUniqueSubjects(values) {
+    const map = new Map();
+    (values || []).forEach(value => {
+      const subject = bgpsPccNormalizeSubject(value);
+      if (subject && !map.has(subject.toUpperCase())) map.set(subject.toUpperCase(), subject);
+    });
+    return Array.from(map.values());
+  }
+
+  function bgpsPccExpectedSubjects(className) {
+    try {
+      if (typeof getDefaultSubjectsForClass === 'function') {
+        return bgpsPccUniqueSubjects(getDefaultSubjectsForClass(className));
+      }
+    } catch (error) {
+      console.warn('Expected subject configuration unavailable', error);
+    }
+    return [];
+  }
+
+  function bgpsPccStatusKey(status) {
+    const value = safeText(status).toLowerCase();
+    if (value.includes('correction')) return 'correction';
+    if (value.includes('approved') || value.includes('locked')) return 'approved';
+    if (value.includes('submit') || value.includes('pending')) return 'review';
+    if (value.includes('draft')) return 'draft';
+    return 'other';
+  }
+
+  function bgpsPccPaperLatestKey(paper) {
+    return [safeText(paper.className), safeText(paper.exam), bgpsPccNormalizeSubject(paper.subject)].join('|').toUpperCase();
+  }
+
+  function bgpsPccLatestPapers(papers) {
+    const map = new Map();
+    (papers || []).forEach(paper => {
+      if (!paper || bgpsPccStatusKey(paper.status) === 'draft') return;
+      const key = bgpsPccPaperLatestKey(paper);
+      if (!key.replace(/\|/g, '')) return;
+      const current = map.get(key);
+      const nextScore = Math.max(bgpsPccDateMs(paper.updatedAt || paper.uploadedAt), Number(paper.version || 0));
+      const currentScore = current ? Math.max(bgpsPccDateMs(current.updatedAt || current.uploadedAt), Number(current.version || 0)) : -1;
+      if (!current || nextScore >= currentScore) map.set(key, paper);
+    });
+    return Array.from(map.values());
+  }
+
+  function bgpsPccExamList(papers, marks) {
+    const latest = new Map();
+    (papers || []).forEach(paper => {
+      const exam = safeText(paper.exam).trim();
+      if (exam) latest.set(exam, Math.max(latest.get(exam) || 0, bgpsPccDateMs(paper.updatedAt || paper.uploadedAt)));
+    });
+    (marks || []).forEach(row => {
+      const exam = safeText(row && row[4]).trim();
+      if (exam) latest.set(exam, Math.max(latest.get(exam) || 0, bgpsPccDateMs(row && row[0])));
+    });
+    return Array.from(latest.keys()).sort((a,b) => (latest.get(b) || 0) - (latest.get(a) || 0) || a.localeCompare(b, undefined, {numeric:true}));
+  }
+
+  function bgpsPccTeacherRows() {
+    try { return typeof teacherClassRows === 'function' ? teacherClassRows() : []; }
+    catch (_) { return []; }
+  }
+
+  function bgpsPccBuildModel(stats, marksRows) {
+    const state = bgpsPrincipalCommandState();
+    const allPapers = Array.isArray(stats && stats.allPapers) ? stats.allPapers.filter(Boolean) : [];
+    const marks = Array.isArray(marksRows) ? marksRows.slice(1).filter(Array.isArray) : [];
+    const exams = bgpsPccExamList(allPapers, marks);
+    if (!state.exam || (state.exam !== 'All Exams' && !exams.includes(state.exam))) state.exam = exams[0] || 'All Exams';
+    const targetExams = state.exam === 'All Exams' ? exams : [state.exam];
+    const selectedMarks = marks.filter(row => state.exam === 'All Exams' || safeText(row && row[4]).trim() === state.exam);
+    const selectedPaperSource = allPapers.filter(paper => state.exam === 'All Exams' || safeText(paper.exam).trim() === state.exam);
+    const selectedPapers = bgpsPccLatestPapers(selectedPaperSource);
+    const rows = new Map();
+
+    function rowFor(className, teacher) {
+      const cls = safeText(className).trim() || 'Unassigned';
+      if (!rows.has(cls)) {
+        rows.set(cls, {
+          className: cls, teacher: safeText(teacher).trim() || '—', papers: [], markRows: [],
+          expectedSubjects: [], submittedSubjects: [], pendingSubjects: [], extraSubjects: [],
+          expectedKeys: new Map(), completedKeys: new Map(), lastMarksUpdate: '', lastUpdate: ''
+        });
+      }
+      const row = rows.get(cls);
+      if (teacher && (row.teacher === '—' || !row.teacher)) row.teacher = safeText(teacher).trim();
+      return row;
+    }
+
+    bgpsPccTeacherRows().forEach(item => rowFor(item.className, item.teacher));
+    selectedPapers.forEach(paper => rowFor(paper.className, paper.teacherId).papers.push(paper));
+    selectedMarks.forEach(mark => rowFor(mark && mark[2], mark && mark[1]).markRows.push(mark));
+
+    rows.forEach(row => {
+      let expectedSubjects = bgpsPccExpectedSubjects(row.className);
+      const actualSubjects = bgpsPccUniqueSubjects(row.markRows.map(mark => mark && mark[3]));
+      const paperSubjects = bgpsPccUniqueSubjects(row.papers.map(paper => paper.subject));
+      if (!expectedSubjects.length) expectedSubjects = bgpsPccUniqueSubjects([...paperSubjects, ...actualSubjects]);
+      row.expectedSubjects = expectedSubjects;
+
+      const effectiveExams = targetExams.length ? targetExams : bgpsPccUniqueSubjects(row.markRows.map(mark => mark && mark[4]));
+      effectiveExams.forEach(exam => expectedSubjects.forEach(subject => {
+        const key = `${safeText(exam).trim()}|${subject.toUpperCase()}`;
+        row.expectedKeys.set(key, { exam:safeText(exam).trim(), subject });
+      }));
+
+      row.markRows.forEach(mark => {
+        const exam = safeText(mark && mark[4]).trim();
+        const subject = bgpsPccNormalizeSubject(mark && mark[3]);
+        if (!exam || !subject) return;
+        const key = `${exam}|${subject.toUpperCase()}`;
+        row.completedKeys.set(key, { exam, subject });
+      });
+
+      const submitted = [];
+      const pending = [];
+      row.expectedKeys.forEach((info,key) => (row.completedKeys.has(key) ? submitted : pending).push(info));
+      const extra = [];
+      row.completedKeys.forEach((info,key) => { if (!row.expectedKeys.has(key)) extra.push(info); });
+      const label = item => state.exam === 'All Exams' ? `${item.exam}: ${item.subject}` : item.subject;
+      row.submittedSubjects = submitted.map(label);
+      row.pendingSubjects = pending.map(label);
+      row.extraSubjects = extra.map(label);
+      row.submittedCount = submitted.length;
+      row.expectedCount = row.expectedKeys.size;
+      row.marksStatus = row.expectedCount === 0 || row.submittedCount === 0 ? 'Not Started' : row.pendingSubjects.length ? 'Pending' : 'Complete';
+      row.reviewDue = row.papers.filter(p => bgpsPccStatusKey(p.status) === 'review');
+      row.corrections = row.papers.filter(p => bgpsPccStatusKey(p.status) === 'correction');
+      row.approved = row.papers.filter(p => bgpsPccStatusKey(p.status) === 'approved');
+      row.lastMarksUpdate = row.markRows.reduce((latest,mark) => bgpsPccDateMs(mark && mark[0]) > bgpsPccDateMs(latest) ? mark[0] : latest, '');
+      const lastPaper = row.papers.reduce((latest,paper) => bgpsPccDateMs(paper.updatedAt || paper.uploadedAt) > bgpsPccDateMs(latest) ? (paper.updatedAt || paper.uploadedAt) : latest, '');
+      row.lastUpdate = bgpsPccDateMs(row.lastMarksUpdate) >= bgpsPccDateMs(lastPaper) ? row.lastMarksUpdate : lastPaper;
+      row.actionStatus = row.corrections.length ? 'Correction Pending' : row.reviewDue.length ? 'Review Due' : row.pendingSubjects.length ? 'Marks Pending' : row.marksStatus === 'Complete' ? 'Complete' : 'Not Started';
+    });
+
+    const modelRows = Array.from(rows.values()).sort((a,b) => {
+      const ai = typeof bgpsClassOrder === 'function' ? bgpsClassOrder(a.className) : 999;
+      const bi = typeof bgpsClassOrder === 'function' ? bgpsClassOrder(b.className) : 999;
+      return ai - bi || a.className.localeCompare(b.className, undefined, {numeric:true});
+    });
+    const latest = selectedPapers.slice().sort((a,b) => bgpsPccDateMs(b.updatedAt || b.uploadedAt) - bgpsPccDateMs(a.updatedAt || a.uploadedAt)).slice(0,6);
+    return { rows:modelRows, exams, papers:selectedPapers, marks:selectedMarks, latest };
+  }
+
+  function bgpsPccBaseRows(model) {
+    const state = bgpsPrincipalCommandState();
+    const query = safeText(state.search).toLowerCase().trim();
+    return model.rows.filter(row => {
+      if (state.className !== 'All Classes' && row.className !== state.className) return false;
+      if (state.status !== 'All Statuses') {
+        if (state.status === 'Needs Action' && !(row.reviewDue.length || row.corrections.length || row.pendingSubjects.length)) return false;
+        if (state.status === 'Marks Pending' && !row.pendingSubjects.length) return false;
+        if (state.status === 'Review Due' && !row.reviewDue.length) return false;
+        if (state.status === 'Correction Pending' && !row.corrections.length) return false;
+        if (state.status === 'Complete' && row.actionStatus !== 'Complete') return false;
+        if (state.status === 'Not Started' && row.marksStatus !== 'Not Started') return false;
+      }
+      if (query) {
+        const haystack = [row.className,row.teacher,...row.expectedSubjects,...row.submittedSubjects,...row.pendingSubjects].join(' ').toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+      return true;
+    });
+  }
+
+  function bgpsPccVisibleRows(model) {
+    const state = bgpsPrincipalCommandState();
+    return bgpsPccBaseRows(model).filter(row => {
+      if (state.kpi === 'review' && !row.reviewDue.length) return false;
+      if (state.kpi === 'corrections' && !row.corrections.length) return false;
+      if (state.paperStatus === 'review' && !row.reviewDue.length) return false;
+      if (state.paperStatus === 'approved' && !row.approved.length) return false;
+      if (state.paperStatus === 'correction' && !row.corrections.length) return false;
+      return true;
+    });
+  }
+
+  function bgpsPccTotals(rows) {
+    return rows.reduce((sum,row) => {
+      sum.paperSubmitted += row.papers.length;
+      sum.paperApproved += row.approved.length;
+      sum.marksSubmitted += row.submittedCount;
+      sum.marksExpected += row.expectedCount;
+      sum.classesComplete += row.expectedCount > 0 && row.pendingSubjects.length === 0 ? 1 : 0;
+      sum.classesPending += row.pendingSubjects.length > 0 ? 1 : 0;
+      sum.reviewDue += row.reviewDue.length;
+      sum.corrections += row.corrections.length;
+      return sum;
+    }, {paperSubmitted:0,paperApproved:0,marksSubmitted:0,marksExpected:0,classesComplete:0,classesPending:0,reviewDue:0,corrections:0});
+  }
+
+  function bgpsPccShortList(list, emptyText) {
+    if (!list || !list.length) return emptyText;
+    const shown = list.slice(0,3).join(', ');
+    return list.length > 3 ? `${shown} +${list.length - 3}` : shown;
+  }
+
+  function bgpsPccStatusClass(value) {
+    return safeText(value).toLowerCase().replace(/[^a-z0-9]+/g,'-') || 'not-started';
+  }
+
+  function bgpsPccKpi(key,label,value,sub,tone,onClick) {
+    const state = bgpsPrincipalCommandState();
+    const active = (key === 'papers' && state.paperSummaryOpen) || state.kpi === key;
+    return `<button type="button" class="pcc-final-kpi ${tone} ${active ? 'active' : ''}" onclick="${onClick}"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(sub)}</small><i></i></button>`;
+  }
+
+  function bgpsPccRenderKpis(rows) {
+    const totals = bgpsPccTotals(rows);
+    return `<section class="pcc-final-kpis">
+      ${bgpsPccKpi('papers','Papers Submitted',totals.paperSubmitted,`${totals.reviewDue} pending · ${totals.paperApproved} approved · ${totals.corrections} correction`,'blue','bgpsPccTogglePaperSummary()')}
+      ${bgpsPccKpi('marks','Marks Submission',`${totals.marksSubmitted}/${totals.marksExpected}`,`${totals.classesComplete} classes complete · ${totals.classesPending} pending`,'green','bgpsPccOpenMarksOverview()')}
+      ${bgpsPccKpi('review','Review Due',totals.reviewDue,'papers waiting for paper-wise review','amber',"bgpsPccSetFilter('kpi','review')")}
+      ${bgpsPccKpi('corrections','Corrections Pending',totals.corrections,'papers returned for correction','red',"bgpsPccSetFilter('kpi','corrections')")}
+    </section>`;
+  }
+
+  function bgpsPccRenderPaperStatus(rows) {
+    const state = bgpsPrincipalCommandState();
+    if (!state.paperSummaryOpen) return '';
+    const totals = bgpsPccTotals(rows);
+    const card = (key,label,count,detail) => `<button type="button" class="pcc-paper-status-card ${key} ${state.paperStatus === key ? 'active' : ''}" onclick="bgpsPccSetPaperStatus('${key}')"><span><strong>${html(label)}</strong><small>${html(detail)}</small></span><b>${count}</b></button>`;
+    return `<section class="pcc-paper-status-strip">
+      ${card('review','Pending Review',totals.reviewDue,'Submitted papers awaiting principal action')}
+      ${card('approved','Approved Papers',totals.paperApproved,'Papers approved by principal')}
+      ${card('correction','Correction Required',totals.corrections,'Papers returned to teachers')}
+    </section>`;
+  }
+
+  function bgpsPccRenderFilters(model) {
+    const state = bgpsPrincipalCommandState();
+    const classes = ['All Classes', ...model.rows.map(row => row.className)];
+    const statuses = ['All Statuses','Needs Action','Marks Pending','Review Due','Correction Pending','Complete','Not Started'];
+    return `<section class="pcc-final-filters">
+      <label>Search<input value="${html(state.search)}" placeholder="Class, teacher, subject" oninput="bgpsPccQueueSearch(this.value)"></label>
+      <label>Exam / Term<select onchange="bgpsPccSetFilter('exam',this.value)"><option value="All Exams" ${state.exam === 'All Exams' ? 'selected' : ''}>All Exams</option>${model.exams.map(exam => `<option value="${html(exam)}" ${state.exam === exam ? 'selected' : ''}>${html(exam)}</option>`).join('')}</select></label>
+      <label>Class<select onchange="bgpsPccSetFilter('className',this.value)">${classes.map(value => `<option value="${html(value)}" ${state.className === value ? 'selected' : ''}>${html(value)}</option>`).join('')}</select></label>
+      <label>Status<select onchange="bgpsPccSetFilter('status',this.value)">${statuses.map(value => `<option value="${html(value)}" ${state.status === value ? 'selected' : ''}>${html(value)}</option>`).join('')}</select></label>
+      <button type="button" class="pcc-final-btn light" onclick="bgpsPccResetFilters()">Reset</button>
+      <button type="button" class="pcc-final-btn" onclick="bgpsProRefreshHome()">Refresh</button>
+    </section>`;
+  }
+
+  function bgpsPccPaperChips(row) {
+    const chips = [];
+    if (row.reviewDue.length) chips.push(`<span class="pcc-paper-chip review">Pending ${row.reviewDue.length}</span>`);
+    if (row.approved.length) chips.push(`<span class="pcc-paper-chip approved">Approved ${row.approved.length}</span>`);
+    if (row.corrections.length) chips.push(`<span class="pcc-paper-chip correction">Correction ${row.corrections.length}</span>`);
+    if (!chips.length) chips.push('<span class="pcc-paper-chip none">No paper</span>');
+    return chips.join('');
+  }
+
+  function bgpsPccRowActions(row) {
+    const actions = [];
+    if (row.reviewDue.length) actions.push(`<button type="button" class="pcc-final-btn amber" onclick="bgpsPccOpenPapers('${html(row.className)}','review')">Review ${row.reviewDue.length}</button>`);
+    if (row.corrections.length) actions.push(`<button type="button" class="pcc-final-btn red" onclick="bgpsPccOpenPapers('${html(row.className)}','correction')">Correction ${row.corrections.length}</button>`);
+    if (row.pendingSubjects.length) actions.push(`<button type="button" class="pcc-final-btn light" onclick="bgpsPccOpenMarks('${html(row.className)}')">Marks Pending</button>`);
+    if (!actions.length) actions.push(`<button type="button" class="pcc-final-btn light" onclick="bgpsPccOpenPapers('${html(row.className)}','all')">View</button>`);
+    return actions.join('');
+  }
+
+  function bgpsPccRenderTable(rows) {
+    const body = rows.map(row => {
+      const marksClass = bgpsPccStatusClass(row.marksStatus);
+      return `<tr>
+        <td><strong>${html(row.className)}</strong><small>Class Teacher: ${html(row.teacher)}</small></td>
+        <td><button type="button" class="pcc-final-marks-cell" onclick="bgpsPccOpenMarks('${html(row.className)}')"><span><strong>${row.submittedCount}/${row.expectedCount} Subjects</strong><em class="pcc-final-status ${marksClass}">${html(row.marksStatus)}</em></span><small>Completed: ${html(bgpsPccShortList(row.submittedSubjects,'None'))}</small><small class="pending">Pending: ${html(bgpsPccShortList(row.pendingSubjects,'None'))}</small></button></td>
+        <td><button type="button" class="pcc-final-paper-cell" onclick="bgpsPccOpenPapers('${html(row.className)}','all')"><span><strong>${row.papers.length} Paper${row.papers.length === 1 ? '' : 's'}</strong><em class="pcc-final-status ${row.corrections.length ? 'correction' : row.reviewDue.length ? 'review' : row.approved.length ? 'approved' : 'other'}">${row.corrections.length ? 'Correction' : row.reviewDue.length ? 'Review Due' : row.approved.length ? 'Approved' : 'No Submission'}</em></span><div class="pcc-paper-chip-row">${bgpsPccPaperChips(row)}</div></button></td>
+        <td><div class="pcc-row-actions">${bgpsPccRowActions(row)}</div><small>Last update: ${html(bgpsPccRelativeTime(row.lastUpdate))}</small></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="4"><div class="pcc-final-empty">No classes match the selected filters.</div></td></tr>';
+    return `<section class="pcc-final-panel pcc-final-table-panel"><div class="pcc-final-panel-head"><div><h2>Class & Teacher Tracking</h2><p>One table for marks submission, paper status and required action.</p></div><span>${rows.length} classes</span></div><div class="pcc-final-table-wrap"><table class="pcc-final-table"><thead><tr><th>Class / Teacher</th><th>Marks Submission</th><th>Question Papers</th><th>Action Required</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
+  }
+
+  function bgpsPccActionItems(rows) {
+    const items = [];
+    rows.forEach(row => {
+      if (row.reviewDue.length) items.push({label:'Paper review due',detail:`${row.reviewDue.length} paper(s) waiting`,row,tone:'amber',type:'papers',filter:'review'});
+      if (row.corrections.length) items.push({label:'Correction pending',detail:`${row.corrections.length} returned paper(s)`,row,tone:'red',type:'papers',filter:'correction'});
+      if (row.pendingSubjects.length) items.push({label:'Marks subjects pending',detail:bgpsPccShortList(row.pendingSubjects,'Pending subjects'),row,tone:'blue',type:'marks'});
+    });
+    return items;
+  }
+
+  function bgpsPccRenderActions(rows) {
+    const items = bgpsPccActionItems(rows);
+    const content = items.map(item => `<button type="button" class="pcc-final-action ${item.tone}" onclick="${item.type === 'marks' ? `bgpsPccOpenMarks('${html(item.row.className)}')` : `bgpsPccOpenPapers('${html(item.row.className)}','${item.filter}')`}"><span><strong>${html(item.label)}</strong><small>${html(item.row.className)} · ${html(item.row.teacher)}<br>${html(item.detail)}</small></span><b>›</b></button>`).join('');
+    return `<section class="pcc-final-panel"><div class="pcc-final-panel-head"><div><h2>Action Required</h2><p>Only genuine pending work. Actions open the exact paper or marks list.</p></div></div><div class="pcc-final-action-list">${content || '<div class="pcc-final-empty">No pending action for this filter.</div>'}</div></section>`;
+  }
+
+  function bgpsPccPendingReason(row) {
+    const parts = [];
+    if (row.reviewDue.length) parts.push(`${row.reviewDue.length} review due`);
+    if (row.corrections.length) parts.push(`${row.corrections.length} correction`);
+    if (row.pendingSubjects.length) parts.push(`${row.pendingSubjects.length} marks subject pending`);
+    return parts.join(' · ') || 'No action required';
+  }
+
+  function bgpsPccRenderDashboard(model) {
+    const state = bgpsPrincipalCommandState();
+    const baseRows = bgpsPccBaseRows(model);
+    const rows = bgpsPccVisibleRows(model);
+    return `<div class="pcc-final-shell">
+      <section class="pcc-final-header"><div><h1>Principal Command Centre</h1><p>Exam-wise marks submission and paper-wise approval actions.</p></div><div class="pcc-final-header-actions"><span class="pcc-final-live">Real data · ${html(state.exam)}</span><button type="button" class="pcc-final-btn light" onclick="bgpsPccDownloadReport()">Download Report</button></div></section>
+      ${bgpsPccRenderFilters(model)}
+      ${bgpsPccRenderKpis(baseRows)}
+      ${bgpsPccRenderPaperStatus(baseRows)}
+      <section class="pcc-final-main">${bgpsPccRenderTable(rows)}${bgpsPccRenderActions(rows)}</section>
+      <div class="pcc-final-footer"><small>Marks status uses unique Class + Exam + Subject submissions, not student-row totals.</small><button type="button" class="pcc-final-btn amber" onclick="bgpsPccSendAllPendingReminders()">Remind Pending Teachers</button></div>
+      <div id="pccFinalDrawerBackdrop" class="pcc-final-drawer-backdrop" onclick="bgpsPccCloseDrawer()"></div><aside id="pccFinalDrawer" class="pcc-final-drawer" aria-live="polite"></aside>
+      <div id="pccPaperModalBackdrop" class="pcc-paper-modal-backdrop" onclick="if(event.target===this)bgpsPccClosePaperModal()"><section class="pcc-paper-modal"><header id="pccPaperModalHead" class="pcc-paper-modal-head"></header><div id="pccPaperModalBody" class="pcc-paper-modal-body"></div></section></div>
+      <div id="pcRightPanelData" data-actions=""></div>
+    </div>`;
+  }
+
+  function bgpsBuildPrincipalDashboard(stats, marksRows) {
+    const state = bgpsPrincipalCommandState();
+    state.rawStats = stats || {};
+    state.rawMarksRows = Array.isArray(marksRows) ? marksRows : [];
+    state.model = bgpsPccBuildModel(state.rawStats, state.rawMarksRows);
+    document.body.classList.add('bgps-command-principal-active');
+    return bgpsPccRenderDashboard(state.model);
+  }
+
+  function bgpsPccRerender() {
+    const state = bgpsPrincipalCommandState();
+    const host = document.getElementById('proHomeContent');
+    if (!host || !state.rawStats) return;
+    host.innerHTML = bgpsBuildPrincipalDashboard(state.rawStats, state.rawMarksRows);
+    const rightHost = document.getElementById('proRightPanel');
+    if (rightHost) rightHost.innerHTML = '';
+  }
+
+  window.bgpsPccQueueSearch = function(value) {
+    const state = bgpsPrincipalCommandState();
+    state.search = value || '';
+    clearTimeout(state.searchTimer);
+    state.searchTimer = setTimeout(bgpsPccRerender, 260);
+  };
+
+  window.bgpsPccSetFilter = function(key,value) {
+    const state = bgpsPrincipalCommandState();
+    if (key === 'kpi') {
+      state.kpi = state.kpi === value ? '' : value;
+      if (value === 'review') state.paperStatus = state.kpi ? 'review' : '';
+      if (value === 'corrections') state.paperStatus = state.kpi ? 'correction' : '';
+    } else {
+      state[key] = value || (key === 'className' ? 'All Classes' : key === 'status' ? 'All Statuses' : key === 'exam' ? 'All Exams' : '');
+      if (key === 'exam') { state.kpi = ''; state.paperStatus = ''; }
+    }
+    bgpsPccRerender();
+  };
+
+  window.bgpsPccTogglePaperSummary = function() {
+    const state = bgpsPrincipalCommandState();
+    state.paperSummaryOpen = !state.paperSummaryOpen;
+    state.paperStatus = '';
+    state.kpi = '';
+    bgpsPccRerender();
+  };
+
+  window.bgpsPccSetPaperStatus = function(status) {
+    const state = bgpsPrincipalCommandState();
+    state.paperSummaryOpen = true;
+    state.paperStatus = state.paperStatus === status ? '' : status;
+    state.kpi = '';
+    bgpsPccRerender();
+  };
+
+  window.bgpsPccResetFilters = function() {
+    const state = bgpsPrincipalCommandState();
+    state.search = ''; state.className = 'All Classes'; state.status = 'All Statuses'; state.kpi = ''; state.paperStatus = ''; state.paperSummaryOpen = false;
+    bgpsPccRerender();
+  };
+
+  function bgpsPccRow(className) {
+    const state = bgpsPrincipalCommandState();
+    return state.model && state.model.rows.find(row => row.className === className);
+  }
+
+  function bgpsPccShowDrawer(title,subtitle,body,compact) {
+    const drawer = document.getElementById('pccFinalDrawer');
+    const backdrop = document.getElementById('pccFinalDrawerBackdrop');
+    if (!drawer || !backdrop) return;
+    drawer.classList.toggle('compact', Boolean(compact));
+    drawer.innerHTML = `<div class="pcc-final-drawer-head"><div><h2>${html(title)}</h2><p>${html(subtitle)}</p></div><button type="button" class="pcc-final-btn light" onclick="bgpsPccCloseDrawer()">Close</button></div><div class="pcc-final-drawer-body">${body}</div>`;
+    backdrop.classList.add('open'); drawer.classList.add('open');
+  }
+
+  window.bgpsPccCloseDrawer = function() {
+    document.getElementById('pccFinalDrawer')?.classList.remove('open');
+    document.getElementById('pccFinalDrawerBackdrop')?.classList.remove('open');
+  };
+
+  function bgpsPccSubjectRows(items,tone,empty) {
+    return items && items.length ? items.map(subject => `<li><span>${html(subject)}</span><em class="pcc-final-status ${tone}">${tone === 'complete' ? 'Completed' : 'Pending'}</em></li>`).join('') : `<li class="empty">${html(empty)}</li>`;
+  }
+
+  window.bgpsPccOpenMarks = function(className) {
+    const row = bgpsPccRow(className); if (!row) return;
+    const body = `<section class="pcc-final-drawer-card"><div class="pcc-final-meta"><span><b>Class Teacher</b>${html(row.teacher)}</span><span><b>Last Marks Update</b>${html(bgpsPccFormatDate(row.lastMarksUpdate))}</span><span><b>Submission</b><em class="pcc-final-status ${bgpsPccStatusClass(row.marksStatus)}">${row.submittedCount}/${row.expectedCount} ${html(row.marksStatus)}</em></span></div></section>
+      <section class="pcc-final-drawer-card"><h3>Completed Subjects (${row.submittedCount})</h3><ul class="pcc-final-subject-list">${bgpsPccSubjectRows(row.submittedSubjects,'complete','No subject completed yet.')}</ul></section>
+      <section class="pcc-final-drawer-card"><h3>Pending Subjects (${row.pendingSubjects.length})</h3><ul class="pcc-final-subject-list">${bgpsPccSubjectRows(row.pendingSubjects,'pending','No pending subject.')}</ul></section>
+      ${row.pendingSubjects.length ? `<div class="pcc-final-drawer-actions"><button type="button" class="pcc-final-btn amber" onclick="bgpsPccSendReminder('${html(row.className)}')">Send Marks Reminder</button></div>` : ''}`;
+    bgpsPccShowDrawer(`${row.className} Marks Submission`,`${row.submittedCount}/${row.expectedCount} subjects completed`,body,true);
+  };
+
+  window.bgpsPccOpenMarksOverview = function() {
+    const state = bgpsPrincipalCommandState();
+    if (!state.model) return;
+    const rows = bgpsPccBaseRows(state.model);
+    const body = rows.map(row => `<button type="button" class="pcc-marks-overview-row" onclick="bgpsPccOpenMarks('${html(row.className)}')"><div class="pcc-marks-overview-row-head"><strong>${html(row.className)} · ${html(row.teacher)}</strong><em class="pcc-final-status ${bgpsPccStatusClass(row.marksStatus)}">${row.submittedCount}/${row.expectedCount}</em></div><p><b>Completed:</b> ${html(bgpsPccShortList(row.submittedSubjects,'None'))}<br><b>Pending:</b> ${html(bgpsPccShortList(row.pendingSubjects,'None'))}</p></button>`).join('') || '<div class="pcc-final-empty">No marks data for this filter.</div>';
+    bgpsPccShowDrawer('Marks Submission Overview','Class-wise completed and pending subjects only',`<section>${body}</section>`,false);
+  };
+
+  function bgpsPccPaperCard(paper) {
+    const statusKey = bgpsPccStatusKey(paper.status);
+    const editable = safeText(paper.sourceType).toLowerCase() === 'manual';
+    const canApprove = statusKey === 'review' || statusKey === 'correction';
+    const canReturn = statusKey !== 'correction';
+    return `<article class="pcc-paper-review-card"><div class="pcc-paper-review-top"><span><strong>${html(paper.subject || 'Untitled Paper')}</strong><small>${html(paper.exam || '—')} · Teacher ${html(paper.teacherId || '—')} · V${html(paper.version || 1)}<br>Updated ${html(bgpsPccRelativeTime(paper.updatedAt || paper.uploadedAt))}</small></span><em class="pcc-final-status ${bgpsPccStatusClass(statusKey)}">${html(paper.status || 'Submitted')}</em></div><div class="pcc-paper-review-actions"><button type="button" class="pcc-final-btn light" onclick="bgpsPccPreviewPaper('${html(paper.paperId)}')">Preview</button>${editable ? `<button type="button" class="pcc-final-btn" onclick="bgpsPccEditPaper('${html(paper.paperId)}')">Edit Paper</button>` : ''}${canApprove ? `<button type="button" class="pcc-final-btn green" onclick="bgpsPccSetPaperStatusAction('${html(paper.paperId)}','Approved')">Approve</button>` : ''}${canReturn ? `<button type="button" class="pcc-final-btn red" onclick="bgpsPccReturnPaperById('${html(paper.paperId)}')">Return</button>` : ''}</div></article>`;
+  }
+
+  window.bgpsPccOpenPapers = function(className,filter) {
+    const row = bgpsPccRow(className); if (!row) return;
+    let papers = row.papers.slice();
+    if (filter === 'review') papers = row.reviewDue.slice();
+    if (filter === 'approved') papers = row.approved.slice();
+    if (filter === 'correction') papers = row.corrections.slice();
+    const cards = papers.length ? papers.map(bgpsPccPaperCard).join('') : '<div class="pcc-final-empty">No paper matches this status.</div>';
+    const body = `<section class="pcc-final-drawer-card"><div class="pcc-final-meta"><span><b>Class Teacher</b>${html(row.teacher)}</span><span><b>Total Papers</b>${row.papers.length}</span><span><b>Last Update</b>${html(bgpsPccFormatDate(row.lastUpdate))}</span></div></section><section class="pcc-paper-review-list">${cards}</section>${row.pendingSubjects.length ? `<div class="pcc-final-drawer-actions"><button type="button" class="pcc-final-btn amber" onclick="bgpsPccSendReminder('${html(row.className)}')">Send Reminder</button></div>` : ''}`;
+    bgpsPccShowDrawer(`${row.className} Question Papers`,`${row.reviewDue.length} pending · ${row.approved.length} approved · ${row.corrections.length} correction`,body,false);
+  };
+
+  window.bgpsPccOpenClass = function(className) { return bgpsPccOpenPapers(className,'all'); };
+  window.bgpsPccOpenPaper = function(paperId) { return bgpsPccPreviewPaper(paperId); };
+
+  function bgpsPccDecodeFile(result) {
+    const binary = atob(result.fileBase64 || '');
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: result.mimeType || 'application/octet-stream' });
+  }
+
+  function bgpsPccShowPaperModal(title,subtitle,body,actions) {
+    const backdrop = document.getElementById('pccPaperModalBackdrop');
+    const head = document.getElementById('pccPaperModalHead');
+    const bodyHost = document.getElementById('pccPaperModalBody');
+    if (!backdrop || !head || !bodyHost) return;
+    head.innerHTML = `<div><h2>${html(title)}</h2><small>${html(subtitle)}</small></div><div class="pcc-paper-modal-actions">${actions || ''}<button type="button" class="pcc-final-btn light" onclick="bgpsPccClosePaperModal()">Close</button></div>`;
+    bodyHost.innerHTML = body;
+    backdrop.classList.add('open');
+  }
+
+  window.bgpsPccClosePaperModal = function() {
+    const state = bgpsPrincipalCommandState();
+    if (state.previewFile && state.previewFile.url) URL.revokeObjectURL(state.previewFile.url);
+    state.previewFile = null;
+    document.getElementById('pccPaperModalBackdrop')?.classList.remove('open');
+    const body = document.getElementById('pccPaperModalBody'); if (body) body.innerHTML = '';
+  };
+
+  window.bgpsPccPreviewPaper = async function(paperId) {
+    if (!paperId) return;
+    bgpsPccShowPaperModal('Paper Preview','Loading paper…','<div class="pcc-paper-modal-message"><h3>Loading Preview</h3><p>Please wait while the paper is fetched from Drive.</p></div>','');
+    try {
+      const result = await paperApi('getPaperFile',{paperId});
+      const blob = bgpsPccDecodeFile(result);
+      const url = URL.createObjectURL(blob);
+      const state = bgpsPrincipalCommandState();
+      state.previewFile = { url, blob, fileName: result.fileName || 'question-paper', mimeType: safeText(result.mimeType).toLowerCase() };
+      const mime = state.previewFile.mimeType;
+      const printable = mime === 'application/pdf' || mime === 'text/html' || mime.startsWith('image/');
+      const actions = `<button type="button" class="pcc-final-btn light" onclick="bgpsPccDownloadPreview()">Download</button>${printable ? '<button type="button" class="pcc-final-btn" onclick="bgpsPccPrintPreview()">Print</button>' : ''}`;
+      if (mime === 'application/pdf' || mime === 'text/html' || mime.startsWith('image/')) {
+        bgpsPccShowPaperModal(result.fileName || 'Paper Preview', mime === 'text/html' ? 'Editable manual paper preview' : 'Inline preview — no automatic download', `<iframe id="pccPaperPreviewFrame" class="pcc-paper-frame" src="${html(url)}" title="Question paper preview"></iframe>`, actions);
+      } else {
+        bgpsPccShowPaperModal(result.fileName || 'Uploaded Paper','DOCX preview is not supported natively by this browser.',`<div class="pcc-paper-modal-message"><h3>Preview unavailable for DOCX</h3><p>The file has not been downloaded automatically. Use Download to open it in Microsoft Word, or return it to the teacher as PDF for inline review.</p></div>`,actions);
+      }
+    } catch (error) {
+      bgpsPccShowPaperModal('Preview Failed','The paper could not be opened.',`<div class="pcc-paper-modal-message"><h3>Could not preview paper</h3><p>${html(error && error.message ? error.message : error)}</p></div>`,'');
+    }
+  };
+
+  window.bgpsPccDownloadPreview = function() {
+    const file = bgpsPrincipalCommandState().previewFile; if (!file) return;
+    const link = document.createElement('a'); link.href = file.url; link.download = file.fileName || 'question-paper'; document.body.appendChild(link); link.click(); link.remove();
+  };
+
+  window.bgpsPccPrintPreview = function() {
+    const frame = document.getElementById('pccPaperPreviewFrame');
+    if (!frame) return;
+    try { frame.contentWindow.focus(); frame.contentWindow.print(); }
+    catch (_) { alert('Use the browser print button inside the preview.'); }
+  };
+
+  window.bgpsPccEditCommand = function(command,value) {
+    const canvas = document.getElementById('pccAdminPaperEditor'); if (!canvas) return;
+    canvas.focus(); document.execCommand(command,false,value || null);
+  };
+
+  window.bgpsPccEditPaper = async function(paperId) {
+    if (!paperId) return;
+    bgpsPccShowPaperModal('Edit Paper','Loading editable manual-paper content…','<div class="pcc-paper-modal-message"><h3>Loading Editor</h3><p>Please wait.</p></div>','');
+    try {
+      const result = await paperApi('getPaperContent',{paperId});
+      const paper = result && result.paper ? result.paper : null;
+      if (!paper || safeText(paper.sourceType).toLowerCase() !== 'manual') throw new Error('Only manually created papers can be edited inside the portal. Uploaded PDF/DOCX papers must be returned to the teacher.');
+      const state = bgpsPrincipalCommandState(); state.editingPaperId = paperId;
+      const body = `<div class="pcc-edit-grid"><label>Paper Title<input id="pccEditTitle" value="${html(paper.title || '')}"></label><label>Max Marks<input id="pccEditMaxMarks" type="number" min="1" value="${html(paper.maxMarks || '')}"></label><label>Time Allowed<input id="pccEditTime" value="${html(paper.timeAllowed || '')}"></label></div><div class="pcc-edit-notes"><label>Instructions<textarea id="pccEditInstructions">${html(paper.instructions || '')}</textarea></label><label>Principal / Teacher Note<textarea id="pccEditNote">${html(paper.note || '')}</textarea></label></div><div class="pcc-edit-toolbar"><button type="button" onclick="bgpsPccEditCommand('bold')"><b>B</b></button><button type="button" onclick="bgpsPccEditCommand('italic')"><i>I</i></button><button type="button" onclick="bgpsPccEditCommand('underline')"><u>U</u></button><button type="button" onclick="bgpsPccEditCommand('justifyLeft')">L</button><button type="button" onclick="bgpsPccEditCommand('justifyCenter')">C</button><button type="button" onclick="bgpsPccEditCommand('justifyRight')">R</button><button type="button" onclick="bgpsPccEditCommand('undo')">↶</button><button type="button" onclick="bgpsPccEditCommand('redo')">↷</button></div><div id="pccAdminPaperEditor" class="pcc-edit-canvas" contenteditable="true">${paper.editorHtml || ''}</div>`;
+      const actions = `<button type="button" class="pcc-final-btn green" onclick="bgpsPccSavePaperEdit()">Save Changes</button>`;
+      bgpsPccShowPaperModal(paper.title || 'Edit Paper',`${paper.className} · ${paper.subject} · ${paper.exam}`,body,actions);
+    } catch (error) {
+      bgpsPccShowPaperModal('Edit Unavailable','This paper cannot be edited here.',`<div class="pcc-paper-modal-message"><h3>Edit unavailable</h3><p>${html(error && error.message ? error.message : error)}</p></div>`,'');
+    }
+  };
+
+  window.bgpsPccSavePaperEdit = async function() {
+    const state = bgpsPrincipalCommandState();
+    const paperId = state.editingPaperId;
+    const editor = document.getElementById('pccAdminPaperEditor');
+    if (!paperId || !editor) return;
+    const payload = {
+      title: document.getElementById('pccEditTitle')?.value || '',
+      maxMarks: Number(document.getElementById('pccEditMaxMarks')?.value || 0),
+      timeAllowed: document.getElementById('pccEditTime')?.value || '',
+      instructions: document.getElementById('pccEditInstructions')?.value || '',
+      note: document.getElementById('pccEditNote')?.value || '',
+      editorHtml: typeof sanitizeComposerHtmlClient === 'function' ? sanitizeComposerHtmlClient(editor.innerHTML) : editor.innerHTML,
+      bodyText: editor.innerText || ''
+    };
+    if (!payload.title.trim() || !payload.maxMarks || !payload.editorHtml.trim()) return alert('Title, Maximum Marks and paper content are required.');
+    const saveButton = document.querySelector('#pccPaperModalHead .pcc-final-btn.green');
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Saving…'; }
+    try {
+      await paperApi('updatePaperContentAdmin',{paperId,paper:payload});
+      bgpsPccClosePaperModal();
+      bgpsPccCloseDrawer();
+      await bgpsProRefreshHome();
+      alert('Paper updated successfully.');
+    } catch (error) {
+      alert(`Paper edit failed: ${error && error.message ? error.message : error}`);
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = 'Save Changes'; }
+    }
+  };
+
+  window.bgpsPccSetPaperStatusAction = async function(paperId,status) {
+    if (!paperId) return;
+    if (status === 'Approved' && !confirm('Approve this paper?')) return;
+    try {
+      await paperApi('updatePaperStatus',{paperId,status,adminNote:''});
+      bgpsPccCloseDrawer();
+      await bgpsProRefreshHome();
+    } catch (error) { alert(`Status update failed: ${error && error.message ? error.message : error}`); }
+  };
+
+  window.bgpsPccReturnPaperById = async function(paperId) {
+    if (!paperId) return;
+    const note = prompt('Write the exact correction required for this paper:');
+    if (note === null) return;
+    if (!note.trim()) return alert('Correction note is required.');
+    try {
+      await paperApi('updatePaperStatus',{paperId,status:'Correction Required',adminNote:note.trim()});
+      bgpsPccCloseDrawer();
+      await bgpsProRefreshHome();
+    } catch (error) { alert(`Return failed: ${error && error.message ? error.message : error}`); }
+  };
+
+  window.bgpsPccSendReminder = async function(className) {
+    const row = bgpsPccRow(className); if (!row) return;
+    const message = `BGPS reminder for ${row.teacher} (${row.className}): ${bgpsPccPendingReason(row)}. Pending subjects: ${row.pendingSubjects.join(', ') || 'None'}.`;
+    try {
+      await paperApi('sendReminder',{reminder:{teacherId:row.teacher,className:row.className,subjects:row.pendingSubjects.join(', '),message}});
+      alert(`Reminder logged for ${row.teacher}.`);
+    } catch (error) { alert(`Reminder failed: ${error && error.message ? error.message : error}`); }
+  };
+
+  window.bgpsPccSendAllPendingReminders = async function() {
+    const state = bgpsPrincipalCommandState(); if (!state.model) return;
+    const rows = bgpsPccBaseRows(state.model).filter(row => row.reviewDue.length || row.corrections.length || row.pendingSubjects.length);
+    if (!rows.length) return alert('No pending teacher action.');
+    if (!confirm(`Log reminders for ${rows.length} pending teacher/class records?`)) return;
+    let sent = 0;
+    for (const row of rows) {
+      try {
+        const message = `BGPS reminder for ${row.teacher} (${row.className}): ${bgpsPccPendingReason(row)}. Pending subjects: ${row.pendingSubjects.join(', ') || 'None'}.`;
+        await paperApi('sendReminder',{reminder:{teacherId:row.teacher,className:row.className,subjects:row.pendingSubjects.join(', '),message}}); sent++;
+      } catch (error) { console.warn('Reminder failed',row.className,error); }
+    }
+    alert(`${sent}/${rows.length} reminders logged.`);
+  };
+
+  window.bgpsPccDownloadReport = function() {
+    const state = bgpsPrincipalCommandState();
+    if (!state.model) return;
+    const rows = bgpsPccVisibleRows(state.model);
+    const csv = ['Class,Teacher,Papers,Pending Review,Approved,Corrections,Marks Completed,Marks Expected,Completed Subjects,Pending Subjects,Last Update']
+      .concat(rows.map(row => [row.className,row.teacher,row.papers.length,row.reviewDue.length,row.approved.length,row.corrections.length,row.submittedCount,row.expectedCount,row.submittedSubjects.join('; '),row.pendingSubjects.join('; '),bgpsPccFormatDate(row.lastUpdate)].map(value => `"${safeText(value).replace(/"/g,'""')}"`).join(','))).join('\r\n');
+    const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a'); anchor.href = url; anchor.download = `BGPS_${safeText(state.exam || 'All_Exams').replace(/[^a-z0-9]+/gi,'_')}_Progress.csv`; document.body.appendChild(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url),1200);
+  };
 
   async function renderHome(refresh) {
     ensureProViews();
+    document.body.classList.toggle('bgps-command-principal-active', isAdminUser());
     const host = document.getElementById('proHomeContent');
     if (!host) return;
     const title = isAdminUser() ? 'Principal Command Centre' : 'Teacher Overview';
     const subtitle = isAdminUser() ? 'Exam-wise paper, marks and teacher follow-up in one working view.' : 'Marks entry, reports, papers and corrections in one clean workspace.';
-    host.innerHTML = buildTitle(title, subtitle) + '<div class="paper-empty">Refreshing command centre...</div>';
+    host.innerHTML = isAdminUser() ? '<div class="paper-empty">Refreshing Principal Command Centre...</div>' : buildTitle(title, subtitle) + '<div class="paper-empty">Refreshing overview...</div>';
     const stats = refresh || !PRO.lastHomeStats ? await gatherStats(Boolean(refresh)) : PRO.lastHomeStats;
 
     if (isAdminUser()) {
       let marksData = [];
       try { marksData = await getMasterData({}, Boolean(refresh)); } catch (e) { console.warn('Dashboard marks fetch failed', e); }
-      host.innerHTML = buildTitle(title, subtitle) + bgpsBuildPrincipalDashboard(stats, marksData);
-      const data = document.getElementById('pcRightPanelData');
+      host.innerHTML = bgpsBuildPrincipalDashboard(stats, marksData);
       const rightHost = document.getElementById('proRightPanel');
-      if (rightHost) rightHost.innerHTML = `<section class="pc-side-panel"><h2>Action Required</h2>${data ? decodeURIComponent(data.dataset.actions || '') : ''}</section><section class="pc-side-panel"><h2>Latest Submissions</h2>${data ? decodeURIComponent(data.dataset.recent || '') : ''}</section><section class="pc-side-panel pc-side-actions"><h2>Quick Access</h2><button onclick="switchTab('approval')">Review Papers</button><button onclick="switchTab('review')">Open Marks & Reports</button><button onclick="switchTab('settings')">Workflow Settings</button></section>`;
+      if (rightHost) rightHost.innerHTML = '';
       syncCommandControlsFromSettings();
       return;
     }
@@ -13112,47 +13768,15 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
-<style id="bgps-command-centre-final-css">
-  #bgps10FloatBtn,#bgpsV10ImageToolbar [data-bgps10-layout="floating"],#manualPaperEditor .bgps10-float-note{display:none!important}
-  #manualPaperEditor .diagram-box.has-image.bgps-img-floating,
-  #manualPaperEditor .diagram-box.has-image[data-layout="floating"],
-  #manualPaperEditor .diagram-box.has-image[data-bgps-layout="floating"]{position:static!important;float:right!important;clear:none!important;margin:4px 0 8px 14px!important;max-width:48%!important;box-shadow:none!important}
-  #manualPaperEditor .diagram-box.has-image.bgps-img-left{float:left!important;clear:none!important;margin:4px 14px 8px 0!important;max-width:48%!important}
-  #manualPaperEditor .diagram-box.has-image.bgps-img-right{float:right!important;clear:none!important;margin:4px 0 8px 14px!important;max-width:48%!important}
-  #manualPaperEditor .diagram-box.has-image.bgps-img-inline{display:inline-block!important;position:static!important;float:none!important;clear:none!important;vertical-align:middle!important;margin:0 8px 6px!important;max-width:42%!important}
-  .bgps10-summary{display:none!important}
-  .cc-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0 14px}
-  .cc-card{border:1px solid #d6e2ef;background:#fff;border-radius:8px;padding:13px 14px;box-shadow:0 6px 16px rgba(15,42,76,.06);text-align:left;cursor:pointer;color:#0a1f3d}
-  .cc-card:hover{border-color:#8fb3d5;box-shadow:0 8px 22px rgba(15,42,76,.1)}
-  .cc-card span{display:block;font-size:12px;font-weight:900;color:#334f70;text-transform:uppercase;letter-spacing:0}
-  .cc-card strong{display:block;font-size:28px;line-height:1;margin:8px 0;color:#071b36;font-weight:950}
-  .cc-card small{display:block;font-size:12px;color:#52677f;font-weight:750}
-  .cc-card.blue{border-left:4px solid #1d67b1}.cc-card.green{border-left:4px solid #15803d}.cc-card.amber{border-left:4px solid #b76b00}.cc-card.red{border-left:4px solid #b91c1c}
-  .pc-panel h2,.pc-side-panel h2{color:#071b36!important;font-weight:950!important}
-  .pc-table th{color:#223b58!important;font-weight:950!important;background:#f3f7fb!important}
-  .pc-table td{color:#10233f!important;font-weight:700}
-  .pc-table td strong{font-weight:950;color:#071b36}
-  .pc-link-btn,.pc-refresh,.pc-follow-row button,.cc-btn{min-height:34px;padding:8px 12px!important;border-radius:7px!important;font-weight:900!important}
-  .cc-drawer{position:fixed;right:18px;top:92px;bottom:18px;width:min(440px,calc(100vw - 28px));z-index:99999;background:#fff;border:1px solid #bfd1e3;border-radius:10px;box-shadow:0 22px 60px rgba(5,25,50,.22);display:flex;flex-direction:column;overflow:hidden}
-  .cc-drawer-head{background:#0b315f;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .cc-drawer-head h2{margin:0;font-size:16px;font-weight:950}.cc-drawer-head button{border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);color:#fff;border-radius:6px;padding:6px 9px;font-weight:900;cursor:pointer}
-  .cc-drawer-body{padding:14px;overflow:auto;display:grid;gap:11px}
-  .cc-block{border:1px solid #dbe5ef;background:#f9fbfe;border-radius:8px;padding:11px}
-  .cc-block h3{margin:0 0 8px;color:#0b315f;font-size:13px;font-weight:950;text-transform:uppercase;letter-spacing:0}
-  .cc-list{display:grid;gap:7px}.cc-list-row{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid #e6edf5;padding-top:7px;font-size:12px;color:#263b55}.cc-list-row:first-child{border-top:0;padding-top:0}
-  .cc-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:950}
-  .cc-status.green{background:#e6f7ed;color:#146c34}.cc-status.amber{background:#fff3dc;color:#965700}.cc-status.red{background:#ffe7e7;color:#a81818}.cc-status.blue{background:#e8f2ff;color:#0b55a0}
-  .cc-actions{display:flex;gap:8px;flex-wrap:wrap}.cc-btn{border:1px solid #b7cce1;background:#f8fbff;color:#0b4e92;cursor:pointer}.cc-btn.green{background:#ecf8f0;color:#14713a;border-color:#bfe2cb}.cc-btn.red{background:#fff1f1;color:#a81818;border-color:#f1b6b6}.cc-btn.amber{background:#fff7e9;color:#9a5b00;border-color:#f0d3a6}
-  .pc-status.ok,.pc-status.good{background:#e6f7ed!important;color:#146c34!important}.pc-status.warn{background:#fff3dc!important;color:#965700!important}.pc-status.danger{background:#ffe7e7!important;color:#a81818!important}.pc-status.muted{background:#eef3f8!important;color:#50647b!important}
-  .num-warn{color:#965700!important;font-weight:950!important}.num-danger{color:#a81818!important;font-weight:950!important}
-  @media(max-width:900px){.cc-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.cc-drawer{left:12px;right:12px;top:76px;width:auto}}
-  @media(max-width:560px){.cc-kpis{grid-template-columns:1fr}}
-</style>
-<script id="bgps-command-centre-final-js">
+
+
+
+
+<script id="bgps-editor-command-final-js">
 (function(){
   'use strict';
-  if(window.__BGPS_COMMAND_CENTRE_FINAL__) return;
-  window.__BGPS_COMMAND_CENTRE_FINAL__=true;
+  if(window.__BGPS_EDITOR_COMMAND_FINAL__) return;
+  window.__BGPS_EDITOR_COMMAND_FINAL__=true;
   const byId=id=>document.getElementById(id);
   const esc=value=>String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
   function expose(name,fn){window[name]=fn;try{(0,eval)(name+' = window.'+name)}catch(_){}}
@@ -13248,431 +13872,7 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(term)+'</title><style>'+previewCss()+'</style></head><body><div class="preview-bar"><button onclick="window.print()">Print / Save PDF</button></div><main class="paper"><header class="header"><div class="school">BG PUBLIC SCHOOL</div><div class="exam">'+esc(term)+'</div></header><section class="meta"><div>Class: '+esc(meta.className||'-')+'</div><div>Subject: '+esc(meta.subject||'-')+'</div><div>Time Allotted: '+esc(time||'-')+'</div><div>Maximum Marks: '+esc(max||'-')+'</div><div>Reading Time: '+esc(reading||'-')+'</div><div>Date: '+esc(meta.examDate||'____________')+'</div></section><article class="content">'+body+'</article><div class="end-note">End of Question Paper</div></main></body></html>';
   });
 
-  function statusKey(status){const s=String(status||'').toLowerCase();if(s.includes('correction'))return'correction';if(s.includes('approved')||s.includes('locked'))return'approved';if(s.includes('submit')||s.includes('pending'))return'submitted';if(s.includes('draft'))return'draft';return'other'}
-  function dateKey(v){const d=v?new Date(v):null;return d&&!Number.isNaN(d.getTime())?d.toISOString():''}
-  function fmtDate(v){try{return v?new Date(v).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'-'}catch(_){return'-'}}
-  function classRowsBase(){try{return typeof teacherClassRows==='function'?teacherClassRows():[]}catch(_){return[]}}
-  function acYear(v){try{return typeof bgpsAcademicYearFromDate==='function'?bgpsAcademicYearFromDate(v):''}catch(_){return''}}
-  function makeModel(stats,marksRows){
-    const papers=Array.isArray(stats?.allPapers)?stats.allPapers:[];
-    const marks=Array.isArray(marksRows)?marksRows.slice(1):[];
-    const years=new Set([acYear(new Date())]);papers.forEach(p=>years.add(acYear(p.uploadedAt||p.updatedAt)));marks.forEach(r=>years.add(acYear(r&&r[0])));
-    const yearOptions=[...years].filter(Boolean).sort().reverse();if(!PRO.dashboardAcademicYear)PRO.dashboardAcademicYear=yearOptions[0]||acYear(new Date());
-    const exams=new Set();papers.forEach(p=>p.exam&&exams.add(String(p.exam)));marks.forEach(r=>r&&r[4]&&exams.add(String(r[4])));
-    const examOptions=[...exams].filter(Boolean);if(!PRO.dashboardExamFilter)PRO.dashboardExamFilter=examOptions[0]||'All Exams';if(!PRO.dashboardClassFilter)PRO.dashboardClassFilter='All Classes';
-    const year=PRO.dashboardAcademicYear, exam=PRO.dashboardExamFilter, clsFilter=PRO.dashboardClassFilter;
-    const selectedPapers=papers.filter(p=>(!year||acYear(p.uploadedAt||p.updatedAt)===year)&&(exam==='All Exams'||String(p.exam||'')===exam)&&(clsFilter==='All Classes'||String(p.className||'')===clsFilter));
-    const selectedMarks=marks.filter(r=>(!year||acYear(r&&r[0])===year)&&(exam==='All Exams'||String(r&&r[4]||'')===exam)&&(clsFilter==='All Classes'||String(r&&r[2]||'')===clsFilter));
-    const rowMap=new Map();
-    function ensure(className,teacher){const key=String(className||'Unassigned');if(!rowMap.has(key))rowMap.set(key,{className:key,teacher:teacher||'-',papers:[],marks:[],paperSubjects:new Set(),markSubjects:new Set(),reviewDue:0,corrections:0,approved:0,drafts:0,lastUpdate:''});const row=rowMap.get(key);if(teacher&&teacher!=='-')row.teacher=teacher;return row}
-    classRowsBase().forEach(x=>ensure(x.className,x.teacher));
-    selectedPapers.forEach(p=>{const r=ensure(p.className,p.teacherId);r.papers.push(p);if(p.subject)r.paperSubjects.add(String(p.subject));const st=statusKey(p.status);if(st==='submitted')r.reviewDue++;else if(st==='correction')r.corrections++;else if(st==='approved')r.approved++;else if(st==='draft')r.drafts++;const d=dateKey(p.updatedAt||p.uploadedAt);if(d>r.lastUpdate)r.lastUpdate=d});
-    selectedMarks.forEach(m=>{const r=ensure(m&&m[2],m&&m[1]);r.marks.push(m);if(m&&m[3])r.markSubjects.add(String(m[3]));const d=dateKey(m&&m[0]);if(d>r.lastUpdate)r.lastUpdate=d});
-    let rows=[...rowMap.values()].map(r=>{const completed=[...r.markSubjects].sort();const pending=[...r.paperSubjects].filter(s=>!r.markSubjects.has(s)).sort();return Object.assign(r,{completedSubjects:completed,pendingSubjects:pending})});
-    if(clsFilter!=='All Classes')rows=rows.filter(r=>r.className===clsFilter);
-    rows.sort((a,b)=>String(a.className).localeCompare(String(b.className),undefined,{numeric:true}));
-    const totals={papersSubmitted:selectedPapers.filter(p=>['submitted','approved','correction'].includes(statusKey(p.status))).length,reviewDue:selectedPapers.filter(p=>statusKey(p.status)==='submitted').length,corrections:selectedPapers.filter(p=>statusKey(p.status)==='correction').length,marksCompleted:rows.reduce((s,r)=>s+r.completedSubjects.length,0),marksPending:rows.reduce((s,r)=>s+r.pendingSubjects.length,0)};
-    CC.model={rows,papers:selectedPapers,marks:selectedMarks,totals,year,exam,clsFilter,yearOptions,examOptions};
-    return CC.model;
-  }
-  function statusLabel(r){if(r.corrections)return['Correction','danger'];if(r.reviewDue)return['Review due','warn'];if(r.pendingSubjects.length)return['Marks pending','warn'];if(r.completedSubjects.length||r.approved)return['Active','good'];return['No action','muted']}
-  function buildDashboard(stats,marksRows){
-    const m=makeModel(stats,marksRows);
-    const cards='<div class="cc-kpis"><button class="cc-card blue" onclick="bgpsOpenPaperApprovalForClassStatus(\'\',\'Submitted\')"><span>Papers Submitted</span><strong>'+m.totals.papersSubmitted+'</strong><small>Submitted / returned / approved</small></button><button class="cc-card amber" onclick="bgpsOpenPaperApprovalForClassStatus(\'\',\'Submitted\')"><span>Review Due</span><strong>'+m.totals.reviewDue+'</strong><small>Pending principal review</small></button><button class="cc-card red" onclick="bgpsOpenPaperApprovalForClassStatus(\'\',\'Correction Required\')"><span>Corrections Pending</span><strong>'+m.totals.corrections+'</strong><small>Returned to teachers</small></button><button class="cc-card green" onclick="bgpsCcOpenMarksDrawer()"><span>Marks Completed</span><strong>'+m.totals.marksCompleted+'</strong><small>'+m.totals.marksPending+' subject(s) pending</small></button></div>';
-    const filters='<div class="pc-filterbar"><label>Academic Year<select onchange="bgpsSetDashboardYear(this.value)">'+m.yearOptions.map(y=>'<option value="'+esc(y)+'" '+(y===m.year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label><label>Exam / Term<select onchange="bgpsSetDashboardExam(this.value)"><option>All Exams</option>'+m.examOptions.map(e=>'<option value="'+esc(e)+'" '+(e===m.exam?'selected':'')+'>'+esc(e)+'</option>').join('')+'</select></label><label>Class<select onchange="bgpsSetDashboardClass(this.value)"><option>All Classes</option>'+classRowsBase().map(x=>'<option value="'+esc(x.className)+'" '+(x.className===m.clsFilter?'selected':'')+'>'+esc(x.className)+'</option>').join('')+'</select></label><button class="pc-refresh" type="button" onclick="bgpsProRefreshHome()">Refresh</button></div>';
-    const rowsHtml=m.rows.map(r=>{const st=statusLabel(r);return '<tr><td><strong>'+esc(r.className)+'</strong></td><td>'+esc(r.teacher||'-')+'</td><td><strong>'+r.papers.filter(p=>statusKey(p.status)!=='draft').length+'</strong><small>'+r.paperSubjects.size+' subject(s)</small></td><td><strong>'+r.completedSubjects.length+'</strong><small>'+r.pendingSubjects.length+' pending</small></td><td class="num-warn">'+r.reviewDue+'</td><td class="num-danger">'+r.corrections+'</td><td>'+esc(fmtDate(r.lastUpdate))+'</td><td><span class="pc-status '+st[1]+'">'+st[0]+'</span></td><td><button class="pc-link-btn" type="button" onclick="bgpsCcOpenClassDrawer(\''+esc(r.className)+'\')">Open</button></td></tr>'}).join('')||'<tr><td colspan="9">No class data for this filter.</td></tr>';
-    const table='<section class="pc-panel pc-class-panel"><div class="pc-panel-head"><div><h2>Class-wise Tracking</h2><p>Submitted papers, marks completion and principal actions for '+esc(m.exam)+'.</p></div><span>'+m.rows.length+' classes</span></div><div class="pc-table-wrap"><table class="pc-table pc-class-table"><thead><tr><th>Class</th><th>Teacher</th><th>Papers submitted</th><th>Marks completed</th><th>Review due</th><th>Corrections</th><th>Last update</th><th>Status</th><th></th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div></section>';
-    const follow=m.rows.filter(r=>r.reviewDue||r.corrections||r.pendingSubjects.length).slice(0,6).map(r=>'<div class="pc-follow-row"><span><strong>'+esc(r.teacher)+' · '+esc(r.className)+'</strong><small>'+r.reviewDue+' review · '+r.corrections+' correction · '+r.pendingSubjects.length+' marks pending</small></span><button type="button" onclick="bgpsCcOpenClassDrawer(\''+esc(r.className)+'\')">Open</button></div>').join('')||'<div class="pc-empty">No teacher follow-up required.</div>';
-    const actionRows=m.rows.flatMap(r=>{const out=[];if(r.reviewDue)out.push(['Paper review due',r,r.reviewDue,'amber']);if(r.corrections)out.push(['Correction pending',r,r.corrections,'red']);if(r.pendingSubjects.length)out.push(['Marks subjects pending',r,r.pendingSubjects.length,'blue']);return out}).slice(0,8);
-    const actionHtml=actionRows.map(a=>'<button class="pc-action-row" type="button" onclick="bgpsCcOpenClassDrawer(\''+esc(a[1].className)+'\')"><span><strong>'+esc(a[0])+'</strong><small>'+esc(a[1].className)+' · '+esc(a[1].teacher)+' · '+a[2]+'</small></span><b>›</b></button>').join('')||'<div class="pc-empty">No action required.</div>';
-    const recent=m.papers.slice().sort((a,b)=>dateKey(b.updatedAt||b.uploadedAt).localeCompare(dateKey(a.updatedAt||a.uploadedAt))).slice(0,7).map(p=>'<div class="pc-recent-row"><span class="pc-dot"></span><div><strong>'+esc(p.className||'-')+' · '+esc(p.subject||'-')+'</strong><small>'+esc(p.status||'Submitted')+' by '+esc(p.teacherId||'-')+' · '+esc(fmtDate(p.updatedAt||p.uploadedAt))+'</small></div></div>').join('')||'<div class="pc-empty">No recent submission.</div>';
-    return filters+cards+table+'<section class="pc-panel"><div class="pc-panel-head"><div><h2>Teacher Follow-up</h2><p>Only teachers with review, correction or marks-pending work.</p></div></div><div class="pc-follow-grid">'+follow+'</div></section><div id="pcRightPanelData" data-actions="'+encodeURIComponent(actionHtml)+'" data-recent="'+encodeURIComponent(recent)+'"></div>';
-  }
-  expose('bgpsBuildPrincipalDashboard',buildDashboard);
-  function drawer(title,body){byId('bgpsCcDrawer')?.remove();const el=document.createElement('aside');el.id='bgpsCcDrawer';el.className='cc-drawer';el.innerHTML='<div class="cc-drawer-head"><h2>'+esc(title)+'</h2><button onclick="bgpsCcCloseDrawer()">Close</button></div><div class="cc-drawer-body">'+body+'</div>';document.body.appendChild(el)}
-  expose('bgpsCcCloseDrawer',()=>byId('bgpsCcDrawer')?.remove());
-  expose('bgpsCcOpenMarksDrawer',function(className){
-    const rows=(CC.model?.rows||[]).filter(r=>!className||r.className===className);
-    const body=rows.map(r=>'<div class="cc-block"><h3>'+esc(r.className)+' · '+esc(r.teacher)+'</h3><div class="cc-list"><div class="cc-list-row"><b>Completed subjects</b><span>'+esc(r.completedSubjects.join(', ')||'-')+'</span></div><div class="cc-list-row"><b>Pending subjects</b><span>'+esc(r.pendingSubjects.join(', ')||'-')+'</span></div><div class="cc-list-row"><b>Last update</b><span>'+esc(fmtDate(r.lastUpdate))+'</span></div></div><div class="cc-actions" style="margin-top:10px"><button class="cc-btn amber" onclick="bgpsCcSendReminder(\''+esc(r.teacher)+'\',\''+esc(r.className)+'\',\''+esc(r.pendingSubjects.join(', '))+'\')">Send Reminder</button></div></div>').join('')||'<div class="cc-block">No marks data for this filter.</div>';
-    drawer('Marks Subject Status',body);
-  });
-  expose('bgpsCcOpenClassDrawer',function(className){
-    const r=(CC.model?.rows||[]).find(x=>x.className===className);if(!r)return;
-    const body='<div class="cc-block"><h3>Class Summary</h3><div class="cc-list"><div class="cc-list-row"><b>Papers submitted/pending</b><span>'+r.papers.filter(p=>statusKey(p.status)!=='draft').length+' / '+r.reviewDue+'</span></div><div class="cc-list-row"><b>Marks completed/pending</b><span>'+r.completedSubjects.length+' / '+r.pendingSubjects.length+'</span></div><div class="cc-list-row"><b>Corrections</b><span>'+r.corrections+'</span></div><div class="cc-list-row"><b>Teacher last activity</b><span>'+esc(fmtDate(r.lastUpdate))+'</span></div></div></div><div class="cc-block"><h3>Subjects</h3><div class="cc-list"><div class="cc-list-row"><b>Completed</b><span>'+esc(r.completedSubjects.join(', ')||'-')+'</span></div><div class="cc-list-row"><b>Pending</b><span>'+esc(r.pendingSubjects.join(', ')||'-')+'</span></div></div></div><div class="cc-block"><h3>Actions</h3><div class="cc-actions"><button class="cc-btn blue" onclick="bgpsCcReview(\''+esc(r.className)+'\')">Review</button><button class="cc-btn red" onclick="bgpsCcReturnFirst(\''+esc(r.className)+'\')">Return</button><button class="cc-btn green" onclick="bgpsCcApproveFirst(\''+esc(r.className)+'\')">Approve</button><button class="cc-btn amber" onclick="bgpsCcSendReminder(\''+esc(r.teacher)+'\',\''+esc(r.className)+'\',\''+esc(r.pendingSubjects.join(', '))+'\')">Reminder</button></div></div>';
-    drawer(r.className+' Command Drawer',body);
-  });
-  expose('bgpsCcReview',className=>window.bgpsOpenPaperApprovalForClassStatus?window.bgpsOpenPaperApprovalForClassStatus(className,'Submitted'):switchTab('approval'));
-  function firstSubmitted(className){return (CC.model?.papers||[]).find(p=>String(p.className||'')===String(className)&&statusKey(p.status)==='submitted'&&p.paperId)}
-  expose('bgpsCcApproveFirst',async function(className){const p=firstSubmitted(className);if(!p){alert('No review-due paper found for this class.');return}await updatePaperStatus(p.paperId,'Approved');await bgpsProRefreshHome?.()});
-  expose('bgpsCcReturnFirst',function(className){const p=firstSubmitted(className);if(!p){alert('No review-due paper found for this class.');return}requestPaperCorrection(p.paperId)});
-  expose('bgpsCcSendReminder',async function(teacherId,className,subjects){try{const api=window.paperApi||((typeof paperApi==='function')?paperApi:null);if(!api)throw new Error('Paper API is not ready.');await api('sendReminder',{reminder:{teacherId,className,subjects,message:'Marks/paper workflow reminder from Principal Command Centre'}});alert('Reminder logged for '+teacherId+'.')}catch(error){alert('Reminder could not be logged: '+(error?.message||error))}});
-  function cleanupTeacherDashboard(){
-    removeFloatingTools();
-    document.querySelectorAll('.bgps10-panel h2').forEach(h=>{if(/Paper Status Overview/i.test(h.textContent||''))h.closest('.bgps10-panel')?.remove()});
-    document.querySelectorAll('.bgps10-summary').forEach(n=>n.remove());
-    const line=byId('composerExamLine');if(line&&/question paper/i.test(line.textContent||''))line.textContent=currentTermText({});
-  }
-  const oldRefresh=window.bgpsProRefreshHome;if(typeof oldRefresh==='function')expose('bgpsProRefreshHome',function(){const r=oldRefresh.apply(this,arguments);Promise.resolve(r).finally(()=>setTimeout(cleanupTeacherDashboard,120));return r});
-  const oldSwitch=window.switchTab;if(typeof oldSwitch==='function')expose('switchTab',function(){const r=oldSwitch.apply(this,arguments);Promise.resolve(r).finally(()=>setTimeout(cleanupTeacherDashboard,120));return r});
-  function watchComposerImages(){
-    if(window.__BGPS_COMMAND_IMAGE_WATCH__)return;
-    window.__BGPS_COMMAND_IMAGE_WATCH__=true;
-    let timer=null;
-    new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(removeFloatingTools,40)}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-layout','data-bgps-layout']});
-  }
-  function boot(){removeFloatingTools();cleanupTeacherDashboard();watchComposerImages();try{window.updateComposerHeader?.()}catch(_){}setTimeout(cleanupTeacherDashboard,500)}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();
-</script>
-<style id="bgps-principal-final-css">
-  .bgps10-donut-wrap,.bgps10-summary{display:none!important}
-  body:not(.bgps-principal-final-active) .bgps10-grid-main{grid-template-columns:minmax(0,1fr)!important}
-  body:not(.bgps-principal-final-active) .bgps10-grid-main>.bgps10-panel{grid-column:1/-1!important}
-  body:not(.bgps-principal-final-active) .bgps10-grid-main>.bgps10-panel:has(.bgps10-donut-wrap),
-  body:not(.bgps-principal-final-active) .bgps10-grid-main>.bgps10-panel:has(.bgps10-actions),
-  body:not(.bgps-principal-final-active) .bgps10-grid-main>.bgps10-panel:empty{display:none!important}
-  body:not(.bgps-principal-final-active) .bgps10-class-table{min-width:640px}
-  body:not(.bgps-principal-final-active) .bgps10-panel h2,
-  body:not(.bgps-principal-final-active) .bgps10-kpi h3,
-  body:not(.bgps-principal-final-active) .bgps10-actions button{font-weight:900!important;color:#071d36!important}
-  body:not(.bgps-principal-final-active) .bgps10-panel{border-color:#cbdceb!important;box-shadow:0 10px 24px rgba(15,47,82,.06)!important}
-  body.bgps-principal-final-active .bgps-pro-view.active{grid-template-columns:1fr!important}
-  body.bgps-principal-final-active .bgps-right-panel{display:none!important}
-  .pf-shell{display:flex;flex-direction:column;gap:14px}
-  .pf-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;background:#fff;border:1px solid #cfe0ef;border-left:5px solid #174f82;border-radius:12px;padding:18px 20px;box-shadow:0 12px 30px rgba(15,47,82,.08)}
-  .pf-header h1{margin:0;color:#0d3155;font-size:26px;line-height:1.1;font-weight:900}
-  .pf-header p{margin:6px 0 0;color:#506984;font-size:13px;font-weight:600}
-  .pf-live-pill{white-space:nowrap;background:#edf6ff;border:1px solid #c8ddec;color:#0d3155;border-radius:9px;padding:9px 12px;font-weight:900;font-size:12px}
-  .pf-filters{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr auto;gap:10px;background:#fff;border:1px solid #d7e4ef;border-radius:10px;padding:12px;align-items:end}
-  .pf-filters label{display:flex;flex-direction:column;gap:5px;color:#31506e;font-size:11px;font-weight:900;text-transform:uppercase}
-  .pf-filters input,.pf-filters select{height:38px;border:1px solid #cbdceb;border-radius:8px;background:#f8fbff;color:#0d3155;padding:0 10px;font-weight:800;outline:none}
-  .pf-btn{border:1px solid #174f82;background:#174f82;color:#fff;border-radius:8px;min-height:38px;padding:8px 12px;font-weight:900;cursor:pointer}
-  .pf-btn.light{background:#f8fbff;color:#174f82;border-color:#cbdceb}
-  .pf-btn.green{background:#16824a;border-color:#16824a}
-  .pf-btn.amber{background:#b7791f;border-color:#b7791f}
-  .pf-btn.red{background:#b91c1c;border-color:#b91c1c}
-  .pf-btn:disabled{opacity:.55;cursor:not-allowed}
-  .pf-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-  .pf-kpi{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:#fff;border:1px solid #d7e4ef;border-radius:10px;padding:14px;cursor:pointer;box-shadow:0 10px 24px rgba(15,47,82,.06)}
-  .pf-kpi span{display:block;color:#31506e;font-size:12px;font-weight:900}
-  .pf-kpi strong{display:block;color:#071d36;font-size:26px;font-weight:900;line-height:1.05;margin-top:4px}
-  .pf-kpi small{display:block;color:#60758c;font-size:11px;font-weight:800;margin-top:4px}
-  .pf-kpi i{width:12px;height:46px;border-radius:10px;background:#2f73d9;flex:0 0 auto}
-  .pf-kpi.green i{background:#2f9b57}.pf-kpi.amber i{background:#f59e0b}.pf-kpi.red i{background:#e54848}
-  .pf-kpi.active{border-color:#174f82;box-shadow:0 0 0 3px rgba(23,79,130,.12)}
-  .pf-main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
-  .pf-panel{background:#fff;border:1px solid #d7e4ef;border-radius:10px;padding:14px;box-shadow:0 10px 24px rgba(15,47,82,.06)}
-  .pf-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
-  .pf-panel h2{margin:0;color:#0d3155;font-size:18px;font-weight:900}
-  .pf-panel p{margin:4px 0 0;color:#60758c;font-size:12px;font-weight:650}
-  .pf-table-wrap{overflow:auto;border:1px solid #e3edf6;border-radius:9px}
-  .pf-table{width:100%;border-collapse:collapse;background:#fff;min-width:920px}
-  .pf-table th{background:#edf5fc;color:#173f68;font-size:11px;text-transform:uppercase;text-align:left;padding:10px;font-weight:900;border-bottom:1px solid #d7e4ef}
-  .pf-table td{padding:10px;border-bottom:1px solid #edf2f7;color:#17324d;font-size:12px;vertical-align:middle;font-weight:650}
-  .pf-table td strong{font-weight:900;color:#071d36}
-  .pf-table td small{display:block;color:#60758c;font-size:11px;font-weight:700;margin-top:2px}
-  .pf-status{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;border:1px solid transparent;white-space:nowrap}
-  .pf-status.not-started{background:#f1f5f9;color:#475569;border-color:#d7e1ec}
-  .pf-status.in-progress{background:#eaf3ff;color:#175cd3;border-color:#bfdbfe}
-  .pf-status.submitted,.pf-status.review-due{background:#fff7ed;color:#b45309;border-color:#fed7aa}
-  .pf-status.correction-required{background:#fff1f2;color:#be123c;border-color:#fecdd3}
-  .pf-status.approved{background:#ecfdf3;color:#15803d;border-color:#bbf7d0}
-  .pf-status.overdue{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
-  .pf-status.locked{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}
-  .pf-action-list{display:flex;flex-direction:column;gap:8px}
-  .pf-action-row,.pf-follow-row,.pf-recent-row{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;border:1px solid #dbe7f1;background:#f8fbff;border-radius:9px;padding:10px;cursor:pointer;color:#17324d}
-  .pf-action-row strong,.pf-follow-row strong,.pf-recent-row strong{display:block;color:#0d3155;font-size:13px;font-weight:900}
-  .pf-action-row small,.pf-follow-row small,.pf-recent-row small{display:block;color:#60758c;font-size:11px;font-weight:700;margin-top:2px}
-  .pf-action-row b{font-size:18px;color:#174f82}
-  .pf-empty{border:1px dashed #cbdceb;border-radius:9px;padding:12px;color:#60758c;background:#fbfdff;font-weight:750;font-size:12px}
-  .pf-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .pf-follow-list,.pf-recent-list,.pf-history-list{display:flex;flex-direction:column;gap:8px}
-  .pf-row-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-  .pf-row-actions .pf-btn{min-height:32px;padding:6px 9px;font-size:11px}
-  .pf-drawer-backdrop{position:fixed;inset:0;background:rgba(8,22,38,.28);z-index:9998;display:none}
-  .pf-drawer-backdrop.open{display:block}
-  .pf-drawer{position:fixed;top:0;right:0;width:min(760px,96vw);height:100vh;background:#f8fbff;border-left:1px solid #cbdceb;box-shadow:-20px 0 50px rgba(7,29,54,.22);z-index:9999;transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column}
-  .pf-drawer.open{transform:translateX(0)}
-  .pf-drawer-head{padding:18px 20px;background:#fff;border-bottom:1px solid #d7e4ef;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-  .pf-drawer-head h2{margin:0;color:#0d3155;font-size:22px;font-weight:900}
-  .pf-drawer-head p{margin:5px 0 0;color:#60758c;font-size:12px;font-weight:700}
-  .pf-drawer-body{padding:14px 16px 22px;overflow:auto;display:flex;flex-direction:column;gap:12px}
-  .pf-drawer-section{background:#fff;border:1px solid #d7e4ef;border-radius:10px;padding:13px}
-  .pf-drawer-section h3{margin:0 0 8px;color:#0d3155;font-size:15px;font-weight:900}
-  .pf-mini-table{width:100%;border-collapse:collapse}
-  .pf-mini-table td,.pf-mini-table th{border-bottom:1px solid #edf2f7;padding:8px;text-align:left;font-size:12px;color:#17324d}
-  .pf-mini-table th{color:#31506e;font-size:11px;text-transform:uppercase}
-  #manualPaperEditor .diagram-box.has-image.pf-img-selected{outline:2px solid #1463a5!important;outline-offset:4px!important;box-shadow:0 8px 20px rgba(20,99,165,.18)!important}
-  #manualPaperEditor .diagram-box.has-image.pf-img-dragging{opacity:.62!important;outline:2px dashed #1463a5!important}
-  #manualPaperEditor .bgps-v20-resize-handle,
-  #manualPaperEditor .bgps-v10-resize-handle,
-  #manualPaperEditor .bgps-image-resize-handle{display:none!important;pointer-events:none!important}
-  #manualPaperEditor .pf-img-handle{position:absolute!important;right:-11px!important;bottom:-11px!important;width:24px!important;height:24px!important;background:#1463a5!important;border:3px solid #fff!important;border-radius:50%!important;box-shadow:0 2px 10px rgba(0,0,0,.32)!important;cursor:nwse-resize!important;touch-action:none!important;pointer-events:auto!important;z-index:2147483647!important}
-  #manualPaperEditor .pf-drop-marker{height:0;border-top:3px solid #1463a5;margin:4px 0;clear:both}
-  @media(max-width:1050px){.pf-filters{grid-template-columns:1fr 1fr}.pf-kpis{grid-template-columns:1fr 1fr}.pf-main,.pf-grid-2{grid-template-columns:1fr}}
-  @media(max-width:620px){.pf-header{flex-direction:column}.pf-filters,.pf-kpis{grid-template-columns:1fr}.pf-table{min-width:760px}.pf-drawer{width:100vw}}
-</style>
-<script id="bgps-principal-final-js">
-(function(){
-  'use strict';
-  if(window.__BGPS_PRINCIPAL_FINAL__) return;
-  window.__BGPS_PRINCIPAL_FINAL__ = true;
-  const PF = {model:null, activity:[], search:'', className:'All Classes', exam:'All Exams', status:'All Statuses', kpi:''};
-  const byId = id => document.getElementById(id);
-  const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
-  const js = value => String(value == null ? '' : value).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' ');
-  const clean = value => String(value == null ? '' : value).trim();
-  const dateMs = value => { const d = value ? new Date(value) : null; return d && !Number.isNaN(d.getTime()) ? d.getTime() : 0; };
-  const currentUser = () => { try { return clean(currentId || window.currentId); } catch(_) { return clean(window.currentId); } };
-  const isPrincipal = () => currentUser().toUpperCase() === 'ADMIN';
-  function expose(name, fn){ window[name] = fn; try { (0,eval)(name + ' = window.' + name); } catch(_){} }
-  function getPapers(){ try { return Array.isArray(questionPapers) ? questionPapers : []; } catch(_) { return Array.isArray(window.questionPapers) ? window.questionPapers : []; } }
-  function getDrafts(){ try { return Array.isArray(backendPaperDrafts) ? backendPaperDrafts : []; } catch(_) { return []; } }
-  function getTeacherRows(){ try { return typeof teacherClassRows === 'function' ? teacherClassRows() : []; } catch(_) { return []; } }
-  function getDefaultSubjects(className){ try { return typeof getDefaultSubjectsForClass === 'function' ? getDefaultSubjectsForClass(className) : []; } catch(_) { return []; } }
-  function statusKey(status){ const s = clean(status).toLowerCase(); if(s.includes('correction')) return 'Correction Required'; if(s.includes('approved') || s.includes('locked')) return s.includes('locked') ? 'Locked' : 'Approved'; if(s.includes('submit')) return 'Review Due'; if(s.includes('draft')) return 'In Progress'; return s ? status : 'Not Started'; }
-  function relTime(value){ const ms = dateMs(value); if(!ms) return '-'; const diff = Date.now() - ms; const min = Math.max(1, Math.floor(diff/60000)); if(min < 60) return min + ' min ago'; const hr = Math.floor(min/60); if(hr < 24) return hr + ' hr ago'; const day = Math.floor(hr/24); return day + ' day' + (day === 1 ? '' : 's') + ' ago'; }
-  function fmtDate(value){ const ms = dateMs(value); if(!ms) return '-'; return new Date(ms).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
-  function daysOver(value){ const ms = dateMs(value); if(!ms) return 0; const today = new Date(); today.setHours(0,0,0,0); const due = new Date(ms); due.setHours(0,0,0,0); return due < today ? Math.max(1, Math.floor((today - due)/86400000)) : 0; }
-  function newest(items, getter){ return items.reduce((best,item) => Math.max(best, dateMs(getter(item))), 0); }
-  function statusClass(label){ return clean(label).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'not-started'; }
-  function paperTitle(p){ return [p.className, p.subject, p.exam].filter(Boolean).join(' / ') || 'Paper'; }
-  async function loadPrincipalActivity(){
-    try {
-      if(typeof paperApi !== 'function') return PF.activity || [];
-      const result = await paperApi('listPrincipalActivity', {});
-      PF.activity = Array.isArray(result.activity) ? result.activity : [];
-    } catch(error) {
-      console.warn('Principal activity unavailable', error);
-      PF.activity = PF.activity || [];
-    }
-    return PF.activity;
-  }
-  async function loadData(force){
-    try { if(typeof loadPaperSettings === 'function') await loadPaperSettings(Boolean(force)); } catch(error) { console.warn(error); }
-    try { if(typeof loadQuestionPapers === 'function') await loadQuestionPapers(Boolean(force)); } catch(error) { console.warn(error); }
-    let marks = [];
-    try { if(typeof getMasterData === 'function') marks = await getMasterData({}, Boolean(force)); } catch(error) { console.warn('Marks data unavailable', error); }
-    await loadPrincipalActivity();
-    return buildModel(getPapers(), getDrafts(), Array.isArray(marks) ? marks.slice(1) : [], PF.activity);
-  }
-  function buildModel(papers, drafts, marks, activity){
-    const allPapers = [...papers, ...drafts].filter(Boolean);
-    const exams = Array.from(new Set(allPapers.map(p => clean(p.exam)).concat(marks.map(r => clean(r && r[4]))).filter(Boolean))).sort();
-    if(!PF.exam || (PF.exam !== 'All Exams' && !exams.includes(PF.exam))) PF.exam = exams[0] || 'All Exams';
-    const selectedPapers = allPapers.filter(p => PF.exam === 'All Exams' || clean(p.exam) === PF.exam);
-    const selectedMarks = marks.filter(r => PF.exam === 'All Exams' || clean(r && r[4]) === PF.exam);
-    const map = new Map();
-    function rowFor(className, teacher){
-      const cls = clean(className) || 'Unassigned';
-      if(!map.has(cls)) {
-        map.set(cls, {className:cls, teacher:clean(teacher)||'-', papers:[], marks:[], activity:[], expected:new Set(), completed:new Set(), paperSubjects:new Set()});
-      }
-      const row = map.get(cls);
-      if(teacher && row.teacher === '-') row.teacher = clean(teacher);
-      return row;
-    }
-    getTeacherRows().forEach(item => rowFor(item.className, item.teacher));
-    selectedPapers.forEach(p => { const row = rowFor(p.className, p.teacherId); row.papers.push(p); if(p.subject) row.paperSubjects.add(clean(p.subject)); });
-    selectedMarks.forEach(r => { const row = rowFor(r && r[2], r && r[1]); row.marks.push(r); if(r && r[3]) row.completed.add(clean(r[3])); });
-    map.forEach(row => {
-      getDefaultSubjects(row.className).forEach(s => row.expected.add(clean(s)));
-      row.paperSubjects.forEach(s => row.expected.add(s));
-      row.completed.forEach(s => row.expected.add(s));
-      row.activity = activity.filter(a => clean(a.className) === row.className || (clean(a.teacherId) && clean(a.teacherId) === clean(row.teacher)));
-      row.nonDraft = row.papers.filter(p => !/draft/i.test(clean(p.status)));
-      row.reviewDue = row.papers.filter(p => statusKey(p.status) === 'Review Due');
-      row.corrections = row.papers.filter(p => statusKey(p.status) === 'Correction Required');
-      row.approved = row.papers.filter(p => statusKey(p.status) === 'Approved' || statusKey(p.status) === 'Locked');
-      row.drafts = row.papers.filter(p => /draft/i.test(clean(p.status)));
-      row.completedSubjects = Array.from(row.completed).filter(Boolean).sort();
-      row.expectedSubjects = Array.from(row.expected).filter(Boolean).sort();
-      row.pendingSubjects = row.expectedSubjects.filter(s => !row.completed.has(s));
-      row.deadline = row.papers.map(p => p.examDate).filter(Boolean).sort()[0] || '';
-      row.overdueDays = daysOver(row.deadline) && (row.reviewDue.length || row.corrections.length || row.pendingSubjects.length || !row.nonDraft.length) ? daysOver(row.deadline) : 0;
-      row.lastUpdateMs = Math.max(newest(row.papers, p => p.updatedAt || p.uploadedAt || p.createdAt || p.examDate), newest(row.marks, r => r && r[0]), newest(row.activity, a => a.timestamp));
-      row.lastUpdate = row.lastUpdateMs ? new Date(row.lastUpdateMs).toISOString() : '';
-      row.lastReminder = row.activity.filter(a => clean(a.type).toLowerCase() === 'reminder').sort((a,b)=>dateMs(b.timestamp)-dateMs(a.timestamp))[0] || null;
-      row.comments = row.activity.filter(a => clean(a.type).toLowerCase() === 'comment').sort((a,b)=>dateMs(b.timestamp)-dateMs(a.timestamp));
-      row.status = deriveRowStatus(row);
-    });
-    const rows = Array.from(map.values()).sort((a,b) => clean(a.className).localeCompare(clean(b.className), undefined, {numeric:true}));
-    const latest = selectedPapers.filter(p => !/draft/i.test(clean(p.status))).sort((a,b)=>dateMs(b.updatedAt || b.uploadedAt)-dateMs(a.updatedAt || a.uploadedAt)).slice(0,8);
-    const totals = {
-      paperCompleted: rows.reduce((s,r)=>s+r.approved.length,0),
-      paperTotal: rows.reduce((s,r)=>s+r.nonDraft.length,0),
-      marksCompleted: rows.reduce((s,r)=>s+r.completedSubjects.length,0),
-      marksTotal: rows.reduce((s,r)=>s+r.expectedSubjects.length,0),
-      reviewDue: rows.reduce((s,r)=>s+r.reviewDue.length,0),
-      corrections: rows.reduce((s,r)=>s+r.corrections.length,0)
-    };
-    const terms = exams.map(exam => {
-      const pp = allPapers.filter(p => clean(p.exam) === exam);
-      const mm = marks.filter(r => clean(r && r[4]) === exam);
-      return {exam, papers:pp.length, approved:pp.filter(p=>statusKey(p.status)==='Approved'||statusKey(p.status)==='Locked').length, marks:mm.length, review:pp.filter(p=>statusKey(p.status)==='Review Due').length, corrections:pp.filter(p=>statusKey(p.status)==='Correction Required').length, latest:Math.max(newest(pp,p=>p.updatedAt||p.uploadedAt), newest(mm,r=>r&&r[0]))};
-    }).sort((a,b)=>b.latest-a.latest);
-    return {rows, papers:selectedPapers, marks:selectedMarks, activity, exams, latest, totals, terms};
-  }
-  function deriveRowStatus(row){
-    if(row.overdueDays) return 'Overdue';
-    if(row.corrections.length) return 'Correction Required';
-    if(row.reviewDue.length) return 'Review Due';
-    if(row.approved.length && !row.reviewDue.length && !row.corrections.length && !row.pendingSubjects.length) return 'Approved';
-    if(row.nonDraft.length) return 'Submitted';
-    if(row.drafts.length || row.completedSubjects.length) return 'In Progress';
-    return 'Not Started';
-  }
-  function filteredRows(model){
-    const q = clean(PF.search).toLowerCase();
-    return model.rows.filter(row => {
-      if(PF.className !== 'All Classes' && row.className !== PF.className) return false;
-      if(PF.status !== 'All Statuses' && row.status !== PF.status) return false;
-      if(PF.kpi === 'papers' && !row.nonDraft.length) return false;
-      if(PF.kpi === 'marks' && !row.completedSubjects.length) return false;
-      if(PF.kpi === 'review' && !row.reviewDue.length) return false;
-      if(PF.kpi === 'corrections' && !row.corrections.length) return false;
-      if(q && !(row.className + ' ' + row.teacher + ' ' + row.expectedSubjects.join(' ')).toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }
-  function actionRows(rows){
-    const out = [];
-    rows.forEach(row => {
-      if(row.reviewDue.length) out.push({label:'Paper review due', detail:row.reviewDue.length + ' submitted paper(s)', cls:'review-due', row});
-      if(row.corrections.length) out.push({label:'Correction pending', detail:row.corrections.length + ' returned paper(s)', cls:'correction-required', row});
-      if(row.overdueDays) out.push({label:'Paper/marks overdue', detail:'Overdue by ' + row.overdueDays + ' day(s)', cls:'overdue', row});
-      if(row.overdueDays && !row.lastUpdateMs) out.push({label:'Inactive after deadline', detail:'No teacher activity found', cls:'overdue', row});
-    });
-    return out;
-  }
-  function renderKpis(model){
-    const t = model.totals;
-    return '<section class="pf-kpis">' +
-      kpi('papers','Papers Submitted', t.paperCompleted + '/' + Math.max(t.paperTotal, t.paperCompleted), 'approved / submitted total', 'blue') +
-      kpi('marks','Marks Completed', t.marksCompleted + '/' + Math.max(t.marksTotal, t.marksCompleted), 'completed / tracked subjects', 'green') +
-      kpi('review','Review Due', t.reviewDue, 'papers waiting principal review', 'amber') +
-      kpi('corrections','Corrections Pending', t.corrections, 'returned to teachers', 'red') +
-      '</section>';
-  }
-  function kpi(key,label,value,sub,cls){ return '<button class="pf-kpi '+cls+' '+(PF.kpi===key?'active':'')+'" onclick="bgpsPrincipalSetFilter(\'kpi\',\''+key+'\')"><span><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong><small>'+esc(sub)+'</small></span><i></i></button>'; }
-  function renderFilters(model){
-    const classes = ['All Classes'].concat(model.rows.map(r=>r.className).filter(Boolean));
-    const statuses = ['All Statuses','Not Started','In Progress','Submitted','Review Due','Correction Required','Approved','Overdue'];
-    return '<section class="pf-filters">' +
-      '<label>Search<input value="'+esc(PF.search)+'" placeholder="Class, teacher, subject" oninput="bgpsPrincipalSetFilter(\'search\',this.value)"></label>' +
-      '<label>Exam / Term<select onchange="bgpsPrincipalSetFilter(\'exam\',this.value)"><option>All Exams</option>'+model.exams.map(e=>'<option value="'+esc(e)+'" '+(PF.exam===e?'selected':'')+'>'+esc(e)+'</option>').join('')+'</select></label>' +
-      '<label>Class<select onchange="bgpsPrincipalSetFilter(\'className\',this.value)">'+classes.map(c=>'<option value="'+esc(c)+'" '+(PF.className===c?'selected':'')+'>'+esc(c)+'</option>').join('')+'</select></label>' +
-      '<label>Status<select onchange="bgpsPrincipalSetFilter(\'status\',this.value)">'+statuses.map(s=>'<option value="'+esc(s)+'" '+(PF.status===s?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select></label>' +
-      '<button class="pf-btn light" onclick="bgpsPrincipalResetFilters()">Reset</button>' +
-      '</section>';
-  }
-  function renderTable(rows){
-    const body = rows.map(row => '<tr><td><strong>'+esc(row.className)+'</strong><small>'+esc(row.teacher||'-')+'</small></td><td><strong>'+row.nonDraft.length+'</strong><small>'+row.approved.length+' approved, '+row.reviewDue.length+' review</small></td><td><strong>'+row.completedSubjects.length+'/'+Math.max(row.expectedSubjects.length,row.completedSubjects.length)+'</strong><small>'+esc(row.pendingSubjects.slice(0,3).join(', ')||'No pending subject')+'</small></td><td>'+row.reviewDue.length+'</td><td>'+row.corrections.length+'</td><td>'+esc(row.deadline?fmtDate(row.deadline):'-')+(row.overdueDays?'<small>Overdue by '+row.overdueDays+' days</small>':'')+'</td><td><strong>'+esc(relTime(row.lastUpdate))+'</strong><small>'+esc(fmtDate(row.lastUpdate))+'</small></td><td><span class="pf-status '+statusClass(row.status)+'">'+esc(row.status)+(row.overdueDays?' by '+row.overdueDays+'d':'')+'</span></td><td><button class="pf-btn light" onclick="bgpsPrincipalOpenClass(\''+js(row.className)+'\')">Open</button></td></tr>').join('') || '<tr><td colspan="9"><div class="pf-empty">No classes match the selected filters.</div></td></tr>';
-    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Class-wise Tracking Table</h2><p>Main working table for paper review, marks completion and class follow-up.</p></div><span class="pf-live-pill">'+rows.length+' class(es)</span></div><div class="pf-table-wrap"><table class="pf-table"><thead><tr><th>Class / Teacher</th><th>Papers Submitted</th><th>Marks Completion</th><th>Review Due</th><th>Corrections</th><th>Deadline</th><th>Last Update</th><th>Status</th><th></th></tr></thead><tbody>'+body+'</tbody></table></div></section>';
-  }
-  function renderActions(rows){
-    const items = actionRows(rows);
-    const html = items.map(item => '<button class="pf-action-row" onclick="bgpsPrincipalOpenClass(\''+js(item.row.className)+'\')"><span><strong>'+esc(item.label)+'</strong><small>'+esc(item.row.className)+' / '+esc(item.row.teacher)+' - '+esc(item.detail)+'</small></span><b>&gt;</b></button>').join('');
-    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Action Required</h2><p>Only classes with real pending action are shown.</p></div></div><div class="pf-action-list">'+(html||'<div class="pf-empty">No pending action for this filter.</div>')+'</div></section>';
-  }
-  function pendingReason(row){ if(row.overdueDays) return 'Overdue by '+row.overdueDays+' day(s)'; if(row.corrections.length) return 'Correction pending'; if(row.reviewDue.length) return 'Paper review due'; if(row.pendingSubjects.length) return 'Marks subjects pending'; return 'No pending reason'; }
-  function renderFollow(rows){
-    const needs = rows.filter(r => r.reviewDue.length || r.corrections.length || r.overdueDays || r.pendingSubjects.length).slice(0,10);
-    const html = needs.map(row => '<div class="pf-follow-row"><span><strong>'+esc(row.teacher)+' / '+esc(row.className)+'</strong><small>'+esc(pendingReason(row))+' | Last reminder: '+esc(row.lastReminder?relTime(row.lastReminder.timestamp):'not sent')+'</small></span><span class="pf-row-actions"><button class="pf-btn light" onclick="bgpsPrincipalViewActivity(\''+js(row.className)+'\')">View Activity</button><button class="pf-btn amber" onclick="bgpsPrincipalSendReminder(\''+js(row.className)+'\')">Send Reminder</button><button class="pf-btn light" onclick="bgpsPrincipalAddComment(\''+js(row.className)+'\')">Add Comment</button><button class="pf-btn" onclick="bgpsPrincipalReviewPaper(\''+js(row.className)+'\')">Review Paper</button></span></div>').join('');
-    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Teacher Follow-up</h2><p>Pending reason, last reminder and shortcuts for principal action.</p></div></div><div class="pf-follow-list">'+(html||'<div class="pf-empty">No teacher follow-up required.</div>')+'</div></section>';
-  }
-  function renderLatest(model){
-    const html = model.latest.map(p => '<button class="pf-recent-row" onclick="bgpsPrincipalOpenPaper(\''+js(p.paperId)+'\')"><span><strong>'+esc(paperTitle(p))+'</strong><small>'+esc(p.teacherId||'-')+' | '+esc(p.status||'-')+' | '+esc(relTime(p.updatedAt||p.uploadedAt))+'</small></span><b>&gt;</b></button>').join('');
-    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Latest Submissions</h2><p>Clickable recent papers from the selected term.</p></div></div><div class="pf-recent-list">'+(html||'<div class="pf-empty">No latest submissions found.</div>')+'</div></section>';
-  }
-  function renderHistory(model){
-    const body = model.terms.map(t => '<tr><td><strong>'+esc(t.exam)+'</strong></td><td>'+t.approved+'/'+Math.max(t.papers,t.approved)+'</td><td>'+t.marks+'</td><td>'+t.review+'</td><td>'+t.corrections+'</td><td>'+esc(t.latest?relTime(t.latest):'-')+'</td></tr>').join('') || '<tr><td colspan="6"><div class="pf-empty">No term history found.</div></td></tr>';
-    return '<section class="pf-panel"><div class="pf-panel-head"><div><h2>Term History / Export Repo</h2><p>Term progress summary built from paper and marks records.</p></div><div class="pf-row-actions"><button class="pf-btn green" onclick="bgpsPrincipalDownloadReport()">Download Term Progress Report</button>'+(isPrincipal()?'<button class="pf-btn light" onclick="switchTab(\'settings\')">Super Admin Settings</button>':'')+'</div></div><div class="pf-table-wrap"><table class="pf-table"><thead><tr><th>Term</th><th>Papers approved/total</th><th>Marks rows</th><th>Review</th><th>Corrections</th><th>Last update</th></tr></thead><tbody>'+body+'</tbody></table></div></section>';
-  }
-  function renderDashboard(model){
-    const rows = filteredRows(model);
-    return '<div class="pf-shell"><section class="pf-header"><div><h1>Principal Command Centre</h1><p>Exam-wise paper review, marks completion, deadlines and teacher follow-up.</p></div><span class="pf-live-pill">Real data only / '+esc(PF.exam)+'</span></section>'+renderFilters(model)+renderKpis(model)+'<section class="pf-main">'+renderTable(rows)+renderActions(rows)+'</section><section class="pf-grid-2">'+renderFollow(rows)+renderLatest(model)+'</section>'+renderHistory(model)+'<div id="pfDrawerBackdrop" class="pf-drawer-backdrop" onclick="bgpsPrincipalCloseDrawer()"></div><aside id="pfDrawer" class="pf-drawer" aria-live="polite"></aside></div>';
-  }
-  async function renderPrincipal(force){
-    if(!isPrincipal()) { document.body.classList.remove('bgps-principal-final-active'); return false; }
-    const host = byId('proHomeContent');
-    if(!host) return false;
-    document.body.classList.add('bgps-principal-final-active');
-    const side = byId('proRightPanel'); if(side) side.innerHTML = '';
-    host.innerHTML = '<div class="pf-shell"><section class="pf-header"><div><h1>Principal Command Centre</h1><p>Loading live paper and marks data...</p></div></section></div>';
-    PF.model = await loadData(force);
-    host.innerHTML = renderDashboard(PF.model);
-    cleanupOldDashboard();
-    return true;
-  }
-  let dashboardCleanTimer = 0;
-  function installDashboardCleaner(){
-    if(window.__BGPS_FINAL_DASHBOARD_CLEANER__ || !document.body) return;
-    window.__BGPS_FINAL_DASHBOARD_CLEANER__ = true;
-    new MutationObserver(() => {
-      clearTimeout(dashboardCleanTimer);
-      dashboardCleanTimer = setTimeout(cleanupOldDashboard, 35);
-    }).observe(document.body,{childList:true,subtree:true});
-  }
-  function cleanupOldDashboard(){
-    document.querySelectorAll('.bgps10-donut-wrap,.bgps10-summary').forEach(n=>n.remove());
-    document.querySelectorAll('.bgps10-panel h2').forEach(h=>{
-      if(/Paper Status Overview|Quick Actions/i.test(h.textContent||'')) h.closest('.bgps10-panel')?.remove();
-    });
-    document.querySelectorAll('.bgps10-grid-main').forEach(grid=>{
-      grid.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
-      grid.querySelectorAll(':scope>.bgps10-panel').forEach(panel=>{
-        const heading = clean(panel.querySelector('h2')?.textContent);
-        if(/Paper Status Overview|Quick Actions/i.test(heading) || !clean(panel.textContent)) panel.remove();
-        else panel.style.setProperty('grid-column','1 / -1','important');
-      });
-    });
-  }
-  expose('bgpsPrincipalSetFilter', function(key,value){
-    if(key === 'kpi') PF.kpi = PF.kpi === value ? '' : value;
-    else { PF[key] = value || (key === 'status' ? 'All Statuses' : key === 'className' ? 'All Classes' : key === 'exam' ? 'All Exams' : ''); if(key === 'exam') PF.kpi = ''; }
-    if(key === 'exam') { renderPrincipal(false); return; }
-    if(PF.model) byId('proHomeContent').innerHTML = renderDashboard(PF.model);
-  });
-  expose('bgpsPrincipalResetFilters', function(){ PF.search=''; PF.className='All Classes'; PF.status='All Statuses'; PF.kpi=''; if(PF.model) byId('proHomeContent').innerHTML = renderDashboard(PF.model); });
-  function rowByClass(className){ return (PF.model?.rows||[]).find(r => r.className === className); }
-  expose('bgpsPrincipalOpenClass', function(className){
-    const row = rowByClass(className); if(!row) return;
-    const drawer = byId('pfDrawer'), backdrop = byId('pfDrawerBackdrop'); if(!drawer || !backdrop) return;
-    const paperRows = row.nonDraft.map(p => '<tr><td><strong>'+esc(p.subject||'-')+'</strong><small>'+esc(p.exam||'-')+'</small></td><td><span class="pf-status '+statusClass(statusKey(p.status))+'">'+esc(p.status||'-')+'</span></td><td>'+esc(relTime(p.updatedAt||p.uploadedAt))+'</td><td><button class="pf-btn light" onclick="bgpsPrincipalOpenPaper(\''+js(p.paperId)+'\')">Open</button></td></tr>').join('') || '<tr><td colspan="4">No submitted papers.</td></tr>';
-    const marksRows = row.expectedSubjects.map(s => '<tr><td>'+esc(s)+'</td><td><span class="pf-status '+(row.completed.has(s)?'approved':'not-started')+'">'+(row.completed.has(s)?'Completed':'Pending')+'</span></td></tr>').join('') || '<tr><td colspan="2">No subject data.</td></tr>';
-    const correctionRows = row.corrections.map(p => '<tr><td>'+esc(p.subject||'-')+'</td><td>'+esc(p.adminNote||'Correction requested')+'</td><td><button class="pf-btn light" onclick="bgpsPrincipalOpenPaper(\''+js(p.paperId)+'\')">Open</button></td></tr>').join('') || '<tr><td colspan="3">No returned papers.</td></tr>';
-    const comments = row.comments.map(c => '<tr><td>'+esc(fmtDate(c.timestamp))+'</td><td>'+esc(c.message)+'</td></tr>').join('') || '<tr><td colspan="2">No principal comments yet.</td></tr>';
-    const history = row.activity.slice(0,8).map(a => '<tr><td>'+esc(fmtDate(a.timestamp))+'</td><td>'+esc(a.type)+'</td><td>'+esc(a.message||a.subjects||'-')+'</td></tr>').join('') || '<tr><td colspan="3">No reminder/comment history.</td></tr>';
-    drawer.innerHTML = '<div class="pf-drawer-head"><div><h2>'+esc(row.className)+'</h2><p>'+esc(row.teacher)+' | '+esc(row.status)+' | Last activity '+esc(relTime(row.lastUpdate))+'</p></div><button class="pf-btn light" onclick="bgpsPrincipalCloseDrawer()">Close</button></div><div class="pf-drawer-body"><section class="pf-drawer-section"><h3>Principal Actions</h3><div class="pf-row-actions"><button class="pf-btn" onclick="bgpsPrincipalReviewPaper(\''+js(row.className)+'\')">Review</button><button class="pf-btn red" onclick="bgpsPrincipalReturnPaper(\''+js(row.className)+'\')">Return</button><button class="pf-btn green" onclick="bgpsPrincipalApprovePaper(\''+js(row.className)+'\')">Approve</button><button class="pf-btn light" onclick="bgpsPrincipalAddComment(\''+js(row.className)+'\')">Add Remark</button><button class="pf-btn amber" onclick="bgpsPrincipalSendReminder(\''+js(row.className)+'\')">Send Reminder</button></div></section><section class="pf-drawer-section"><h3>Submitted Papers</h3><table class="pf-mini-table"><tbody>'+paperRows+'</tbody></table></section><section class="pf-drawer-section"><h3>Marks Completion by Subject</h3><table class="pf-mini-table"><tbody>'+marksRows+'</tbody></table></section><section class="pf-drawer-section"><h3>Returned / Correction Papers</h3><table class="pf-mini-table"><tbody>'+correctionRows+'</tbody></table></section><section class="pf-drawer-section"><h3>Principal Remarks</h3><table class="pf-mini-table"><tbody>'+comments+'</tbody></table></section><section class="pf-drawer-section"><h3>Status / History</h3><table class="pf-mini-table"><tbody>'+history+'</tbody></table></section></div>';
-    backdrop.classList.add('open'); drawer.classList.add('open');
-  });
-  expose('bgpsPrincipalCloseDrawer', function(){ byId('pfDrawer')?.classList.remove('open'); byId('pfDrawerBackdrop')?.classList.remove('open'); });
-  expose('bgpsPrincipalOpenPaper', function(paperId){ if(!paperId) return; if(typeof bgpsOpenOverviewPaper === 'function') return bgpsOpenOverviewPaper(paperId); if(typeof openPaperFile === 'function') return openPaperFile(paperId,'preview'); });
-  function firstReviewPaper(row){ return row?.reviewDue?.[0] || row?.nonDraft?.[0] || null; }
-  expose('bgpsPrincipalReviewPaper', function(className){ const p = firstReviewPaper(rowByClass(className)); if(p) bgpsPrincipalOpenPaper(p.paperId); else alert('No paper found for review.'); });
-  expose('bgpsPrincipalApprovePaper', async function(className){ const p = firstReviewPaper(rowByClass(className)); if(!p) return alert('No paper found to approve.'); if(typeof updatePaperStatus === 'function') await updatePaperStatus(p.paperId,'Approved'); await renderPrincipal(true); bgpsPrincipalOpenClass(className); });
-  expose('bgpsPrincipalReturnPaper', function(className){ const p = firstReviewPaper(rowByClass(className)); if(!p) return alert('No paper found to return.'); if(typeof requestPaperCorrection === 'function') requestPaperCorrection(p.paperId); });
-  expose('bgpsPrincipalSendReminder', async function(className){
-    const row = rowByClass(className); if(!row) return;
-    try { await paperApi('sendReminder',{reminder:{teacherId:row.teacher,className:row.className,subjects:row.pendingSubjects.join(', '),message:'Principal reminder: '+pendingReason(row)}}); alert('Reminder sent/logged for '+row.teacher+'.'); await renderPrincipal(true); }
-    catch(error){ alert('Reminder failed: '+(error?.message||error)); }
-  });
-  expose('bgpsPrincipalAddComment', async function(className){
-    const row = rowByClass(className); if(!row) return;
-    const message = prompt('Add principal remark for '+row.className+':','');
-    if(!clean(message)) return;
-    try { await paperApi('addPrincipalComment',{comment:{teacherId:row.teacher,className:row.className,subjects:row.pendingSubjects.join(', '),message}}); await renderPrincipal(true); bgpsPrincipalOpenClass(className); }
-    catch(error){ alert('Comment failed: '+(error?.message||error)); }
-  });
-  expose('bgpsPrincipalViewActivity', function(className){ bgpsPrincipalOpenClass(className); });
-  expose('bgpsPrincipalDownloadReport', function(){
-    const rows = filteredRows(PF.model || {rows:[]});
-    const csv = ['Class,Teacher,Status,Papers Submitted,Papers Approved,Review Due,Corrections,Marks Completed,Marks Total,Deadline,Last Update'].concat(rows.map(r => [r.className,r.teacher,r.status,r.nonDraft.length,r.approved.length,r.reviewDue.length,r.corrections.length,r.completedSubjects.length,Math.max(r.expectedSubjects.length,r.completedSubjects.length),r.deadline,fmtDate(r.lastUpdate)].map(v => '"'+String(v).replace(/"/g,'""')+'"').join(','))).join('\r\n');
-    const blob = new Blob([csv],{type:'text/csv'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'BGPS_Term_Progress_Report.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
-  });
+
   function installImageFix(){
     const editor = byId('manualPaperEditor');
     if(!editor) return;
@@ -13789,14 +13989,25 @@ This replaces the overlapping approval hotfix chain with one safe wrapper that:
     }
     normalizeCurrentImages();
   }
-  const oldRefresh = window.bgpsProRefreshHome;
-  expose('bgpsProRefreshHome', function(){ return renderPrincipal(true).then(done => done || (typeof oldRefresh === 'function' ? oldRefresh() : null)); });
-  const oldSwitch = window.switchTab;
-  expose('switchTab', async function(tab){ const result = typeof oldSwitch === 'function' ? oldSwitch.apply(this,arguments) : null; await Promise.resolve(result); if((tab === 'home' || tab === 'overview' || tab === undefined) && isPrincipal()) await renderPrincipal(false); setTimeout(()=>{ cleanupOldDashboard(); installImageFix(); },80); return result; });
-  const oldLogin = window.loginTeacher;
-  if(typeof oldLogin === 'function') expose('loginTeacher', async function(){ const result = await oldLogin.apply(this,arguments); setTimeout(()=>{ if(isPrincipal()) renderPrincipal(true); installImageFix(); cleanupOldDashboard(); },180); return result; });
-  function boot(){ installDashboardCleaner(); installImageFix(); cleanupOldDashboard(); if(isPrincipal() && byId('proHomeContent')) renderPrincipal(false); }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true}); else boot();
+
+  function cleanupTeacherDashboard(){
+    removeFloatingTools();
+    document.querySelectorAll('.bgps10-panel h2').forEach(h=>{if(/Paper Status Overview/i.test(h.textContent||''))h.closest('.bgps10-panel')?.remove()});
+    document.querySelectorAll('.bgps10-summary').forEach(n=>n.remove());
+    const line=byId('composerExamLine');if(line&&/question paper/i.test(line.textContent||''))line.textContent=currentTermText({});
+  }
+  function watchComposerImages(){
+    if(window.__BGPS_EDITOR_IMAGE_WATCH__)return;
+    window.__BGPS_EDITOR_IMAGE_WATCH__=true;
+    let timer=null;
+    new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(()=>{removeFloatingTools();installImageFix();},50)}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-layout','data-bgps-layout']});
+  }
+  const editorOldRefresh=window.bgpsProRefreshHome;
+  if(typeof editorOldRefresh==='function')expose('bgpsProRefreshHome',function(){const result=editorOldRefresh.apply(this,arguments);Promise.resolve(result).finally(()=>setTimeout(()=>{cleanupTeacherDashboard();installImageFix();},120));return result});
+  const editorOldSwitch=window.switchTab;
+  if(typeof editorOldSwitch==='function')expose('switchTab',function(){const result=editorOldSwitch.apply(this,arguments);Promise.resolve(result).finally(()=>setTimeout(()=>{cleanupTeacherDashboard();installImageFix();},120));return result});
+  function boot(){removeFloatingTools();cleanupTeacherDashboard();installImageFix();watchComposerImages();try{window.updateComposerHeader?.()}catch(_){}setTimeout(()=>{cleanupTeacherDashboard();installImageFix();},500)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
 </body>

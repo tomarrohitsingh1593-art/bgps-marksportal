@@ -3332,9 +3332,12 @@ window.BGPS_CONFIG = Object.freeze({
     }
 
     if (!result || result.previewAvailable === false || !result.fileBase64) {
-      const message = /external_request|permissions are not sufficient/i.test(String(result?.error || ''))
-        ? 'DOCX preview authorization is pending. The school administrator must authorize the updated backend once.'
-        : (result?.error || 'Download the original file to open it.');
+      if (result?.drivePreviewUrl) {
+        preview.innerHTML = '<iframe class="paper-preview-frame" title="Secure question paper preview" referrerpolicy="no-referrer"></iframe>';
+        preview.querySelector('iframe').src = result.drivePreviewUrl;
+        return;
+      }
+      const message = result?.error || 'Download the original file to open it.';
       preview.innerHTML = `<div class="empty-state file-empty"><strong>Preview could not be prepared</strong>${escapeHtml(message)}</div>`;
       return;
     }
@@ -4145,9 +4148,12 @@ window.BGPS_CONFIG = Object.freeze({
       if (download) { download.hidden = false; download.dataset.fileName = originalFile.fileName || previewResult.originalFileName || 'question-paper'; }
 
       if (!previewResult || previewResult.previewAvailable === false || !previewResult.fileBase64) {
-        const message = /external_request|permissions are not sufficient/i.test(String(previewResult?.error || ''))
-          ? 'DOCX preview authorization is pending. The school administrator must authorize the updated backend once.'
-          : (previewResult?.error || 'Use Download File to open the original paper.');
+        if (previewResult?.drivePreviewUrl) {
+          body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Secure question paper preview" referrerpolicy="no-referrer"></iframe>';
+          body.querySelector('iframe').src = previewResult.drivePreviewUrl;
+          return;
+        }
+        const message = previewResult?.error || 'Use Download File to open the original paper.';
         body.innerHTML = `<div class="empty-state"><strong>Preview could not be prepared</strong>${escapeHtml(message)}</div>`;
         return;
       }

@@ -958,6 +958,13 @@ body.modal-open { overflow: hidden; }
 /* Administration controls and teacher-progress panel */
 .admin-side-stack { display:grid; gap:16px; align-content:start; }
 .teacher-progress-list { display:grid; gap:9px; }
+.teacher-progress-primary .teacher-progress-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.action-card-compact .action-item { grid-template-columns:8px minmax(0,1fr); align-items:start; }
+.action-card-compact .action-item .btn { grid-column:2; justify-self:start; margin-top:2px; }
+.action-card-compact .action-copy span { line-height:1.4; }
+@media (max-width:1180px) {
+  .teacher-progress-primary .teacher-progress-list { grid-template-columns:1fr; }
+}
 .teacher-progress-item { border:1px solid var(--border); border-radius:11px; padding:11px 12px; background:var(--surface-soft); }
 .teacher-progress-item:hover { border-color:#b8cadc; background:#f2f7fc; }
 .teacher-progress-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -1165,13 +1172,10 @@ body.modal-open { overflow: hidden; }
             </section>
 
             <section class="principal-dashboard-grid section-gap">
-              <article class="page-card action-card">
-                <div class="card-head">
-                  <div><h2>Action Required</h2><p>Open the exact class or paper requiring attention.</p></div>
-                  <span class="count-badge" id="actionRequiredCount">0</span>
-                </div>
-                <div class="card-body action-list" id="actionRequiredList">
-                  <div class="empty-state"><strong>Loading actions</strong>Please wait while the latest records are checked.</div>
+              <article class="page-card teacher-progress-primary">
+                <div class="card-head"><div><h2>Teacher Progress</h2><p>Marks and question-paper progress by teacher.</p></div></div>
+                <div class="card-body teacher-progress-list" id="teacherProgressList">
+                  <div class="empty-state"><strong>Loading teacher progress</strong>Please wait.</div>
                 </div>
               </article>
 
@@ -1185,10 +1189,13 @@ body.modal-open { overflow: hidden; }
                     <button type="button" data-paper-status="Locked"><span>Locked</span><strong id="paperStatusLocked">—</strong></button>
                   </div>
                 </section>
-                <section class="page-card">
-                  <div class="card-head"><div><h2>Teacher Progress</h2><p>Marks and paper work by teacher.</p></div></div>
-                  <div class="card-body teacher-progress-list" id="teacherProgressList">
-                    <div class="empty-state"><strong>Loading teacher progress</strong>Please wait.</div>
+                <section class="page-card action-card action-card-compact">
+                  <div class="card-head">
+                    <div><h2>Action Required</h2><p>Open the exact task requiring attention.</p></div>
+                    <span class="count-badge" id="actionRequiredCount">0</span>
+                  </div>
+                  <div class="card-body action-list" id="actionRequiredList">
+                    <div class="empty-state"><strong>Loading actions</strong>Please wait while the latest records are checked.</div>
                   </div>
                 </section>
               </aside>
@@ -1416,7 +1423,7 @@ body.modal-open { overflow: hidden; }
           <div id="paperEditorWorkspace" hidden>
             <div class="view-heading paper-editor-heading">
               <div><div class="eyebrow" id="paperEditorEyebrow">Question Paper Creator</div><h1 id="paperEditorTitle">Create Question Paper</h1><p id="paperEditorSubtitle">Prepare the paper in A4 format and save it as a draft before submission.</p></div>
-              <div class="view-actions"><button class="btn" id="closePaperEditor" type="button">Back to My Papers</button><button class="btn" id="previewCurrentPaper" type="button">Preview</button><button class="btn primary" id="savePaperDraft" type="button">Save Draft</button></div>
+              <div class="view-actions"><button class="btn" id="closePaperEditor" type="button">Back to My Papers</button><button class="btn" id="previewCurrentPaper" type="button">Preview</button><button class="btn danger-outline" id="deleteCurrentPaperDraft" type="button" hidden>Delete Draft</button><button class="btn primary" id="savePaperDraft" type="button">Save Draft</button></div>
             </div>
 
             <div class="correction-banner" id="paperCorrectionBanner" hidden><strong>Principal correction note</strong><span id="paperCorrectionNote"></span></div>
@@ -2815,17 +2822,18 @@ window.BGPS_CONFIG = Object.freeze({
     const expected = classProgress.reduce((sum, item) => sum + item.expectedCount, 0);
     const pending = Math.max(0, expected - completed);
     const teachersPending = classProgress.filter((item) => item.pendingCount > 0).length;
-    const examPapers = papers.filter((paper) => normalize(paper.exam) === normalize(selectedExam()));
-    const review = examPapers.filter((paper) => normalize(paper.status) === 'SUBMITTED').length;
-    const correction = examPapers.filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED').length;
-    const approved = examPapers.filter((paper) => normalize(paper.status) === 'APPROVED').length;
-    const locked = examPapers.filter((paper) => normalize(paper.status) === 'LOCKED').length;
+    const exam = normalize(selectedExam());
+    const workflowPapers = papers.filter((paper) => normalize(paper.exam) === exam);
+    const review = workflowPapers.filter((paper) => normalize(paper.status) === 'SUBMITTED').length;
+    const correction = workflowPapers.filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED').length;
+    const approved = workflowPapers.filter((paper) => normalize(paper.status) === 'APPROVED').length;
+    const locked = workflowPapers.filter((paper) => normalize(paper.status) === 'LOCKED').length;
 
     setText('dashMarksComplete', `${completed}/${expected}`);
     setText('dashMarksCompleteNote', `${selectedExam()} · subjects recorded`);
     setText('dashMarksPending', pending);
     setText('dashTeachersPending', teachersPending);
-    setText('dashPapersSubmitted', examPapers.length);
+    setText('dashPapersSubmitted', workflowPapers.length);
     setText('dashPapersReview', review);
     setText('dashPapersCorrection', correction);
     setText('paperStatusSubmitted', review);
@@ -2853,8 +2861,11 @@ window.BGPS_CONFIG = Object.freeze({
         });
       });
 
-    papers
-      .filter((paper) => normalize(paper.status) === 'SUBMITTED' && normalize(paper.exam) === normalize(selectedExam()))
+    const exam = normalize(selectedExam());
+    const examPapers = papers.filter((paper) => normalize(paper.exam) === exam);
+
+    examPapers
+      .filter((paper) => normalize(paper.status) === 'SUBMITTED')
       .slice(0, 5)
       .forEach((paper) => {
         actions.push({
@@ -2866,8 +2877,8 @@ window.BGPS_CONFIG = Object.freeze({
         });
       });
 
-    papers
-      .filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED' && normalize(paper.exam) === normalize(selectedExam()))
+    examPapers
+      .filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED')
       .slice(0, 3)
       .forEach((paper) => {
         actions.push({
@@ -3275,7 +3286,10 @@ window.BGPS_CONFIG = Object.freeze({
     }
 
     if (!result || result.previewAvailable === false || !result.fileBase64) {
-      preview.innerHTML = `<div class="empty-state file-empty"><strong>Preview could not be prepared</strong>${escapeHtml(result?.error || 'Download the original file to open it.')}</div>`;
+      const message = /external_request|permissions are not sufficient/i.test(String(result?.error || ''))
+        ? 'DOCX preview authorization is pending. The school administrator must authorize the updated backend once.'
+        : (result?.error || 'Download the original file to open it.');
+      preview.innerHTML = `<div class="empty-state file-empty"><strong>Preview could not be prepared</strong>${escapeHtml(message)}</div>`;
       return;
     }
 
@@ -3792,6 +3806,7 @@ window.BGPS_CONFIG = Object.freeze({
     try {
       const result = await window.BGPS_API.savePaperDraft(draft);
       currentDraftId = result.draftId || currentDraftId;
+      syncDraftDeleteControl();
       markSaved(`Draft saved · ${new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit' }).format(new Date())}`);
       if (showToast) toast('Question paper draft saved.');
       return currentDraftId;
@@ -3882,7 +3897,7 @@ window.BGPS_CONFIG = Object.freeze({
       const submitted = statusKey(item.status) === 'submitted';
       const title = item.title || `${item.className || ''} ${item.subject || ''} ${item.exam || ''}`.trim() || 'Question Paper';
       let actions = '';
-      if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">Continue Editing</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">Delete</button>`;
+      if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">Continue Editing</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">Delete Draft</button>`;
       else if (correction) actions = `<button class="btn primary" type="button" data-correct-paper="${escapeHtml(item.paperId)}">Correct Paper</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
       else actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
       return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3><span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> This paper is ready for use.</div>' : ''}${submitted ? '' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
@@ -3893,6 +3908,14 @@ window.BGPS_CONFIG = Object.freeze({
     setHidden('paperCentreHome', Boolean(show));
     setHidden('paperEditorWorkspace', !show);
     if (show) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function syncDraftDeleteControl() {
+    const button = byId('deleteCurrentPaperDraft');
+    if (!button) return;
+    const canDelete = Boolean(currentDraftId);
+    button.hidden = !canDelete;
+    button.disabled = !canDelete;
   }
 
   function clearEditor() {
@@ -3915,6 +3938,7 @@ window.BGPS_CONFIG = Object.freeze({
     const status = byId('paperSaveStatus');
     if (status) { status.textContent = 'Not saved yet'; status.className = 'paper-save-status'; }
     deselectImage();
+    syncDraftDeleteControl();
     updateChecks();
   }
 
@@ -3963,6 +3987,7 @@ window.BGPS_CONFIG = Object.freeze({
       setText('paperEditorSubtitle', 'Review the paper, complete the marks total and submit it for approval.');
       markSaved(`Draft loaded · ${safeDate(draft.updatedAt)}`);
     }
+    syncDraftDeleteControl();
     updateChecks();
     setEditorMode(true);
   }
@@ -3993,10 +4018,21 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   async function deleteDraft(draftId) {
-    if (!window.confirm('Delete this saved draft? This action cannot be undone.')) return;
+    const id = String(draftId || '').trim();
+    if (!id) return;
+    const draft = drafts.find((item) => String(item.draftId) === id);
+    const title = draft?.title || 'this saved draft';
+    if (!window.confirm(`Delete ${title}? This action cannot be undone.`)) return;
     try {
-      await window.BGPS_API.deletePaperDraft(draftId);
-      drafts = drafts.filter((draft) => String(draft.draftId) !== String(draftId));
+      await window.BGPS_API.deletePaperDraft(id);
+      drafts = drafts.filter((item) => String(item.draftId) !== id);
+      if (String(currentDraftId) === id) {
+        currentDraftId = '';
+        currentRevision = {};
+        dirty = false;
+        setEditorMode(false);
+      }
+      syncDraftDeleteControl();
       renderList();
       toast('Draft deleted.');
     } catch (error) {
@@ -4063,7 +4099,10 @@ window.BGPS_CONFIG = Object.freeze({
       if (download) { download.hidden = false; download.dataset.fileName = originalFile.fileName || previewResult.originalFileName || 'question-paper'; }
 
       if (!previewResult || previewResult.previewAvailable === false || !previewResult.fileBase64) {
-        body.innerHTML = `<div class="empty-state"><strong>Preview could not be prepared</strong>${escapeHtml(previewResult?.error || 'Use Download File to open the original paper.')}</div>`;
+        const message = /external_request|permissions are not sufficient/i.test(String(previewResult?.error || ''))
+          ? 'DOCX preview authorization is pending. The school administrator must authorize the updated backend once.'
+          : (previewResult?.error || 'Use Download File to open the original paper.');
+        body.innerHTML = `<div class="empty-state"><strong>Preview could not be prepared</strong>${escapeHtml(message)}</div>`;
         return;
       }
       const previewMime = String(previewResult.mimeType || '');
@@ -4151,6 +4190,7 @@ window.BGPS_CONFIG = Object.freeze({
       currentDraftId = '';
       currentRevision = {};
       dirty = false;
+      syncDraftDeleteControl();
       await loadData(false);
       toast('Question paper submitted for principal approval.');
     } catch (error) {
@@ -4477,6 +4517,7 @@ window.BGPS_CONFIG = Object.freeze({
     byId('closePaperEditor')?.addEventListener('click', closeEditor);
     byId('savePaperDraft')?.addEventListener('click', () => saveDraft(true).catch((error) => toast(error.message, 'error')));
     byId('sidebarSaveDraft')?.addEventListener('click', () => saveDraft(true).catch((error) => toast(error.message, 'error')));
+    byId('deleteCurrentPaperDraft')?.addEventListener('click', () => deleteDraft(currentDraftId));
     byId('previewCurrentPaper')?.addEventListener('click', previewCurrent);
     byId('sidebarPreviewPaper')?.addEventListener('click', previewCurrent);
     byId('submitPaperForReview')?.addEventListener('click', prepareSubmit);
@@ -4586,6 +4627,7 @@ window.BGPS_CONFIG = Object.freeze({
     settings = null;
     currentDraftId = '';
     currentRevision = {};
+    syncDraftDeleteControl();
     selectedImage = null;
     editorRange = null;
     dirty = false;

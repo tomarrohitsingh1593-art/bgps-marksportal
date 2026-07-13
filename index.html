@@ -1145,7 +1145,8 @@ body.modal-open { overflow: hidden; }
                 <p>Review marks progress, paper approvals and actions requiring attention.</p>
               </div>
               <div class="dashboard-controls">
-                <label class="compact-field" for="dashboardExamFilter"><span>Exam</span><select id="dashboardExamFilter"></select></label>
+                <label class="compact-field" for="dashboardAcademicYearFilter"><span>Academic Year</span><select id="dashboardAcademicYearFilter" aria-label="Academic year"></select></label>
+                <label class="compact-field" for="dashboardExamFilter"><span>Exam / Term</span><select id="dashboardExamFilter"></select></label>
                 <button class="btn primary" id="refreshPrincipalDashboard" type="button">Refresh</button>
               </div>
             </div>
@@ -2744,6 +2745,48 @@ window.BGPS_CONFIG = Object.freeze({
     return String(byId('dashboardExamFilter')?.value || window.BGPS_DATA.EXAMS[0] || '').trim();
   }
 
+  function academicYearKey(value) {
+    const date = value instanceof Date ? value : new Date(value || 0);
+    if (Number.isNaN(date.getTime())) return '';
+    const startYear = date.getMonth() >= 3 ? date.getFullYear() : date.getFullYear() - 1;
+    return `${startYear}-${String((startYear + 1) % 100).padStart(2, '0')}`;
+  }
+
+  function currentAcademicYearKey() {
+    return academicYearKey(new Date());
+  }
+
+  function academicYearLabel(key) {
+    const value = String(key || '').trim();
+    if (!value || value === 'ALL') return 'All academic years';
+    return value.replace('-', '–');
+  }
+
+  function selectedAcademicYear() {
+    return String(byId('dashboardAcademicYearFilter')?.value || currentAcademicYearKey()).trim();
+  }
+
+  function recordAcademicYear(record) {
+    return academicYearKey(record?.timestamp || record?.updatedAt || record?.uploadedAt || record?.createdAt || '');
+  }
+
+  function matchesSelectedAcademicYear(record) {
+    const selected = selectedAcademicYear();
+    return selected === 'ALL' || recordAcademicYear(record) === selected;
+  }
+
+  function configureAcademicYearFilter() {
+    const select = byId('dashboardAcademicYearFilter');
+    if (!select) return;
+    const previous = String(select.value || '').trim();
+    const years = new Set([currentAcademicYearKey()]);
+    marksRows.forEach((row) => { const key = recordAcademicYear(row); if (key) years.add(key); });
+    papers.forEach((paper) => { const key = recordAcademicYear(paper); if (key) years.add(key); });
+    const sortedYears = [...years].filter(Boolean).sort((a, b) => b.localeCompare(a));
+    select.innerHTML = sortedYears.map((key) => `<option value="${escapeHtml(key)}">${escapeHtml(academicYearLabel(key))}</option>`).join('') + '<option value="ALL">All academic years</option>';
+    select.value = sortedYears.includes(previous) || previous === 'ALL' ? previous : currentAcademicYearKey();
+  }
+
   function configureExamFilter() {
     const select = byId('dashboardExamFilter');
     if (!select || select.options.length) return;
@@ -2763,7 +2806,7 @@ window.BGPS_CONFIG = Object.freeze({
   function buildProgress() {
     const examName = selectedExam();
     const exam = normalize(examName);
-    const examRows = marksRows.filter((row) => normalize(row.examType) === exam);
+    const examRows = marksRows.filter((row) => normalize(row.examType) === exam && matchesSelectedAcademicYear(row));
     window.BGPS_DATA.setObservedMarksRows(marksRows);
 
     classProgress = window.BGPS_DATA.CLASSES.map((className) => {
@@ -2773,7 +2816,7 @@ window.BGPS_CONFIG = Object.freeze({
       const expectedCanonical = expected.map((subject) => canonicalSubject(subject, className));
       const completedSubjects = expected.filter((subject, index) => recordedSubjects.has(expectedCanonical[index]));
       const pendingSubjects = expected.filter((subject, index) => !recordedSubjects.has(expectedCanonical[index]));
-      const classPapers = papers.filter((paper) => normalize(paper.className) === normalize(className) && normalize(paper.exam) === exam);
+      const classPapers = papers.filter((paper) => normalize(paper.className) === normalize(className) && normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
       const paperSubjects = new Set(classPapers.map((paper) => canonicalSubject(paper.subject, className)).filter(Boolean));
       const submittedPaperSubjects = expected.filter((subject, index) => paperSubjects.has(expectedCanonical[index]));
       const pendingPaperSubjects = expected.filter((subject, index) => !paperSubjects.has(expectedCanonical[index]));
@@ -2801,7 +2844,7 @@ window.BGPS_CONFIG = Object.freeze({
     });
 
     teacherProgress = classProgress.map((item) => {
-      const teacherPapers = papers.filter((paper) => normalize(paper.teacherId) === normalize(item.teacherId) && normalize(paper.exam) === exam);
+      const teacherPapers = papers.filter((paper) => normalize(paper.teacherId) === normalize(item.teacherId) && normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
       return {
         teacherId: item.teacherId,
         className: item.className,
@@ -2823,14 +2866,14 @@ window.BGPS_CONFIG = Object.freeze({
     const pending = Math.max(0, expected - completed);
     const teachersPending = classProgress.filter((item) => item.pendingCount > 0).length;
     const exam = normalize(selectedExam());
-    const workflowPapers = papers.filter((paper) => normalize(paper.exam) === exam);
+    const workflowPapers = papers.filter((paper) => normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
     const review = workflowPapers.filter((paper) => normalize(paper.status) === 'SUBMITTED').length;
     const correction = workflowPapers.filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED').length;
     const approved = workflowPapers.filter((paper) => normalize(paper.status) === 'APPROVED').length;
     const locked = workflowPapers.filter((paper) => normalize(paper.status) === 'LOCKED').length;
 
     setText('dashMarksComplete', `${completed}/${expected}`);
-    setText('dashMarksCompleteNote', `${selectedExam()} · subjects recorded`);
+    setText('dashMarksCompleteNote', `${selectedExam()} · ${academicYearLabel(selectedAcademicYear())} · subjects recorded`);
     setText('dashMarksPending', pending);
     setText('dashTeachersPending', teachersPending);
     setText('dashPapersSubmitted', workflowPapers.length);
@@ -2862,7 +2905,7 @@ window.BGPS_CONFIG = Object.freeze({
       });
 
     const exam = normalize(selectedExam());
-    const examPapers = papers.filter((paper) => normalize(paper.exam) === exam);
+    const examPapers = papers.filter((paper) => normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
 
     examPapers
       .filter((paper) => normalize(paper.status) === 'SUBMITTED')
@@ -2981,6 +3024,7 @@ window.BGPS_CONFIG = Object.freeze({
       ]);
       marksRows = dedupeMarks(marksResult.rows || []);
       papers = Array.isArray(paperRows) ? paperRows : [];
+      configureAcademicYearFilter();
       renderAll();
       if (showToast) window.BGPS_APP.toast('Dashboard refreshed.');
     } catch (error) {
@@ -3042,6 +3086,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (initialized) return;
     initialized = true;
     byId('refreshPrincipalDashboard')?.addEventListener('click', () => refresh(true));
+    byId('dashboardAcademicYearFilter')?.addEventListener('change', renderAll);
     byId('dashboardExamFilter')?.addEventListener('change', renderAll);
     byId('classTrackingSearch')?.addEventListener('input', renderClassTracking);
     byId('adminHomeContent')?.addEventListener('click', handleDashboardClick);
@@ -3050,6 +3095,7 @@ window.BGPS_CONFIG = Object.freeze({
   async function onAuthenticated(user) {
     session = user;
     configureExamFilter();
+    configureAcademicYearFilter();
     bind();
     if (user.isAdmin) await refresh(false);
   }

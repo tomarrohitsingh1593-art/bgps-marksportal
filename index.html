@@ -403,6 +403,17 @@ button { -webkit-tap-highlight-color: transparent; }
 .summary-row:last-child { border-bottom:0; }
 .summary-row span { color:var(--text-2); font-size:12px; }
 .summary-row strong { color:var(--navy-800); font-size:13px; text-align:right; }
+.term-overview-controls { display:flex; align-items:end; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.term-overview-controls label { display:grid; gap:5px; color:var(--text-2); font-size:11px; font-weight:800; }
+.term-overview-controls select { min-height:38px; min-width:150px; padding:7px 10px; border:1px solid var(--border-strong); border-radius:9px; background:#fff; color:var(--navy-800); }
+.term-overview-tabs { display:flex; gap:7px; flex:1 1 420px; flex-wrap:wrap; }
+.term-overview-tabs button { border:1px solid var(--border-strong); border-radius:999px; padding:8px 11px; background:#fff; color:var(--navy-800); cursor:pointer; font-size:12px; font-weight:800; }
+.term-overview-tabs button.active { background:var(--navy-800); border-color:var(--navy-800); color:#fff; }
+.term-overview-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.term-overview-card { border:1px solid var(--border); border-radius:12px; padding:13px; background:var(--surface-soft); }
+.term-overview-card h3 { margin:0 0 9px; color:var(--navy-800); font-size:14px; }
+.term-overview-card .term-fact { display:flex; justify-content:space-between; gap:8px; padding:5px 0; color:var(--text-2); font-size:12px; }
+.term-overview-card .term-fact strong { color:var(--navy-800); text-align:right; }
 
 /* Marks workspace */
 .marks-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; }
@@ -467,6 +478,7 @@ button { -webkit-tap-highlight-color: transparent; }
   .marks-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .roll-grid { grid-template-columns:1fr; }
   .welcome-grid { grid-template-columns:1fr; }
+  .term-overview-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:780px) {
   .content { padding:15px; }
@@ -482,6 +494,7 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 @media (max-width:520px) {
   .marks-summary { grid-template-columns:1fr; }
+  .term-overview-grid { grid-template-columns:1fr; }
   .roll-row { grid-template-columns:1fr minmax(90px,1fr); }
   .absent-control { grid-column:1/-1; justify-content:center; }
   .toolbar-buttons,.marks-form-actions { width:100%; }
@@ -778,11 +791,14 @@ body.modal-open { overflow: hidden; }
 .paper-ruler span::after { content:""; position:absolute; left:0; bottom:0; width:1px; height:8px; background:#7d8f9f; }
 .paper-canvas-wrap { overflow:auto; padding:20px; max-height:calc(100vh - 165px); }
 .paper-sheet { width:794px; min-height:1123px; margin:0 auto; padding:42px 50px 54px; background:#fff; color:#111; box-shadow:0 12px 34px rgba(14,38,64,.20); font-family:Georgia,"Noto Serif Devanagari","Mangal",serif; font-size:14px; line-height:1.48; }
-.paper-sheet-header { text-align:center; border-bottom:2px solid #111; padding-bottom:7px; }
-.paper-sheet-header h2 { margin:0; font-size:25px; letter-spacing:.3px; }
-.paper-sheet-header strong { display:block; margin-top:3px; font-size:15px; text-transform:uppercase; }
-.paper-sheet-meta { display:grid; grid-template-columns:1fr 1fr; gap:3px 16px; padding:8px 0 10px; border-bottom:1px solid #555; font-size:13px; }
-.paper-sheet-meta span:nth-child(even) { text-align:right; }
+.paper-sheet-header { text-align:center; border-bottom:3px double #111; padding-bottom:7px; }
+.paper-sheet-header h2 { margin:0; font-size:27px; line-height:1.05; letter-spacing:1px; text-transform:uppercase; }
+.paper-sheet-header strong { display:block; margin-top:4px; font-size:16px; line-height:1.15; text-transform:uppercase; }
+.paper-sheet-session { display:block; margin-top:3px; font-size:12px; font-weight:700; }
+.paper-sheet-meta { display:grid; grid-template-columns:1fr 1fr; gap:5px 18px; padding:9px 0; border-bottom:1.5px solid #111; font-size:13px; }
+.paper-sheet-meta>span { display:flex; align-items:baseline; gap:5px; }
+.paper-sheet-meta>span:nth-child(even) { justify-content:flex-end; text-align:right; }
+.paper-sheet-meta strong { min-width:105px; padding:0 3px 1px; border-bottom:1px dotted #555; font-weight:900; }
 .paper-instructions-preview { margin:10px 0; padding:8px 12px; border:1px solid #777; font-size:12.5px; }
 .paper-instructions-preview::before { content:"General Instructions"; display:block; margin-bottom:3px; font-weight:800; }
 .paper-instructions-preview ol { margin:2px 0 0 20px; padding:0; }
@@ -793,6 +809,9 @@ body.modal-open { overflow: hidden; }
 .paper-content-editor .question-line { position:relative; min-height:24px; padding-right:56px; break-inside:avoid; }
 .paper-content-editor .mark-token { float:right; margin-left:7px; font-weight:800; }
 .paper-content-editor .or-line { text-align:center; font-weight:800; margin:6px 0; }
+.paper-content-editor .bgps-fraction { display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; line-height:1.05; margin:0 .14em; }
+.paper-content-editor .bgps-fraction > span:first-child { border-bottom:1px solid currentColor; }
+.paper-content-editor sup,.paper-content-editor sub { font-size:.75em; line-height:0; }
 .paper-content-editor .q-placeholder { color:#9c3f3f; background:#fff1f1; padding:1px 3px; }
 .paper-content-editor table { width:100%; border-collapse:collapse; margin:8px 0; }
 .paper-content-editor th,.paper-content-editor td { min-width:60px; border:1px solid #333; padding:6px; }
@@ -840,8 +859,8 @@ body.modal-open { overflow: hidden; }
 .paper-save-card small { color:var(--muted); line-height:1.45; }
 
 .paper-preview-modal-shell { width:min(1180px,calc(100vw - 30px)); max-height:94vh; display:flex; flex-direction:column; overflow:hidden; border-radius:14px; background:#fff; box-shadow:0 26px 70px rgba(0,0,0,.25); }
-.teacher-paper-preview-body { min-height:300px; flex:1; overflow:auto; background:#dce5ed; padding:16px; }
-.teacher-paper-preview-frame { display:block; width:100%; min-height:780px; border:0; background:#fff; }
+.teacher-paper-preview-body { min-height:300px; flex:1; overflow:auto; background:#edf2f6; padding:14px; }
+.teacher-paper-preview-frame { display:block; width:min(820px,100%); min-height:790px; margin:0 auto; border:1px solid #cbd6df; border-radius:3px; background:#fff; box-shadow:0 10px 28px rgba(15,42,76,.13); }
 .teacher-paper-preview-footer { display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid var(--border); background:#fff; }
 .paper-upload-modal { width:min(760px,calc(100vw - 28px)); }
 .paper-upload-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px; }
@@ -880,8 +899,9 @@ body.modal-open { overflow: hidden; }
   .editor-command { min-height:40px; }
   .question-marks-control { min-height:40px; }
   .paper-sheet { padding:22px 16px 35px; font-size:13px; }
-  .paper-sheet-meta { grid-template-columns:1fr; }
-  .paper-sheet-meta span:nth-child(even) { text-align:left; }
+  .paper-sheet-meta { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:5px 10px; font-size:12px; }
+  .paper-sheet-meta strong { min-width:0; flex:1; }
+  .paper-sheet-meta>span:nth-child(even) { justify-content:flex-end; text-align:right; }
   .paper-content-editor { min-height:540px; }
   .paper-upload-form { grid-template-columns:1fr; }
   .paper-upload-form .upload-wide { grid-column:auto; }
@@ -1134,6 +1154,17 @@ body.modal-open { overflow: hidden; }
             <section class="page-card section-gap">
               <div class="card-head"><div><h2>Recent marks activity</h2><p>Your latest saved records.</p></div></div>
               <div class="card-body" id="recentMarksList"><div class="empty-state"><strong>Loading activity</strong>Please wait while your records are checked.</div></div>
+            </section>
+
+            <section class="page-card section-gap">
+              <div class="card-head"><div><h2>Term-wise overview</h2><p>Marks and submitted question-paper progress for each exam or term.</p></div></div>
+              <div class="card-body">
+                <div class="term-overview-controls">
+                  <label for="teacherTermYearFilter"><span>Academic Year</span><select id="teacherTermYearFilter" aria-label="Teacher overview academic year"></select></label>
+                  <div class="term-overview-tabs" id="teacherTermTabs" role="tablist" aria-label="Select term"></div>
+                </div>
+                <div class="term-overview-grid" id="teacherTermOverview"><div class="empty-state"><strong>Loading term information</strong>Please wait while your academic work is checked.</div></div>
+              </div>
             </section>
           </div>
 
@@ -1396,13 +1427,13 @@ body.modal-open { overflow: hidden; }
           <div id="paperCentreHome">
             <div class="view-heading paper-centre-heading">
               <div><h1>Question Paper Centre</h1><p>Create, save and submit question papers for principal approval.</p></div>
-              <div class="view-actions"><button class="btn" id="refreshTeacherPapers" type="button">Refresh</button><button class="btn" id="openPaperUpload" type="button">Upload Existing Paper</button><button class="btn primary" id="createNewPaper" type="button">Create New Paper</button></div>
+              <div class="view-actions"><button class="btn" id="refreshTeacherPapers" type="button">Refresh</button><button class="btn" id="openPaperUpload" type="button">Upload DOCX</button><button class="btn primary" id="createNewPaper" type="button">Create New Paper</button></div>
             </div>
 
             <div class="paper-access-note" id="paperAccessNote" hidden></div>
 
             <section class="paper-metrics" aria-label="Teacher paper summary">
-              <button class="metric-card metric-button" type="button" data-teacher-paper-filter="Draft"><span>Drafts</span><strong id="teacherPaperMetricDraft">—</strong><small>Saved papers still being prepared.</small></button>
+              <button class="metric-card metric-button" type="button" data-teacher-paper-filter="Draft"><span>My Drafts</span><strong id="teacherPaperMetricDraft">—</strong><small>Saved papers still being prepared.</small></button>
               <button class="metric-card metric-button" type="button" data-teacher-paper-filter="Submitted"><span>Submitted</span><strong id="teacherPaperMetricSubmitted">—</strong><small>Papers awaiting principal review.</small></button>
               <button class="metric-card metric-button danger-soft" type="button" data-teacher-paper-filter="Correction Required"><span>Correction Required</span><strong id="teacherPaperMetricCorrection">—</strong><small>Papers returned with a principal note.</small></button>
               <button class="metric-card metric-button success-soft" type="button" data-teacher-paper-filter="Approved"><span>Approved</span><strong id="teacherPaperMetricApproved">—</strong><small>Papers approved for use.</small></button>
@@ -1454,6 +1485,9 @@ body.modal-open { overflow: hidden; }
                     <button class="editor-command text-tool" type="button" data-editor-command="bold" title="Bold"><strong>B</strong></button>
                     <button class="editor-command text-tool" type="button" data-editor-command="italic" title="Italic"><em>I</em></button>
                     <button class="editor-command text-tool" type="button" data-editor-command="underline" title="Underline"><u>U</u></button>
+                    <select class="editor-command" id="paperFontSize" title="Font size" aria-label="Font size"><option value="3">Normal</option><option value="2">Small</option><option value="4">Large</option><option value="5">Heading</option></select>
+                    <button class="editor-command" type="button" data-editor-command="superscript" title="Superscript">x²</button>
+                    <button class="editor-command" type="button" data-editor-command="subscript" title="Subscript">x₂</button>
                     <button class="editor-command" type="button" data-editor-command="justifyLeft" title="Align left">≡</button>
                     <button class="editor-command" type="button" data-editor-command="justifyCenter" title="Align centre">≣</button>
                     <button class="editor-command" type="button" data-editor-command="justifyRight" title="Align right">≡</button>
@@ -1467,6 +1501,8 @@ body.modal-open { overflow: hidden; }
                     <button class="editor-command" id="insertOrButton" type="button">OR</button>
                     <button class="editor-command" id="insertTableButton" type="button">Table</button>
                     <button class="editor-command" id="insertPageBreakButton" type="button">Page Break</button>
+                    <button class="editor-command" id="insertFractionButton" type="button">Fraction</button>
+                    <button class="editor-command" id="insertRootButton" type="button">√ Root</button>
                     <button class="editor-command image-command" id="insertPaperImageButton" type="button">Image / Diagram</button>
                     <input id="paperImageFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
                     <span class="toolbar-separator"></span>
@@ -1485,10 +1521,11 @@ body.modal-open { overflow: hidden; }
                     <header class="paper-sheet-header">
                       <h2>BG PUBLIC SCHOOL</h2>
                       <strong id="paperPreviewExam">EXAM / TERM</strong>
+                      <span class="paper-sheet-session">Academic Session: <b id="paperPreviewSession">2026–27</b></span>
                     </header>
                     <div class="paper-sheet-meta">
                       <span>Class: <strong id="paperPreviewClass">—</strong></span><span>Subject: <strong id="paperPreviewSubject">—</strong></span>
-                      <span>Time: <strong id="paperPreviewTime">—</strong></span><span>Maximum Marks: <strong id="paperPreviewMaxMarks">—</strong></span>
+                      <span>Time Allowed: <strong id="paperPreviewTime">—</strong></span><span>Maximum Marks: <strong id="paperPreviewMaxMarks">—</strong></span>
                       <span>Reading Time: <strong id="paperPreviewReadingTime">Additional 10 Minutes</strong></span><span>Date: <strong id="paperPreviewDate">____________</strong></span>
                     </div>
                     <div class="paper-instructions-preview" id="paperInstructionsPreview" hidden></div>
@@ -1513,7 +1550,8 @@ body.modal-open { overflow: hidden; }
                   <div id="paperImageControls" hidden>
                     <label class="image-width-control"><span>Width</span><strong id="paperImageWidthValue">55%</strong><input id="paperImageWidth" type="range" min="20" max="100" step="1" value="55"></label>
                     <div class="image-layout-grid"><button type="button" data-image-layout="left">Wrap Left</button><button type="button" data-image-layout="center">Centre</button><button type="button" data-image-layout="right">Wrap Right</button><button type="button" data-image-layout="inline">Inline</button></div>
-                    <div class="image-action-grid"><button type="button" id="moveImageUp">Move Up</button><button type="button" id="moveImageDown">Move Down</button><button type="button" id="duplicateImage">Duplicate</button><button type="button" id="addImageCaption">Caption</button><button class="danger-text" type="button" id="deletePaperImage">Delete</button></div>
+                    <div class="image-action-grid"><button type="button" id="moveImageUp">Move Up</button><button type="button" id="moveImageDown">Move Down</button><button type="button" id="replacePaperImage">Replace</button><button type="button" id="copyPaperImage">Copy</button><button type="button" id="cutPaperImage">Cut</button><button type="button" id="pastePaperImage">Paste</button><button type="button" id="duplicateImage">Duplicate</button><button type="button" id="addImageCaption">Caption</button><button class="danger-text" type="button" id="deletePaperImage">Delete</button></div>
+                    <input id="replacePaperImageFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
                   </div>
                 </section>
 
@@ -1649,22 +1687,23 @@ body.modal-open { overflow: hidden; }
     <div class="paper-preview-modal-shell">
       <header class="paper-review-header"><div><span class="status-chip" id="teacherPaperPreviewStatus">Preview</span><h2 id="teacherPaperPreviewTitle">Question Paper Preview</h2><p id="teacherPaperPreviewMeta">—</p></div><button class="modal-close" id="closeTeacherPaperPreview" type="button" aria-label="Close preview">×</button></header>
       <div class="teacher-paper-preview-body" id="teacherPaperPreviewBody"><div class="empty-state"><strong>Preparing preview</strong>Please wait.</div></div>
-      <footer class="teacher-paper-preview-footer"><button class="btn" id="downloadTeacherPaper" type="button" hidden>Download File</button><button class="btn" id="printTeacherPaper" type="button">Print / Save PDF</button><button class="btn primary" id="closeTeacherPaperPreviewFooter" type="button">Close</button></footer>
+      <footer class="teacher-paper-preview-footer"><button class="btn" id="downloadTeacherPaper" type="button" hidden>Download Final PDF</button><button class="btn" id="printTeacherPaper" type="button">Print / Save PDF</button><button class="btn primary" id="closeTeacherPaperPreviewFooter" type="button">Back to Edit</button></footer>
     </div>
   </div>
 
   <div class="modal-backdrop" id="paperUploadModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="paperUploadTitle">
     <div class="modal paper-upload-modal">
-      <header><h2 id="paperUploadTitle">Upload Existing Question Paper</h2><p>Upload a completed PDF or DOCX paper for principal approval.</p></header>
+      <header><h2 id="paperUploadTitle">Upload DOCX Question Paper</h2><p>DOCX files are imported into the editable standard BGPS format. PDF files remain reference-only and are submitted without editable conversion.</p></header>
       <form id="paperUploadForm" class="paper-upload-form">
         <div class="field"><label for="uploadPaperClass">Class</label><select id="uploadPaperClass" required></select></div>
         <div class="field"><label for="uploadPaperSubject">Subject</label><select id="uploadPaperSubject" required></select></div>
         <div class="field"><label for="uploadPaperExam">Exam / Term</label><select id="uploadPaperExam" required></select></div>
         <div class="field"><label for="uploadPaperMaxMarks">Maximum Marks</label><input id="uploadPaperMaxMarks" type="number" min="1" max="200" required></div>
+        <div class="field"><label for="uploadPaperTime">Time Allowed</label><input id="uploadPaperTime" maxlength="80" placeholder="1½ Hours" required></div>
         <div class="field upload-wide"><label for="uploadPaperChapters">Chapters / Portion</label><input id="uploadPaperChapters" maxlength="500" required></div>
-        <div class="field upload-wide"><label for="uploadPaperFile">Question Paper File</label><input id="uploadPaperFile" type="file" accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx" required><small>PDF or DOCX, maximum 8 MB.</small></div>
+        <div class="field upload-wide"><label for="uploadPaperFile">Question Paper File</label><input id="uploadPaperFile" type="file" accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx" required><small>DOCX for editable standardisation; PDF for reference-only submission. Maximum 8 MB.</small></div>
         <div class="field upload-wide"><label for="uploadPaperNote">Teacher Note <span class="optional-label">Optional</span></label><textarea id="uploadPaperNote" rows="3" maxlength="250"></textarea></div>
-        <div class="modal-actions upload-wide"><button class="btn" id="cancelPaperUpload" type="button">Cancel</button><button class="btn primary" id="confirmPaperUpload" type="submit">Upload and Submit</button></div>
+        <div class="modal-actions upload-wide"><button class="btn" id="cancelPaperUpload" type="button">Cancel</button><button class="btn primary" id="confirmPaperUpload" type="submit">Import and Review</button></div>
       </form>
     </div>
   </div>
@@ -1839,14 +1878,16 @@ window.BGPS_CONFIG = Object.freeze({
   const updatePaperStatus = (paperId, status, adminNote) => request('updatePaperStatus', { paperId, status, adminNote: adminNote || '' });
   const listPaperDrafts = () => request('listPaperDrafts');
   const getPaperDraft = (draftId) => request('getPaperDraft', { draftId });
+  const getPaperDraftPreview = (draftId) => request('getPaperDraftPreview', { draftId });
   const savePaperDraft = (draft) => request('savePaperDraft', { draft });
   const deletePaperDraft = (draftId) => request('deletePaperDraft', { draftId });
   const submitPaperDraft = (draftId) => request('submitPaperDraft', { draftId });
   const uploadPaper = (paper) => request('uploadPaper', { paper });
+  const importDocxPaper = (paper) => request('importDocxPaper', { paper });
   const listPrincipalActivity = () => request('listPrincipalActivity');
   const updatePaperSettings = (settings) => request('updatePaperSettings', { settings });
 
-  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperPreview, updatePaperStatus, listPaperDrafts, getPaperDraft, savePaperDraft, deletePaperDraft, submitPaperDraft, uploadPaper, listPrincipalActivity, ApiError });
+  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperPreview, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
 })();
 
 
@@ -1984,6 +2025,9 @@ window.BGPS_CONFIG = Object.freeze({
   let settings = null;
   let entryDirty = false;
   let loadedContextKey = '';
+  let termOverviewRows = [];
+  let termOverviewPapers = [];
+  let selectedOverviewTerm = '';
   let stableContext = null;
   let adminRows = [];
   let adminSummary = [];
@@ -2430,7 +2474,10 @@ window.BGPS_CONFIG = Object.freeze({
     if (!session || session.isAdmin) return;
     setText('homeSavedRecords', '…');
     try {
-      const result = await window.BGPS_API.getMarks({ className: session.assignedClass });
+      const [result, papersResult] = await Promise.all([
+        window.BGPS_API.getMarks({ className: session.assignedClass }),
+        window.BGPS_API.listPapers().catch(() => ({ papers: [] }))
+      ]);
       const rows = dedupeRows(result.rows || []);
       window.BGPS_DATA.setObservedMarksRows(rows);
       renderSubjects(session.assignedClass);
@@ -2445,10 +2492,13 @@ window.BGPS_CONFIG = Object.freeze({
       setText('teacherSummaryClass', session.assignedClass || '—');
       setText('teacherSummaryLatest', latest ? window.BGPS_DATA.safeDate(latest.timestamp) : 'No records yet');
       renderRecent(rows);
+      renderInteractiveTermOverview(rows, papersResult.papers || []);
       if (showToast) window.BGPS_APP.toast('Marks summary refreshed.');
     } catch (error) {
       setText('homeSavedRecords', '—');
       setText('teacherSummaryLatest', 'Unable to load');
+      const termOverview = byId('teacherTermOverview');
+      if (termOverview) termOverview.innerHTML = '<div class="empty-state"><strong>Term information could not be loaded</strong>Please refresh and try again.</div>';
       if (showToast) window.BGPS_APP.toast(error.message || 'Could not refresh summary.', 'error');
     }
   }
@@ -2470,11 +2520,95 @@ window.BGPS_CONFIG = Object.freeze({
       </div>`).join('');
   }
 
+  function renderTermOverview(rows, paperRows) {
+    const container = byId('teacherTermOverview');
+    if (!container) return;
+    const terms = new Map();
+    (window.BGPS_DATA.EXAMS || []).forEach((term) => terms.set(String(term || '').trim().toUpperCase(), String(term || '').trim()));
+    (rows || []).forEach((row) => {
+      const term = String(row.examType || '').trim();
+      if (term) terms.set(term.toUpperCase(), term);
+    });
+    (paperRows || []).forEach((paper) => {
+      const term = String(paper.exam || '').trim();
+      if (term) terms.set(term.toUpperCase(), term);
+    });
+    const cards = [...terms.entries()].map(([key, label]) => {
+      const termRows = (rows || []).filter((row) => String(row.examType || '').trim().toUpperCase() === key);
+      const termPapers = (paperRows || []).filter((paper) => String(paper.exam || '').trim().toUpperCase() === key);
+      const subjects = new Set(termRows.map((row) => String(row.subject || '').trim()).filter(Boolean));
+      const latest = [...termRows].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))[0];
+      const approved = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'APPROVED').length;
+      const review = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'SUBMITTED').length;
+      const correction = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'CORRECTION REQUIRED').length;
+      const paperStatus = !termPapers.length ? 'Not submitted' : `${termPapers.length} submitted${approved ? ` · ${approved} approved` : review ? ` · ${review} for review` : correction ? ` · ${correction} correction` : ''}`;
+      return `<article class="term-overview-card"><h3>${escapeHtml(label)}</h3><div class="term-fact"><span>Subjects started</span><strong>${subjects.size}</strong></div><div class="term-fact"><span>Saved marks</span><strong>${termRows.length}</strong></div><div class="term-fact"><span>Question papers</span><strong>${escapeHtml(paperStatus)}</strong></div><div class="term-fact"><span>Latest update</span><strong>${escapeHtml(latest ? window.BGPS_DATA.safeDate(latest.timestamp) : 'No records')}</strong></div></article>`;
+    });
+    container.innerHTML = cards.length ? cards.join('') : '<div class="empty-state"><strong>No term information yet</strong>Saved marks and submitted papers will appear here.</div>';
+  }
+
   function configureAdminFilters() {
     const classSelect = byId('adminClassFilter');
     const examSelect = byId('adminExamFilter');
     if (classSelect) classSelect.innerHTML = optionMarkup(window.BGPS_DATA.CLASSES, 'Select class');
     if (examSelect) examSelect.innerHTML = optionMarkup(window.BGPS_DATA.EXAMS, 'All exams');
+  }
+
+  function overviewAcademicYear(value) {
+    const date = new Date(value || 0);
+    if (Number.isNaN(date.getTime())) return '';
+    const start = date.getMonth() >= 3 ? date.getFullYear() : date.getFullYear() - 1;
+    return `${start}-${String((start + 1) % 100).padStart(2, '0')}`;
+  }
+
+  function renderInteractiveTermOverview(rows, paperRows) {
+    if (Array.isArray(rows)) termOverviewRows = rows;
+    if (Array.isArray(paperRows)) termOverviewPapers = paperRows;
+    const container = byId('teacherTermOverview');
+    const yearSelect = byId('teacherTermYearFilter');
+    const tabs = byId('teacherTermTabs');
+    if (!container || !yearSelect || !tabs || !session) return;
+
+    const currentYear = overviewAcademicYear(new Date());
+    const years = new Set([currentYear]);
+    termOverviewRows.forEach((row) => { const year = overviewAcademicYear(row.timestamp); if (year) years.add(year); });
+    termOverviewPapers.forEach((paper) => { const year = overviewAcademicYear(paper.updatedAt || paper.uploadedAt); if (year) years.add(year); });
+    const orderedYears = [...years].filter(Boolean).sort((a, b) => b.localeCompare(a));
+    const previousYear = String(yearSelect.value || '').trim();
+    yearSelect.innerHTML = orderedYears.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year.replace('-', '–'))}</option>`).join('');
+    yearSelect.value = orderedYears.includes(previousYear) ? previousYear : (orderedYears.includes(currentYear) ? currentYear : orderedYears[0]);
+    const selectedYear = yearSelect.value;
+    const rowsForYear = termOverviewRows.filter((row) => overviewAcademicYear(row.timestamp) === selectedYear);
+    const papersForYear = termOverviewPapers.filter((paper) => overviewAcademicYear(paper.updatedAt || paper.uploadedAt) === selectedYear);
+    const terms = new Map();
+    (window.BGPS_DATA.EXAMS || []).forEach((term) => terms.set(String(term).toUpperCase(), String(term)));
+    rowsForYear.forEach((row) => { if (row.examType) terms.set(String(row.examType).trim().toUpperCase(), String(row.examType).trim()); });
+    papersForYear.forEach((paper) => { if (paper.exam) terms.set(String(paper.exam).trim().toUpperCase(), String(paper.exam).trim()); });
+    const termEntries = [...terms.entries()];
+    if (!termEntries.some(([key]) => key === selectedOverviewTerm)) selectedOverviewTerm = termEntries[0]?.[0] || '';
+    tabs.innerHTML = termEntries.map(([key, label]) => `<button type="button" role="tab" class="${key === selectedOverviewTerm ? 'active' : ''}" data-overview-term="${escapeHtml(key)}">${escapeHtml(label)}</button>`).join('');
+    if (!selectedOverviewTerm) {
+      container.innerHTML = '<div class="empty-state"><strong>No term information yet</strong>Saved marks and submitted papers will appear here.</div>';
+      return;
+    }
+
+    const termRows = rowsForYear.filter((row) => String(row.examType || '').trim().toUpperCase() === selectedOverviewTerm);
+    const termPapers = papersForYear.filter((paper) => String(paper.exam || '').trim().toUpperCase() === selectedOverviewTerm);
+    const expectedSubjects = window.BGPS_DATA.subjectsForClass(session.assignedClass || '');
+    const expectedKeys = new Set(expectedSubjects.map((subject) => String(window.BGPS_DATA.normalizeSubjectForStorage(subject, session.assignedClass) || subject).toUpperCase()));
+    const completedKeys = new Set(termRows.map((row) => String(window.BGPS_DATA.normalizeSubjectForStorage(row.subject, session.assignedClass) || row.subject).toUpperCase()).filter(Boolean));
+    const marksSubmitted = [...completedKeys].filter((key) => expectedKeys.has(key)).length;
+    const marksPending = Math.max(0, expectedKeys.size - marksSubmitted);
+    const paperSubmitted = termPapers.length;
+    const reviewPending = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'SUBMITTED').length;
+    const correctionRequired = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'CORRECTION REQUIRED').length;
+    const approved = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'APPROVED').length;
+    const latest = [...termRows].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))[0];
+    const label = terms.get(selectedOverviewTerm) || selectedOverviewTerm;
+    container.innerHTML = `
+      <article class="term-overview-card"><h3>${escapeHtml(label)} marks</h3><div class="term-fact"><span>Submitted</span><strong>${marksSubmitted}/${expectedKeys.size} subjects</strong></div><div class="term-fact"><span>Pending</span><strong>${marksPending} subjects</strong></div></article>
+      <article class="term-overview-card"><h3>Question papers</h3><div class="term-fact"><span>Submitted</span><strong>${paperSubmitted}</strong></div><div class="term-fact"><span>Review pending</span><strong>${reviewPending}</strong></div></article>
+      <article class="term-overview-card"><h3>Approval status</h3><div class="term-fact"><span>Approved</span><strong>${approved}</strong></div><div class="term-fact"><span>Correction required</span><strong>${correctionRequired}</strong></div><div class="term-fact"><span>Latest marks update</span><strong>${escapeHtml(latest ? window.BGPS_DATA.safeDate(latest.timestamp) : 'No records')}</strong></div></article>`;
   }
 
   function aggregateAdminRows(rows) {
@@ -2653,6 +2787,13 @@ window.BGPS_CONFIG = Object.freeze({
     });
     byId('rollSearch')?.addEventListener('input', filterRolls);
     byId('refreshTeacherSummary')?.addEventListener('click', () => refreshTeacherSummary(true));
+    byId('teacherTermYearFilter')?.addEventListener('change', () => { selectedOverviewTerm = ''; renderInteractiveTermOverview(); });
+    byId('teacherTermTabs')?.addEventListener('click', (event) => {
+      const termButton = event.target.closest('[data-overview-term]');
+      if (!termButton) return;
+      selectedOverviewTerm = termButton.dataset.overviewTerm || '';
+      renderInteractiveTermOverview();
+    });
     byId('loadAdminReportButton')?.addEventListener('click', loadAdminReport);
     byId('adminRecordSearch')?.addEventListener('input', renderAdminDetails);
     byId('exportAdminCsvButton')?.addEventListener('click', exportAdminCsv);
@@ -3381,13 +3522,8 @@ window.BGPS_CONFIG = Object.freeze({
     openModal();
 
     try {
-      if (normalize(paper.sourceType) === 'MANUAL') {
-        const content = await window.BGPS_API.getPaperContent(paper.paperId);
-        renderManualPreview(content);
-      } else {
-        const [previewResult, originalFile] = await Promise.all([window.BGPS_API.getPaperPreview(paper.paperId), window.BGPS_API.getPaperFile(paper.paperId)]);
-        renderUploadedPreview(previewResult, originalFile);
-      }
+      const [previewResult, originalFile] = await Promise.all([window.BGPS_API.getPaperPreview(paper.paperId), window.BGPS_API.getPaperFile(paper.paperId)]);
+      renderUploadedPreview(previewResult, originalFile);
     } catch (error) {
       if (preview) preview.innerHTML = `<div class="empty-state"><strong>Paper could not be opened</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
     }
@@ -3515,6 +3651,10 @@ window.BGPS_CONFIG = Object.freeze({
   let currentPreviewUrl = '';
   let dragImage = null;
   let dropMarker = null;
+  let imageClipboard = null;
+  let saveInFlight = false;
+  let submitInFlight = false;
+  let uploadInFlight = false;
 
   function toast(message, type) {
     window.BGPS_APP?.toast(message, type);
@@ -3594,6 +3734,13 @@ window.BGPS_CONFIG = Object.freeze({
     return classNo >= 9 || Number(maxMarks || 0) >= 70 ? 'Additional 15 Minutes' : 'Additional 10 Minutes';
   }
 
+  function academicSession(dateValue) {
+    const parsed = dateValue ? new Date(`${dateValue}T00:00:00`) : new Date();
+    const date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    const start = date.getMonth() >= 3 ? date.getFullYear() : date.getFullYear() - 1;
+    return `${start}–${String((start + 1) % 100).padStart(2, '0')}`;
+  }
+
   function isPrePrimary(className) {
     return ['PLAYGROUP', 'LKG', 'UKG'].includes(normalize(className).toUpperCase());
   }
@@ -3653,9 +3800,9 @@ window.BGPS_CONFIG = Object.freeze({
     updateChecks();
   }
 
-  function execCommand(command) {
+  function execCommand(command, value = null) {
     restoreRange();
-    document.execCommand(command, false, null);
+    document.execCommand(command, false, value);
     saveRange();
     markDirty();
   }
@@ -3714,6 +3861,14 @@ window.BGPS_CONFIG = Object.freeze({
     insertHtml('<div class="page-break"></div><p><br></p>');
   }
 
+  function insertFraction() {
+    insertHtml('<span class="bgps-fraction"><span>numerator</span><span>denominator</span></span>');
+  }
+
+  function insertRoot() {
+    insertHtml('<span class="bgps-root">√(<span>value</span>)</span>');
+  }
+
   function markDirty() {
     dirty = true;
     const node = byId('paperSaveStatus');
@@ -3742,6 +3897,7 @@ window.BGPS_CONFIG = Object.freeze({
     setText('paperPreviewClass', className);
     setText('paperPreviewSubject', subject);
     setText('paperPreviewExam', exam);
+    setText('paperPreviewSession', academicSession(byId('paperDateInput')?.value));
     setText('paperPreviewMaxMarks', maxMarks);
     setText('paperPreviewTime', time);
     setText('paperPreviewDate', date);
@@ -3825,7 +3981,10 @@ window.BGPS_CONFIG = Object.freeze({
       bodyText: normalize(editor?.innerText),
       detectedMarks: detectedMarks(),
       totalQuestions: currentQuestionCount(),
-      sourceType: 'Manual',
+      sourceType: currentRevision.sourceType || 'Manual',
+      originalFileName: currentRevision.originalFileName || '',
+      sourceFileId: currentRevision.sourceFileId || '',
+      importWarnings: Array.isArray(currentRevision.importWarnings) ? currentRevision.importWarnings : [],
       originalPaperId: currentRevision.originalPaperId || '',
       parentPaperId: currentRevision.parentPaperId || '',
       previousVersion: Number(currentRevision.previousVersion || 0)
@@ -3848,8 +4007,10 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   async function saveDraft(showToast = true) {
+    if (saveInFlight) return currentDraftId;
     const draft = collectDraft();
     validateBasic(draft);
+    saveInFlight = true;
     const buttons = [byId('savePaperDraft'), byId('sidebarSaveDraft')].filter(Boolean);
     buttons.forEach((button) => { button.disabled = true; button.textContent = 'Saving…'; });
     try {
@@ -3859,7 +4020,12 @@ window.BGPS_CONFIG = Object.freeze({
       markSaved(`Draft saved · ${new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit' }).format(new Date())}`);
       if (showToast) toast('Question paper draft saved.');
       return currentDraftId;
+    } catch (error) {
+      const node = byId('paperSaveStatus');
+      if (node) { node.textContent = 'Save failed — retry'; node.className = 'paper-save-status dirty'; }
+      throw error;
     } finally {
+      saveInFlight = false;
       buttons.forEach((button) => { button.disabled = false; button.textContent = button.id === 'savePaperDraft' ? 'Save Draft' : 'Save Draft'; });
     }
   }
@@ -4007,11 +4173,19 @@ window.BGPS_CONFIG = Object.freeze({
     currentRevision = correctionMode ? {
       originalPaperId: draft.originalPaperId || draft.paperId || '',
       parentPaperId: draft.parentPaperId || draft.paperId || '',
-      previousVersion: Number(draft.previousVersion || draft.version || 0)
+      previousVersion: Number(draft.previousVersion || draft.version || 0),
+      sourceType: draft.sourceType || 'Manual',
+      originalFileName: draft.originalFileName || '',
+      sourceFileId: draft.sourceFileId || '',
+      importWarnings: Array.isArray(draft.importWarnings) ? draft.importWarnings : []
     } : {
       originalPaperId: draft.originalPaperId || '',
       parentPaperId: draft.parentPaperId || '',
-      previousVersion: Number(draft.previousVersion || 0)
+      previousVersion: Number(draft.previousVersion || 0),
+      sourceType: draft.sourceType || 'Manual',
+      originalFileName: draft.originalFileName || '',
+      sourceFileId: draft.sourceFileId || '',
+      importWarnings: Array.isArray(draft.importWarnings) ? draft.importWarnings : []
     };
     const values = {
       paperTitleInput: draft.title || '', paperMaxMarksInput: draft.maxMarks || '', paperTimeInput: draft.timeAllowed || '', paperDateInput: draft.examDate || '', paperChaptersInput: draft.chapters || '', paperInstructionsInput: draft.instructions || '', paperLanguageInput: draft.languageMode || 'english'
@@ -4023,6 +4197,9 @@ window.BGPS_CONFIG = Object.freeze({
     if (byId('paperExamInput')) byId('paperExamInput').value = draft.exam || window.BGPS_DATA.EXAMS[0];
     if (byId('paperContentEditor')) byId('paperContentEditor').innerHTML = draft.editorHtml || '';
     hydrateImages();
+    if (Array.isArray(draft.importWarnings) && draft.importWarnings.length) {
+      toast('Imported DOCX content loaded. Please verify equations and images before submission.');
+    }
     if (correctionMode) {
       setHidden('paperCorrectionBanner', false);
       setText('paperCorrectionNote', draft.adminNote || 'Please revise the paper as advised by the principal.');
@@ -4093,7 +4270,7 @@ window.BGPS_CONFIG = Object.freeze({
     const instructions = normalize(draft.instructions).split(/\n+/).map(normalize).filter(Boolean);
     const instructionsHtml = instructions.length ? `<div class="instructions"><strong>General Instructions</strong><ol>${instructions.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol></div>` : '';
     const date = draft.examDate || '____________';
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;font-weight:900}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,55%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:95mm;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;font-weight:900}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,55%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:95mm;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
   }
 
   function setPreviewHeader(title, meta, status) {
@@ -4117,9 +4294,9 @@ window.BGPS_CONFIG = Object.freeze({
 
   async function previewDraft(draftId) {
     try {
-      const result = await window.BGPS_API.getPaperDraft(draftId);
-      const draft = result.draft || {};
-      showHtmlPreview(buildPreviewDocument(draft), draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Draft');
+      const [preview, draftResult] = await Promise.all([window.BGPS_API.getPaperDraftPreview(draftId), window.BGPS_API.getPaperDraft(draftId)]);
+      const draft = draftResult.draft || {};
+      showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Draft');
     } catch (error) {
       toast(error.message || 'Could not preview the draft.', 'error');
     }
@@ -4145,7 +4322,7 @@ window.BGPS_CONFIG = Object.freeze({
       revokeObjectUrl();
       currentObjectUrl = URL.createObjectURL(originalBlob);
       const download = byId('downloadTeacherPaper');
-      if (download) { download.hidden = false; download.dataset.fileName = originalFile.fileName || previewResult.originalFileName || 'question-paper'; }
+      if (download) { download.hidden = statusKey(paper.status) !== 'approved'; download.dataset.fileName = originalFile.fileName || previewResult.originalFileName || 'question-paper'; }
 
       if (!previewResult || previewResult.previewAvailable === false || !previewResult.fileBase64) {
         if (previewResult?.drivePreviewUrl) {
@@ -4182,11 +4359,13 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
-  function previewCurrent() {
+  async function previewCurrent() {
     try {
       const draft = collectDraft();
       validateBasic(draft);
-      showHtmlPreview(buildPreviewDocument(draft), draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview');
+      const draftId = await saveDraft(false);
+      const preview = await window.BGPS_API.getPaperDraftPreview(draftId);
+      showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview ready');
     } catch (error) {
       toast(error.message, 'error');
     }
@@ -4232,11 +4411,14 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   async function submitPaper() {
+    if (submitInFlight) return;
+    if (saveInFlight) { toast('Please wait for the current save to finish.', 'error'); return; }
+    submitInFlight = true;
     const button = byId('confirmPaperSubmit');
     if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
     try {
       const draftId = await saveDraft(false);
-      await window.BGPS_API.submitPaperDraft(draftId);
+      const result = await window.BGPS_API.submitPaperDraft(draftId);
       closeModal('paperSubmitModal');
       setEditorMode(false);
       currentDraftId = '';
@@ -4244,10 +4426,11 @@ window.BGPS_CONFIG = Object.freeze({
       dirty = false;
       syncDraftDeleteControl();
       await loadData(false);
-      toast('Question paper submitted for principal approval.');
+      toast(result.resubmitted ? 'Corrected paper resubmitted with the same Paper ID.' : 'Question paper submitted for principal approval.');
     } catch (error) {
       toast(error.message || 'Could not submit the paper.', 'error');
     } finally {
+      submitInFlight = false;
       if (button) { button.disabled = false; button.textContent = 'Submit for Approval'; }
     }
   }
@@ -4416,6 +4599,53 @@ window.BGPS_CONFIG = Object.freeze({
     markDirty();
   }
 
+  function copySelectedImage() {
+    if (!selectedImage) return;
+    imageClipboard = selectedImage.cloneNode(true);
+    imageClipboard.removeAttribute('data-editor-bound');
+    imageClipboard.classList.remove('is-image-selected');
+    imageClipboard.querySelectorAll('.bgps-image-resize-handle').forEach((node) => node.remove());
+    toast('Image copied.');
+  }
+
+  function cutSelectedImage() {
+    if (!selectedImage) return;
+    copySelectedImage();
+    const target = selectedImage;
+    deselectImage();
+    target.remove();
+    markDirty();
+  }
+
+  function pasteCopiedImage() {
+    if (!imageClipboard) { toast('Copy or cut an image first.', 'error'); return; }
+    const clone = imageClipboard.cloneNode(true);
+    clone.removeAttribute('data-editor-bound');
+    const editor = byId('paperContentEditor');
+    if (selectedImage?.isConnected) selectedImage.insertAdjacentElement('afterend', clone);
+    else editor?.appendChild(clone);
+    bindImageBox(clone);
+    selectImage(clone);
+    markDirty();
+  }
+
+  async function replaceSelectedImage(file) {
+    if (!selectedImage || !file) return;
+    try {
+      const source = await compressImage(file);
+      const image = selectedImage.querySelector('img');
+      if (!image) throw new Error('The selected image could not be replaced.');
+      image.src = source;
+      image.alt = file.name || 'Question paper diagram';
+      markDirty();
+      toast('Image replaced.');
+    } catch (error) {
+      toast(error.message || 'The image could not be replaced.', 'error');
+    } finally {
+      if (byId('replacePaperImageFile')) byId('replacePaperImageFile').value = '';
+    }
+  }
+
   function addCaption() {
     if (!selectedImage) return;
     let caption = selectedImage.querySelector('.diagram-caption');
@@ -4533,27 +4763,42 @@ window.BGPS_CONFIG = Object.freeze({
 
   async function submitUpload(event) {
     event.preventDefault();
+    if (uploadInFlight) return;
     const file = byId('uploadPaperFile')?.files?.[0];
     if (!file) { toast('Select a PDF or DOCX file.', 'error'); return; }
     if (file.size > 8 * 1024 * 1024) { toast('The file exceeds the 8 MB upload limit.', 'error'); return; }
+    const extension = String(file.name || '').toLowerCase().split('.').pop();
+    if (!['docx', 'pdf'].includes(extension)) { toast('Select a DOCX file, or a PDF for reference-only submission.', 'error'); return; }
     const className = normalize(byId('uploadPaperClass')?.value);
     const subject = normalize(byId('uploadPaperSubject')?.value);
     const exam = normalize(byId('uploadPaperExam')?.value);
     const maxMarks = Number(byId('uploadPaperMaxMarks')?.value || 0);
+    const timeAllowed = normalize(byId('uploadPaperTime')?.value) || inferTime(maxMarks);
     const chapters = normalize(byId('uploadPaperChapters')?.value) || (isPrePrimary(className) ? 'Class-level learning outcomes' : '');
-    if (!className || !subject || !exam || !maxMarks || !chapters) { toast('Complete Class, Subject, Exam, Maximum Marks and Chapters.', 'error'); return; }
+    if (!className || !subject || !exam || !maxMarks || !timeAllowed || !chapters) { toast('Complete Class, Subject, Exam, Maximum Marks, Time Allowed and Chapters.', 'error'); return; }
     const button = byId('confirmPaperUpload');
-    if (button) { button.disabled = true; button.textContent = 'Uploading…'; }
+    uploadInFlight = true;
+    if (button) { button.disabled = true; button.textContent = extension === 'docx' ? 'Converting DOCX…' : 'Uploading PDF…'; }
     try {
       const fileBase64 = await fileToBase64(file);
-      await window.BGPS_API.uploadPaper({ className, subject, exam, chapters, maxMarks, note: normalize(byId('uploadPaperNote')?.value), fileName: file.name, mimeType: file.type, fileSize: file.size, fileBase64 });
-      closeModal('paperUploadModal');
-      await loadData(false);
-      toast('Question paper uploaded and submitted for approval.');
+      const payload = { className, subject, exam, chapters, maxMarks, timeAllowed, note: normalize(byId('uploadPaperNote')?.value), fileName: file.name, mimeType: file.type, fileSize: file.size, fileBase64 };
+      if (extension === 'docx') {
+        const result = await window.BGPS_API.importDocxPaper(payload);
+        closeModal('paperUploadModal');
+        await loadData(false);
+        await openDraft(result.draftId);
+        toast(result.warnings?.length ? 'DOCX imported. Unsupported content requires review.' : 'DOCX imported into the standard BGPS format.');
+      } else {
+        await window.BGPS_API.uploadPaper(payload);
+        closeModal('paperUploadModal');
+        await loadData(false);
+        toast('PDF uploaded as a reference-only paper and submitted for approval.');
+      }
     } catch (error) {
       toast(error.message || 'The paper could not be uploaded.', 'error');
     } finally {
-      if (button) { button.disabled = false; button.textContent = 'Upload and Submit'; }
+      uploadInFlight = false;
+      if (button) { button.disabled = false; button.textContent = 'Import and Review'; }
     }
   }
 
@@ -4611,6 +4856,9 @@ window.BGPS_CONFIG = Object.freeze({
     byId('insertOrButton')?.addEventListener('click', insertOr);
     byId('insertTableButton')?.addEventListener('click', insertTable);
     byId('insertPageBreakButton')?.addEventListener('click', insertPageBreak);
+    byId('insertFractionButton')?.addEventListener('click', insertFraction);
+    byId('insertRootButton')?.addEventListener('click', insertRoot);
+    byId('paperFontSize')?.addEventListener('change', (event) => execCommand('fontSize', event.target.value));
     byId('insertPaperImageButton')?.addEventListener('click', () => byId('paperImageFile')?.click());
     byId('paperImageFile')?.addEventListener('change', (event) => { const file = event.target.files?.[0]; if (file) insertImageFile(file); });
 
@@ -4619,6 +4867,11 @@ window.BGPS_CONFIG = Object.freeze({
     byId('moveImageUp')?.addEventListener('click', () => moveSelected(-1));
     byId('moveImageDown')?.addEventListener('click', () => moveSelected(1));
     byId('duplicateImage')?.addEventListener('click', duplicateSelectedImage);
+    byId('copyPaperImage')?.addEventListener('click', copySelectedImage);
+    byId('cutPaperImage')?.addEventListener('click', cutSelectedImage);
+    byId('pastePaperImage')?.addEventListener('click', pasteCopiedImage);
+    byId('replacePaperImage')?.addEventListener('click', () => byId('replacePaperImageFile')?.click());
+    byId('replacePaperImageFile')?.addEventListener('change', (event) => replaceSelectedImage(event.target.files?.[0]));
     byId('addImageCaption')?.addEventListener('click', addCaption);
     byId('deletePaperImage')?.addEventListener('click', deleteSelectedImage);
 
@@ -4644,6 +4897,10 @@ window.BGPS_CONFIG = Object.freeze({
     byId('paperUploadModal')?.addEventListener('click', (event) => { if (event.target === byId('paperUploadModal')) closeModal('paperUploadModal'); });
     byId('paperUploadForm')?.addEventListener('submit', submitUpload);
     byId('uploadPaperClass')?.addEventListener('change', () => populateSubjects('uploadPaperClass', 'uploadPaperSubject'));
+    byId('uploadPaperMaxMarks')?.addEventListener('input', (event) => {
+      const time = byId('uploadPaperTime');
+      if (time && !time.value) time.value = inferTime(event.target.value);
+    });
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
@@ -4683,6 +4940,10 @@ window.BGPS_CONFIG = Object.freeze({
     selectedImage = null;
     editorRange = null;
     dirty = false;
+    imageClipboard = null;
+    saveInFlight = false;
+    submitInFlight = false;
+    uploadInFlight = false;
     revokeObjectUrl();
     setEditorMode(false);
     const list = byId('teacherPaperList');

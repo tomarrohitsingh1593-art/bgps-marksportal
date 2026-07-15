@@ -472,6 +472,9 @@ button { -webkit-tap-highlight-color: transparent; }
 .modal-summary span { display:block; color:var(--muted); font-size:10px; text-transform:uppercase; font-weight:900; }
 .modal-summary strong { display:block; color:var(--navy-800); margin-top:5px; }
 .modal-actions { display:flex; justify-content:flex-end; gap:9px; padding:14px 22px; border-top:1px solid var(--border); background:#f8fafc; }
+.submission-success-modal header { text-align:center; padding-top:24px; }
+.submission-success-icon { display:grid; place-items:center; width:54px; height:54px; margin:0 auto 12px; border-radius:50%; background:var(--success-soft); color:var(--success); font-size:30px; font-weight:900; }
+.submission-success-modal .modal-summary strong { overflow-wrap:anywhere; }
 
 @media (max-width:1100px) {
   .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -1713,6 +1716,14 @@ body.modal-open { overflow: hidden; }
       <header><h2 id="paperSubmitTitle">Submit Question Paper</h2><p>Confirm the paper details before sending it to the principal.</p></header>
       <div class="modal-summary"><div><span>Class</span><strong id="submitPaperClass">—</strong></div><div><span>Subject</span><strong id="submitPaperSubject">—</strong></div><div><span>Exam</span><strong id="submitPaperExam">—</strong></div><div><span>Questions</span><strong id="submitPaperQuestions">—</strong></div><div><span>Detected Marks</span><strong id="submitPaperMarks">—</strong></div><div><span>Maximum Marks</span><strong id="submitPaperMaxMarks">—</strong></div></div>
       <div class="modal-actions"><button class="btn" id="cancelPaperSubmit" type="button">Continue Editing</button><button class="btn success" id="confirmPaperSubmit" type="button">Submit for Approval</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="paperSubmitSuccessModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="paperSubmitSuccessTitle">
+    <div class="modal submission-success-modal">
+      <header><div class="submission-success-icon" aria-hidden="true">✓</div><h2 id="paperSubmitSuccessTitle">Paper Sent Successfully</h2><p>Your question paper is now in the Principal review queue.</p></header>
+      <div class="modal-summary"><div><span>Paper ID</span><strong id="submittedPaperId">—</strong></div><div><span>Status</span><strong id="submittedPaperStatus">Submitted</strong></div><div><span>Version</span><strong id="submittedPaperVersion">1</strong></div><div><span>Next Step</span><strong>Principal Review</strong></div></div>
+      <div class="modal-actions"><button class="btn" id="closePaperSubmitSuccess" type="button">Close</button><button class="btn primary" id="viewSubmittedPaper" type="button">View Submitted Papers</button></div>
     </div>
   </div>
 
@@ -3654,6 +3665,7 @@ window.BGPS_CONFIG = Object.freeze({
   let imageClipboard = null;
   let saveInFlight = false;
   let submitInFlight = false;
+  let previewInFlight = false;
   let uploadInFlight = false;
 
   function toast(message, type) {
@@ -4360,14 +4372,30 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   async function previewCurrent() {
+    if (previewInFlight) return;
+    const buttons = [byId('previewCurrentPaper'), byId('sidebarPreviewPaper')].filter(Boolean);
     try {
       const draft = collectDraft();
       validateBasic(draft);
+      previewInFlight = true;
+      buttons.forEach((button) => { button.disabled = true; button.textContent = 'Preparing…'; });
+      setPreviewHeader(draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preparing');
+      const body = byId('teacherPaperPreviewBody');
+      if (body) body.innerHTML = '<div class="empty-state"><strong>Preparing latest preview</strong>Saving your current changes and building the standard A4 paper.</div>';
+      openModal('teacherPaperPreviewModal');
       const draftId = await saveDraft(false);
       const preview = await window.BGPS_API.getPaperDraftPreview(draftId);
       showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview ready');
     } catch (error) {
-      toast(error.message, 'error');
+      const body = byId('teacherPaperPreviewBody');
+      if (body && byId('teacherPaperPreviewModal')?.classList.contains('open')) {
+        body.innerHTML = `<div class="empty-state"><strong>Preview could not be prepared</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
+      } else {
+        toast(error.message || 'Preview could not be prepared.', 'error');
+      }
+    } finally {
+      previewInFlight = false;
+      buttons.forEach((button) => { button.disabled = false; button.textContent = button.id === 'sidebarPreviewPaper' ? 'Preview Paper' : 'Preview'; });
     }
   }
 
@@ -4410,6 +4438,15 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
+  function showSubmissionSuccess(result) {
+    const resubmitted = Boolean(result?.resubmitted);
+    setText('paperSubmitSuccessTitle', resubmitted ? 'Corrected Paper Resent Successfully' : 'Paper Sent Successfully');
+    setText('submittedPaperId', result?.paperId || 'Recorded');
+    setText('submittedPaperStatus', result?.status || 'Submitted');
+    setText('submittedPaperVersion', result?.version || 1);
+    openModal('paperSubmitSuccessModal');
+  }
+
   async function submitPaper() {
     if (submitInFlight) return;
     if (saveInFlight) { toast('Please wait for the current save to finish.', 'error'); return; }
@@ -4425,8 +4462,10 @@ window.BGPS_CONFIG = Object.freeze({
       currentRevision = {};
       dirty = false;
       syncDraftDeleteControl();
-      await loadData(false);
-      toast(result.resubmitted ? 'Corrected paper resubmitted with the same Paper ID.' : 'Question paper submitted for principal approval.');
+      showSubmissionSuccess(result);
+      loadData(false).catch(() => {
+        toast('Paper was sent successfully. Refresh My Papers to update the list.');
+      });
     } catch (error) {
       toast(error.message || 'Could not submit the paper.', 'error');
     } finally {
@@ -4820,6 +4859,13 @@ window.BGPS_CONFIG = Object.freeze({
     byId('submitPaperForReview')?.addEventListener('click', prepareSubmit);
     byId('confirmPaperSubmit')?.addEventListener('click', submitPaper);
     byId('cancelPaperSubmit')?.addEventListener('click', () => closeModal('paperSubmitModal'));
+    byId('closePaperSubmitSuccess')?.addEventListener('click', () => closeModal('paperSubmitSuccessModal'));
+    byId('viewSubmittedPaper')?.addEventListener('click', async () => {
+      closeModal('paperSubmitSuccessModal');
+      if (byId('teacherPaperStatusFilter')) byId('teacherPaperStatusFilter').value = 'Submitted';
+      try { await loadData(false); } catch (_) {}
+      renderList();
+    });
 
     byId('paperClassInput')?.addEventListener('change', () => { populateSubjects('paperClassInput', 'paperSubjectInput'); defaultTitle(); markDirty(); updateChecks(); });
     byId('paperSubjectInput')?.addEventListener('change', () => { defaultTitle(); markDirty(); updateChecks(); });
@@ -4907,6 +4953,7 @@ window.BGPS_CONFIG = Object.freeze({
         if (byId('teacherPaperPreviewModal')?.classList.contains('open')) closePreview();
         else if (byId('paperUploadModal')?.classList.contains('open')) closeModal('paperUploadModal');
         else if (byId('paperSubmitModal')?.classList.contains('open')) closeModal('paperSubmitModal');
+        else if (byId('paperSubmitSuccessModal')?.classList.contains('open')) closeModal('paperSubmitSuccessModal');
         else deselectImage();
       }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && !byId('paperEditorWorkspace')?.hidden) {
@@ -4943,6 +4990,7 @@ window.BGPS_CONFIG = Object.freeze({
     imageClipboard = null;
     saveInFlight = false;
     submitInFlight = false;
+    previewInFlight = false;
     uploadInFlight = false;
     revokeObjectUrl();
     setEditorMode(false);
@@ -4955,6 +5003,7 @@ window.BGPS_CONFIG = Object.freeze({
     closeModal('teacherPaperPreviewModal');
     closeModal('paperUploadModal');
     closeModal('paperSubmitModal');
+    closeModal('paperSubmitSuccessModal');
   }
 
   window.BGPS_PAPER_CREATOR = Object.freeze({ onAuthenticated, reset, loadData, renderList, openNewPaper });
@@ -5737,4 +5786,3 @@ window.BGPS_CONFIG = Object.freeze({
   </script>
 </body>
 </html>
- 

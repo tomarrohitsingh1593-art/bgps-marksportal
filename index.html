@@ -640,6 +640,7 @@ body.modal-open { overflow: hidden; }
 .paper-facts span { min-width:0; }
 .paper-facts small { display:block; color:var(--muted); font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:.35px; }
 .paper-facts strong { display:block; margin-top:4px; color:var(--text-2); font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.paper-row-actions { display:flex; flex-direction:column; gap:7px; }
 
 .paper-review-modal { width:min(1360px,calc(100vw - 28px)); height:min(92vh,900px); display:flex; flex-direction:column; overflow:hidden; border-radius:16px; background:#fff; box-shadow:0 30px 80px rgba(4,22,42,.32); }
 .paper-review-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:17px 20px; border-bottom:1px solid var(--border); background:#fff; }
@@ -1679,6 +1680,7 @@ body.modal-open { overflow: hidden; }
             <button class="btn success" id="approvePaperButton" type="button">Approve Paper</button>
             <button class="btn danger-outline" id="returnPaperButton" type="button">Return for Correction</button>
             <button class="btn" id="downloadPaperButton" type="button" hidden>Download File</button>
+            <button class="btn danger-outline" id="deleteReviewedPaperButton" type="button">Delete Paper</button>
           </div>
         </aside>
       </div>
@@ -1893,12 +1895,13 @@ window.BGPS_CONFIG = Object.freeze({
   const savePaperDraft = (draft) => request('savePaperDraft', { draft });
   const deletePaperDraft = (draftId) => request('deletePaperDraft', { draftId });
   const submitPaperDraft = (draftId) => request('submitPaperDraft', { draftId });
+  const deletePaper = (paperId) => request('deletePaper', { paperId });
   const uploadPaper = (paper) => request('uploadPaper', { paper });
   const importDocxPaper = (paper) => request('importDocxPaper', { paper });
   const listPrincipalActivity = () => request('listPrincipalActivity');
   const updatePaperSettings = (settings) => request('updatePaperSettings', { settings });
 
-  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperPreview, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
+  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperPreview, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
 })();
 
 
@@ -3275,6 +3278,7 @@ window.BGPS_CONFIG = Object.freeze({
   let currentPaper = null;
   let currentObjectUrl = '';
   let currentPreviewUrl = '';
+  let deleteInFlight = false;
   let initialized = false;
 
   function escapeHtml(value) {
@@ -3360,7 +3364,7 @@ window.BGPS_CONFIG = Object.freeze({
           <span><small>Version</small><strong>${escapeHtml(paper.version || 1)}</strong></span>
           <span><small>Updated</small><strong>${escapeHtml(window.BGPS_DATA.safeDate(paper.updatedAt) || '—')}</strong></span>
         </div>
-        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">Review</button></div>
+        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">Review</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
       </article>`).join('');
   }
 
@@ -3570,6 +3574,38 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
+  async function deleteAdminPaper(paperId) {
+    if (deleteInFlight) return;
+    const paper = paperById(paperId);
+    if (!paper) {
+      window.BGPS_APP.toast('Paper record was not found. Refresh and try again.', 'error');
+      return;
+    }
+    const label = paper.title || `${paper.className} ${paper.subject} ${paper.exam} paper`;
+    const confirmed = window.confirm(`Delete "${label}"?\n\nThis removes the portal record and moves its stored paper, PDF, source upload and preview files to Drive Trash. This action cannot be undone from the portal.`);
+    if (!confirmed) return;
+
+    deleteInFlight = true;
+    const modalButton = byId('deleteReviewedPaperButton');
+    const rowButtons = [...document.querySelectorAll('[data-delete-paper]')].filter((button) => String(button.dataset.deletePaper) === String(paperId));
+    if (modalButton) { modalButton.disabled = true; modalButton.textContent = 'Deleting…'; }
+    rowButtons.forEach((button) => { button.disabled = true; button.textContent = 'Deleting…'; });
+    try {
+      const result = await window.BGPS_API.deletePaper(paperId);
+      papers = papers.filter((item) => String(item.paperId) !== String(paperId));
+      if (currentPaper && String(currentPaper.paperId) === String(paperId)) closeReview();
+      render();
+      window.BGPS_APP.toast(`${result.title || label} deleted successfully.`);
+      window.BGPS_DASHBOARD.refresh(false).catch(() => {});
+    } catch (error) {
+      window.BGPS_APP.toast(error.message || 'Could not delete the paper.', 'error');
+    } finally {
+      deleteInFlight = false;
+      if (modalButton) { modalButton.disabled = false; modalButton.textContent = 'Delete Paper'; }
+      rowButtons.forEach((button) => { button.disabled = false; button.textContent = 'Delete'; });
+    }
+  }
+
   function downloadCurrentFile() {
     if (!currentObjectUrl) return;
     const button = byId('downloadPaperButton');
@@ -3595,6 +3631,8 @@ window.BGPS_CONFIG = Object.freeze({
     byId('paperStatusFilter')?.addEventListener('change', render);
     byId('paperSearch')?.addEventListener('input', render);
     byId('paperList')?.addEventListener('click', (event) => {
+      const deleteButton = event.target.closest('[data-delete-paper]');
+      if (deleteButton) { deleteAdminPaper(deleteButton.dataset.deletePaper); return; }
       const button = event.target.closest('[data-open-paper]');
       if (button) openReview(button.dataset.openPaper);
     });
@@ -3604,6 +3642,7 @@ window.BGPS_CONFIG = Object.freeze({
     });
     byId('approvePaperButton')?.addEventListener('click', () => updateStatus('Approved'));
     byId('returnPaperButton')?.addEventListener('click', () => updateStatus('Correction Required'));
+    byId('deleteReviewedPaperButton')?.addEventListener('click', () => { if (currentPaper) deleteAdminPaper(currentPaper.paperId); });
     byId('downloadPaperButton')?.addEventListener('click', downloadCurrentFile);
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && byId('paperReviewModal')?.classList.contains('open')) closeReview();
@@ -3625,6 +3664,7 @@ window.BGPS_CONFIG = Object.freeze({
     session = null;
     papers = [];
     currentPaper = null;
+    deleteInFlight = false;
     render();
   }
 

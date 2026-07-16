@@ -311,7 +311,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .next-item strong { display: block; font-size: 13px; }
 .next-item span { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; line-height: 1.4; }
 .notice { margin-top: 18px; padding: 12px 14px; border-radius: 10px; background: var(--warning-soft); color: #855405; border: 1px solid #efd69c; font-size: 12px; line-height: 1.5; }
-.toast-region { position: fixed; right: 20px; bottom: 20px; z-index: 100; display: grid; gap: 8px; }
+.toast-region { position: fixed; right: 20px; bottom: 20px; z-index: 2100; display: grid; gap: 8px; }
 .toast { min-width: 260px; max-width: 380px; padding: 12px 14px; border-radius: 10px; color: #fff; background: var(--navy-900); box-shadow: var(--shadow-md); font-size: 13px; animation: toastIn .18s ease-out; }
 .toast.error { background: var(--danger); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } }
@@ -414,6 +414,34 @@ button { -webkit-tap-highlight-color: transparent; }
 .term-overview-card h3 { margin:0 0 9px; color:var(--navy-800); font-size:14px; }
 .term-overview-card .term-fact { display:flex; justify-content:space-between; gap:8px; padding:5px 0; color:var(--text-2); font-size:12px; }
 .term-overview-card .term-fact strong { color:var(--navy-800); text-align:right; }
+.teacher-term-premium { overflow:hidden; border-color:#bfd0e2; box-shadow:0 16px 38px rgba(15,42,76,.10); }
+.teacher-term-premium > .card-head { background:linear-gradient(135deg,#0d3157,#184f82); }
+.teacher-term-premium > .card-head h2,.teacher-term-premium > .card-head p { color:#fff; }
+.teacher-term-premium > .card-head p { opacity:.78; }
+.teacher-term-premium .term-overview-controls { padding:4px; border-radius:12px; background:#edf4fa; }
+.teacher-term-premium .term-overview-grid { grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); margin-top:14px; }
+.teacher-term-premium .term-overview-card { padding:16px; background:#fff; box-shadow:0 5px 16px rgba(15,42,76,.06); }
+.term-progress-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.term-progress-head h3 { margin:0; }
+.term-readiness { min-width:58px; padding:5px 9px; border-radius:999px; background:#e7f2ff; color:#174f7f; text-align:center; font-size:12px; font-weight:800; }
+.term-progress-track { height:9px; overflow:hidden; border-radius:999px; background:#e5edf5; }
+.term-progress-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#1d659e,#2c8a60); }
+.paper-workflow-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.paper-workflow-stat { padding:9px 10px; border-radius:9px; background:#f3f7fa; }
+.paper-workflow-stat span { display:block; color:var(--text-2); font-size:11px; }
+.paper-workflow-stat strong { display:block; margin-top:2px; color:var(--navy-800); font-size:20px; }
+.paper-workflow-stat.warning { background:#fff8e6; }
+.paper-workflow-stat.danger { background:#fff1f1; }
+.teacher-notification-list { display:grid; gap:9px; }
+.teacher-notification { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:11px 12px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); }
+.teacher-notification.warning { border-color:#ead39d; background:#fff9e9; }
+.teacher-notification.danger { border-color:#e4b4b4; background:#fff5f5; }
+.teacher-notification.success { border-color:#b9dec8; background:#f1faf4; }
+.teacher-notification-copy { min-width:0; color:var(--text-2); font-size:12px; line-height:1.45; }
+.teacher-notification-copy strong { display:block; margin-bottom:2px; color:var(--navy-800); font-size:13px; }
+.teacher-notification.danger .teacher-notification-copy strong { color:#8b2929; }
+@media(max-width:640px){ .teacher-notification { align-items:stretch; flex-direction:column; } .teacher-notification .btn { width:100%; min-height:44px; } }
+@media(max-width:760px){ .teacher-term-premium .term-overview-grid { grid-template-columns:1fr; } }
 
 /* Marks workspace */
 .marks-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; }
@@ -866,12 +894,14 @@ body.modal-open { overflow: hidden; }
 .teacher-paper-preview-body { min-height:300px; flex:1; overflow:auto; background:#edf2f6; padding:14px; }
 .teacher-paper-preview-frame { display:block; width:min(820px,100%); min-height:790px; margin:0 auto; border:1px solid #cbd6df; border-radius:3px; background:#fff; box-shadow:0 10px 28px rgba(15,42,76,.13); }
 .teacher-paper-preview-footer { display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid var(--border); background:#fff; }
-.paper-upload-modal { width:min(760px,calc(100vw - 28px)); }
+.paper-upload-modal { width:min(760px,calc(100vw - 28px)); max-height:94vh; overflow:auto; }
 .paper-upload-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px; }
 .paper-upload-form .upload-wide { grid-column:1 / -1; }
 .paper-upload-form input,.paper-upload-form select,.paper-upload-form textarea { width:100%; min-height:42px; border:1px solid var(--border); border-radius:9px; padding:9px 10px; font:inherit; }
 .paper-upload-form textarea { resize:vertical; }
 .paper-upload-form small { display:block; margin-top:4px; color:var(--muted); font-size:11px; }
+.paper-upload-progress { grid-column:1 / -1; padding:10px 12px; border:1px solid #bfd5e8; border-radius:9px; background:#eef7ff; color:#244f73; font-size:12px; line-height:1.45; }
+.paper-upload-progress.error { border-color:#efb8b8; background:#fff0f0; color:#a52323; font-weight:700; }
 
 @media(max-width:1180px){
   .paper-editor-layout { grid-template-columns:1fr; }
@@ -909,9 +939,14 @@ body.modal-open { overflow: hidden; }
   .paper-content-editor { min-height:540px; }
   .paper-upload-form { grid-template-columns:1fr; }
   .paper-upload-form .upload-wide { grid-column:auto; }
-  .teacher-paper-preview-body { padding:0; }
-  .teacher-paper-preview-frame { min-height:640px; }
-  .teacher-paper-preview-footer { display:grid; grid-template-columns:1fr; }
+  .paper-preview-modal-shell { width:100%; height:100%; max-height:none; border-radius:0; }
+  .teacher-paper-preview-body { min-height:0; padding:0; }
+  .teacher-paper-preview-frame { width:100%; min-height:calc(100vh - 190px); border:0; border-radius:0; box-shadow:none; }
+  .teacher-paper-preview-footer { display:grid; grid-template-columns:1fr; padding:9px 12px; }
+  .paper-upload-modal { width:100%; height:100%; max-height:none; border-radius:0; }
+  .paper-upload-form input[type="file"] { min-width:0; padding:7px; font-size:12px; }
+  .paper-upload-form .modal-actions { position:sticky; bottom:0; z-index:2; padding:10px 0 2px; background:#fff; }
+  .paper-upload-form .btn,.teacher-paper-preview-footer .btn { min-height:44px; }
 }
 
 @media print {
@@ -1127,11 +1162,15 @@ body.modal-open { overflow: hidden; }
               <button class="btn" id="refreshTeacherSummary" type="button">Refresh</button>
             </div>
 
-            <section class="marks-summary" aria-label="Teacher marks summary">
-              <article class="metric-card"><span>Saved records</span><strong id="homeSavedRecords">—</strong><small>Latest records for your assigned class.</small></article>
-              <article class="metric-card"><span>Subjects started</span><strong id="homeSubjectsStarted">—</strong><small>Subjects with saved marks.</small></article>
-              <article class="metric-card"><span>Exams started</span><strong id="homeExamsStarted">—</strong><small>Examinations with saved records.</small></article>
-              <article class="metric-card"><span>Absent records</span><strong id="homeAbsentRecords">—</strong><small>Saved absent entries.</small></article>
+            <section class="page-card section-gap teacher-term-premium" id="teacherTermOverviewSection">
+              <div class="card-head"><div><h2>Term-wise Overview</h2><p>Essential marks and question-paper progress for the selected academic year and term.</p></div></div>
+              <div class="card-body">
+                <div class="term-overview-controls">
+                  <label for="teacherTermYearFilter"><span>Academic Year</span><select id="teacherTermYearFilter" aria-label="Teacher overview academic year"></select></label>
+                  <div class="term-overview-tabs" id="teacherTermTabs" role="tablist" aria-label="Select term"></div>
+                </div>
+                <div class="term-overview-grid" id="teacherTermOverview"><div class="empty-state"><strong>Loading term information</strong>Please wait while your academic work is checked.</div></div>
+              </div>
             </section>
 
             <section class="welcome-grid section-gap">
@@ -1156,19 +1195,8 @@ body.modal-open { overflow: hidden; }
             </section>
 
             <section class="page-card section-gap">
-              <div class="card-head"><div><h2>Recent marks activity</h2><p>Your latest saved records.</p></div></div>
-              <div class="card-body" id="recentMarksList"><div class="empty-state"><strong>Loading activity</strong>Please wait while your records are checked.</div></div>
-            </section>
-
-            <section class="page-card section-gap">
-              <div class="card-head"><div><h2>Term-wise overview</h2><p>Marks and submitted question-paper progress for each exam or term.</p></div></div>
-              <div class="card-body">
-                <div class="term-overview-controls">
-                  <label for="teacherTermYearFilter"><span>Academic Year</span><select id="teacherTermYearFilter" aria-label="Teacher overview academic year"></select></label>
-                  <div class="term-overview-tabs" id="teacherTermTabs" role="tablist" aria-label="Select term"></div>
-                </div>
-                <div class="term-overview-grid" id="teacherTermOverview"><div class="empty-state"><strong>Loading term information</strong>Please wait while your academic work is checked.</div></div>
-              </div>
+              <div class="card-head"><div><h2>Notifications & Pending Work</h2><p>Important marks and question-paper actions for the selected term.</p></div></div>
+              <div class="card-body" id="recentMarksList"><div class="empty-state"><strong>Checking pending work</strong>Please wait while your records are checked.</div></div>
             </section>
           </div>
 
@@ -1692,14 +1720,14 @@ body.modal-open { overflow: hidden; }
     <div class="paper-preview-modal-shell">
       <header class="paper-review-header"><div><span class="status-chip" id="teacherPaperPreviewStatus">Preview</span><h2 id="teacherPaperPreviewTitle">Question Paper Preview</h2><p id="teacherPaperPreviewMeta">—</p></div><button class="modal-close" id="closeTeacherPaperPreview" type="button" aria-label="Close preview">×</button></header>
       <div class="teacher-paper-preview-body" id="teacherPaperPreviewBody"><div class="empty-state"><strong>Preparing preview</strong>Please wait.</div></div>
-      <footer class="teacher-paper-preview-footer"><button class="btn" id="downloadTeacherPaper" type="button" hidden>Download Final PDF</button><button class="btn" id="printTeacherPaper" type="button">Print / Save PDF</button><button class="btn primary" id="closeTeacherPaperPreviewFooter" type="button">Back to Edit</button></footer>
+      <footer class="teacher-paper-preview-footer"><button class="btn" id="downloadTeacherPaper" type="button" hidden>Download Final PDF</button><button class="btn" id="printTeacherPaper" type="button">Print / Save PDF</button><button class="btn" id="closeTeacherPaperPreviewFooter" type="button">Back to Edit</button><button class="btn primary" id="submitFromTeacherPaperPreview" type="button" hidden>Continue to Submit</button></footer>
     </div>
   </div>
 
   <div class="modal-backdrop" id="paperUploadModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="paperUploadTitle">
     <div class="modal paper-upload-modal">
-      <header><h2 id="paperUploadTitle">Upload DOCX Question Paper</h2><p>DOCX files are imported into the editable standard BGPS format. PDF files remain reference-only and are submitted without editable conversion.</p></header>
-      <form id="paperUploadForm" class="paper-upload-form">
+      <header><h2 id="paperUploadTitle">Upload DOCX Question Paper</h2><p id="paperUploadDescription">DOCX files are imported into the editable standard BGPS format. PDF files remain reference-only and are submitted without editable conversion.</p></header>
+      <form id="paperUploadForm" class="paper-upload-form" novalidate>
         <div class="field"><label for="uploadPaperClass">Class</label><select id="uploadPaperClass" required></select></div>
         <div class="field"><label for="uploadPaperSubject">Subject</label><select id="uploadPaperSubject" required></select></div>
         <div class="field"><label for="uploadPaperExam">Exam / Term</label><select id="uploadPaperExam" required></select></div>
@@ -1708,6 +1736,7 @@ body.modal-open { overflow: hidden; }
         <div class="field upload-wide"><label for="uploadPaperChapters">Chapters / Portion</label><input id="uploadPaperChapters" maxlength="500" required></div>
         <div class="field upload-wide"><label for="uploadPaperFile">Question Paper File</label><input id="uploadPaperFile" type="file" accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx" required><small>DOCX for editable standardisation; PDF for reference-only submission. Maximum 8 MB.</small></div>
         <div class="field upload-wide"><label for="uploadPaperNote">Teacher Note <span class="optional-label">Optional</span></label><textarea id="uploadPaperNote" rows="3" maxlength="250"></textarea></div>
+        <div class="paper-upload-progress" id="paperUploadProgress" role="status" aria-live="polite" hidden></div>
         <div class="modal-actions upload-wide"><button class="btn" id="cancelPaperUpload" type="button">Cancel</button><button class="btn primary" id="confirmPaperUpload" type="submit">Import and Review</button></div>
       </form>
     </div>
@@ -1828,8 +1857,8 @@ window.BGPS_CONFIG = Object.freeze({
     return data;
   }
 
-  async function fetchWithTimeout(url, options) {
-    const timeoutMs = Number(config().requestTimeoutMs || 25000);
+  async function fetchWithTimeout(url, options, timeoutOverrideMs) {
+    const timeoutMs = Number(timeoutOverrideMs || config().requestTimeoutMs || 25000);
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
@@ -1844,14 +1873,14 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
-  async function send(payload) {
+  async function send(payload, timeoutMs) {
     const response = await fetchWithTimeout(config().webAppUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload || {}),
       cache: 'no-store',
       redirect: 'follow'
-    });
+    }, timeoutMs);
     return parseJsonResponse(response);
   }
 
@@ -1873,12 +1902,19 @@ window.BGPS_CONFIG = Object.freeze({
     if (!session || !session.teacherId || !session.pin) {
       throw new ApiError('Your secure session has expired. Please sign in again.', 'NO_SESSION');
     }
+    const paperTimeouts = {
+      importDocxPaper: 120000,
+      uploadPaper: 90000,
+      getPaperDraftPreview: 90000,
+      getPaperPreview: 90000,
+      submitPaperDraft: 120000
+    };
     return send({
       action,
       teacherId: session.teacherId,
       pin: session.pin,
       ...(payload || {})
-    });
+    }, paperTimeouts[action]);
   }
 
   const getMarks = (filters) => request('getMarks', { filters: filters || {} });
@@ -2486,7 +2522,6 @@ window.BGPS_CONFIG = Object.freeze({
 
   async function refreshTeacherSummary(showToast) {
     if (!session || session.isAdmin) return;
-    setText('homeSavedRecords', '…');
     try {
       const [result, papersResult] = await Promise.all([
         window.BGPS_API.getMarks({ className: session.assignedClass }),
@@ -2495,21 +2530,12 @@ window.BGPS_CONFIG = Object.freeze({
       const rows = dedupeRows(result.rows || []);
       window.BGPS_DATA.setObservedMarksRows(rows);
       renderSubjects(session.assignedClass);
-      const subjects = new Set(rows.map((row) => String(row.subject || '').trim()).filter(Boolean));
-      const exams = new Set(rows.map((row) => String(row.examType || '').trim()).filter(Boolean));
-      const absent = rows.filter((row) => window.BGPS_DATA.isAbsent(row.marks)).length;
       const latest = [...rows].sort((a, b) => (new Date(b.timestamp || 0)) - (new Date(a.timestamp || 0)))[0];
-      setText('homeSavedRecords', rows.length);
-      setText('homeSubjectsStarted', subjects.size);
-      setText('homeExamsStarted', exams.size);
-      setText('homeAbsentRecords', absent);
       setText('teacherSummaryClass', session.assignedClass || '—');
       setText('teacherSummaryLatest', latest ? window.BGPS_DATA.safeDate(latest.timestamp) : 'No records yet');
-      renderRecent(rows);
       renderInteractiveTermOverview(rows, papersResult.papers || []);
       if (showToast) window.BGPS_APP.toast('Marks summary refreshed.');
     } catch (error) {
-      setText('homeSavedRecords', '—');
       setText('teacherSummaryLatest', 'Unable to load');
       const termOverview = byId('teacherTermOverview');
       if (termOverview) termOverview.innerHTML = '<div class="empty-state"><strong>Term information could not be loaded</strong>Please refresh and try again.</div>';
@@ -2517,21 +2543,27 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
-  function renderRecent(rows) {
+  async function refreshTeacherPaperStatus(showToast) {
+    if (!session || session.isAdmin) return;
+    try {
+      const result = await window.BGPS_API.listPapers();
+      renderInteractiveTermOverview(undefined, Array.isArray(result?.papers) ? result.papers : []);
+      if (showToast) window.BGPS_APP.toast('Question-paper status refreshed.');
+    } catch (error) {
+      if (showToast) window.BGPS_APP.toast(error.message || 'Could not refresh question-paper status.', 'error');
+      throw error;
+    }
+  }
+
+  function renderTeacherNotifications(termLabel, pendingSubjects, reviewPapers, returnedPapers) {
     const container = byId('recentMarksList');
     if (!container) return;
-    const latest = [...rows]
-      .sort((a, b) => (new Date(b.timestamp || 0)) - (new Date(a.timestamp || 0)))
-      .slice(0, 6);
-    if (!latest.length) {
-      container.innerHTML = '<div class="empty-state"><strong>No marks saved yet</strong>Your recent marks activity will appear here.</div>';
-      return;
-    }
-    container.innerHTML = latest.map((row) => `
-      <div class="summary-row">
-        <span>${escapeHtml(row.subject)} · ${escapeHtml(row.examType)} · ${escapeHtml(row.component)} · Roll ${escapeHtml(row.rollNo)}</span>
-        <strong>${window.BGPS_DATA.isAbsent(row.marks) ? 'AB' : escapeHtml(row.marks)} / ${escapeHtml(row.maxMarks)}</strong>
-      </div>`).join('');
+    const items = [];
+    (returnedPapers || []).slice(0, 3).forEach((paper) => items.push(`<div class="teacher-notification danger"><div class="teacher-notification-copy"><strong>Correction required: ${escapeHtml(paper.subject || paper.title || 'Question Paper')}</strong>${escapeHtml(paper.exam || 'Exam')} · ${escapeHtml(paper.adminNote || 'Please review the Principal note and correct this paper.')}</div><button class="btn danger-outline" type="button" data-notification-action="corrections">Open</button></div>`));
+    if ((pendingSubjects || []).length) items.push(`<div class="teacher-notification warning"><div class="teacher-notification-copy"><strong>${pendingSubjects.length} ${escapeHtml(termLabel)} subject${pendingSubjects.length === 1 ? '' : 's'} pending</strong>${escapeHtml(pendingSubjects.join(', '))}</div><button class="btn" type="button" data-notification-action="marks">Enter Marks</button></div>`);
+    if ((reviewPapers || []).length) items.push(`<div class="teacher-notification"><div class="teacher-notification-copy"><strong>${reviewPapers.length} paper${reviewPapers.length === 1 ? '' : 's'} awaiting Principal review</strong>${escapeHtml(reviewPapers.map((paper) => paper.subject || paper.title || 'Paper').slice(0, 4).join(', '))}</div><button class="btn" type="button" data-notification-action="review">View Papers</button></div>`);
+    if (!items.length) items.push('<div class="teacher-notification success"><div class="teacher-notification-copy"><strong>All selected-term work is up to date</strong>No pending marks, paper reviews or corrections need your attention.</div></div>');
+    container.innerHTML = `<div class="teacher-notification-list">${items.join('')}</div>`;
   }
 
   function renderTermOverview(rows, paperRows) {
@@ -2613,16 +2645,20 @@ window.BGPS_CONFIG = Object.freeze({
     const completedKeys = new Set(termRows.map((row) => String(window.BGPS_DATA.normalizeSubjectForStorage(row.subject, session.assignedClass) || row.subject).toUpperCase()).filter(Boolean));
     const marksSubmitted = [...completedKeys].filter((key) => expectedKeys.has(key)).length;
     const marksPending = Math.max(0, expectedKeys.size - marksSubmitted);
+    const pendingSubjects = expectedSubjects.filter((subject) => !completedKeys.has(String(window.BGPS_DATA.normalizeSubjectForStorage(subject, session.assignedClass) || subject).toUpperCase()));
     const paperSubmitted = termPapers.length;
-    const reviewPending = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'SUBMITTED').length;
+    const reviewPapers = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'SUBMITTED');
+    const reviewPending = reviewPapers.length;
     const correctionRequired = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'CORRECTION REQUIRED').length;
     const approved = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'APPROVED').length;
+    const returnedPapers = papersForYear.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'CORRECTION REQUIRED');
     const latest = [...termRows].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))[0];
     const label = terms.get(selectedOverviewTerm) || selectedOverviewTerm;
+    const readiness = expectedKeys.size ? Math.round((marksSubmitted / expectedKeys.size) * 100) : 0;
+    renderTeacherNotifications(label, pendingSubjects, reviewPapers, returnedPapers);
     container.innerHTML = `
-      <article class="term-overview-card"><h3>${escapeHtml(label)} marks</h3><div class="term-fact"><span>Submitted</span><strong>${marksSubmitted}/${expectedKeys.size} subjects</strong></div><div class="term-fact"><span>Pending</span><strong>${marksPending} subjects</strong></div></article>
-      <article class="term-overview-card"><h3>Question papers</h3><div class="term-fact"><span>Submitted</span><strong>${paperSubmitted}</strong></div><div class="term-fact"><span>Review pending</span><strong>${reviewPending}</strong></div></article>
-      <article class="term-overview-card"><h3>Approval status</h3><div class="term-fact"><span>Approved</span><strong>${approved}</strong></div><div class="term-fact"><span>Correction required</span><strong>${correctionRequired}</strong></div><div class="term-fact"><span>Latest marks update</span><strong>${escapeHtml(latest ? window.BGPS_DATA.safeDate(latest.timestamp) : 'No records')}</strong></div></article>`;
+      <article class="term-overview-card"><div class="term-progress-head"><div><h3>${escapeHtml(label)} Marks Progress</h3><small>${escapeHtml(session.assignedClass || 'Assigned class')} · ${escapeHtml(selectedYear.replace('-', '–'))}</small></div><span class="term-readiness">${readiness}%</span></div><div class="term-progress-track" aria-label="${readiness}% marks progress"><span style="width:${readiness}%"></span></div><div class="term-fact"><span>Subjects completed</span><strong>${marksSubmitted}/${expectedKeys.size}</strong></div><div class="term-fact"><span>Subjects pending</span><strong>${marksPending}</strong></div><div class="term-fact"><span>Latest marks update</span><strong>${escapeHtml(latest ? window.BGPS_DATA.safeDate(latest.timestamp) : 'No records')}</strong></div></article>
+      <article class="term-overview-card"><div class="term-progress-head"><div><h3>Question Paper Workflow</h3><small>${escapeHtml(label)} status</small></div></div><div class="paper-workflow-grid"><div class="paper-workflow-stat"><span>Total submitted</span><strong>${paperSubmitted}</strong></div><div class="paper-workflow-stat warning"><span>Awaiting review</span><strong>${reviewPending}</strong></div><div class="paper-workflow-stat"><span>Approved</span><strong>${approved}</strong></div><div class="paper-workflow-stat danger"><span>Correction</span><strong>${correctionRequired}</strong></div></div></article>`;
   }
 
   function aggregateAdminRows(rows) {
@@ -2808,6 +2844,16 @@ window.BGPS_CONFIG = Object.freeze({
       selectedOverviewTerm = termButton.dataset.overviewTerm || '';
       renderInteractiveTermOverview();
     });
+    byId('recentMarksList')?.addEventListener('click', (event) => {
+      const action = event.target.closest('[data-notification-action]')?.dataset.notificationAction;
+      if (!action) return;
+      if (action === 'marks') {
+        window.BGPS_APP.openView('marks');
+        return;
+      }
+      if (byId('teacherPaperStatusFilter')) byId('teacherPaperStatusFilter').value = action === 'corrections' ? 'Correction Required' : 'Submitted';
+      window.BGPS_APP.openView('teacher-papers');
+    });
     byId('loadAdminReportButton')?.addEventListener('click', loadAdminReport);
     byId('adminRecordSearch')?.addEventListener('input', renderAdminDetails);
     byId('exportAdminCsvButton')?.addEventListener('click', exportAdminCsv);
@@ -2850,7 +2896,7 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   bindEvents();
-  window.BGPS_MARKS = Object.freeze({ onAuthenticated, loadSettings, refreshTeacherSummary, loadExisting, save, reset, loadAdminReport });
+  window.BGPS_MARKS = Object.freeze({ onAuthenticated, loadSettings, refreshTeacherSummary, refreshTeacherPaperStatus, loadExisting, save, reset, loadAdminReport });
 })();
 
 
@@ -3443,9 +3489,9 @@ window.BGPS_CONFIG = Object.freeze({
     const note = byId('paperReviewNote');
     if (note) note.value = paper.adminNote || '';
     const approve = byId('approvePaperButton');
-    if (approve) approve.disabled = normalize(paper.status) === 'APPROVED';
+    if (approve) approve.disabled = normalize(paper.status) !== 'SUBMITTED';
     const returned = byId('returnPaperButton');
-    if (returned) returned.disabled = normalize(paper.status) === 'CORRECTION REQUIRED';
+    if (returned) returned.disabled = normalize(paper.status) !== 'SUBMITTED';
   }
 
   function renderManualPreview(content) {
@@ -3475,6 +3521,9 @@ window.BGPS_CONFIG = Object.freeze({
     if (button) {
       button.hidden = false;
       button.dataset.fileName = fileName || 'question-paper';
+      const mime = String(blob?.type || '').toLowerCase();
+      const name = String(fileName || '').toLowerCase();
+      button.textContent = mime.includes('pdf') || name.endsWith('.pdf') ? 'Download PDF' : (mime.includes('wordprocessingml') || name.endsWith('.docx') ? 'Download Original DOCX' : 'Download File');
     }
   }
 
@@ -3488,11 +3537,6 @@ window.BGPS_CONFIG = Object.freeze({
     }
 
     if (!result || result.previewAvailable === false || !result.fileBase64) {
-      if (result?.drivePreviewUrl) {
-        preview.innerHTML = '<iframe class="paper-preview-frame" title="Secure question paper preview" referrerpolicy="no-referrer"></iframe>';
-        preview.querySelector('iframe').src = result.drivePreviewUrl;
-        return;
-      }
       const message = result?.error || 'Download the original file to open it.';
       preview.innerHTML = `<div class="empty-state file-empty"><strong>Preview could not be prepared</strong>${escapeHtml(message)}</div>`;
       return;
@@ -3537,7 +3581,10 @@ window.BGPS_CONFIG = Object.freeze({
     openModal();
 
     try {
-      const [previewResult, originalFile] = await Promise.all([window.BGPS_API.getPaperPreview(paper.paperId), window.BGPS_API.getPaperFile(paper.paperId)]);
+      const [previewResult, originalFile] = await Promise.all([
+        window.BGPS_API.getPaperPreview(paper.paperId),
+        window.BGPS_API.getPaperFile(paper.paperId).catch(() => null)
+      ]);
       renderUploadedPreview(previewResult, originalFile);
     } catch (error) {
       if (preview) preview.innerHTML = `<div class="empty-state"><strong>Paper could not be opened</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
@@ -3546,6 +3593,12 @@ window.BGPS_CONFIG = Object.freeze({
 
   async function updateStatus(status) {
     if (!currentPaper) return;
+    if (normalize(currentPaper.status) !== 'SUBMITTED') {
+      window.BGPS_APP.toast(currentPaper.status === 'Approved'
+        ? 'Approved papers are final.'
+        : 'Wait for the teacher to correct and resubmit this paper.', 'error');
+      return;
+    }
     const note = String(byId('paperReviewNote')?.value || '').trim();
     if (status === 'Correction Required' && !note) {
       window.BGPS_APP.toast('Enter a clear correction note before returning the paper.', 'error');
@@ -3555,12 +3608,16 @@ window.BGPS_CONFIG = Object.freeze({
     const button = status === 'Approved' ? byId('approvePaperButton') : byId('returnPaperButton');
     if (button) { button.disabled = true; button.textContent = status === 'Approved' ? 'Approving…' : 'Returning…'; }
     try {
-      await window.BGPS_API.updatePaperStatus(currentPaper.paperId, status, note);
+      const result = await window.BGPS_API.updatePaperStatus(currentPaper.paperId, status, note);
       currentPaper.status = status;
       currentPaper.adminNote = note;
       setReviewMeta(currentPaper);
       render();
-      window.BGPS_APP.toast(status === 'Approved' ? 'Paper approved.' : 'Paper returned for correction.');
+      window.BGPS_APP.toast(status === 'Approved'
+        ? 'Paper approved.'
+        : (result?.requiresReplacement
+          ? 'Paper returned. Teacher will upload a corrected DOCX replacement under the same Paper ID.'
+          : 'Paper returned. Teacher can correct and resubmit it under the same Paper ID.'));
       await window.BGPS_DASHBOARD.refresh(false);
     } catch (error) {
       window.BGPS_APP.toast(error.message || 'Could not update paper status.', 'error');
@@ -3707,6 +3764,7 @@ window.BGPS_CONFIG = Object.freeze({
   let submitInFlight = false;
   let previewInFlight = false;
   let uploadInFlight = false;
+  let uploadRevisionContext = null;
 
   function toast(message, type) {
     window.BGPS_APP?.toast(message, type);
@@ -4087,9 +4145,11 @@ window.BGPS_CONFIG = Object.freeze({
     const notice = byId('paperAccessNote');
     const createAllowed = permissions.canCreate !== false;
     const uploadAllowed = permissions.canUpload !== false;
+    const sourceType = normalize(currentRevision?.sourceType).toLowerCase();
+    const submitAllowed = sourceType === 'docx upload' ? uploadAllowed : createAllowed;
     byId('createNewPaper').disabled = !createAllowed;
     byId('openPaperUpload').disabled = !uploadAllowed;
-    byId('submitPaperForReview').disabled = !createAllowed;
+    byId('submitPaperForReview').disabled = !submitAllowed;
     if (notice) {
       const message = settings?.settings?.adminNotice || '';
       notice.hidden = createAllowed && uploadAllowed && !message;
@@ -4215,14 +4275,16 @@ window.BGPS_CONFIG = Object.freeze({
       return;
     }
     clearEditor();
+    updatePaperAccess();
     setEditorMode(true);
     byId('paperTitleInput')?.focus();
   }
 
   function loadDraftIntoEditor(draft, correctionMode) {
     clearEditor();
+    const revisionMode = Boolean(correctionMode || draft.parentPaperId);
     currentDraftId = correctionMode ? '' : (draft.draftId || '');
-    currentRevision = correctionMode ? {
+    currentRevision = revisionMode ? {
       originalPaperId: draft.originalPaperId || draft.paperId || '',
       parentPaperId: draft.parentPaperId || draft.paperId || '',
       previousVersion: Number(draft.previousVersion || draft.version || 0),
@@ -4252,13 +4314,14 @@ window.BGPS_CONFIG = Object.freeze({
     if (Array.isArray(draft.importWarnings) && draft.importWarnings.length) {
       toast('Imported DOCX content loaded. Please verify equations and images before submission.');
     }
-    if (correctionMode) {
+    if (revisionMode) {
       setHidden('paperCorrectionBanner', false);
-      setText('paperCorrectionNote', draft.adminNote || 'Please revise the paper as advised by the principal.');
+      setText('paperCorrectionNote', draft.adminNote || draft.note || 'Please revise the paper as advised by the principal.');
       setText('paperEditorEyebrow', 'Correction Required');
       setText('paperEditorTitle', 'Correct and Resubmit Paper');
       setText('paperEditorSubtitle', `Revision of Version ${draft.version || draft.previousVersion || 1}`);
-      markDirty();
+      if (correctionMode) markDirty();
+      else markSaved(`Correction draft loaded Â· ${safeDate(draft.updatedAt)}`);
     } else {
       setText('paperEditorEyebrow', 'Saved Draft');
       setText('paperEditorTitle', 'Continue Question Paper');
@@ -4267,6 +4330,7 @@ window.BGPS_CONFIG = Object.freeze({
     }
     syncDraftDeleteControl();
     updateChecks();
+    updatePaperAccess();
     setEditorMode(true);
   }
 
@@ -4282,6 +4346,11 @@ window.BGPS_CONFIG = Object.freeze({
   async function openCorrection(paperId) {
     try {
       const result = await window.BGPS_API.getPaperContent(paperId);
+      if (result.requiresReplacement || result.editable === false) {
+        openUploadModal({ correctionPaper: result.paper || {} });
+        toast('This returned paper is reference-only. Upload the corrected DOCX to resubmit it with the same Paper ID.');
+        return;
+      }
       loadDraftIntoEditor(result.paper || {}, true);
     } catch (error) {
       toast(error.message || 'Could not open the paper for correction.', 'error');
@@ -4332,7 +4401,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (chip) { chip.textContent = status || 'Preview'; chip.className = `status-chip ${statusClass(status)}`; }
   }
 
-  function showHtmlPreview(documentHtml, title, meta, status) {
+  function showHtmlPreview(documentHtml, title, meta, status, allowSubmit = false) {
     revokeObjectUrl();
     setPreviewHeader(title, meta, status);
     const body = byId('teacherPaperPreviewBody');
@@ -4341,12 +4410,17 @@ window.BGPS_CONFIG = Object.freeze({
       body.querySelector('iframe').srcdoc = documentHtml;
     }
     setHidden('downloadTeacherPaper', true);
+    setHidden('submitFromTeacherPaperPreview', !allowSubmit);
+    if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = false;
     openModal('teacherPaperPreviewModal');
   }
 
   async function previewDraft(draftId) {
     try {
-      const [preview, draftResult] = await Promise.all([window.BGPS_API.getPaperDraftPreview(draftId), window.BGPS_API.getPaperDraft(draftId)]);
+      const [preview, draftResult] = await Promise.all([
+        window.BGPS_API.getPaperDraftPreview(draftId),
+        window.BGPS_API.getPaperDraft(draftId).catch(() => ({ draft: {} }))
+      ]);
       const draft = draftResult.draft || {};
       showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Draft');
     } catch (error) {
@@ -4364,24 +4438,34 @@ window.BGPS_CONFIG = Object.freeze({
   async function previewPaper(paperId) {
     const paper = papers.find((item) => String(item.paperId) === String(paperId));
     if (!paper) return;
+    revokeObjectUrl();
+    setHidden('downloadTeacherPaper', true);
+    setHidden('submitFromTeacherPaperPreview', true);
+    if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = true;
     setPreviewHeader(paper.title, `${paper.className} · ${paper.subject} · ${paper.exam}`, paper.status);
     const body = byId('teacherPaperPreviewBody');
     if (body) body.innerHTML = '<div class="empty-state"><strong>Opening paper</strong>Please wait while the file is prepared.</div>';
     openModal('teacherPaperPreviewModal');
     try {
-      const [previewResult, originalFile] = await Promise.all([window.BGPS_API.getPaperPreview(paperId), window.BGPS_API.getPaperFile(paperId)]);
-      const originalBlob = base64ToBlob(originalFile.fileBase64, originalFile.mimeType);
-      revokeObjectUrl();
-      currentObjectUrl = URL.createObjectURL(originalBlob);
+      const [previewResult, originalFile] = await Promise.all([
+        window.BGPS_API.getPaperPreview(paperId),
+        window.BGPS_API.getPaperFile(paperId).catch(() => null)
+      ]);
+      if (originalFile?.fileBase64) {
+        const originalBlob = base64ToBlob(originalFile.fileBase64, originalFile.mimeType);
+        revokeObjectUrl();
+        currentObjectUrl = URL.createObjectURL(originalBlob);
+      }
       const download = byId('downloadTeacherPaper');
-      if (download) { download.hidden = statusKey(paper.status) !== 'approved'; download.dataset.fileName = originalFile.fileName || previewResult.originalFileName || 'question-paper'; }
+      if (download) {
+        download.hidden = statusKey(paper.status) !== 'approved' || !currentObjectUrl;
+        download.dataset.fileName = originalFile?.fileName || previewResult.originalFileName || 'question-paper';
+        const downloadMime = String(originalFile?.mimeType || '').toLowerCase();
+        const downloadName = String(download.dataset.fileName || '').toLowerCase();
+        download.textContent = downloadMime.includes('pdf') || downloadName.endsWith('.pdf') ? 'Download PDF' : (downloadMime.includes('wordprocessingml') || downloadName.endsWith('.docx') ? 'Download Original DOCX' : 'Download File');
+      }
 
       if (!previewResult || previewResult.previewAvailable === false || !previewResult.fileBase64) {
-        if (previewResult?.drivePreviewUrl) {
-          body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Secure question paper preview" referrerpolicy="no-referrer"></iframe>';
-          body.querySelector('iframe').src = previewResult.drivePreviewUrl;
-          return;
-        }
         const message = previewResult?.error || 'Use Download File to open the original paper.';
         body.innerHTML = `<div class="empty-state"><strong>Preview could not be prepared</strong>${escapeHtml(message)}</div>`;
         return;
@@ -4392,12 +4476,14 @@ window.BGPS_CONFIG = Object.freeze({
         const text = await previewBlob.text();
         body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Question paper preview" sandbox="allow-modals allow-same-origin"></iframe>';
         body.querySelector('iframe').srcdoc = text;
+        if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = false;
       } else if (previewMime.includes('pdf')) {
         if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
         currentPreviewUrl = URL.createObjectURL(previewBlob);
         const previewUrl = currentPreviewUrl;
         body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Question paper PDF"></iframe>';
         body.querySelector('iframe').src = previewUrl;
+        if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = false;
       } else if (previewMime.startsWith('image/')) {
         if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
         currentPreviewUrl = URL.createObjectURL(previewBlob);
@@ -4425,7 +4511,7 @@ window.BGPS_CONFIG = Object.freeze({
       openModal('teacherPaperPreviewModal');
       const draftId = await saveDraft(false);
       const preview = await window.BGPS_API.getPaperDraftPreview(draftId);
-      showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview ready');
+      showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview ready', true);
     } catch (error) {
       const body = byId('teacherPaperPreviewBody');
       if (body && byId('teacherPaperPreviewModal')?.classList.contains('open')) {
@@ -4442,6 +4528,7 @@ window.BGPS_CONFIG = Object.freeze({
   function closePreview() {
     closeModal('teacherPaperPreviewModal');
     revokeObjectUrl();
+    setHidden('submitFromTeacherPaperPreview', true);
     const body = byId('teacherPaperPreviewBody');
     if (body) body.innerHTML = '';
   }
@@ -4818,16 +4905,54 @@ window.BGPS_CONFIG = Object.freeze({
     populateSelect(byId('uploadPaperExam'), window.BGPS_DATA.EXAMS, 'Select exam / term');
   }
 
-  function openUploadModal() {
+  function setUploadProgress(message, type = 'info') {
+    const progress = byId('paperUploadProgress');
+    if (!progress) return;
+    progress.hidden = !message;
+    progress.textContent = message || '';
+    progress.classList.toggle('error', Boolean(message) && type === 'error');
+  }
+
+  function closeUploadModalSafely() {
+    if (uploadInFlight) {
+      toast('Upload is still in progress. Please wait until it finishes.');
+      return;
+    }
+    uploadRevisionContext = null;
+    setUploadProgress('');
+    closeModal('paperUploadModal');
+  }
+
+  function openUploadModal(options) {
     if (settings?.permissions?.canUpload === false) {
       toast(settings?.settings?.adminNotice || 'Question-paper upload is currently unavailable.', 'error');
       return;
     }
+    const correctionPaper = options?.correctionPaper || null;
+    uploadRevisionContext = correctionPaper ? {
+      originalPaperId: correctionPaper.originalPaperId || correctionPaper.paperId || '',
+      parentPaperId: correctionPaper.parentPaperId || correctionPaper.paperId || '',
+      previousVersion: Number(correctionPaper.previousVersion || correctionPaper.version || 0)
+    } : null;
     byId('paperUploadForm')?.reset();
-    const className = session?.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0];
+    setUploadProgress('');
+    setText('paperUploadTitle', correctionPaper ? 'Upload Corrected DOCX' : 'Upload DOCX Question Paper');
+    setText('paperUploadDescription', correctionPaper
+      ? 'Upload the corrected DOCX. It will open as an editable correction draft and resubmit under the same Paper ID.'
+      : 'DOCX files are imported into the editable standard BGPS format. PDF files remain reference-only and are submitted without editable conversion.');
+    const className = correctionPaper?.className || (session?.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0]);
     if (byId('uploadPaperClass')) byId('uploadPaperClass').value = className;
     populateSubjects('uploadPaperClass', 'uploadPaperSubject');
-    if (byId('uploadPaperExam')) byId('uploadPaperExam').value = window.BGPS_DATA.EXAMS[0];
+    if (byId('uploadPaperSubject')) byId('uploadPaperSubject').value = correctionPaper?.subject || '';
+    if (byId('uploadPaperExam')) byId('uploadPaperExam').value = correctionPaper?.exam || window.BGPS_DATA.EXAMS[0];
+    if (byId('uploadPaperMaxMarks')) byId('uploadPaperMaxMarks').value = correctionPaper?.maxMarks || '';
+    if (byId('uploadPaperTime')) byId('uploadPaperTime').value = correctionPaper?.timeAllowed || '';
+    if (byId('uploadPaperChapters')) byId('uploadPaperChapters').value = correctionPaper?.chapters || '';
+    if (byId('uploadPaperNote')) byId('uploadPaperNote').value = correctionPaper?.adminNote ? `Correction completed: ${correctionPaper.adminNote}`.slice(0, 250) : '';
+    const fileInput = byId('uploadPaperFile');
+    if (fileInput) fileInput.accept = correctionPaper ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx' : 'application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx';
+    const submitButton = byId('confirmPaperUpload');
+    if (submitButton) submitButton.textContent = correctionPaper ? 'Import Corrected DOCX' : 'Import and Review';
     openModal('paperUploadModal');
   }
 
@@ -4848,6 +4973,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (file.size > 8 * 1024 * 1024) { toast('The file exceeds the 8 MB upload limit.', 'error'); return; }
     const extension = String(file.name || '').toLowerCase().split('.').pop();
     if (!['docx', 'pdf'].includes(extension)) { toast('Select a DOCX file, or a PDF for reference-only submission.', 'error'); return; }
+    if (uploadRevisionContext && extension !== 'docx') { toast('A returned reference-only paper must be replaced with a DOCX file so it can be reviewed and resubmitted safely.', 'error'); return; }
     const className = normalize(byId('uploadPaperClass')?.value);
     const subject = normalize(byId('uploadPaperSubject')?.value);
     const exam = normalize(byId('uploadPaperExam')?.value);
@@ -4859,25 +4985,43 @@ window.BGPS_CONFIG = Object.freeze({
     uploadInFlight = true;
     if (button) { button.disabled = true; button.textContent = extension === 'docx' ? 'Converting DOCX…' : 'Uploading PDF…'; }
     try {
+      setUploadProgress('Reading the selected file...');
       const fileBase64 = await fileToBase64(file);
-      const payload = { className, subject, exam, chapters, maxMarks, timeAllowed, note: normalize(byId('uploadPaperNote')?.value), fileName: file.name, mimeType: file.type, fileSize: file.size, fileBase64 };
+      const payload = { className, subject, exam, chapters, maxMarks, timeAllowed, note: normalize(byId('uploadPaperNote')?.value), fileName: file.name, mimeType: file.type, fileSize: file.size, fileBase64, ...(uploadRevisionContext || {}) };
       if (extension === 'docx') {
+        setUploadProgress(uploadRevisionContext ? 'Converting and standardising the corrected DOCX...' : 'Converting and standardising the DOCX into the BGPS paper format...');
         const result = await window.BGPS_API.importDocxPaper(payload);
+        if (!result?.draftId) throw new Error('DOCX was converted, but the saved draft ID was not returned.');
         closeModal('paperUploadModal');
-        await loadData(false);
-        await openDraft(result.draftId);
-        toast(result.warnings?.length ? 'DOCX imported. Unsupported content requires review.' : 'DOCX imported into the standard BGPS format.');
+        uploadRevisionContext = null;
+        setUploadProgress('');
+        try {
+          const opened = await window.BGPS_API.getPaperDraft(result.draftId);
+          if (!opened?.draft?.draftId) throw new Error('The imported draft could not be read back.');
+          loadDraftIntoEditor(opened.draft, false);
+          toast(result.warnings?.length ? 'DOCX imported. Check the preview carefully before submission.' : 'DOCX imported. Please review the preview before submission.');
+          await previewCurrent();
+        } catch (openError) {
+          if (byId('teacherPaperStatusFilter')) byId('teacherPaperStatusFilter').value = 'Draft';
+          toast('DOCX import is saved in My Drafts, but the editor could not open it. Refresh and open the draft.', 'error');
+        }
+        loadData(false).catch(() => toast('DOCX was imported. Refresh My Papers if the draft list has not updated.'));
       } else {
-        await window.BGPS_API.uploadPaper(payload);
+        setUploadProgress('Uploading and sending the PDF to the Principal review queue...');
+        const result = await window.BGPS_API.uploadPaper(payload);
         closeModal('paperUploadModal');
-        await loadData(false);
-        toast('PDF uploaded as a reference-only paper and submitted for approval.');
+        uploadRevisionContext = null;
+        setUploadProgress('');
+        showSubmissionSuccess(result);
+        loadData(false).catch(() => toast('PDF was submitted. Refresh My Papers if the list has not updated.'));
       }
     } catch (error) {
-      toast(error.message || 'The paper could not be uploaded.', 'error');
+      const message = error.message || 'The paper could not be uploaded.';
+      setUploadProgress(message, 'error');
+      toast(message, 'error');
     } finally {
       uploadInFlight = false;
-      if (button) { button.disabled = false; button.textContent = 'Import and Review'; }
+      if (button) { button.disabled = false; button.textContent = uploadRevisionContext ? 'Import Corrected DOCX' : 'Import and Review'; }
     }
   }
 
@@ -4889,7 +5033,7 @@ window.BGPS_CONFIG = Object.freeze({
 
     byId('refreshTeacherPapers')?.addEventListener('click', () => loadData(true));
     byId('createNewPaper')?.addEventListener('click', openNewPaper);
-    byId('openPaperUpload')?.addEventListener('click', openUploadModal);
+    byId('openPaperUpload')?.addEventListener('click', () => openUploadModal());
     byId('closePaperEditor')?.addEventListener('click', closeEditor);
     byId('savePaperDraft')?.addEventListener('click', () => saveDraft(true).catch((error) => toast(error.message, 'error')));
     byId('sidebarSaveDraft')?.addEventListener('click', () => saveDraft(true).catch((error) => toast(error.message, 'error')));
@@ -4975,12 +5119,13 @@ window.BGPS_CONFIG = Object.freeze({
 
     byId('closeTeacherPaperPreview')?.addEventListener('click', closePreview);
     byId('closeTeacherPaperPreviewFooter')?.addEventListener('click', closePreview);
+    byId('submitFromTeacherPaperPreview')?.addEventListener('click', () => { closePreview(); prepareSubmit(); });
     byId('teacherPaperPreviewModal')?.addEventListener('click', (event) => { if (event.target === byId('teacherPaperPreviewModal')) closePreview(); });
     byId('printTeacherPaper')?.addEventListener('click', printPreview);
     byId('downloadTeacherPaper')?.addEventListener('click', downloadPreview);
 
-    byId('cancelPaperUpload')?.addEventListener('click', () => closeModal('paperUploadModal'));
-    byId('paperUploadModal')?.addEventListener('click', (event) => { if (event.target === byId('paperUploadModal')) closeModal('paperUploadModal'); });
+    byId('cancelPaperUpload')?.addEventListener('click', closeUploadModalSafely);
+    byId('paperUploadModal')?.addEventListener('click', (event) => { if (event.target === byId('paperUploadModal')) closeUploadModalSafely(); });
     byId('paperUploadForm')?.addEventListener('submit', submitUpload);
     byId('uploadPaperClass')?.addEventListener('change', () => populateSubjects('uploadPaperClass', 'uploadPaperSubject'));
     byId('uploadPaperMaxMarks')?.addEventListener('input', (event) => {
@@ -4991,7 +5136,7 @@ window.BGPS_CONFIG = Object.freeze({
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         if (byId('teacherPaperPreviewModal')?.classList.contains('open')) closePreview();
-        else if (byId('paperUploadModal')?.classList.contains('open')) closeModal('paperUploadModal');
+        else if (byId('paperUploadModal')?.classList.contains('open')) closeUploadModalSafely();
         else if (byId('paperSubmitModal')?.classList.contains('open')) closeModal('paperSubmitModal');
         else if (byId('paperSubmitSuccessModal')?.classList.contains('open')) closeModal('paperSubmitSuccessModal');
         else deselectImage();
@@ -5032,6 +5177,7 @@ window.BGPS_CONFIG = Object.freeze({
     submitInFlight = false;
     previewInFlight = false;
     uploadInFlight = false;
+    uploadRevisionContext = null;
     revokeObjectUrl();
     setEditorMode(false);
     const list = byId('teacherPaperList');
@@ -5740,6 +5886,8 @@ window.BGPS_CONFIG = Object.freeze({
   'use strict';
 
   const byId = (id) => document.getElementById(id);
+  let teacherStatusRefreshInFlight = false;
+  let lastTeacherStatusRefresh = 0;
 
   const VIEW_COPY = Object.freeze({
     home: ['Overview', 'Academic work and pending actions'],
@@ -5773,6 +5921,25 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
+  async function refreshTeacherLiveStatus(force) {
+    const state = window.BGPS_STATE.get();
+    const session = state.session;
+    const view = state.currentView;
+    if (!session || session.isAdmin || document.hidden || !['home', 'teacher-papers'].includes(view)) return;
+    const now = Date.now();
+    if (teacherStatusRefreshInFlight || (!force && now - lastTeacherStatusRefresh < 15000)) return;
+    teacherStatusRefreshInFlight = true;
+    lastTeacherStatusRefresh = now;
+    try {
+      if (view === 'teacher-papers') await window.BGPS_PAPER_CREATOR?.loadData(false);
+      else await window.BGPS_MARKS?.refreshTeacherPaperStatus(false);
+    } catch (error) {
+      console.warn('Teacher paper status refresh failed:', error);
+    } finally {
+      teacherStatusRefreshInFlight = false;
+    }
+  }
+
   function openView(view) {
     const target = String(view || 'home');
     document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.dataset.viewSection === target));
@@ -5785,6 +5952,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (target === 'teacher-report') window.BGPS_REPORTS?.onOpen();
     if (target === 'teacher-papers') window.BGPS_PAPER_CREATOR?.renderList();
     if (target === 'settings') window.BGPS_SETTINGS?.onOpen();
+    if (target === 'home' || target === 'teacher-papers') window.setTimeout(() => refreshTeacherLiveStatus(true), 0);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -5815,6 +5983,9 @@ window.BGPS_CONFIG = Object.freeze({
     window.BGPS_AUTH.init();
     setupNavigation();
     checkBackend();
+    window.addEventListener('focus', () => refreshTeacherLiveStatus(false));
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshTeacherLiveStatus(false); });
+    window.setInterval(() => refreshTeacherLiveStatus(false), 45000);
     const version = byId('buildVersion');
     if (version) version.textContent = window.BGPS_CONFIG.displayName;
   }

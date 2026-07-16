@@ -891,9 +891,12 @@ body.modal-open { overflow: hidden; }
 .paper-save-card small { color:var(--muted); line-height:1.45; }
 
 .paper-preview-modal-shell { width:min(1180px,calc(100vw - 30px)); max-height:94vh; display:flex; flex-direction:column; overflow:hidden; border-radius:14px; background:#fff; box-shadow:0 26px 70px rgba(0,0,0,.25); }
+.paper-preview-modal-shell .paper-review-header > div { min-width:0; }
+.paper-preview-modal-shell .paper-review-header h2,.paper-preview-modal-shell .paper-review-header p { overflow-wrap:anywhere; }
+.paper-preview-modal-shell .modal-close { flex:0 0 auto; }
 .teacher-paper-preview-body { min-height:300px; flex:1; overflow:auto; background:#edf2f6; padding:14px; }
 .teacher-paper-preview-frame { display:block; width:min(820px,100%); min-height:790px; margin:0 auto; border:1px solid #cbd6df; border-radius:3px; background:#fff; box-shadow:0 10px 28px rgba(15,42,76,.13); }
-.teacher-paper-preview-footer { display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid var(--border); background:#fff; }
+.teacher-paper-preview-footer { position:relative; z-index:3; flex:0 0 auto; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid var(--border); background:#fff; }
 .paper-upload-modal { width:min(760px,calc(100vw - 28px)); max-height:94vh; overflow:auto; }
 .paper-upload-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px; }
 .paper-upload-form .upload-wide { grid-column:1 / -1; }
@@ -924,6 +927,16 @@ body.modal-open { overflow: hidden; }
   .paper-ruler { display:none; }
   .paper-canvas-wrap { padding:10px; }
 }
+@media(max-width:820px){
+  #teacherPaperPreviewModal { inset:0; width:100vw; width:100dvw; height:100vh; height:100dvh; padding:0; align-items:stretch; justify-content:stretch; overflow:hidden; }
+  .paper-preview-modal-shell { width:100%; height:100vh; height:100dvh; max-height:none; margin:0; border-radius:0; }
+  .paper-preview-modal-shell .paper-review-header { flex:0 0 auto; padding:12px 14px; }
+  .paper-preview-modal-shell .paper-review-header h2 { font-size:20px; }
+  .teacher-paper-preview-body { min-height:0; flex:1 1 auto; overflow:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; padding:0; }
+  .teacher-paper-preview-frame { width:100%; height:100%; min-height:100%; margin:0; border:0; border-radius:0; box-shadow:none; }
+  .teacher-paper-preview-footer { position:sticky; bottom:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:9px 10px calc(9px + env(safe-area-inset-bottom)); box-shadow:0 -6px 18px rgba(15,42,76,.08); }
+  .teacher-paper-preview-footer .btn { width:100%; min-width:0; min-height:46px; padding:9px 8px; white-space:normal; line-height:1.2; }
+}
 @media(max-width:640px){
   .paper-centre-heading,.paper-editor-heading { align-items:stretch; }
   .paper-centre-heading .view-actions,.paper-editor-heading .view-actions { display:grid; grid-template-columns:1fr; width:100%; }
@@ -939,10 +952,10 @@ body.modal-open { overflow: hidden; }
   .paper-content-editor { min-height:540px; }
   .paper-upload-form { grid-template-columns:1fr; }
   .paper-upload-form .upload-wide { grid-column:auto; }
-  .paper-preview-modal-shell { width:100%; height:100%; max-height:none; border-radius:0; }
+  .paper-preview-modal-shell { width:100%; height:100vh; height:100dvh; max-height:none; border-radius:0; }
   .teacher-paper-preview-body { min-height:0; padding:0; }
-  .teacher-paper-preview-frame { width:100%; min-height:calc(100vh - 190px); border:0; border-radius:0; box-shadow:none; }
-  .teacher-paper-preview-footer { display:grid; grid-template-columns:1fr; padding:9px 12px; }
+  .teacher-paper-preview-frame { width:100%; height:100%; min-height:100%; border:0; border-radius:0; box-shadow:none; }
+  .teacher-paper-preview-footer { grid-template-columns:repeat(2,minmax(0,1fr)); padding:9px 10px calc(9px + env(safe-area-inset-bottom)); }
   .paper-upload-modal { width:100%; height:100%; max-height:none; border-radius:0; }
   .paper-upload-form input[type="file"] { min-width:0; padding:7px; font-size:12px; }
   .paper-upload-form .modal-actions { position:sticky; bottom:0; z-index:2; padding:10px 0 2px; background:#fff; }
@@ -1720,7 +1733,7 @@ body.modal-open { overflow: hidden; }
     <div class="paper-preview-modal-shell">
       <header class="paper-review-header"><div><span class="status-chip" id="teacherPaperPreviewStatus">Preview</span><h2 id="teacherPaperPreviewTitle">Question Paper Preview</h2><p id="teacherPaperPreviewMeta">—</p></div><button class="modal-close" id="closeTeacherPaperPreview" type="button" aria-label="Close preview">×</button></header>
       <div class="teacher-paper-preview-body" id="teacherPaperPreviewBody"><div class="empty-state"><strong>Preparing preview</strong>Please wait.</div></div>
-      <footer class="teacher-paper-preview-footer"><button class="btn" id="downloadTeacherPaper" type="button" hidden>Download Final PDF</button><button class="btn" id="printTeacherPaper" type="button">Print / Save PDF</button><button class="btn" id="closeTeacherPaperPreviewFooter" type="button">Back to Edit</button><button class="btn primary" id="submitFromTeacherPaperPreview" type="button" hidden>Continue to Submit</button></footer>
+      <footer class="teacher-paper-preview-footer"><button class="btn" id="downloadTeacherPaper" type="button" hidden>Download Final PDF</button><button class="btn" id="openTeacherPaperPreviewExternal" type="button" hidden>Open PDF</button><button class="btn" id="printTeacherPaper" type="button">Print / Save PDF</button><button class="btn" id="closeTeacherPaperPreviewFooter" type="button">Back to Edit</button><button class="btn primary" id="submitFromTeacherPaperPreview" type="button" hidden>Continue to Submit</button></footer>
     </div>
   </div>
 
@@ -4410,6 +4423,7 @@ window.BGPS_CONFIG = Object.freeze({
       body.querySelector('iframe').srcdoc = documentHtml;
     }
     setHidden('downloadTeacherPaper', true);
+    setHidden('openTeacherPaperPreviewExternal', true);
     setHidden('submitFromTeacherPaperPreview', !allowSubmit);
     if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = false;
     openModal('teacherPaperPreviewModal');
@@ -4440,6 +4454,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (!paper) return;
     revokeObjectUrl();
     setHidden('downloadTeacherPaper', true);
+    setHidden('openTeacherPaperPreviewExternal', true);
     setHidden('submitFromTeacherPaperPreview', true);
     if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = true;
     setPreviewHeader(paper.title, `${paper.className} · ${paper.subject} · ${paper.exam}`, paper.status);
@@ -4483,6 +4498,7 @@ window.BGPS_CONFIG = Object.freeze({
         const previewUrl = currentPreviewUrl;
         body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Question paper PDF"></iframe>';
         body.querySelector('iframe').src = previewUrl;
+        setHidden('openTeacherPaperPreviewExternal', false);
         if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = false;
       } else if (previewMime.startsWith('image/')) {
         if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
@@ -4528,6 +4544,7 @@ window.BGPS_CONFIG = Object.freeze({
   function closePreview() {
     closeModal('teacherPaperPreviewModal');
     revokeObjectUrl();
+    setHidden('openTeacherPaperPreviewExternal', true);
     setHidden('submitFromTeacherPaperPreview', true);
     const body = byId('teacherPaperPreviewBody');
     if (body) body.innerHTML = '';
@@ -4537,6 +4554,12 @@ window.BGPS_CONFIG = Object.freeze({
     const frame = byId('teacherPaperPreviewBody')?.querySelector('iframe');
     if (frame?.contentWindow) frame.contentWindow.print();
     else if (currentObjectUrl) window.open(currentObjectUrl, '_blank', 'noopener');
+  }
+
+  function openPreviewExternally() {
+    const url = currentPreviewUrl || currentObjectUrl;
+    if (!url) { toast('A PDF preview is not available for this paper.', 'error'); return; }
+    window.open(url, '_blank', 'noopener');
   }
 
   function downloadPreview() {
@@ -5122,6 +5145,7 @@ window.BGPS_CONFIG = Object.freeze({
     byId('submitFromTeacherPaperPreview')?.addEventListener('click', () => { closePreview(); prepareSubmit(); });
     byId('teacherPaperPreviewModal')?.addEventListener('click', (event) => { if (event.target === byId('teacherPaperPreviewModal')) closePreview(); });
     byId('printTeacherPaper')?.addEventListener('click', printPreview);
+    byId('openTeacherPaperPreviewExternal')?.addEventListener('click', openPreviewExternally);
     byId('downloadTeacherPaper')?.addEventListener('click', downloadPreview);
 
     byId('cancelPaperUpload')?.addEventListener('click', closeUploadModalSafely);

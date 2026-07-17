@@ -3225,8 +3225,9 @@ window.BGPS_CONFIG = Object.freeze({
     const container = byId('actionRequiredList');
     if (!container) return;
     const actions = [];
+    const marksEntryOpen = window.BGPS_STATE.get().paperSettings?.marksEntryEnabled !== false;
 
-    classProgress
+    if (marksEntryOpen) classProgress
       .filter((item) => item.pendingCount > 0)
       .sort((a, b) => b.pendingCount - a.pendingCount)
       .slice(0, 6)
@@ -6059,6 +6060,7 @@ window.BGPS_CONFIG = Object.freeze({
       applySettings(result.settings || payload);
       window.BGPS_STATE.setPaperSettings(result.settings || payload);
       await window.BGPS_MARKS.loadSettings();
+      window.BGPS_DASHBOARD.refresh(false).catch(() => {});
       setStatus('Settings saved successfully.', 'success');
       window.BGPS_APP.toast('Administration settings saved.');
     } catch (error) {

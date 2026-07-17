@@ -648,6 +648,14 @@ body.modal-open { overflow: hidden; }
 .tracking-actions { text-align:right; }
 
 .paper-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.approval-metrics { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.approval-metric { position:relative; min-height:128px; border-top:4px solid #b8c8d7; }
+.approval-metric.resubmitted-soft { border-top-color:#5b4bb7; background:linear-gradient(180deg,#f8f6ff,#fff 68%); }
+.approval-metric[aria-pressed="true"] { border-color:var(--navy-700); background:#f2f7fc; box-shadow:0 0 0 3px rgba(27,76,123,.13),0 10px 24px rgba(15,42,76,.10); transform:translateY(-2px); }
+.approval-metric.resubmitted-soft[aria-pressed="true"] { border-color:#5b4bb7; background:#f3f0ff; box-shadow:0 0 0 3px rgba(91,75,183,.14),0 10px 24px rgba(45,34,110,.10); }
+.approval-metric:focus-visible { outline:3px solid rgba(31,104,166,.28); outline-offset:2px; }
+.paper-list-title-line { display:flex; align-items:center; gap:9px; }
+.paper-list-title-line h2 { margin:0; }
 .paper-filters { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
 .paper-filters select { min-width:145px; }
 .paper-filters input { min-width:240px; }
@@ -663,12 +671,15 @@ body.modal-open { overflow: hidden; }
   background:#fff;
 }
 .paper-row:hover { border-color:#b9ccde; background:#f9fbfe; }
+.paper-row.revision-paper { border-left:5px solid #8a7bd1; }
+.paper-row.priority-rereview { border-color:#cfc7f4; border-left-color:#5b4bb7; background:linear-gradient(90deg,#faf9ff,#fff 44%); box-shadow:0 7px 20px rgba(64,48,145,.08); }
 .paper-title-line { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
 .paper-title-line > strong { color:var(--navy-900); font-size:14px; }
 .paper-meta-line { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:7px; color:var(--muted); font-size:11px; }
 .paper-meta-line span { position:relative; }
 .paper-meta-line span:not(:last-child)::after { content:"·"; position:absolute; right:-8px; }
 .paper-facts { display:grid; grid-template-columns:70px 70px minmax(130px,1fr); gap:8px; }
+.paper-row-note { margin-top:9px; padding:8px 10px; border-left:3px solid #8a7bd1; border-radius:7px; background:#faf9ff; color:#514596; font-size:11px; line-height:1.45; }
 .paper-facts span { min-width:0; }
 .paper-facts small { display:block; color:var(--muted); font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:.35px; }
 .paper-facts strong { display:block; margin-top:4px; color:var(--text-2); font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -702,6 +713,7 @@ body.modal-open { overflow: hidden; }
 
 @media (max-width: 1240px) {
   .principal-kpis { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .approval-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
   .tracking-row { grid-template-columns:minmax(120px,.7fr) minmax(230px,1.4fr) minmax(160px,.9fr) 100px 62px; gap:11px; }
   .paper-row { grid-template-columns:minmax(0,1fr) minmax(250px,.8fr) auto; }
 }
@@ -752,6 +764,8 @@ body.modal-open { overflow: hidden; }
   .paper-facts { grid-column:1; grid-template-columns:repeat(3,minmax(0,1fr)); }
   .paper-row-actions { grid-column:1; grid-row:auto; }
   .paper-row-actions .btn { width:100%; }
+  .approval-metric { min-height:116px; padding:14px; }
+  .approval-metric[data-paper-board-filter="all"] { grid-column:1 / -1; }
 }
 
 @media (max-width: 480px) {
@@ -1632,19 +1646,20 @@ body.modal-open { overflow: hidden; }
             <div class="view-actions"><button class="btn" id="refreshPapersButton" type="button">Refresh</button><button class="btn" type="button" data-open-view="home">Back to overview</button></div>
           </div>
 
-          <section class="paper-metrics" aria-label="Paper status summary">
-            <article class="metric-card"><span>Submitted</span><strong id="papersMetricSubmitted">—</strong><small>Awaiting review.</small></article>
-            <article class="metric-card"><span>Approved</span><strong id="papersMetricApproved">—</strong><small>Approved papers.</small></article>
-            <article class="metric-card"><span>Correction Required</span><strong id="papersMetricCorrection">—</strong><small>Returned to teachers.</small></article>
-            <article class="metric-card"><span>Total Papers</span><strong id="papersMetricTotal">—</strong><small>All submitted papers.</small></article>
+          <section class="paper-metrics approval-metrics" id="approvalMetrics" aria-label="Paper approval workflow">
+            <button class="metric-card metric-button approval-metric" type="button" data-paper-board-filter="first-review" aria-pressed="false"><span>Awaiting First Review</span><strong id="papersMetricSubmitted">—</strong><small>New papers not reviewed yet.</small></button>
+            <button class="metric-card metric-button approval-metric resubmitted-soft" type="button" data-paper-board-filter="resubmitted" aria-pressed="false"><span>Corrected &amp; Resubmitted</span><strong id="papersMetricResubmitted">—</strong><small>Priority papers ready for re-review.</small></button>
+            <button class="metric-card metric-button approval-metric danger-soft" type="button" data-paper-board-filter="correction" aria-pressed="false"><span>With Teacher</span><strong id="papersMetricCorrection">—</strong><small>Correction currently pending.</small></button>
+            <button class="metric-card metric-button approval-metric success-soft" type="button" data-paper-board-filter="approved" aria-pressed="false"><span>Approved</span><strong id="papersMetricApproved">—</strong><small>Final papers ready for use.</small></button>
+            <button class="metric-card metric-button approval-metric" type="button" data-paper-board-filter="all" aria-pressed="true"><span>All Papers</span><strong id="papersMetricTotal">—</strong><small>Complete approval history.</small></button>
           </section>
 
           <section class="page-card section-gap">
             <div class="card-head paper-list-head">
-              <div><h2>Submitted Papers</h2><p>Open a paper to review its content and status.</p></div>
+              <div><div class="paper-list-title-line"><h2 id="paperListTitle">All Papers</h2><span class="count-badge" id="paperListCount">0</span></div><p id="paperListDescription">Complete paper approval history, prioritised by pending action.</p></div>
               <div class="paper-filters">
                 <select id="paperClassFilter" aria-label="Filter papers by class"><option value="">All classes</option></select>
-                <select id="paperStatusFilter" aria-label="Filter papers by status"><option value="">All statuses</option><option>Submitted</option><option>Approved</option><option>Correction Required</option><option>Locked</option></select>
+                <select id="paperStatusFilter" aria-label="Filter papers by status"><option value="">All statuses</option><option value="First Review">Awaiting First Review</option><option value="Resubmitted">Corrected &amp; Resubmitted</option><option>Submitted</option><option>Approved</option><option>Correction Required</option><option>Locked</option></select>
                 <input id="paperSearch" type="search" placeholder="Search teacher, subject or exam" aria-label="Search submitted papers">
               </div>
             </div>
@@ -3460,6 +3475,7 @@ window.BGPS_CONFIG = Object.freeze({
   let currentPreviewUrl = '';
   let deleteInFlight = false;
   let initialized = false;
+  let boardFilter = 'all';
 
   function escapeHtml(value) {
     return String(value == null ? '' : value)
@@ -3487,6 +3503,28 @@ window.BGPS_CONFIG = Object.freeze({
     return '';
   }
 
+  function isRevision(paper) {
+    return paper?.resubmitted === true;
+  }
+
+  function isReadyForRereview(paper) {
+    return isRevision(paper) && normalize(paper.status) === 'SUBMITTED';
+  }
+
+  function isAwaitingFirstReview(paper) {
+    return !isRevision(paper) && normalize(paper.status) === 'SUBMITTED';
+  }
+
+  const BOARD_COPY = Object.freeze({
+    all: ['All Papers', 'Complete paper approval history, prioritised by pending action.'],
+    'first-review': ['Awaiting First Review', 'New submissions waiting for the Principal’s first decision.'],
+    submitted: ['All Submitted Papers', 'New and corrected papers currently waiting for review.'],
+    resubmitted: ['Corrected Papers Ready for Re-review', 'Priority revisions returned by teachers after addressing Principal remarks.'],
+    correction: ['Correction Pending with Teachers', 'Papers returned with remarks and not yet resubmitted.'],
+    approved: ['Approved Papers', 'Final papers approved and ready for use.'],
+    locked: ['Locked Papers', 'Papers currently locked from further workflow action.']
+  });
+
   function configureFilters() {
     const select = byId('paperClassFilter');
     if (select && select.options.length <= 1) {
@@ -3496,26 +3534,55 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function renderMetrics() {
-    setText('papersMetricSubmitted', papers.filter((p) => normalize(p.status) === 'SUBMITTED').length);
+    setText('papersMetricSubmitted', papers.filter(isAwaitingFirstReview).length);
+    setText('papersMetricResubmitted', papers.filter(isReadyForRereview).length);
     setText('papersMetricApproved', papers.filter((p) => normalize(p.status) === 'APPROVED').length);
     setText('papersMetricCorrection', papers.filter((p) => normalize(p.status) === 'CORRECTION REQUIRED').length);
     setText('papersMetricTotal', papers.length);
   }
 
+  function matchesBoardFilter(paper) {
+    const status = normalize(paper.status);
+    if (boardFilter === 'first-review') return isAwaitingFirstReview(paper);
+    if (boardFilter === 'resubmitted') return isReadyForRereview(paper);
+    if (boardFilter === 'submitted') return status === 'SUBMITTED';
+    if (boardFilter === 'correction') return status === 'CORRECTION REQUIRED';
+    if (boardFilter === 'approved') return status === 'APPROVED';
+    if (boardFilter === 'locked') return status === 'LOCKED';
+    return true;
+  }
+
+  function paperPriority(paper) {
+    if (isReadyForRereview(paper)) return 0;
+    if (isAwaitingFirstReview(paper)) return 1;
+    if (normalize(paper.status) === 'CORRECTION REQUIRED') return 2;
+    if (normalize(paper.status) === 'APPROVED') return 3;
+    return 4;
+  }
+
+  function renderBoardState(rowCount) {
+    document.querySelectorAll('[data-paper-board-filter]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.paperBoardFilter === boardFilter));
+    });
+    const copy = BOARD_COPY[boardFilter] || BOARD_COPY.all;
+    setText('paperListTitle', copy[0]);
+    setText('paperListDescription', copy[1]);
+    setText('paperListCount', rowCount);
+  }
+
   function filteredPapers() {
     const className = normalize(byId('paperClassFilter')?.value || '');
-    const status = normalize(byId('paperStatusFilter')?.value || '');
     const query = normalize(byId('paperSearch')?.value || '');
     return papers.filter((paper) => {
       if (className && normalize(paper.className) !== className) return false;
-      if (status && normalize(paper.status) !== status) return false;
+      if (!matchesBoardFilter(paper)) return false;
       if (query) {
         const haystack = [paper.teacherId, paper.className, paper.subject, paper.exam, paper.title, paper.status, paper.resubmitted ? 'Corrected & Resubmitted' : '']
           .map(normalize).join(' ');
         if (!haystack.includes(query)) return false;
       }
       return true;
-    });
+    }).sort((a, b) => paperPriority(a) - paperPriority(b) || String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
   }
 
   function render() {
@@ -3523,30 +3590,36 @@ window.BGPS_CONFIG = Object.freeze({
     const container = byId('paperList');
     if (!container) return;
     const rows = filteredPapers();
+    renderBoardState(rows.length);
     if (!rows.length) {
-      container.innerHTML = '<div class="empty-state"><strong>No papers found</strong>Change the filters or refresh the list.</div>';
+      const copy = BOARD_COPY[boardFilter] || BOARD_COPY.all;
+      container.innerHTML = `<div class="empty-state"><strong>No matching papers</strong>${escapeHtml(copy[1])} Change the class/search filters or refresh the list.</div>`;
       return;
     }
 
     container.innerHTML = rows.map((paper) => {
-      const resubmitted = paper.resubmitted === true && normalize(paper.status) === 'SUBMITTED';
+      const revision = isRevision(paper);
+      const rereview = isReadyForRereview(paper);
+      const revisionLabel = rereview ? 'Corrected & Resubmitted' : normalize(paper.status) === 'APPROVED' ? 'Corrected Revision' : revision ? 'Revision Returned Again' : '';
+      const actionLabel = rereview ? 'Re-review' : normalize(paper.status) === 'SUBMITTED' ? 'Review' : normalize(paper.status) === 'APPROVED' ? 'View Approved' : 'View Return';
       return `
-      <article class="paper-row">
+      <article class="paper-row ${revision ? 'revision-paper' : ''} ${rereview ? 'priority-rereview' : ''}">
         <div class="paper-main">
-          <div class="paper-title-line"><strong>${escapeHtml(paper.title || `${paper.className} ${paper.subject} Paper`)}</strong><span class="status-chip ${statusClass(paper.status)}">${escapeHtml(paper.status || 'Submitted')}</span>${resubmitted ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>' : ''}</div>
+          <div class="paper-title-line"><strong>${escapeHtml(paper.title || `${paper.className} ${paper.subject} Paper`)}</strong><span class="status-chip ${statusClass(paper.status)}">${escapeHtml(paper.status || 'Submitted')}</span>${revision ? `<span class="status-chip resubmitted">${escapeHtml(revisionLabel)}</span>` : ''}</div>
           <div class="paper-meta-line">
             <span>${escapeHtml(paper.className)}</span>
             <span>${escapeHtml(paper.subject)}</span>
             <span>${escapeHtml(paper.exam)}</span>
-            <span>${escapeHtml(paper.teacherId)}</span>
+            <span>${escapeHtml(paper.teacherName || paper.teacherId)}</span>
           </div>
+          ${revision ? `<div class="paper-row-note"><strong>${rereview ? 'Ready for re-review.' : 'Revision history retained.'}</strong>${paper.adminNote ? ` Previous Principal remark: ${escapeHtml(paper.adminNote)}` : ''}</div>` : ''}
         </div>
         <div class="paper-facts">
           <span><small>Marks</small><strong>${escapeHtml(paper.maxMarks || '—')}</strong></span>
           <span><small>Version</small><strong>${escapeHtml(paper.version || 1)}</strong></span>
           <span><small>Updated</small><strong>${escapeHtml(window.BGPS_DATA.safeDate(paper.updatedAt) || '—')}</strong></span>
         </div>
-        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${resubmitted ? 'Re-review' : 'Review'}</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
+        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${escapeHtml(actionLabel)}</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
       </article>`;
     }).join('');
   }
@@ -3610,14 +3683,15 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function setReviewMeta(paper) {
-    const resubmitted = paper.resubmitted === true && normalize(paper.status) === 'SUBMITTED';
+    const revision = isRevision(paper);
+    const resubmitted = isReadyForRereview(paper);
     const status = byId('paperReviewStatus');
     if (status) {
       status.className = `status-chip ${resubmitted ? 'resubmitted' : statusClass(paper.status)}`;
       status.textContent = resubmitted ? 'Corrected & Resubmitted' : (paper.status || 'Submitted');
     }
     setText('paperReviewTitle', paper.title || `${paper.className} ${paper.subject} Paper`);
-    setText('paperReviewMeta', `${paper.className} · ${paper.subject} · ${paper.exam}${resubmitted ? ` · Version ${paper.version || 1} received for re-review` : ''}`);
+    setText('paperReviewMeta', `${paper.className} · ${paper.subject} · ${paper.exam}${revision ? ` · Corrected revision Version ${paper.version || 1}${resubmitted ? ' received for re-review' : ''}` : ''}`);
     setText('reviewTeacher', paper.teacherId || '—');
     setText('reviewClass', paper.className || '—');
     setText('reviewSubject', paper.subject || '—');
@@ -3626,9 +3700,9 @@ window.BGPS_CONFIG = Object.freeze({
     setText('reviewVersion', paper.version || 1);
     const history = byId('paperCorrectionHistory');
     if (history) {
-      history.hidden = !resubmitted;
-      history.textContent = resubmitted
-        ? `Corrected version received for re-review.${paper.adminNote ? ` Previous return instruction: ${paper.adminNote}` : ''}`
+      history.hidden = !revision;
+      history.textContent = revision
+        ? `${resubmitted ? 'Corrected version received for re-review.' : 'This paper belongs to a corrected revision workflow.'}${paper.adminNote ? ` Principal correction instruction: ${paper.adminNote}` : ''}`
         : '';
     }
     const note = byId('paperReviewNote');
@@ -3827,20 +3901,32 @@ window.BGPS_CONFIG = Object.freeze({
     link.remove();
   }
 
-  function setStatusFilter(status) {
+  function applyBoardFilter(filter, clearSearch = true) {
+    boardFilter = BOARD_COPY[filter] ? filter : 'all';
     const select = byId('paperStatusFilter');
     const search = byId('paperSearch');
-    if (select) select.value = status || '';
-    if (search) search.value = '';
+    const selectValue = {
+      all: '', 'first-review': 'First Review', submitted: 'Submitted', resubmitted: 'Resubmitted',
+      correction: 'Correction Required', approved: 'Approved', locked: 'Locked'
+    }[boardFilter] || '';
+    if (select) select.value = selectValue;
+    if (clearSearch && search) search.value = '';
     render();
   }
 
+  function setStatusFilter(status) {
+    const key = normalize(status);
+    const filter = key === 'FIRST REVIEW' ? 'first-review'
+      : key === 'RESUBMITTED' ? 'resubmitted'
+      : key === 'SUBMITTED' ? 'submitted'
+      : key === 'CORRECTION REQUIRED' ? 'correction'
+      : key === 'APPROVED' ? 'approved'
+      : key === 'LOCKED' ? 'locked' : 'all';
+    applyBoardFilter(filter);
+  }
+
   function setResubmittedFilter() {
-    const select = byId('paperStatusFilter');
-    const search = byId('paperSearch');
-    if (select) select.value = 'Submitted';
-    if (search) search.value = 'Corrected & Resubmitted';
-    render();
+    applyBoardFilter('resubmitted');
   }
 
   function bind() {
@@ -3848,8 +3934,12 @@ window.BGPS_CONFIG = Object.freeze({
     initialized = true;
     byId('refreshPapersButton')?.addEventListener('click', () => load(true));
     byId('paperClassFilter')?.addEventListener('change', render);
-    byId('paperStatusFilter')?.addEventListener('change', render);
+    byId('paperStatusFilter')?.addEventListener('change', (event) => setStatusFilter(event.target.value));
     byId('paperSearch')?.addEventListener('input', render);
+    byId('approvalMetrics')?.addEventListener('click', (event) => {
+      const card = event.target.closest('[data-paper-board-filter]');
+      if (card) applyBoardFilter(card.dataset.paperBoardFilter);
+    });
     byId('paperList')?.addEventListener('click', (event) => {
       const deleteButton = event.target.closest('[data-delete-paper]');
       if (deleteButton) { deleteAdminPaper(deleteButton.dataset.deletePaper); return; }
@@ -3885,6 +3975,7 @@ window.BGPS_CONFIG = Object.freeze({
     papers = [];
     currentPaper = null;
     deleteInFlight = false;
+    boardFilter = 'all';
     render();
   }
 

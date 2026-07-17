@@ -592,6 +592,7 @@ body.modal-open { overflow: hidden; }
 .principal-kpi:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(15,42,76,.11); border-color:#b7cadc; }
 .principal-kpi.warning { border-top-color:var(--warning); }
 .principal-kpi.danger { border-top-color:var(--danger); }
+.principal-kpi.resubmitted { border-top-color:#5b4bb7; background:linear-gradient(180deg,#faf9ff 0%,#fff 58%); }
 .principal-kpi span { display:block; color:var(--muted); font-size:10px; font-weight:900; letter-spacing:.45px; text-transform:uppercase; }
 .principal-kpi strong { display:block; margin-top:9px; color:var(--navy-900); font-size:27px; line-height:1; }
 .principal-kpi small { display:block; margin-top:8px; color:var(--text-2); line-height:1.35; }
@@ -605,6 +606,9 @@ body.modal-open { overflow: hidden; }
 .action-item:last-child { border-bottom:0; }
 .action-marker { width:8px; height:8px; border-radius:50%; background:var(--warning); box-shadow:0 0 0 4px var(--warning-soft); }
 .paper-action-item .action-marker { background:var(--navy-700); box-shadow:0 0 0 4px var(--navy-100); }
+.resubmitted-action-item { margin:4px 0; padding:13px 10px; border:1px solid #d5cff5; border-radius:11px; background:#faf9ff; }
+.resubmitted-action-item .action-marker { background:#5b4bb7; box-shadow:0 0 0 4px #ece9ff; }
+.status-chip.resubmitted { border:1px solid #cfc7f4; background:#eeeaff; color:#4d3da6; }
 .action-copy { min-width:0; }
 .action-copy strong { display:block; color:var(--navy-900); font-size:13px; }
 .action-copy span { display:block; margin-top:4px; color:var(--muted); font-size:11px; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -684,6 +688,7 @@ body.modal-open { overflow: hidden; }
 .review-detail { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
 .review-detail span { color:var(--muted); font-size:11px; }
 .review-detail strong { color:var(--navy-900); font-size:12px; text-align:right; }
+.review-correction-history { margin-top:14px; padding:11px 12px; border:1px solid #d5cff5; border-left:4px solid #5b4bb7; border-radius:9px; background:#faf9ff; color:#46378f; font-size:12px; font-weight:700; line-height:1.5; }
 .review-note-wrap { display:grid; gap:7px; margin-top:16px; }
 .review-note-wrap label { color:var(--text-2); font-size:12px; font-weight:850; }
 .review-note-wrap textarea { width:100%; resize:vertical; border:1px solid var(--border-strong); border-radius:10px; padding:11px; background:#fff !important; color:var(--text) !important; outline:none; line-height:1.45; }
@@ -1236,8 +1241,8 @@ body.modal-open { overflow: hidden; }
             </div>
 
             <section class="principal-kpis" aria-label="Principal summary">
-              <button class="principal-kpi" type="button" data-dashboard-action="marks-complete">
-                <span>Marks Recorded</span><strong id="dashMarksComplete">—</strong><small id="dashMarksCompleteNote">Across all classes</small>
+              <button class="principal-kpi resubmitted" type="button" data-dashboard-action="papers-resubmitted">
+                <span>Corrected &amp; Resubmitted</span><strong id="dashPapersResubmitted">—</strong><small>Ready for principal re-review</small>
               </button>
               <button class="principal-kpi warning" type="button" data-dashboard-action="marks-pending">
                 <span>Marks Pending</span><strong id="dashMarksPending">—</strong><small>Subjects without records</small>
@@ -1721,6 +1726,7 @@ body.modal-open { overflow: hidden; }
           <div class="review-detail"><span>Exam</span><strong id="reviewExam">—</strong></div>
           <div class="review-detail"><span>Maximum Marks</span><strong id="reviewMaxMarks">—</strong></div>
           <div class="review-detail"><span>Version</span><strong id="reviewVersion">—</strong></div>
+          <div class="review-correction-history" id="paperCorrectionHistory" hidden></div>
           <div class="review-note-wrap">
             <label for="paperReviewNote">Principal note</label>
             <textarea id="paperReviewNote" rows="5" placeholder="Add a clear note when returning a paper for correction."></textarea>
@@ -3176,8 +3182,8 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function renderMetrics() {
-    const completed = classProgress.reduce((sum, item) => sum + item.completedCount, 0);
     const expected = classProgress.reduce((sum, item) => sum + item.expectedCount, 0);
+    const completed = classProgress.reduce((sum, item) => sum + item.completedCount, 0);
     const pending = Math.max(0, expected - completed);
     const teachersPending = classProgress.filter((item) => item.pendingCount > 0).length;
     const exam = normalize(selectedExam());
@@ -3186,9 +3192,9 @@ window.BGPS_CONFIG = Object.freeze({
     const correction = workflowPapers.filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED').length;
     const approved = workflowPapers.filter((paper) => normalize(paper.status) === 'APPROVED').length;
     const locked = workflowPapers.filter((paper) => normalize(paper.status) === 'LOCKED').length;
+    const resubmitted = workflowPapers.filter((paper) => normalize(paper.status) === 'SUBMITTED' && paper.resubmitted === true).length;
 
-    setText('dashMarksComplete', `${completed}/${expected}`);
-    setText('dashMarksCompleteNote', `${selectedExam()} · ${academicYearLabel(selectedAcademicYear())} · subjects recorded`);
+    setText('dashPapersResubmitted', resubmitted);
     setText('dashMarksPending', pending);
     setText('dashTeachersPending', teachersPending);
     setText('dashPapersSubmitted', workflowPapers.length);
@@ -3223,7 +3229,20 @@ window.BGPS_CONFIG = Object.freeze({
     const examPapers = papers.filter((paper) => normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
 
     examPapers
-      .filter((paper) => normalize(paper.status) === 'SUBMITTED')
+      .filter((paper) => normalize(paper.status) === 'SUBMITTED' && paper.resubmitted === true)
+      .slice(0, 5)
+      .forEach((paper) => {
+        actions.push({
+          type: 'paper resubmitted',
+          paperId: paper.paperId,
+          title: `${paper.className} ${paper.subject} corrected paper received`,
+          meta: `${paper.teacherId} · Version ${paper.version || 1}${paper.adminNote ? ` · Returned note: ${paper.adminNote}` : ''}`,
+          button: 'Re-review Paper'
+        });
+      });
+
+    examPapers
+      .filter((paper) => normalize(paper.status) === 'SUBMITTED' && paper.resubmitted !== true)
       .slice(0, 5)
       .forEach((paper) => {
         actions.push({
@@ -3255,7 +3274,7 @@ window.BGPS_CONFIG = Object.freeze({
     }
 
     container.innerHTML = actions.slice(0, 10).map((item) => `
-      <div class="action-item ${item.type === 'paper' ? 'paper-action-item' : ''}">
+      <div class="action-item ${item.type.includes('paper') ? 'paper-action-item' : ''} ${item.type.includes('resubmitted') ? 'resubmitted-action-item' : ''}">
         <span class="action-marker" aria-hidden="true"></span>
         <div class="action-copy"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.meta)}</span></div>
         <button class="btn compact" type="button" ${item.type === 'marks' ? `data-open-class="${escapeHtml(item.className)}"` : `data-open-paper="${escapeHtml(item.paperId)}"`}>${escapeHtml(item.button)}</button>
@@ -3391,7 +3410,8 @@ window.BGPS_CONFIG = Object.freeze({
     if (action.startsWith('papers-')) {
       const status = action === 'papers-review' ? 'Submitted' : action === 'papers-correction' ? 'Correction Required' : '';
       window.BGPS_APP.openView('papers');
-      window.BGPS_PAPERS.setStatusFilter(status);
+      if (action === 'papers-resubmitted') window.BGPS_PAPERS.setResubmittedFilter();
+      else window.BGPS_PAPERS.setStatusFilter(status);
     } else {
       byId('classTrackingList')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -3421,7 +3441,7 @@ window.BGPS_CONFIG = Object.freeze({
     papers = [];
     classProgress = [];
     teacherProgress = [];
-    setText('dashMarksComplete', '—');
+    setText('dashPapersResubmitted', '—');
     setText('dashMarksPending', '—');
   }
 
@@ -3490,7 +3510,7 @@ window.BGPS_CONFIG = Object.freeze({
       if (className && normalize(paper.className) !== className) return false;
       if (status && normalize(paper.status) !== status) return false;
       if (query) {
-        const haystack = [paper.teacherId, paper.className, paper.subject, paper.exam, paper.title, paper.status]
+        const haystack = [paper.teacherId, paper.className, paper.subject, paper.exam, paper.title, paper.status, paper.resubmitted ? 'Corrected & Resubmitted' : '']
           .map(normalize).join(' ');
         if (!haystack.includes(query)) return false;
       }
@@ -3508,10 +3528,12 @@ window.BGPS_CONFIG = Object.freeze({
       return;
     }
 
-    container.innerHTML = rows.map((paper) => `
+    container.innerHTML = rows.map((paper) => {
+      const resubmitted = paper.resubmitted === true && normalize(paper.status) === 'SUBMITTED';
+      return `
       <article class="paper-row">
         <div class="paper-main">
-          <div class="paper-title-line"><strong>${escapeHtml(paper.title || `${paper.className} ${paper.subject} Paper`)}</strong><span class="status-chip ${statusClass(paper.status)}">${escapeHtml(paper.status || 'Submitted')}</span></div>
+          <div class="paper-title-line"><strong>${escapeHtml(paper.title || `${paper.className} ${paper.subject} Paper`)}</strong><span class="status-chip ${statusClass(paper.status)}">${escapeHtml(paper.status || 'Submitted')}</span>${resubmitted ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>' : ''}</div>
           <div class="paper-meta-line">
             <span>${escapeHtml(paper.className)}</span>
             <span>${escapeHtml(paper.subject)}</span>
@@ -3524,8 +3546,9 @@ window.BGPS_CONFIG = Object.freeze({
           <span><small>Version</small><strong>${escapeHtml(paper.version || 1)}</strong></span>
           <span><small>Updated</small><strong>${escapeHtml(window.BGPS_DATA.safeDate(paper.updatedAt) || '—')}</strong></span>
         </div>
-        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">Review</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
-      </article>`).join('');
+        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${resubmitted ? 'Re-review' : 'Review'}</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
+      </article>`;
+    }).join('');
   }
 
   async function load(showToast) {
@@ -3587,19 +3610,27 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function setReviewMeta(paper) {
+    const resubmitted = paper.resubmitted === true && normalize(paper.status) === 'SUBMITTED';
     const status = byId('paperReviewStatus');
     if (status) {
-      status.className = `status-chip ${statusClass(paper.status)}`;
-      status.textContent = paper.status || 'Submitted';
+      status.className = `status-chip ${resubmitted ? 'resubmitted' : statusClass(paper.status)}`;
+      status.textContent = resubmitted ? 'Corrected & Resubmitted' : (paper.status || 'Submitted');
     }
     setText('paperReviewTitle', paper.title || `${paper.className} ${paper.subject} Paper`);
-    setText('paperReviewMeta', `${paper.className} · ${paper.subject} · ${paper.exam}`);
+    setText('paperReviewMeta', `${paper.className} · ${paper.subject} · ${paper.exam}${resubmitted ? ` · Version ${paper.version || 1} received for re-review` : ''}`);
     setText('reviewTeacher', paper.teacherId || '—');
     setText('reviewClass', paper.className || '—');
     setText('reviewSubject', paper.subject || '—');
     setText('reviewExam', paper.exam || '—');
     setText('reviewMaxMarks', paper.maxMarks || '—');
     setText('reviewVersion', paper.version || 1);
+    const history = byId('paperCorrectionHistory');
+    if (history) {
+      history.hidden = !resubmitted;
+      history.textContent = resubmitted
+        ? `Corrected version received for re-review.${paper.adminNote ? ` Previous return instruction: ${paper.adminNote}` : ''}`
+        : '';
+    }
     const note = byId('paperReviewNote');
     if (note) note.value = paper.adminNote || '';
     const approve = byId('approvePaperButton');
@@ -3798,7 +3829,17 @@ window.BGPS_CONFIG = Object.freeze({
 
   function setStatusFilter(status) {
     const select = byId('paperStatusFilter');
+    const search = byId('paperSearch');
     if (select) select.value = status || '';
+    if (search) search.value = '';
+    render();
+  }
+
+  function setResubmittedFilter() {
+    const select = byId('paperStatusFilter');
+    const search = byId('paperSearch');
+    if (select) select.value = 'Submitted';
+    if (search) search.value = 'Corrected & Resubmitted';
     render();
   }
 
@@ -3847,7 +3888,7 @@ window.BGPS_CONFIG = Object.freeze({
     render();
   }
 
-  window.BGPS_PAPERS = Object.freeze({ onAuthenticated, load, render, openReview, setStatusFilter, reset, getPapers: () => [...papers] });
+  window.BGPS_PAPERS = Object.freeze({ onAuthenticated, load, render, openReview, setStatusFilter, setResubmittedFilter, reset, getPapers: () => [...papers] });
 })();
 
 
@@ -3887,6 +3928,7 @@ window.BGPS_CONFIG = Object.freeze({
   let previewInFlight = false;
   let uploadInFlight = false;
   let uploadRevisionContext = null;
+  let pendingPdfUpload = null;
 
   function toast(message, type) {
     window.BGPS_APP?.toast(message, type);
@@ -4344,12 +4386,13 @@ window.BGPS_CONFIG = Object.freeze({
       const correction = statusKey(item.status) === 'correction required';
       const approved = statusKey(item.status) === 'approved';
       const submitted = statusKey(item.status) === 'submitted';
+      const resubmitted = submitted && item.resubmitted === true;
       const title = item.title || `${item.className || ''} ${item.subject || ''} ${item.exam || ''}`.trim() || 'Question Paper';
       let actions = '';
       if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">Continue Editing</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">Delete Draft</button>`;
       else if (correction) actions = `<button class="btn primary" type="button" data-correct-paper="${escapeHtml(item.paperId)}">Correct Paper</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
       else actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
-      return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3><span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> This paper is ready for use.</div>' : ''}${submitted ? '' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
+      return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3><span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>${resubmitted ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>' : ''}${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${resubmitted ? `<div class="teacher-paper-note" style="border-left-color:#5b4bb7;background:#faf9ff;color:#46378f"><strong>Correction sent:</strong> Version ${escapeHtml(item.version || 1)} is awaiting Principal re-review.${item.adminNote ? ` Returned note: ${escapeHtml(item.adminNote)}` : ''}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> This paper is ready for use.</div>' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
     }).join('');
   }
 
@@ -4534,8 +4577,32 @@ window.BGPS_CONFIG = Object.freeze({
     setHidden('downloadTeacherPaper', true);
     setHidden('openTeacherPaperPreviewExternal', true);
     setHidden('submitFromTeacherPaperPreview', !allowSubmit);
+    setText('closeTeacherPaperPreviewFooter', 'Back to Edit');
     if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = false;
     openModal('teacherPaperPreviewModal');
+  }
+
+  async function showPendingPdfUploadPreview(file, payload) {
+    pendingPdfUpload = payload;
+    revokeObjectUrl();
+    currentPreviewUrl = URL.createObjectURL(file);
+    setPreviewHeader(payload.fileName || 'PDF Question Paper', `${payload.className} · ${payload.subject} · ${payload.exam}`, 'Review before submission');
+    const body = byId('teacherPaperPreviewBody');
+    if (!body) throw new Error('The PDF preview area is unavailable.');
+    body.innerHTML = '<div class="empty-state"><strong>Preparing PDF preview</strong>Please wait while the selected file is opened.</div>';
+    setHidden('downloadTeacherPaper', true);
+    setHidden('openTeacherPaperPreviewExternal', false);
+    setHidden('submitFromTeacherPaperPreview', false);
+    setText('submitFromTeacherPaperPreview', 'Continue to Submit');
+    setText('closeTeacherPaperPreviewFooter', 'Back to Upload');
+    if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = false;
+    openModal('teacherPaperPreviewModal');
+    if (window.BGPS_PDF_PREVIEW.shouldUseCanvas()) {
+      await window.BGPS_PDF_PREVIEW.render(file, body);
+    } else {
+      body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Uploaded PDF preview"></iframe>';
+      body.querySelector('iframe').src = currentPreviewUrl;
+    }
   }
 
   async function previewDraft(draftId) {
@@ -4658,13 +4725,18 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
-  function closePreview() {
+  function closePreview(preservePendingPdf = false) {
+    const preservePdf = preservePendingPdf === true;
+    const returnToUpload = !preservePdf && Boolean(pendingPdfUpload);
     closeModal('teacherPaperPreviewModal');
     revokeObjectUrl();
+    if (!preservePdf) pendingPdfUpload = null;
     setHidden('openTeacherPaperPreviewExternal', true);
     setHidden('submitFromTeacherPaperPreview', true);
+    setText('closeTeacherPaperPreviewFooter', 'Back to Edit');
     const body = byId('teacherPaperPreviewBody');
     if (body) body.innerHTML = '';
+    if (returnToUpload) openModal('paperUploadModal');
   }
 
   function printPreview() {
@@ -4691,6 +4763,8 @@ window.BGPS_CONFIG = Object.freeze({
 
   function prepareSubmit() {
     try {
+      pendingPdfUpload = null;
+      setText('paperSubmitTitle', 'Submit Question Paper');
       const draft = collectDraft();
       validateForSubmit(draft);
       setText('submitPaperClass', draft.className);
@@ -4702,6 +4776,29 @@ window.BGPS_CONFIG = Object.freeze({
       openModal('paperSubmitModal');
     } catch (error) {
       toast(error.message, 'error');
+    }
+  }
+
+  function preparePendingPdfSubmit() {
+    if (!pendingPdfUpload) return;
+    setText('paperSubmitTitle', 'Submit PDF Question Paper');
+    setText('submitPaperClass', pendingPdfUpload.className);
+    setText('submitPaperSubject', pendingPdfUpload.subject);
+    setText('submitPaperExam', pendingPdfUpload.exam);
+    setText('submitPaperQuestions', 'Reference PDF');
+    setText('submitPaperMarks', 'Check preview');
+    setText('submitPaperMaxMarks', pendingPdfUpload.maxMarks);
+    openModal('paperSubmitModal');
+  }
+
+  function cancelPaperSubmit() {
+    const wasPdf = Boolean(pendingPdfUpload);
+    closeModal('paperSubmitModal');
+    setText('paperSubmitTitle', 'Submit Question Paper');
+    if (wasPdf) {
+      pendingPdfUpload = null;
+      openModal('paperUploadModal');
+      setUploadProgress('PDF was not submitted. Choose Import and Review to preview it again.');
     }
   }
 
@@ -4721,13 +4818,23 @@ window.BGPS_CONFIG = Object.freeze({
     const button = byId('confirmPaperSubmit');
     if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
     try {
-      const draftId = await saveDraft(false);
-      const result = await window.BGPS_API.submitPaperDraft(draftId);
+      let result;
+      if (pendingPdfUpload) {
+        result = await window.BGPS_API.uploadPaper(pendingPdfUpload);
+      } else {
+        const draftId = await saveDraft(false);
+        result = await window.BGPS_API.submitPaperDraft(draftId);
+      }
       closeModal('paperSubmitModal');
+      closeModal('paperUploadModal');
       setEditorMode(false);
       currentDraftId = '';
       currentRevision = {};
       dirty = false;
+      pendingPdfUpload = null;
+      byId('paperUploadForm')?.reset();
+      setUploadProgress('');
+      setText('paperSubmitTitle', 'Submit Question Paper');
       syncDraftDeleteControl();
       showSubmissionSuccess(result);
       loadData(false).catch(() => {
@@ -5059,6 +5166,7 @@ window.BGPS_CONFIG = Object.freeze({
       return;
     }
     uploadRevisionContext = null;
+    pendingPdfUpload = null;
     setUploadProgress('');
     closeModal('paperUploadModal');
   }
@@ -5147,16 +5255,20 @@ window.BGPS_CONFIG = Object.freeze({
         }
         loadData(false).catch(() => toast('DOCX was imported. Refresh My Papers if the draft list has not updated.'));
       } else {
-        setUploadProgress('Uploading and sending the PDF to the Principal review queue...');
-        const result = await window.BGPS_API.uploadPaper(payload);
+        setUploadProgress('Preparing the PDF preview. Nothing has been submitted yet...');
         closeModal('paperUploadModal');
-        uploadRevisionContext = null;
-        setUploadProgress('');
-        showSubmissionSuccess(result);
-        loadData(false).catch(() => toast('PDF was submitted. Refresh My Papers if the list has not updated.'));
+        await showPendingPdfUploadPreview(file, payload);
+        setUploadProgress('PDF preview ready. Review it, then choose Continue to Submit.');
       }
     } catch (error) {
       const message = error.message || 'The paper could not be uploaded.';
+      if (extension === 'pdf') {
+        pendingPdfUpload = null;
+        setHidden('submitFromTeacherPaperPreview', true);
+        closeModal('teacherPaperPreviewModal');
+        revokeObjectUrl();
+        openModal('paperUploadModal');
+      }
       setUploadProgress(message, 'error');
       toast(message, 'error');
     } finally {
@@ -5182,7 +5294,7 @@ window.BGPS_CONFIG = Object.freeze({
     byId('sidebarPreviewPaper')?.addEventListener('click', previewCurrent);
     byId('submitPaperForReview')?.addEventListener('click', prepareSubmit);
     byId('confirmPaperSubmit')?.addEventListener('click', submitPaper);
-    byId('cancelPaperSubmit')?.addEventListener('click', () => closeModal('paperSubmitModal'));
+    byId('cancelPaperSubmit')?.addEventListener('click', cancelPaperSubmit);
     byId('closePaperSubmitSuccess')?.addEventListener('click', () => closeModal('paperSubmitSuccessModal'));
     byId('viewSubmittedPaper')?.addEventListener('click', async () => {
       closeModal('paperSubmitSuccessModal');
@@ -5259,7 +5371,16 @@ window.BGPS_CONFIG = Object.freeze({
 
     byId('closeTeacherPaperPreview')?.addEventListener('click', closePreview);
     byId('closeTeacherPaperPreviewFooter')?.addEventListener('click', closePreview);
-    byId('submitFromTeacherPaperPreview')?.addEventListener('click', () => { closePreview(); prepareSubmit(); });
+    byId('submitFromTeacherPaperPreview')?.addEventListener('click', () => {
+      if (pendingPdfUpload) {
+        closePreview(true);
+        closeModal('paperUploadModal');
+        preparePendingPdfSubmit();
+      } else {
+        closePreview();
+        prepareSubmit();
+      }
+    });
     byId('teacherPaperPreviewModal')?.addEventListener('click', (event) => { if (event.target === byId('teacherPaperPreviewModal')) closePreview(); });
     byId('printTeacherPaper')?.addEventListener('click', printPreview);
     byId('openTeacherPaperPreviewExternal')?.addEventListener('click', openPreviewExternally);
@@ -5278,7 +5399,7 @@ window.BGPS_CONFIG = Object.freeze({
       if (event.key === 'Escape') {
         if (byId('teacherPaperPreviewModal')?.classList.contains('open')) closePreview();
         else if (byId('paperUploadModal')?.classList.contains('open')) closeUploadModalSafely();
-        else if (byId('paperSubmitModal')?.classList.contains('open')) closeModal('paperSubmitModal');
+        else if (byId('paperSubmitModal')?.classList.contains('open')) cancelPaperSubmit();
         else if (byId('paperSubmitSuccessModal')?.classList.contains('open')) closeModal('paperSubmitSuccessModal');
         else deselectImage();
       }
@@ -5319,6 +5440,7 @@ window.BGPS_CONFIG = Object.freeze({
     previewInFlight = false;
     uploadInFlight = false;
     uploadRevisionContext = null;
+    pendingPdfUpload = null;
     revokeObjectUrl();
     setEditorMode(false);
     const list = byId('teacherPaperList');

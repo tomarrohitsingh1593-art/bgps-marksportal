@@ -858,7 +858,7 @@ body.modal-open { overflow: hidden; }
 .paper-content-editor p { margin:6px 0; }
 .paper-content-editor .section-heading { display:flex; justify-content:space-between; align-items:center; margin:15px 0 7px; padding:6px 8px; border:1px solid #222; background:#f2f2f2; font-size:14px; }
 .paper-content-editor .question-line { position:relative; min-height:24px; padding-right:56px; break-inside:avoid; }
-.paper-content-editor .mark-token { float:right; margin-left:7px; font-weight:800; }
+.paper-content-editor .mark-token { float:right; display:inline-flex; align-items:center; justify-content:center; min-width:42px; min-height:25px; margin:-2px 0 2px 10px; padding:2px 8px; border:1px solid #8ea6bd; border-radius:6px; background:#f7fbff; color:#0b294a; font-weight:900; line-height:1; white-space:nowrap; }
 .paper-content-editor .or-line { text-align:center; font-weight:800; margin:6px 0; }
 .paper-content-editor .bgps-fraction { display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; line-height:1.05; margin:0 .14em; }
 .paper-content-editor .bgps-fraction > span:first-child { border-bottom:1px solid currentColor; }
@@ -870,8 +870,8 @@ body.modal-open { overflow: hidden; }
 .paper-content-editor .page-break::after { content:"Page Break"; position:absolute; left:50%; top:-10px; transform:translateX(-50%); padding:1px 7px; background:#fff; color:#6f7f8d; font:10px Inter,sans-serif; }
 .paper-content-editor::after { content:""; display:block; clear:both; }
 
-.paper-content-editor .diagram-box.has-image { position:relative; box-sizing:border-box; width:var(--bgps-image-width,55%); max-width:100%; min-width:20%; min-height:60px; padding:5px; border:1px solid transparent; background:#fff; user-select:none; break-inside:avoid; touch-action:none; will-change:width,transform; }
-.paper-content-editor .diagram-box.has-image img { display:block; width:100%; height:auto; max-height:430px; object-fit:contain; pointer-events:none; }
+.paper-content-editor .diagram-box.has-image { position:relative; box-sizing:border-box; width:var(--bgps-image-width,100%); max-width:100%; min-width:20%; min-height:0; padding:5px; border:1px solid transparent; background:#fff; user-select:none; break-inside:avoid; touch-action:none; will-change:width,transform; }
+.paper-content-editor .diagram-box.has-image img { display:block; width:100%; height:auto; max-width:100%; max-height:none; object-fit:contain; pointer-events:none; }
 .paper-content-editor .diagram-box.bgps-img-center { float:none; clear:both; margin:8px auto 11px; }
 .paper-content-editor .diagram-box.bgps-img-left { float:left; clear:none; max-width:48%; margin:7px 14px 10px 0; }
 .paper-content-editor .diagram-box.bgps-img-right { float:right; clear:none; max-width:48%; margin:7px 0 10px 14px; }
@@ -1622,9 +1622,9 @@ body.modal-open { overflow: hidden; }
 
                 <section class="editor-side-card image-inspector" id="paperImageInspector">
                   <h2>Selected Image</h2>
-                  <p id="paperImageEmpty">Select an image in the paper to resize or position it.</p>
+                  <p id="paperImageEmpty">Select an image. Use Scale to control size; alignment will not change the scale.</p>
                   <div id="paperImageControls" hidden>
-                    <label class="image-width-control"><span>Width</span><strong id="paperImageWidthValue">55%</strong><input id="paperImageWidth" type="range" min="20" max="100" step="1" value="55"></label>
+                    <label class="image-width-control"><span>Scale</span><strong id="paperImageWidthValue">100%</strong><input id="paperImageWidth" type="range" min="20" max="100" step="1" value="100" aria-label="Image scale"></label>
                     <div class="image-layout-grid"><button type="button" data-image-layout="left">Wrap Left</button><button type="button" data-image-layout="center">Centre</button><button type="button" data-image-layout="right">Wrap Right</button><button type="button" data-image-layout="inline">Inline</button></div>
                     <div class="image-action-grid"><button type="button" id="moveImageUp">Move Up</button><button type="button" id="moveImageDown">Move Down</button><button type="button" id="replacePaperImage">Replace</button><button type="button" id="copyPaperImage">Copy</button><button type="button" id="cutPaperImage">Cut</button><button type="button" id="pastePaperImage">Paste</button><button type="button" id="duplicateImage">Duplicate</button><button type="button" id="addImageCaption">Caption</button><button class="danger-text" type="button" id="deletePaperImage">Delete</button></div>
                     <input id="replacePaperImageFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
@@ -4764,7 +4764,7 @@ window.BGPS_CONFIG = Object.freeze({
     const instructions = normalize(draft.instructions).split(/\n+/).map(normalize).filter(Boolean);
     const instructionsHtml = instructions.length ? `<div class="instructions"><strong>General Instructions</strong><ol>${instructions.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol></div>` : '';
     const date = draft.examDate || '____________';
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;font-weight:900}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,55%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:95mm;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
   }
 
   function setPreviewHeader(title, meta, status) {
@@ -4917,9 +4917,16 @@ window.BGPS_CONFIG = Object.freeze({
       const body = byId('teacherPaperPreviewBody');
       if (body) body.innerHTML = '<div class="empty-state"><strong>Preparing latest preview</strong>Saving your current changes and building the standard A4 paper.</div>';
       openModal('teacherPaperPreviewModal');
-      const draftId = await saveDraft(false);
-      const preview = await window.BGPS_API.getPaperDraftPreview(draftId);
-      showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview ready', true);
+      if (editorMode === 'admin') {
+        // Admin/Principal preview is local and read-only until Save Changes is explicitly clicked.
+        // Do not call savePaperDraft(): backend correctly blocks Admin from creating teacher drafts.
+        const documentHtml = buildPreviewDocument(draft);
+        showHtmlPreview(documentHtml, draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview ready', false);
+      } else {
+        const draftId = await saveDraft(false);
+        const preview = await window.BGPS_API.getPaperDraftPreview(draftId);
+        showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview ready', true);
+      }
     } catch (error) {
       const body = byId('teacherPaperPreviewBody');
       if (body && byId('teacherPaperPreviewModal')?.classList.contains('open')) {
@@ -5103,9 +5110,9 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function imageWidth(box) {
-    const raw = box.style.getPropertyValue('--bgps-image-width') || box.style.width || '55%';
+    const raw = box.style.getPropertyValue('--bgps-image-width') || box.style.width || '100%';
     const number = Number.parseFloat(raw);
-    return Number.isFinite(number) ? Math.min(100, Math.max(20, number)) : 55;
+    return Number.isFinite(number) ? Math.min(100, Math.max(20, number)) : 100;
   }
 
   function layoutForBox(box) {
@@ -5116,9 +5123,9 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function applyImageWidth(box, width) {
-    const layout = layoutForBox(box);
-    const maximum = layout === 'left' || layout === 'right' ? 48 : layout === 'inline' ? 80 : 100;
-    const value = Math.min(maximum, Math.max(20, Number(width) || 55));
+    // One sizing authority only: the Scale slider / resize handle.
+    // Alignment must never silently shrink or reset the selected image.
+    const value = Math.min(100, Math.max(20, Number(width) || 100));
     box.style.setProperty('--bgps-image-width', `${value}%`);
     box.style.width = `${value}%`;
     if (selectedImage === box) {
@@ -5415,7 +5422,7 @@ window.BGPS_CONFIG = Object.freeze({
   async function insertImageFile(file) {
     try {
       const source = await compressImage(file);
-      const html = `<div class="diagram-box has-image bgps-img-center" style="--bgps-image-width:55%;width:55%" contenteditable="false"><img class="diagram-image" src="${source}" alt="Question paper diagram"></div><p><br></p>`;
+      const html = `<div class="diagram-box has-image bgps-img-center" style="--bgps-image-width:100%;width:100%" contenteditable="false"><img class="diagram-image" src="${source}" alt="Question paper diagram"></div><p><br></p>`;
       insertHtml(html);
       hydrateImages();
       const boxes = byId('paperContentEditor')?.querySelectorAll('.diagram-box.has-image');

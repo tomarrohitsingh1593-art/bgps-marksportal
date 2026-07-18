@@ -1142,3 +1142,33 @@ body.modal-open { overflow: hidden; }
     overflow: visible !important;
   }
 }
+
+
+/* ===== BGPS FREE IMAGE MOVE — persistent Word-like drag inside the A4 editor ===== */
+.paper-content-editor { position:relative; }
+.paper-content-editor .diagram-box.bgps-img-free {
+  position:relative;
+  display:block;
+  float:none !important;
+  clear:none !important;
+  margin:8px 0 11px !important;
+  z-index:4;
+  transform:translate3d(var(--bgps-free-x,0px),var(--bgps-free-y,0px),0);
+  will-change:transform,width;
+}
+.paper-content-editor .diagram-box.bgps-img-free.is-moving-image {
+  z-index:30;
+  opacity:.94;
+  outline:2px dashed #1f68a6;
+  box-shadow:0 10px 28px rgba(15,42,76,.18);
+}
+.paper-content-editor .diagram-box.has-image { cursor:move; }
+.paper-content-editor .bgps-image-resize-handle { cursor:nwse-resize; }
+.paper-content-editor .bgps-image-drag-handle::before { content:"✥"; }
+.image-layout-grid button[data-image-layout="free"] { grid-column:1 / -1; }
+@media (max-width:700px) {
+  .paper-content-editor .bgps-image-drag-handle {
+    min-width:38px;
+    min-height:34px;
+  }
+}

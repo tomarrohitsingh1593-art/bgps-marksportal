@@ -2671,10 +2671,17 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function renderMetrics() {
-    setText('teacherPaperMetricDraft', drafts.length);
-    setText('teacherPaperMetricSubmitted', papers.filter((paper) => statusKey(paper.status) === 'submitted').length);
-    setText('teacherPaperMetricCorrection', papers.filter((paper) => statusKey(paper.status) === 'correction required').length);
-    setText('teacherPaperMetricApproved', papers.filter((paper) => statusKey(paper.status) === 'approved').length);
+    // Keep summary cards aligned with the exact items visible in My Question Papers.
+    // When a submitted/correction paper has an active linked draft, combinedItems() hides
+    // the parent paper and shows the draft instead. Counting raw `papers` caused cards
+    // such as Correction Required to be higher than the visible current-paper list.
+    const currentItems = combinedItems();
+    const currentPapers = currentItems.filter((item) => item.kind === 'paper');
+    const currentDrafts = currentItems.filter((item) => item.kind === 'draft');
+    setText('teacherPaperMetricDraft', currentDrafts.length);
+    setText('teacherPaperMetricSubmitted', currentPapers.filter((paper) => statusKey(paper.status) === 'submitted').length);
+    setText('teacherPaperMetricCorrection', currentPapers.filter((paper) => statusKey(paper.status) === 'correction required').length);
+    setText('teacherPaperMetricApproved', currentPapers.filter((paper) => statusKey(paper.status) === 'approved').length);
   }
 
   function combinedItems() {

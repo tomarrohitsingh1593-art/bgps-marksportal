@@ -870,14 +870,18 @@ body.modal-open { overflow: hidden; }
 .paper-content-editor .page-break::after { content:"Page Break"; position:absolute; left:50%; top:-10px; transform:translateX(-50%); padding:1px 7px; background:#fff; color:#6f7f8d; font:10px Inter,sans-serif; }
 .paper-content-editor::after { content:""; display:block; clear:both; }
 
-.paper-content-editor .diagram-box.has-image { position:relative; box-sizing:border-box; width:var(--bgps-image-width,55%); max-width:100%; min-width:20%; min-height:60px; padding:5px; border:1px solid transparent; background:#fff; user-select:none; break-inside:avoid; }
+.paper-content-editor .diagram-box.has-image { position:relative; box-sizing:border-box; width:var(--bgps-image-width,55%); max-width:100%; min-width:20%; min-height:60px; padding:5px; border:1px solid transparent; background:#fff; user-select:none; break-inside:avoid; touch-action:none; will-change:width,transform; }
 .paper-content-editor .diagram-box.has-image img { display:block; width:100%; height:auto; max-height:430px; object-fit:contain; pointer-events:none; }
 .paper-content-editor .diagram-box.bgps-img-center { float:none; clear:both; margin:8px auto 11px; }
-.paper-content-editor .diagram-box.bgps-img-left { float:left; clear:none; margin:7px 14px 10px 0; }
-.paper-content-editor .diagram-box.bgps-img-right { float:right; clear:none; margin:7px 0 10px 14px; }
-.paper-content-editor .diagram-box.bgps-img-inline { display:inline-block; float:none; clear:none; vertical-align:middle; margin:4px 8px; }
+.paper-content-editor .diagram-box.bgps-img-left { float:left; clear:none; max-width:48%; margin:7px 14px 10px 0; }
+.paper-content-editor .diagram-box.bgps-img-right { float:right; clear:none; max-width:48%; margin:7px 0 10px 14px; }
+.paper-content-editor .diagram-box.bgps-img-inline { display:inline-block; float:none; clear:none; max-width:80%; vertical-align:middle; margin:4px 8px; }
 .paper-content-editor .diagram-box.is-image-selected { border:2px solid #1f68a6; box-shadow:0 0 0 3px rgba(31,104,166,.15); }
 .paper-content-editor .bgps-image-resize-handle { position:absolute; right:-7px; bottom:-7px; width:16px; height:16px; border:2px solid #fff; border-radius:50%; background:#1f68a6; box-shadow:0 1px 5px rgba(0,0,0,.28); cursor:nwse-resize; }
+.paper-content-editor .bgps-image-drag-handle { position:absolute; left:7px; top:7px; min-width:28px; height:24px; padding:0 7px; display:grid; place-items:center; border-radius:7px; background:rgba(11,41,74,.92); color:#fff; font:800 12px/1 sans-serif; cursor:grab; box-shadow:0 2px 8px rgba(0,0,0,.22); z-index:3; touch-action:none; }
+.paper-content-editor .bgps-image-drag-handle::before { content:"↕"; }
+.paper-content-editor .bgps-image-drag-handle:active { cursor:grabbing; }
+.paper-content-editor .diagram-box.is-moving-image { opacity:.76; outline:2px dashed #1f68a6; }
 .paper-content-editor .diagram-caption { margin-top:4px; text-align:center; font-size:11px; font-style:italic; color:#444; user-select:text; }
 .paper-content-editor .image-drop-marker { height:3px; margin:3px 0; background:#1f68a6; }
 
@@ -1513,7 +1517,7 @@ body.modal-open { overflow: hidden; }
 
             <section class="page-card section-gap">
               <div class="card-head teacher-paper-list-head">
-                <div><h2>My Question Papers</h2><p>Continue a draft, correct a returned paper or preview a submitted paper.</p></div>
+                <div><h2>My Question Papers</h2><p>Continue a draft, preview a paper, or edit a submitted paper before approval.</p></div>
                 <div class="paper-filters teacher-paper-filters">
                   <select id="teacherPaperStatusFilter" aria-label="Filter my papers by status"><option value="">All statuses</option><option>Draft</option><option>Submitted</option><option>Correction Required</option><option>Approved</option></select>
                   <select id="teacherPaperClassFilter" aria-label="Filter my papers by class"><option value="">All classes</option></select>
@@ -1633,7 +1637,7 @@ body.modal-open { overflow: hidden; }
                   <button class="btn" id="sidebarPreviewPaper" type="button">Preview Paper</button>
                   <button class="btn primary" id="sidebarSaveDraft" type="button">Save Draft</button>
                   <button class="btn success" id="submitPaperForReview" type="button">Submit for Approval</button>
-                  <small>Once submitted, the paper becomes read-only unless the principal returns it for correction.</small>
+                  <small>Submitted papers remain editable until approval. Approved papers are final for teachers.</small>
                 </section>
               </aside>
             </div>
@@ -1748,6 +1752,7 @@ body.modal-open { overflow: hidden; }
           </div>
           <div class="paper-review-actions">
             <button class="btn success" id="approvePaperButton" type="button">Approve Paper</button>
+            <button class="btn primary" id="editReviewedPaperButton" type="button">Edit Paper</button>
             <button class="btn danger-outline" id="returnPaperButton" type="button">Return for Correction</button>
             <button class="btn" id="downloadPaperButton" type="button" hidden>Download File</button>
             <button class="btn danger-outline" id="deleteReviewedPaperButton" type="button">Delete Paper</button>
@@ -1949,6 +1954,7 @@ window.BGPS_CONFIG = Object.freeze({
       uploadPaper: 90000,
       getPaperDraftPreview: 90000,
       getPaperPreview: 90000,
+      updatePaperContentAdmin: 120000,
       submitPaperDraft: 120000
     };
     return send({
@@ -1966,6 +1972,7 @@ window.BGPS_CONFIG = Object.freeze({
   const getPaperContent = (paperId) => request('getPaperContent', { paperId });
   const getPaperFile = (paperId) => request('getPaperFile', { paperId });
   const getPaperPreview = (paperId) => request('getPaperPreview', { paperId });
+  const updatePaperContentAdmin = (paperId, paper) => request('updatePaperContentAdmin', { paperId, paper });
   const updatePaperStatus = (paperId, status, adminNote) => request('updatePaperStatus', { paperId, status, adminNote: adminNote || '' });
   const listPaperDrafts = () => request('listPaperDrafts');
   const getPaperDraft = (draftId) => request('getPaperDraft', { draftId });
@@ -1979,7 +1986,7 @@ window.BGPS_CONFIG = Object.freeze({
   const listPrincipalActivity = () => request('listPrincipalActivity');
   const updatePaperSettings = (settings) => request('updatePaperSettings', { settings });
 
-  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperPreview, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
+  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperPreview, updatePaperContentAdmin, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
 })();
 
 
@@ -3620,7 +3627,7 @@ window.BGPS_CONFIG = Object.freeze({
           <span><small>Version</small><strong>${escapeHtml(paper.version || 1)}</strong></span>
           <span><small>Updated</small><strong>${escapeHtml(window.BGPS_DATA.safeDate(paper.updatedAt) || '—')}</strong></span>
         </div>
-        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${escapeHtml(actionLabel)}</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
+        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${escapeHtml(actionLabel)}</button><button class="btn compact" type="button" data-edit-admin-paper="${escapeHtml(paper.paperId)}">Edit</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
       </article>`;
     }).join('');
   }
@@ -3944,6 +3951,8 @@ window.BGPS_CONFIG = Object.freeze({
     byId('paperList')?.addEventListener('click', (event) => {
       const deleteButton = event.target.closest('[data-delete-paper]');
       if (deleteButton) { deleteAdminPaper(deleteButton.dataset.deletePaper); return; }
+      const editButton = event.target.closest('[data-edit-admin-paper]');
+      if (editButton) { window.BGPS_PAPER_CREATOR.openAdminEdit(editButton.dataset.editAdminPaper); return; }
       const button = event.target.closest('[data-open-paper]');
       if (button) openReview(button.dataset.openPaper);
     });
@@ -3952,6 +3961,12 @@ window.BGPS_CONFIG = Object.freeze({
       if (event.target === byId('paperReviewModal')) closeReview();
     });
     byId('approvePaperButton')?.addEventListener('click', () => updateStatus('Approved'));
+    byId('editReviewedPaperButton')?.addEventListener('click', () => {
+      if (!currentPaper) return;
+      const paperId = currentPaper.paperId;
+      closeReview();
+      window.BGPS_PAPER_CREATOR.openAdminEdit(paperId);
+    });
     byId('returnPaperButton')?.addEventListener('click', () => updateStatus('Correction Required'));
     byId('deleteReviewedPaperButton')?.addEventListener('click', () => { if (currentPaper) deleteAdminPaper(currentPaper.paperId); });
     byId('downloadPaperButton')?.addEventListener('click', downloadCurrentFile);
@@ -4013,6 +4028,8 @@ window.BGPS_CONFIG = Object.freeze({
   let currentObjectUrl = '';
   let currentPreviewUrl = '';
   let dragImage = null;
+  let editorMode = 'teacher';
+  let adminEditingPaperId = '';
   let dropMarker = null;
   let imageClipboard = null;
   let saveInFlight = false;
@@ -4314,7 +4331,7 @@ window.BGPS_CONFIG = Object.freeze({
 
   function sanitizeClone(editor) {
     const clone = editor.cloneNode(true);
-    clone.querySelectorAll('.bgps-image-resize-handle,.image-drop-marker,[data-bgps-transient]').forEach((node) => node.remove());
+    clone.querySelectorAll('.bgps-image-resize-handle,.bgps-image-drag-handle,.image-drop-marker,[data-bgps-transient]').forEach((node) => node.remove());
     clone.querySelectorAll('.is-image-selected').forEach((node) => node.classList.remove('is-image-selected'));
     clone.querySelectorAll('[data-editor-bound]').forEach((node) => node.removeAttribute('data-editor-bound'));
     clone.querySelectorAll('[contenteditable],[draggable],[tabindex]').forEach((node) => {
@@ -4396,7 +4413,33 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
+  async function saveEditorChanges(showToast = true) {
+    if (editorMode !== 'admin') return saveDraft(showToast);
+    if (!adminEditingPaperId) throw new Error('No Admin paper is open for editing.');
+    const draft = collectDraft();
+    validateBasic(draft);
+    const buttons = [byId('savePaperDraft'), byId('sidebarSaveDraft')].filter(Boolean);
+    buttons.forEach((button) => { button.disabled = true; button.textContent = 'Saving…'; });
+    try {
+      const result = await window.BGPS_API.updatePaperContentAdmin(adminEditingPaperId, draft);
+      dirty = false;
+      markSaved(`Changes saved · ${new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit' }).format(new Date())}`);
+      if (showToast) toast('Question paper updated successfully.');
+      window.BGPS_PAPERS.load(false).catch(() => {});
+      return result;
+    } finally {
+      buttons.forEach((button) => { button.disabled = false; button.textContent = 'Save Changes'; });
+    }
+  }
+
   function updatePaperAccess() {
+    if (editorMode === 'admin') {
+      setHidden('paperAccessNote', true);
+      if (byId('savePaperDraft')) byId('savePaperDraft').disabled = false;
+      if (byId('sidebarSaveDraft')) byId('sidebarSaveDraft').disabled = false;
+      setHidden('submitPaperForReview', true);
+      return;
+    }
     const permissions = settings?.permissions || {};
     const notice = byId('paperAccessNote');
     const createAllowed = permissions.canCreate !== false;
@@ -4448,8 +4491,11 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function combinedItems() {
+    const linkedPaperIds = new Set(drafts.map((draft) => String(draft.parentPaperId || '')).filter(Boolean));
     const draftItems = drafts.map((draft) => ({ ...draft, kind: 'draft', status: 'Draft', updatedSort: draft.updatedAt || draft.createdAt || '' }));
-    const paperItems = papers.map((paper) => ({ ...paper, kind: 'paper', updatedSort: paper.updatedAt || paper.uploadedAt || '' }));
+    const paperItems = papers
+      .filter((paper) => !linkedPaperIds.has(String(paper.paperId || '')))
+      .map((paper) => ({ ...paper, kind: 'paper', updatedSort: paper.updatedAt || paper.uploadedAt || '' }));
     return [...draftItems, ...paperItems].sort((a, b) => String(b.updatedSort).localeCompare(String(a.updatedSort)));
   }
 
@@ -4482,7 +4528,8 @@ window.BGPS_CONFIG = Object.freeze({
       const title = item.title || `${item.className || ''} ${item.subject || ''} ${item.exam || ''}`.trim() || 'Question Paper';
       let actions = '';
       if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">Continue Editing</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">Delete Draft</button>`;
-      else if (correction) actions = `<button class="btn primary" type="button" data-correct-paper="${escapeHtml(item.paperId)}">Correct Paper</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
+      else if (correction) actions = `<button class="btn primary" type="button" data-edit-paper="${escapeHtml(item.paperId)}">Edit &amp; Resubmit</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
+      else if (submitted) actions = `<button class="btn primary" type="button" data-edit-paper="${escapeHtml(item.paperId)}">Edit Paper</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
       else actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
       return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3><span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>${resubmitted ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>' : ''}${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${resubmitted ? `<div class="teacher-paper-note" style="border-left-color:#5b4bb7;background:#faf9ff;color:#46378f"><strong>Correction sent:</strong> Version ${escapeHtml(item.version || 1)} is awaiting Principal re-review.${item.adminNote ? ` Returned note: ${escapeHtml(item.adminNote)}` : ''}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> This paper is ready for use.</div>' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
     }).join('');
@@ -4537,11 +4584,17 @@ window.BGPS_CONFIG = Object.freeze({
     byId('paperTitleInput')?.focus();
   }
 
-  function loadDraftIntoEditor(draft, correctionMode) {
+  function loadDraftIntoEditor(draft, correctionMode, options = {}) {
     clearEditor();
-    const revisionMode = Boolean(correctionMode || draft.parentPaperId);
-    currentDraftId = correctionMode ? '' : (draft.draftId || '');
-    currentRevision = revisionMode ? {
+    const isAdminEdit = options.admin === true;
+    const linkedPaper = Boolean(isAdminEdit || correctionMode || draft.parentPaperId || (draft.paperId && !draft.draftId));
+    const correctionRequired = !isAdminEdit && (Boolean(correctionMode) || statusKey(draft.status) === 'correction required');
+    const pendingTeacherEdit = !isAdminEdit && linkedPaper && !correctionRequired;
+
+    editorMode = isAdminEdit ? 'admin' : 'teacher';
+    adminEditingPaperId = isAdminEdit ? String(draft.paperId || '') : '';
+    currentDraftId = draft.draftId || '';
+    currentRevision = linkedPaper ? {
       originalPaperId: draft.originalPaperId || draft.paperId || '',
       parentPaperId: draft.parentPaperId || draft.paperId || '',
       previousVersion: Number(draft.previousVersion || draft.version || 0),
@@ -4558,6 +4611,7 @@ window.BGPS_CONFIG = Object.freeze({
       sourceFileId: draft.sourceFileId || '',
       importWarnings: Array.isArray(draft.importWarnings) ? draft.importWarnings : []
     };
+
     const values = {
       paperTitleInput: draft.title || '', paperMaxMarksInput: draft.maxMarks || '', paperTimeInput: draft.timeAllowed || '', paperDateInput: draft.examDate || '', paperChaptersInput: draft.chapters || '', paperInstructionsInput: draft.instructions || '', paperLanguageInput: draft.languageMode || 'english'
     };
@@ -4568,23 +4622,54 @@ window.BGPS_CONFIG = Object.freeze({
     if (byId('paperExamInput')) byId('paperExamInput').value = draft.exam || window.BGPS_DATA.EXAMS[0];
     if (byId('paperContentEditor')) byId('paperContentEditor').innerHTML = draft.editorHtml || '';
     hydrateImages();
+
     if (Array.isArray(draft.importWarnings) && draft.importWarnings.length) {
-      toast('Imported DOCX content loaded. Please verify equations and images before submission.');
+      toast('Imported DOCX content loaded. Please verify equations and images before saving.');
     }
-    if (revisionMode) {
+
+    if (isAdminEdit) {
+      setHidden('paperCorrectionBanner', true);
+      setText('paperEditorEyebrow', 'Principal Paper Editor');
+      setText('paperEditorTitle', 'Edit Submitted Question Paper');
+      setText('paperEditorSubtitle', `${draft.className || ''} · ${draft.subject || ''} · Version ${draft.version || 1}`);
+      setText('closePaperEditor', 'Back to Paper Approval');
+      setText('savePaperDraft', 'Save Changes');
+      setText('sidebarSaveDraft', 'Save Changes');
+      setHidden('submitPaperForReview', true);
+      markSaved(`Admin edit mode · Version ${draft.version || 1}`);
+    } else if (correctionRequired) {
       setHidden('paperCorrectionBanner', false);
       setText('paperCorrectionNote', draft.adminNote || draft.note || 'Please revise the paper as advised by the principal.');
       setText('paperEditorEyebrow', 'Correction Required');
       setText('paperEditorTitle', 'Correct and Resubmit Paper');
       setText('paperEditorSubtitle', `Revision of Version ${draft.version || draft.previousVersion || 1}`);
-      if (correctionMode) markDirty();
-      else markSaved(`Correction draft loaded Â· ${safeDate(draft.updatedAt)}`);
+      setText('closePaperEditor', 'Back to My Papers');
+      setText('savePaperDraft', 'Save Draft');
+      setText('sidebarSaveDraft', 'Save Draft');
+      setHidden('submitPaperForReview', false);
+      markDirty();
+    } else if (pendingTeacherEdit) {
+      setHidden('paperCorrectionBanner', true);
+      setText('paperEditorEyebrow', 'Submitted Paper');
+      setText('paperEditorTitle', 'Edit Submitted Paper');
+      setText('paperEditorSubtitle', `Update Version ${draft.version || 1} before Principal approval.`);
+      setText('closePaperEditor', 'Back to My Papers');
+      setText('savePaperDraft', 'Save Draft');
+      setText('sidebarSaveDraft', 'Save Draft');
+      setHidden('submitPaperForReview', false);
+      markSaved(`Submitted paper loaded · ${safeDate(draft.updatedAt) || 'ready to edit'}`);
     } else {
+      setHidden('paperCorrectionBanner', true);
       setText('paperEditorEyebrow', 'Saved Draft');
       setText('paperEditorTitle', 'Continue Question Paper');
       setText('paperEditorSubtitle', 'Review the paper, complete the marks total and submit it for approval.');
+      setText('closePaperEditor', 'Back to My Papers');
+      setText('savePaperDraft', 'Save Draft');
+      setText('sidebarSaveDraft', 'Save Draft');
+      setHidden('submitPaperForReview', false);
       markSaved(`Draft loaded · ${safeDate(draft.updatedAt)}`);
     }
+
     syncDraftDeleteControl();
     updateChecks();
     updatePaperAccess();
@@ -4600,25 +4685,56 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
-  async function openCorrection(paperId) {
+  async function openExistingPaperForEdit(paperId) {
     try {
       const result = await window.BGPS_API.getPaperContent(paperId);
+      const paper = result.paper || {};
       if (result.requiresReplacement || result.editable === false) {
-        openUploadModal({ correctionPaper: result.paper || {} });
-        toast('This returned paper is reference-only. Upload the corrected DOCX to resubmit it with the same Paper ID.');
+        if (statusKey(paper.status) === 'correction required') {
+          openUploadModal({ correctionPaper: paper });
+          toast('This returned paper is reference-only. Upload a corrected DOCX to resubmit it with the same Paper ID.');
+        } else {
+          toast('This submitted file is reference-only and cannot be edited in the portal. Preview remains available.', 'error');
+        }
         return;
       }
-      loadDraftIntoEditor(result.paper || {}, true);
+      loadDraftIntoEditor(paper, statusKey(paper.status) === 'correction required');
     } catch (error) {
-      toast(error.message || 'Could not open the paper for correction.', 'error');
+      toast(error.message || 'Could not open the paper for editing.', 'error');
+    }
+  }
+
+  async function openAdminEdit(paperId) {
+    try {
+      if (!session?.isAdmin) throw new Error('Admin access is required.');
+      const result = await window.BGPS_API.getPaperContent(paperId);
+      if (result.requiresReplacement || result.editable === false) {
+        throw new Error('This paper is reference-only and cannot be edited safely in the portal.');
+      }
+      window.BGPS_APP.openView('teacher-papers');
+      loadDraftIntoEditor(result.paper || {}, false, { admin: true });
+    } catch (error) {
+      toast(error.message || 'Could not open Admin paper edit mode.', 'error');
     }
   }
 
   function closeEditor() {
     if (dirty && !window.confirm('This paper has unsaved changes. Leave the editor without saving?')) return;
+    const wasAdmin = editorMode === 'admin';
     setEditorMode(false);
     deselectImage();
-    loadData(false).catch(() => {});
+    editorMode = 'teacher';
+    adminEditingPaperId = '';
+    setText('closePaperEditor', 'Back to My Papers');
+    setText('savePaperDraft', 'Save Draft');
+    setText('sidebarSaveDraft', 'Save Draft');
+    setHidden('submitPaperForReview', false);
+    if (wasAdmin) {
+      window.BGPS_APP.openView('papers');
+      window.BGPS_PAPERS.load(false).catch(() => {});
+    } else {
+      loadData(false).catch(() => {});
+    }
   }
 
   async function deleteDraft(draftId) {
@@ -4975,6 +5091,17 @@ window.BGPS_CONFIG = Object.freeze({
     return handle;
   }
 
+  function transientDragHandle() {
+    const handle = document.createElement('span');
+    handle.className = 'bgps-image-drag-handle';
+    handle.dataset.bgpsTransient = 'true';
+    handle.setAttribute('role', 'button');
+    handle.setAttribute('aria-label', 'Move image');
+    handle.title = 'Drag to move image';
+    handle.textContent = '';
+    return handle;
+  }
+
   function imageWidth(box) {
     const raw = box.style.getPropertyValue('--bgps-image-width') || box.style.width || '55%';
     const number = Number.parseFloat(raw);
@@ -4989,7 +5116,9 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function applyImageWidth(box, width) {
-    const value = Math.min(100, Math.max(20, Number(width) || 55));
+    const layout = layoutForBox(box);
+    const maximum = layout === 'left' || layout === 'right' ? 48 : layout === 'inline' ? 80 : 100;
+    const value = Math.min(maximum, Math.max(20, Number(width) || 55));
     box.style.setProperty('--bgps-image-width', `${value}%`);
     box.style.width = `${value}%`;
     if (selectedImage === box) {
@@ -5003,8 +5132,24 @@ window.BGPS_CONFIG = Object.freeze({
     if (!selectedImage) return;
     selectedImage.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact');
     selectedImage.classList.add(`bgps-img-${layout}`);
+    applyImageWidth(selectedImage, imageWidth(selectedImage));
     updateImageInspector();
     markDirty();
+  }
+
+  function ensureImageControls(box) {
+    if (!box.querySelector('.bgps-image-resize-handle')) box.appendChild(transientHandle());
+    if (!box.querySelector('.bgps-image-drag-handle')) box.appendChild(transientDragHandle());
+    const resizeHandle = box.querySelector('.bgps-image-resize-handle');
+    const dragHandle = box.querySelector('.bgps-image-drag-handle');
+    if (resizeHandle && resizeHandle.dataset.boundPointer !== 'true') {
+      resizeHandle.dataset.boundPointer = 'true';
+      resizeHandle.addEventListener('pointerdown', startResize);
+    }
+    if (dragHandle && dragHandle.dataset.boundPointer !== 'true') {
+      dragHandle.dataset.boundPointer = 'true';
+      dragHandle.addEventListener('pointerdown', startImageMove);
+    }
   }
 
   function selectImage(box) {
@@ -5012,7 +5157,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (selectedImage && selectedImage !== box) selectedImage.classList.remove('is-image-selected');
     selectedImage = box;
     box.classList.add('is-image-selected');
-    if (!box.querySelector('.bgps-image-resize-handle')) box.appendChild(transientHandle());
+    ensureImageControls(box);
     updateImageInspector();
   }
 
@@ -5035,25 +5180,18 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function bindImageBox(box) {
-    if (!box || box.dataset.editorBound === 'true') return;
-    box.dataset.editorBound = 'true';
-    box.setAttribute('contenteditable', 'false');
-    box.setAttribute('draggable', 'true');
+    if (!box) return;
     if (!box.classList.contains('has-image')) box.classList.add('has-image');
     if (!['bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline'].some((name) => box.classList.contains(name))) box.classList.add('bgps-img-center');
     const width = imageWidth(box);
     box.style.setProperty('--bgps-image-width', `${width}%`);
     box.style.width = `${width}%`;
-    if (!box.querySelector('.bgps-image-resize-handle')) box.appendChild(transientHandle());
+    box.setAttribute('contenteditable', 'false');
+    box.removeAttribute('draggable');
+    ensureImageControls(box);
+    if (box.dataset.editorBound === 'true') return;
+    box.dataset.editorBound = 'true';
     box.addEventListener('click', (event) => { event.stopPropagation(); selectImage(box); });
-    box.addEventListener('dragstart', (event) => {
-      dragImage = box;
-      selectImage(box);
-      event.dataTransfer.effectAllowed = 'move';
-      try { event.dataTransfer.setData('text/plain', 'bgps-image'); } catch (_) {}
-    });
-    box.addEventListener('dragend', () => { dragImage = null; removeDropMarker(); markDirty(); });
-    box.querySelector('.bgps-image-resize-handle')?.addEventListener('pointerdown', startResize);
   }
 
   function hydrateImages() {
@@ -5063,24 +5201,85 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function startResize(event) {
-    event.preventDefault(); event.stopPropagation();
-    const box = event.currentTarget.closest('.diagram-box.has-image');
-    if (!box) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const handle = event.currentTarget;
+    const box = handle.closest('.diagram-box.has-image');
+    const editor = byId('paperContentEditor');
+    if (!box || !editor) return;
     selectImage(box);
+    handle.setPointerCapture?.(event.pointerId);
     const startX = event.clientX;
     const startWidth = box.getBoundingClientRect().width;
-    const editorWidth = byId('paperContentEditor')?.getBoundingClientRect().width || startWidth;
+    const editorWidth = Math.max(1, editor.getBoundingClientRect().width);
+    let nextWidth = imageWidth(box);
+    let raf = 0;
+
+    const paint = () => {
+      raf = 0;
+      applyImageWidth(box, nextWidth);
+    };
     const move = (moveEvent) => {
       const widthPx = Math.max(editorWidth * .2, Math.min(editorWidth, startWidth + moveEvent.clientX - startX));
-      applyImageWidth(box, (widthPx / editorWidth) * 100);
+      nextWidth = Math.round((widthPx / editorWidth) * 1000) / 10;
+      if (!raf) raf = requestAnimationFrame(paint);
     };
     const stop = () => {
+      if (raf) cancelAnimationFrame(raf);
+      applyImageWidth(box, nextWidth);
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', stop);
+      window.removeEventListener('pointercancel', stop);
       saveRange();
     };
-    window.addEventListener('pointermove', move);
+    window.addEventListener('pointermove', move, { passive: true });
     window.addEventListener('pointerup', stop, { once: true });
+    window.addEventListener('pointercancel', stop, { once: true });
+  }
+
+  function startImageMove(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const handle = event.currentTarget;
+    const box = handle.closest('.diagram-box.has-image');
+    if (!box) return;
+    selectImage(box);
+    dragImage = box;
+    box.classList.add('is-moving-image');
+    handle.setPointerCapture?.(event.pointerId);
+    let raf = 0;
+    let pointerX = event.clientX;
+    let pointerY = event.clientY;
+
+    const paint = () => {
+      raf = 0;
+      const block = dragTargetBlock({ clientX: pointerX, clientY: pointerY });
+      if (!block || block === box || block === dropMarker) return;
+      if (!dropMarker) { dropMarker = document.createElement('div'); dropMarker.className = 'image-drop-marker'; }
+      const rect = block.getBoundingClientRect();
+      if (pointerY < rect.top + rect.height / 2) block.parentNode.insertBefore(dropMarker, block);
+      else block.insertAdjacentElement('afterend', dropMarker);
+    };
+    const move = (moveEvent) => {
+      pointerX = moveEvent.clientX;
+      pointerY = moveEvent.clientY;
+      if (!raf) raf = requestAnimationFrame(paint);
+    };
+    const stop = () => {
+      if (raf) cancelAnimationFrame(raf);
+      if (dropMarker?.parentNode) dropMarker.parentNode.insertBefore(box, dropMarker);
+      removeDropMarker();
+      box.classList.remove('is-moving-image');
+      dragImage = null;
+      markDirty();
+      updateChecks();
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+      window.removeEventListener('pointercancel', stop);
+    };
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerup', stop, { once: true });
+    window.addEventListener('pointercancel', stop, { once: true });
   }
 
   function moveSelected(direction) {
@@ -5097,7 +5296,7 @@ window.BGPS_CONFIG = Object.freeze({
     const clone = selectedImage.cloneNode(true);
     clone.removeAttribute('data-editor-bound');
     clone.classList.remove('is-image-selected');
-    clone.querySelectorAll('.bgps-image-resize-handle').forEach((node) => node.remove());
+    clone.querySelectorAll('.bgps-image-resize-handle,.bgps-image-drag-handle').forEach((node) => node.remove());
     selectedImage.insertAdjacentElement('afterend', clone);
     bindImageBox(clone);
     selectImage(clone);
@@ -5109,7 +5308,7 @@ window.BGPS_CONFIG = Object.freeze({
     imageClipboard = selectedImage.cloneNode(true);
     imageClipboard.removeAttribute('data-editor-bound');
     imageClipboard.classList.remove('is-image-selected');
-    imageClipboard.querySelectorAll('.bgps-image-resize-handle').forEach((node) => node.remove());
+    imageClipboard.querySelectorAll('.bgps-image-resize-handle,.bgps-image-drag-handle').forEach((node) => node.remove());
     toast('Image copied.');
   }
 
@@ -5216,7 +5415,7 @@ window.BGPS_CONFIG = Object.freeze({
   async function insertImageFile(file) {
     try {
       const source = await compressImage(file);
-      const html = `<div class="diagram-box has-image bgps-img-center" style="--bgps-image-width:55%;width:55%" contenteditable="false" draggable="true"><img class="diagram-image" src="${source}" alt="Question paper diagram"><span class="bgps-image-resize-handle" data-bgps-transient="true"></span></div><p><br></p>`;
+      const html = `<div class="diagram-box has-image bgps-img-center" style="--bgps-image-width:55%;width:55%" contenteditable="false"><img class="diagram-image" src="${source}" alt="Question paper diagram"></div><p><br></p>`;
       insertHtml(html);
       hydrateImages();
       const boxes = byId('paperContentEditor')?.querySelectorAll('.diagram-box.has-image');
@@ -5379,8 +5578,8 @@ window.BGPS_CONFIG = Object.freeze({
     byId('createNewPaper')?.addEventListener('click', openNewPaper);
     byId('openPaperUpload')?.addEventListener('click', () => openUploadModal());
     byId('closePaperEditor')?.addEventListener('click', closeEditor);
-    byId('savePaperDraft')?.addEventListener('click', () => saveDraft(true).catch((error) => toast(error.message, 'error')));
-    byId('sidebarSaveDraft')?.addEventListener('click', () => saveDraft(true).catch((error) => toast(error.message, 'error')));
+    byId('savePaperDraft')?.addEventListener('click', () => saveEditorChanges(true).catch((error) => toast(error.message, 'error')));
+    byId('sidebarSaveDraft')?.addEventListener('click', () => saveEditorChanges(true).catch((error) => toast(error.message, 'error')));
     byId('deleteCurrentPaperDraft')?.addEventListener('click', () => deleteDraft(currentDraftId));
     byId('previewCurrentPaper')?.addEventListener('click', previewCurrent);
     byId('sidebarPreviewPaper')?.addEventListener('click', previewCurrent);
@@ -5413,8 +5612,6 @@ window.BGPS_CONFIG = Object.freeze({
     editor?.addEventListener('focus', saveRange);
     editor?.addEventListener('click', (event) => { if (!event.target.closest('.diagram-box.has-image')) deselectImage(); });
     editor?.addEventListener('paste', handlePaste);
-    editor?.addEventListener('dragover', handleEditorDragOver);
-    editor?.addEventListener('drop', handleEditorDrop);
 
     byId('paperEditorToolbar')?.addEventListener('mousedown', (event) => { if (event.target.closest('button')) event.preventDefault(); saveRange(); });
     byId('paperEditorToolbar')?.addEventListener('click', (event) => {
@@ -5457,7 +5654,7 @@ window.BGPS_CONFIG = Object.freeze({
       const edit = event.target.closest('[data-edit-draft]'); if (edit) return openDraft(edit.dataset.editDraft);
       const previewDraftButton = event.target.closest('[data-preview-draft]'); if (previewDraftButton) return previewDraft(previewDraftButton.dataset.previewDraft);
       const deleteButton = event.target.closest('[data-delete-draft]'); if (deleteButton) return deleteDraft(deleteButton.dataset.deleteDraft);
-      const correct = event.target.closest('[data-correct-paper]'); if (correct) return openCorrection(correct.dataset.correctPaper);
+      const editPaper = event.target.closest('[data-edit-paper]'); if (editPaper) return openExistingPaperForEdit(editPaper.dataset.editPaper);
       const preview = event.target.closest('[data-preview-paper]'); if (preview) return previewPaper(preview.dataset.previewPaper);
     });
 
@@ -5497,7 +5694,7 @@ window.BGPS_CONFIG = Object.freeze({
       }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && !byId('paperEditorWorkspace')?.hidden) {
         event.preventDefault();
-        saveDraft(true).catch((error) => toast(error.message, 'error'));
+        saveEditorChanges(true).catch((error) => toast(error.message, 'error'));
       }
     });
   }
@@ -5522,6 +5719,8 @@ window.BGPS_CONFIG = Object.freeze({
     settings = null;
     currentDraftId = '';
     currentRevision = {};
+    editorMode = 'teacher';
+    adminEditingPaperId = '';
     syncDraftDeleteControl();
     selectedImage = null;
     editorRange = null;
@@ -5547,7 +5746,7 @@ window.BGPS_CONFIG = Object.freeze({
     closeModal('paperSubmitSuccessModal');
   }
 
-  window.BGPS_PAPER_CREATOR = Object.freeze({ onAuthenticated, reset, loadData, renderList, openNewPaper });
+  window.BGPS_PAPER_CREATOR = Object.freeze({ onAuthenticated, reset, loadData, renderList, openNewPaper, openAdminEdit });
 })();
 
 

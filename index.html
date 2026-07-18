@@ -366,8 +366,8 @@
 <section class="view" data-view-section="teacher-papers" id="teacherPapersView">
 <div id="paperCentreHome">
 <div class="view-heading paper-centre-heading">
-<div><h1>Question Paper Centre</h1><p>Create, save and submit question papers for principal approval.</p></div>
-<div class="view-actions"><button class="btn" id="refreshTeacherPapers" type="button">Refresh</button><button class="btn" id="openPaperUpload" type="button">Upload DOCX</button><button class="btn primary" id="createNewPaper" type="button">Create New Paper</button></div>
+<div><h1>Question Paper Centre</h1><p>Create a standard BGPS paper or upload an existing paper without changing its original layout.</p></div>
+<div class="view-actions"><button class="btn" id="refreshTeacherPapers" type="button">Refresh</button><button class="btn" id="openPaperUpload" type="button">Upload Existing Paper</button><button class="btn primary" id="createNewPaper" type="button">Create Standard Paper</button></div>
 </div>
 <div class="paper-access-note" hidden="" id="paperAccessNote"></div>
 <section aria-label="Teacher paper summary" class="paper-metrics">
@@ -491,7 +491,7 @@ Show complete working wherever required." rows="3"></textarea></div>
 <button class="btn" id="sidebarPreviewPaper" type="button">Preview Paper</button>
 <button class="btn primary" id="sidebarSaveDraft" type="button">Save Draft</button>
 <button class="btn success" id="submitPaperForReview" type="button">Submit for Approval</button>
-<small>Submitted papers remain editable until approval. Approved papers are final for teachers.</small>
+<small>Portal-created drafts can be edited before approval. Uploaded DOCX/PDF files are preserved exactly and replaced only when a correction is required.</small>
 </section>
 </aside>
 </div>
@@ -616,7 +616,7 @@ Show complete working wherever required." rows="3"></textarea></div>
 </div>
 <div aria-hidden="true" aria-labelledby="paperUploadTitle" aria-modal="true" class="modal-backdrop" id="paperUploadModal" role="dialog">
 <div class="modal paper-upload-modal">
-<header><h2 id="paperUploadTitle">Upload DOCX Question Paper</h2><p id="paperUploadDescription">DOCX files are imported into the editable standard BGPS format. PDF files remain reference-only and are submitted without editable conversion.</p></header>
+<header><h2 id="paperUploadTitle">Upload Existing Question Paper</h2><p id="paperUploadDescription">Upload a completed DOCX or PDF. The original file is preserved exactly; the portal does not rebuild, resize or reflow its content.</p></header>
 <form class="paper-upload-form" id="paperUploadForm" novalidate="">
 <div class="field"><label for="uploadPaperClass">Class</label><select id="uploadPaperClass" required=""></select></div>
 <div class="field"><label for="uploadPaperSubject">Subject</label><select id="uploadPaperSubject" required=""></select></div>
@@ -624,10 +624,10 @@ Show complete working wherever required." rows="3"></textarea></div>
 <div class="field"><label for="uploadPaperMaxMarks">Maximum Marks</label><input id="uploadPaperMaxMarks" max="200" min="1" required="" type="number"/></div>
 <div class="field"><label for="uploadPaperTime">Time Allowed</label><input id="uploadPaperTime" maxlength="80" placeholder="1½ Hours" required=""/></div>
 <div class="field upload-wide"><label for="uploadPaperChapters">Chapters / Portion</label><input id="uploadPaperChapters" maxlength="500" required=""/></div>
-<div class="field upload-wide"><label for="uploadPaperFile">Question Paper File</label><input accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx" id="uploadPaperFile" required="" type="file"/><small>DOCX for editable standardisation; PDF for reference-only submission. Maximum 8 MB.</small></div>
+<div class="field upload-wide"><label for="uploadPaperFile">Question Paper File</label><input accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx" id="uploadPaperFile" required="" type="file"/><small>DOCX/PDF is stored in its original form. Images, equations, tables and page layout are not reconstructed. Maximum 8 MB.</small></div>
 <div class="field upload-wide"><label for="uploadPaperNote">Teacher Note <span class="optional-label">Optional</span></label><textarea id="uploadPaperNote" maxlength="250" rows="3"></textarea></div>
 <div aria-live="polite" class="paper-upload-progress" hidden="" id="paperUploadProgress" role="status"></div>
-<div class="modal-actions upload-wide"><button class="btn" id="cancelPaperUpload" type="button">Cancel</button><button class="btn primary" id="confirmPaperUpload" type="submit">Import and Review</button></div>
+<div class="modal-actions upload-wide"><button class="btn" id="cancelPaperUpload" type="button">Cancel</button><button class="btn primary" id="confirmPaperUpload" type="submit">Review &amp; Submit</button></div>
 </form>
 </div>
 </div>

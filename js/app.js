@@ -2951,44 +2951,7 @@ window.BGPS_CONFIG = Object.freeze({
     const instructions = normalize(draft.instructions).split(/\n+/).map(normalize).filter(Boolean);
     const instructionsHtml = instructions.length ? `<div class="instructions"><strong>General Instructions</strong><ol>${instructions.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol></div>` : '';
     const date = draft.examDate || '____________';
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
-      @page{size:A4 portrait;margin:0}
-      *{box-sizing:border-box}
-      html,body{margin:0;padding:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      .paper{width:210mm;min-height:297mm;margin:0 auto 18px;padding:11mm 13mm;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16);overflow:visible}
-      .header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}
-      .header h1{font-size:18pt;line-height:1.08;margin:0}
-      .exam{font-size:12pt;font-weight:900;text-transform:uppercase}
-      .meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}
-      .meta div:nth-child(even){text-align:right}
-      .instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt;break-inside:avoid;page-break-inside:avoid}
-      .instructions ol{margin:3px 0 0 18px;padding:0}
-      .content{position:relative;min-height:220mm;display:flow-root}
-      .content p{margin:3px 0;white-space:pre-wrap;tab-size:4}
-      .content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt;break-after:avoid;page-break-after:avoid}
-      .question-line{position:relative;padding-right:12mm;break-inside:avoid;page-break-inside:avoid}
-      .mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}
-      .or-line{text-align:center;font-weight:900;break-inside:avoid;page-break-inside:avoid}
-      .content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0;break-inside:avoid;page-break-inside:avoid}
-      .content td,.content th{border:1px solid #333;padding:3px 4px}
-      .page-break{clear:both;break-after:page;page-break-after:always;height:0;margin:0;border:0}
-      .diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid;page-break-inside:avoid}
-      .diagram-box.has-image>img{display:block;width:100%!important;height:auto!important;max-width:100%!important;max-height:none!important;margin:auto;object-fit:contain}
-      .diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}
-      .diagram-box.bgps-img-left{float:left;clear:none;margin:1mm 3mm 2mm 0}
-      .diagram-box.bgps-img-right{float:right;clear:none;margin:1mm 0 2mm 3mm}
-      .diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;margin:0 2mm 1mm}
-      .diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}
-      .bgps-image-resize-handle,.q-placeholder{display:none!important}
-      @media print{
-        html,body{width:210mm;background:#fff}
-        .paper{width:210mm;min-height:297mm;margin:0;padding:11mm 13mm;box-shadow:none}
-      }
-      @media screen and (max-width:820px){
-        body{background:#fff}
-        .paper{width:210mm;max-width:none;margin:0;padding:11mm 13mm;box-shadow:none}
-      }
-    </style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
   }
 
   function setPreviewHeader(title, meta, status) {
@@ -3035,6 +2998,23 @@ window.BGPS_CONFIG = Object.freeze({
       body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Uploaded PDF preview"></iframe>';
       body.querySelector('iframe').src = currentPreviewUrl;
     }
+  }
+
+  function showPendingDocxUploadReview(file, payload) {
+    pendingPdfUpload = payload;
+    revokeObjectUrl();
+    setPreviewHeader(payload.fileName || 'DOCX Question Paper', `${payload.className} · ${payload.subject} · ${payload.exam}`, 'Original DOCX preserved');
+    const body = byId('teacherPaperPreviewBody');
+    if (!body) throw new Error('The paper review area is unavailable.');
+    const sizeMb = (Number(file?.size || 0) / (1024 * 1024)).toFixed(2);
+    body.innerHTML = `<div class="empty-state safe-upload-review"><strong>Original DOCX will be kept unchanged</strong><span>${escapeHtml(payload.fileName || 'Question paper.docx')} · ${escapeHtml(sizeMb)} MB</span><span>BGPS will not rebuild, resize or reflow the document. Images, equations, tables, headers and Word layout remain in the original DOCX.</span><span>After submission, the Principal can preview the generated review PDF and download the original DOCX.</span></div>`;
+    setHidden('downloadTeacherPaper', true);
+    setHidden('openTeacherPaperPreviewExternal', true);
+    setHidden('submitFromTeacherPaperPreview', false);
+    setText('submitFromTeacherPaperPreview', 'Continue to Submit');
+    setText('closeTeacherPaperPreviewFooter', 'Back to Upload');
+    if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = true;
+    openModal('teacherPaperPreviewModal');
   }
 
   async function previewDraft(draftId) {
@@ -3220,12 +3200,14 @@ window.BGPS_CONFIG = Object.freeze({
 
   function preparePendingPdfSubmit() {
     if (!pendingPdfUpload) return;
-    setText('paperSubmitTitle', 'Submit PDF Question Paper');
+    const name = String(pendingPdfUpload.fileName || '').toLowerCase();
+    const isDocx = name.endsWith('.docx');
+    setText('paperSubmitTitle', isDocx ? 'Submit Original DOCX' : 'Submit PDF Question Paper');
     setText('submitPaperClass', pendingPdfUpload.className);
     setText('submitPaperSubject', pendingPdfUpload.subject);
     setText('submitPaperExam', pendingPdfUpload.exam);
-    setText('submitPaperQuestions', 'Reference PDF');
-    setText('submitPaperMarks', 'Check preview');
+    setText('submitPaperQuestions', isDocx ? 'Original DOCX' : 'Reference PDF');
+    setText('submitPaperMarks', isDocx ? 'Layout preserved' : 'Check preview');
     setText('submitPaperMaxMarks', pendingPdfUpload.maxMarks);
     openModal('paperSubmitModal');
   }
@@ -3237,7 +3219,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (wasPdf) {
       pendingPdfUpload = null;
       openModal('paperUploadModal');
-      setUploadProgress('PDF was not submitted. Choose Import and Review to preview it again.');
+      setUploadProgress('The file was not submitted. Review it again when you are ready.');
     }
   }
 
@@ -3271,6 +3253,7 @@ window.BGPS_CONFIG = Object.freeze({
       currentRevision = {};
       dirty = false;
       pendingPdfUpload = null;
+      uploadRevisionContext = null;
       byId('paperUploadForm')?.reset();
       setUploadProgress('');
       setText('paperSubmitTitle', 'Submit Question Paper');
@@ -3706,10 +3689,10 @@ window.BGPS_CONFIG = Object.freeze({
     } : null;
     byId('paperUploadForm')?.reset();
     setUploadProgress('');
-    setText('paperUploadTitle', correctionPaper ? 'Upload Corrected DOCX' : 'Upload DOCX Question Paper');
+    setText('paperUploadTitle', correctionPaper ? 'Upload Corrected DOCX' : 'Upload Existing Question Paper');
     setText('paperUploadDescription', correctionPaper
-      ? 'Upload the corrected DOCX. It will open as an editable correction draft and resubmit under the same Paper ID.'
-      : 'DOCX files are imported into the editable standard BGPS format. PDF files remain reference-only and are submitted without editable conversion.');
+      ? 'Upload the corrected DOCX. The original file will be preserved exactly and resubmitted under the same Paper ID.'
+      : 'Upload a completed DOCX or PDF. The original file is preserved exactly; images, equations, tables and layout are not rebuilt or resized.');
     const className = correctionPaper?.className || (session?.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0]);
     if (byId('uploadPaperClass')) byId('uploadPaperClass').value = className;
     populateSubjects('uploadPaperClass', 'uploadPaperSubject');
@@ -3722,7 +3705,7 @@ window.BGPS_CONFIG = Object.freeze({
     const fileInput = byId('uploadPaperFile');
     if (fileInput) fileInput.accept = correctionPaper ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx' : 'application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx';
     const submitButton = byId('confirmPaperUpload');
-    if (submitButton) submitButton.textContent = correctionPaper ? 'Import Corrected DOCX' : 'Import and Review';
+    if (submitButton) submitButton.textContent = correctionPaper ? 'Review Corrected DOCX' : 'Review & Submit';
     openModal('paperUploadModal');
   }
 
@@ -3743,7 +3726,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (file.size > 8 * 1024 * 1024) { toast('The file exceeds the 8 MB upload limit.', 'error'); return; }
     const extension = String(file.name || '').toLowerCase().split('.').pop();
     if (!['docx', 'pdf'].includes(extension)) { toast('Select a DOCX file, or a PDF for reference-only submission.', 'error'); return; }
-    if (uploadRevisionContext && extension !== 'docx') { toast('A returned reference-only paper must be replaced with a DOCX file so it can be reviewed and resubmitted safely.', 'error'); return; }
+    if (uploadRevisionContext && extension !== 'docx') { toast('A returned uploaded paper must be replaced with a corrected DOCX so the original-format workflow stays intact.', 'error'); return; }
     const className = normalize(byId('uploadPaperClass')?.value);
     const subject = normalize(byId('uploadPaperSubject')?.value);
     const exam = normalize(byId('uploadPaperExam')?.value);
@@ -3753,29 +3736,16 @@ window.BGPS_CONFIG = Object.freeze({
     if (!className || !subject || !exam || !maxMarks || !timeAllowed || !chapters) { toast('Complete Class, Subject, Exam, Maximum Marks, Time Allowed and Chapters.', 'error'); return; }
     const button = byId('confirmPaperUpload');
     uploadInFlight = true;
-    if (button) { button.disabled = true; button.textContent = extension === 'docx' ? 'Converting DOCX…' : 'Uploading PDF…'; }
+    if (button) { button.disabled = true; button.textContent = extension === 'docx' ? 'Reading DOCX…' : 'Reading PDF…'; }
     try {
       setUploadProgress('Reading the selected file...');
       const fileBase64 = await fileToBase64(file);
       const payload = { className, subject, exam, chapters, maxMarks, timeAllowed, note: normalize(byId('uploadPaperNote')?.value), fileName: file.name, mimeType: file.type, fileSize: file.size, fileBase64, ...(uploadRevisionContext || {}) };
       if (extension === 'docx') {
-        setUploadProgress(uploadRevisionContext ? 'Converting and standardising the corrected DOCX...' : 'Converting and standardising the DOCX into the BGPS paper format...');
-        const result = await window.BGPS_API.importDocxPaper(payload);
-        if (!result?.draftId) throw new Error('DOCX was converted, but the saved draft ID was not returned.');
+        setUploadProgress('Preparing a safe DOCX review. The original file will not be converted or rebuilt...');
         closeModal('paperUploadModal');
-        uploadRevisionContext = null;
-        setUploadProgress('');
-        try {
-          const opened = await window.BGPS_API.getPaperDraft(result.draftId);
-          if (!opened?.draft?.draftId) throw new Error('The imported draft could not be read back.');
-          loadDraftIntoEditor(opened.draft, false);
-          toast(result.warnings?.length ? 'DOCX imported. Check the preview carefully before submission.' : 'DOCX imported. Please review the preview before submission.');
-          await previewCurrent();
-        } catch (openError) {
-          if (byId('teacherPaperStatusFilter')) byId('teacherPaperStatusFilter').value = 'Draft';
-          toast('DOCX import is saved in My Drafts, but the editor could not open it. Refresh and open the draft.', 'error');
-        }
-        loadData(false).catch(() => toast('DOCX was imported. Refresh My Papers if the draft list has not updated.'));
+        showPendingDocxUploadReview(file, payload);
+        setUploadProgress('DOCX ready. The original file will be preserved exactly. Choose Continue to Submit.');
       } else {
         setUploadProgress('Preparing the PDF preview. Nothing has been submitted yet...');
         closeModal('paperUploadModal');

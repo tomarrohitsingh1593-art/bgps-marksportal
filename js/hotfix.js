@@ -7,9 +7,8 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
-  // Principal dashboard: optional "Pending only" focus mode for the long Class Progress list.
-  // This is presentation-only; it never changes backend data or workflow state.
   let pendingOnly = false;
+  let refreshQueued = false;
 
   function paperProgressIsComplete(row) {
     const strong = $('.tracking-papers strong', row);
@@ -38,11 +37,14 @@
     rows.forEach((row) => {
       const fullyComplete = marksProgressIsComplete(row) && paperProgressIsComplete(row);
       if (!fullyComplete) attentionCount += 1;
-      row.hidden = pendingOnly && fullyComplete;
+      const shouldHide = pendingOnly && fullyComplete;
+      if (row.hidden !== shouldHide) row.hidden = shouldHide;
     });
 
-    button.textContent = `Pending only (${attentionCount})`;
-    button.setAttribute('aria-pressed', pendingOnly ? 'true' : 'false');
+    const nextText = `Pending only (${attentionCount})`;
+    if (button.textContent !== nextText) button.textContent = nextText;
+    const nextPressed = pendingOnly ? 'true' : 'false';
+    if (button.getAttribute('aria-pressed') !== nextPressed) button.setAttribute('aria-pressed', nextPressed);
     button.classList.toggle('is-active', pendingOnly);
   }
 
@@ -61,7 +63,6 @@
       applyPendingFilter();
     });
     searchWrap.appendChild(button);
-    applyPendingFilter();
   }
 
   function injectStyles() {
@@ -85,9 +86,28 @@
     applyPendingFilter();
   }
 
-  const observer = new MutationObserver(() => install());
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  // Observe only the class tracking list. Avoid observing the whole document because
+  // this hotfix itself changes button text/attributes and can otherwise retrigger endlessly.
+  function attachListObserver() {
+    const list = $('#classTrackingList');
+    if (!list || list.dataset.bgpsPendingObserver === '1') return;
+    list.dataset.bgpsPendingObserver = '1';
+    const observer = new MutationObserver(() => {
+      if (refreshQueued) return;
+      refreshQueued = true;
+      requestAnimationFrame(() => {
+        refreshQueued = false;
+        applyPendingFilter();
+      });
+    });
+    observer.observe(list, { childList: true, subtree: true });
+  }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, { once: true });
-  else install();
+  function boot() {
+    install();
+    attachListObserver();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+  else boot();
 })();

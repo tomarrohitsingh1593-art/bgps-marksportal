@@ -3333,6 +3333,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (box.classList.contains('bgps-img-left')) return 'left';
     if (box.classList.contains('bgps-img-right')) return 'right';
     if (box.classList.contains('bgps-img-inline')) return 'inline';
+    if (box.classList.contains('bgps-img-free')) return 'free';
     return 'center';
   }
 
@@ -3349,10 +3350,59 @@ window.BGPS_CONFIG = Object.freeze({
     markDirty();
   }
 
+  function freeImageOffset(box) {
+    return {
+      x: parseFloat(box?.style?.getPropertyValue('--bgps-free-x')) || 0,
+      y: parseFloat(box?.style?.getPropertyValue('--bgps-free-y')) || 0
+    };
+  }
+
+  function applyFreeImageOffset(box, x, y) {
+    if (!box) return;
+    const safeX = Number.isFinite(Number(x)) ? Math.round(Number(x) * 10) / 10 : 0;
+    const safeY = Number.isFinite(Number(y)) ? Math.round(Number(y) * 10) / 10 : 0;
+    box.style.setProperty('--bgps-free-x', `${safeX}px`);
+    box.style.setProperty('--bgps-free-y', `${safeY}px`);
+    box.style.transform = 'translate3d(var(--bgps-free-x), var(--bgps-free-y), 0)';
+  }
+
+  function resetFreeImageOffset(box) {
+    if (!box) return;
+    box.style.removeProperty('--bgps-free-x');
+    box.style.removeProperty('--bgps-free-y');
+    box.style.removeProperty('transform');
+  }
+
+  function clampFreeImageOffset(box) {
+    const editor = byId('paperContentEditor');
+    if (!box || !editor || !box.classList.contains('bgps-img-free')) return;
+    const current = freeImageOffset(box);
+    const editorRect = editor.getBoundingClientRect();
+    const boxRect = box.getBoundingClientRect();
+    const baseLeft = (boxRect.left - editorRect.left) - current.x;
+    const baseTop = (boxRect.top - editorRect.top) - current.y;
+    const minX = -baseLeft;
+    const maxX = Math.max(minX, editorRect.width - boxRect.width - baseLeft);
+    const minY = -baseTop;
+    const maxY = Math.max(minY, editor.scrollHeight - boxRect.height - baseTop);
+    applyFreeImageOffset(
+      box,
+      Math.max(minX, Math.min(maxX, current.x)),
+      Math.max(minY, Math.min(maxY, current.y))
+    );
+  }
+
   function setImageLayout(layout) {
     if (!selectedImage) return;
-    selectedImage.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact');
+    selectedImage.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-free', 'bgps-img-compact');
     selectedImage.classList.add(`bgps-img-${layout}`);
+    if (layout === 'free') {
+      const current = freeImageOffset(selectedImage);
+      applyFreeImageOffset(selectedImage, current.x, current.y);
+      requestAnimationFrame(() => clampFreeImageOffset(selectedImage));
+    } else {
+      resetFreeImageOffset(selectedImage);
+    }
     applyImageWidth(selectedImage, imageWidth(selectedImage));
     updateImageInspector();
     markDirty();
@@ -3403,16 +3453,25 @@ window.BGPS_CONFIG = Object.freeze({
   function bindImageBox(box) {
     if (!box) return;
     if (!box.classList.contains('has-image')) box.classList.add('has-image');
-    if (!['bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline'].some((name) => box.classList.contains(name))) box.classList.add('bgps-img-center');
+    if (!['bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-free'].some((name) => box.classList.contains(name))) box.classList.add('bgps-img-center');
     const width = imageWidth(box);
     box.style.setProperty('--bgps-image-width', `${width}%`);
     box.style.width = `${width}%`;
+    if (box.classList.contains('bgps-img-free')) {
+      const current = freeImageOffset(box);
+      applyFreeImageOffset(box, current.x, current.y);
+    }
     box.setAttribute('contenteditable', 'false');
     box.removeAttribute('draggable');
     ensureImageControls(box);
     if (box.dataset.editorBound === 'true') return;
     box.dataset.editorBound = 'true';
     box.addEventListener('click', (event) => { event.stopPropagation(); selectImage(box); });
+    box.addEventListener('pointerdown', (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      if (event.target.closest('.bgps-image-resize-handle')) return;
+      startImageMove(event);
+    });
   }
 
   function hydrateImages() {
@@ -3448,6 +3507,7 @@ window.BGPS_CONFIG = Object.freeze({
     const stop = () => {
       if (raf) cancelAnimationFrame(raf);
       applyImageWidth(box, nextWidth);
+      requestAnimationFrame(() => clampFreeImageOffset(box));
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', stop);
       window.removeEventListener('pointercancel', stop);
@@ -3463,41 +3523,67 @@ window.BGPS_CONFIG = Object.freeze({
     event.stopPropagation();
     const handle = event.currentTarget;
     const box = handle.closest('.diagram-box.has-image');
-    if (!box) return;
+    const editor = byId('paperContentEditor');
+    if (!box || !editor) return;
+
     selectImage(box);
-    dragImage = box;
-    box.classList.add('is-moving-image');
+    box.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact');
+    box.classList.add('bgps-img-free', 'is-moving-image');
+
+    const current = freeImageOffset(box);
+    applyFreeImageOffset(box, current.x, current.y);
+
+    const editorRect = editor.getBoundingClientRect();
+    const boxRect = box.getBoundingClientRect();
+    const baseLeft = (boxRect.left - editorRect.left) - current.x;
+    const baseTop = (boxRect.top - editorRect.top) - current.y;
+    const minX = -baseLeft;
+    const maxX = Math.max(minX, editorRect.width - boxRect.width - baseLeft);
+    const minY = -baseTop;
+    const maxY = Math.max(minY, editor.scrollHeight - boxRect.height - baseTop);
+    const startX = event.clientX;
+    const startY = event.clientY;
+
     handle.setPointerCapture?.(event.pointerId);
+    let nextX = current.x;
+    let nextY = current.y;
     let raf = 0;
-    let pointerX = event.clientX;
-    let pointerY = event.clientY;
+
+    const snapX = (value) => {
+      const left = -baseLeft;
+      const centre = ((editorRect.width - boxRect.width) / 2) - baseLeft;
+      const right = (editorRect.width - boxRect.width) - baseLeft;
+      for (const target of [left, centre, right]) {
+        if (Math.abs(value - target) <= 9) return target;
+      }
+      return value;
+    };
 
     const paint = () => {
       raf = 0;
-      const block = dragTargetBlock({ clientX: pointerX, clientY: pointerY });
-      if (!block || block === box || block === dropMarker) return;
-      if (!dropMarker) { dropMarker = document.createElement('div'); dropMarker.className = 'image-drop-marker'; }
-      const rect = block.getBoundingClientRect();
-      if (pointerY < rect.top + rect.height / 2) block.parentNode.insertBefore(dropMarker, block);
-      else block.insertAdjacentElement('afterend', dropMarker);
+      applyFreeImageOffset(box, nextX, nextY);
     };
+
     const move = (moveEvent) => {
-      pointerX = moveEvent.clientX;
-      pointerY = moveEvent.clientY;
+      nextX = snapX(Math.max(minX, Math.min(maxX, current.x + moveEvent.clientX - startX)));
+      nextY = Math.max(minY, Math.min(maxY, current.y + moveEvent.clientY - startY));
       if (!raf) raf = requestAnimationFrame(paint);
     };
+
     const stop = () => {
       if (raf) cancelAnimationFrame(raf);
-      if (dropMarker?.parentNode) dropMarker.parentNode.insertBefore(box, dropMarker);
-      removeDropMarker();
+      paint();
       box.classList.remove('is-moving-image');
-      dragImage = null;
+      clampFreeImageOffset(box);
       markDirty();
       updateChecks();
+      updateImageInspector();
+      saveRange();
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', stop);
       window.removeEventListener('pointercancel', stop);
     };
+
     window.addEventListener('pointermove', move, { passive: true });
     window.addEventListener('pointerup', stop, { once: true });
     window.addEventListener('pointercancel', stop, { once: true });

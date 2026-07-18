@@ -4390,6 +4390,12 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   async function saveDraft(showToast = true) {
+    // Safety router: Principal/Admin editing an already-submitted manual paper must NEVER
+    // go through savePaperDraft(), because that endpoint intentionally rejects Admin.
+    // Route any legacy/duplicate Save handler to the admin update endpoint instead.
+    if ((editorMode === 'admin' || session?.isAdmin) && adminEditingPaperId) {
+      return saveEditorChanges(showToast);
+    }
     if (saveInFlight) return currentDraftId;
     const draft = collectDraft();
     validateBasic(draft);
@@ -4917,7 +4923,7 @@ window.BGPS_CONFIG = Object.freeze({
       const body = byId('teacherPaperPreviewBody');
       if (body) body.innerHTML = '<div class="empty-state"><strong>Preparing latest preview</strong>Saving your current changes and building the standard A4 paper.</div>';
       openModal('teacherPaperPreviewModal');
-      if (editorMode === 'admin') {
+      if ((editorMode === 'admin' || session?.isAdmin) && adminEditingPaperId) {
         // Admin/Principal preview is local and read-only until Save Changes is explicitly clicked.
         // Do not call savePaperDraft(): backend correctly blocks Admin from creating teacher drafts.
         const documentHtml = buildPreviewDocument(draft);

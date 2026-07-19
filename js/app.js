@@ -135,6 +135,8 @@ window.BGPS_CONFIG = Object.freeze({
       uploadPaper: 90000,
       getPaperDraftPreview: 90000,
       getPaperPreview: 90000,
+      getBgpsStandardPreview: 120000,
+      saveBgpsStandardPreview: 120000,
       updatePaperContentAdmin: 120000,
       submitPaperDraft: 120000
     };
@@ -152,7 +154,10 @@ window.BGPS_CONFIG = Object.freeze({
   const listPapers = () => request('listPapers');
   const getPaperContent = (paperId) => request('getPaperContent', { paperId });
   const getPaperFile = (paperId) => request('getPaperFile', { paperId });
+  const getPaperOriginalFile = (paperId) => request('getPaperOriginalFile', { paperId });
   const getPaperPreview = (paperId) => request('getPaperPreview', { paperId });
+  const getBgpsStandardPreview = (paperId) => request('getBgpsStandardPreview', { paperId });
+  const saveBgpsStandardPreview = (paperId) => request('saveBgpsStandardPreview', { paperId });
   const updatePaperContentAdmin = (paperId, paper) => request('updatePaperContentAdmin', { paperId, paper });
   const updatePaperStatus = (paperId, status, adminNote) => request('updatePaperStatus', { paperId, status, adminNote: adminNote || '' });
   const listPaperDrafts = () => request('listPaperDrafts');
@@ -167,7 +172,7 @@ window.BGPS_CONFIG = Object.freeze({
   const listPrincipalActivity = () => request('listPrincipalActivity');
   const updatePaperSettings = (settings) => request('updatePaperSettings', { settings });
 
-  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperPreview, updatePaperContentAdmin, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
+  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperOriginalFile, getPaperPreview, getBgpsStandardPreview, saveBgpsStandardPreview, updatePaperContentAdmin, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
 })();
 
 
@@ -1662,6 +1667,9 @@ window.BGPS_CONFIG = Object.freeze({
   let currentPaper = null;
   let currentObjectUrl = '';
   let currentPreviewUrl = '';
+  let standardPreviewUrl = '';
+  let standardPreviewResult = null;
+  let standardPreviewInFlight = false;
   let deleteInFlight = false;
   let initialized = false;
   let boardFilter = 'all';
@@ -1846,6 +1854,10 @@ window.BGPS_CONFIG = Object.freeze({
       URL.revokeObjectURL(currentPreviewUrl);
       currentPreviewUrl = '';
     }
+    if (standardPreviewUrl) {
+      URL.revokeObjectURL(standardPreviewUrl);
+      standardPreviewUrl = '';
+    }
   }
 
   function openModal() {
@@ -1870,6 +1882,132 @@ window.BGPS_CONFIG = Object.freeze({
     const note = byId('paperReviewNote');
     if (note) note.value = '';
   }
+
+  function openStandardPreviewModal() {
+    const modal = byId('bgpsStandardPreviewModal');
+    if (!modal) return;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeStandardPreviewModal() {
+    const modal = byId('bgpsStandardPreviewModal');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    if (standardPreviewUrl) {
+      URL.revokeObjectURL(standardPreviewUrl);
+      standardPreviewUrl = '';
+    }
+    standardPreviewResult = null;
+    if (!document.querySelector('.modal-backdrop.open')) document.body.classList.remove('modal-open');
+    const body = byId('bgpsStandardPreviewBody');
+    if (body) body.innerHTML = '';
+    const warnings = byId('bgpsStandardPreviewWarnings');
+    if (warnings) { warnings.hidden = true; warnings.innerHTML = ''; }
+  }
+
+  function isDocxStandardCandidate(paper) {
+    return Boolean(paper?.canStandardize === true);
+  }
+
+  function renderStandardWarnings(items) {
+    const node = byId('bgpsStandardPreviewWarnings');
+    if (!node) return;
+    const warnings = Array.isArray(items) ? items.filter(Boolean) : [];
+    node.hidden = warnings.length === 0;
+    node.innerHTML = warnings.length
+      ? `<strong>Review notes</strong><ul>${warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+      : '';
+  }
+
+  async function renderStandardPreviewPdf(result) {
+    const body = byId('bgpsStandardPreviewBody');
+    if (!body) return;
+    if (!result?.fileBase64) {
+      body.innerHTML = '<div class="empty-state"><strong>BGPS preview is unavailable</strong>Please try again or return the paper for correction.</div>';
+      return;
+    }
+    const blob = base64ToBlob(result.fileBase64, result.mimeType || 'application/pdf');
+    if (standardPreviewUrl) URL.revokeObjectURL(standardPreviewUrl);
+    standardPreviewUrl = URL.createObjectURL(blob);
+    if (window.BGPS_PDF_PREVIEW.shouldUseCanvas()) {
+      await window.BGPS_PDF_PREVIEW.render(blob, body);
+    } else {
+      body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="BGPS standardized question paper preview"></iframe>';
+      body.querySelector('iframe').src = standardPreviewUrl;
+    }
+  }
+
+  async function openBgpsStandardPreview() {
+    if (!currentPaper || !isDocxStandardCandidate(currentPaper) || standardPreviewInFlight) return;
+    standardPreviewInFlight = true;
+    setText('bgpsStandardPreviewTitle', currentPaper.title || 'BGPS Standard Preview');
+    setText('bgpsStandardPreviewMeta', `${currentPaper.className} · ${currentPaper.subject} · ${currentPaper.exam} · Version ${currentPaper.version || 1}`);
+    setText('bgpsStandardPreviewStatus', currentPaper.standardPreviewSaved ? 'Saved BGPS Format' : 'Preview');
+    const body = byId('bgpsStandardPreviewBody');
+    if (body) body.innerHTML = '<div class="empty-state"><strong>Preparing BGPS format</strong>Aligning numbering, font size, spacing and A4 layout.</div>';
+    renderStandardWarnings([]);
+    openStandardPreviewModal();
+    const previewButton = byId('previewBgpsFormatButton');
+    if (previewButton) { previewButton.disabled = true; previewButton.textContent = 'Preparing…'; }
+    try {
+      const result = await window.BGPS_API.getBgpsStandardPreview(currentPaper.paperId);
+      standardPreviewResult = result;
+      setText('bgpsStandardPreviewStatus', result.saved ? 'Saved BGPS Format' : 'Preview');
+      renderStandardWarnings(result.warnings);
+      await renderStandardPreviewPdf(result);
+      const saveButton = byId('saveBgpsStandardPreview');
+      if (saveButton) saveButton.textContent = result.saved ? 'Regenerate & Save' : 'Save BGPS Format';
+    } catch (error) {
+      if (body) body.innerHTML = `<div class="empty-state"><strong>BGPS format could not be prepared</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
+      renderStandardWarnings([]);
+    } finally {
+      standardPreviewInFlight = false;
+      if (previewButton) { previewButton.disabled = false; previewButton.textContent = 'Preview BGPS Format'; }
+    }
+  }
+
+  async function saveCurrentBgpsStandardPreview(approveAfterSave) {
+    if (!currentPaper || !isDocxStandardCandidate(currentPaper) || standardPreviewInFlight) return;
+    standardPreviewInFlight = true;
+    const saveButton = byId('saveBgpsStandardPreview');
+    const saveApproveButton = byId('saveAndApproveBgpsStandardPreview');
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Saving…'; }
+    if (saveApproveButton) { saveApproveButton.disabled = true; saveApproveButton.textContent = approveAfterSave ? 'Saving & Approving…' : 'Please wait…'; }
+    try {
+      const result = await window.BGPS_API.saveBgpsStandardPreview(currentPaper.paperId);
+      currentPaper.standardPreviewSaved = true;
+      currentPaper.standardPreviewSavedAt = result.savedAt || new Date().toISOString();
+      currentPaper.hasFinalPdf = true;
+      const listPaper = papers.find((item) => String(item.paperId) === String(currentPaper.paperId));
+      if (listPaper) Object.assign(listPaper, {
+        standardPreviewSaved: true,
+        standardPreviewSavedAt: currentPaper.standardPreviewSavedAt,
+        hasFinalPdf: true
+      });
+      setReviewMeta(currentPaper);
+      standardPreviewResult = result;
+      setText('bgpsStandardPreviewStatus', 'Saved BGPS Format');
+      renderStandardWarnings(result.warnings);
+      await renderStandardPreviewPdf(result);
+      render();
+      window.BGPS_APP.toast('BGPS standardized copy saved. Original DOCX remains unchanged.');
+      if (approveAfterSave) {
+        closeStandardPreviewModal();
+        await updateStatus('Approved');
+      }
+    } catch (error) {
+      window.BGPS_APP.toast(error.message || 'Could not save the BGPS standardized copy.', 'error');
+    } finally {
+      standardPreviewInFlight = false;
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.standardPreviewSaved ? 'Regenerate & Save' : 'Save BGPS Format'; }
+      if (saveApproveButton) { saveApproveButton.disabled = false; saveApproveButton.textContent = 'Save & Approve'; }
+    }
+  }
+
 
   function setReviewMeta(paper) {
     const revision = isRevision(paper);
@@ -1896,8 +2034,32 @@ window.BGPS_CONFIG = Object.freeze({
     }
     const note = byId('paperReviewNote');
     if (note) note.value = paper.adminNote || '';
+
+    const canStandardize = isDocxStandardCandidate(paper);
+    const standardSaved = canStandardize && paper.standardPreviewSaved === true;
+    const standardStatus = byId('bgpsStandardReviewStatus');
+    if (standardStatus) {
+      standardStatus.hidden = !canStandardize;
+      standardStatus.classList.toggle('saved', standardSaved);
+    }
+    setText('bgpsStandardReviewValue', standardSaved ? 'Saved and ready for approval' : 'Preview required');
+    setText('bgpsStandardReviewHint', standardSaved
+      ? 'The saved standardized PDF will be used as the approved final paper.'
+      : 'Preview and save the BGPS-formatted copy. The original DOCX remains unchanged.');
+    const standardButton = byId('previewBgpsFormatButton');
+    if (standardButton) {
+      standardButton.hidden = !canStandardize;
+      standardButton.disabled = normalize(paper.status) !== 'SUBMITTED';
+      standardButton.textContent = standardSaved ? 'Review Saved BGPS Format' : 'Preview BGPS Format';
+    }
+
     const approve = byId('approvePaperButton');
-    if (approve) approve.disabled = normalize(paper.status) !== 'SUBMITTED';
+    if (approve) {
+      approve.disabled = normalize(paper.status) !== 'SUBMITTED' || (canStandardize && !standardSaved);
+      approve.title = canStandardize && !standardSaved ? 'Preview and save the BGPS format before approval.' : '';
+    }
+    const edit = byId('editReviewedPaperButton');
+    if (edit) edit.hidden = paper.editable !== true;
     const returned = byId('returnPaperButton');
     if (returned) returned.disabled = normalize(paper.status) !== 'SUBMITTED';
   }
@@ -1999,7 +2161,7 @@ window.BGPS_CONFIG = Object.freeze({
     try {
       const [previewResult, originalFile] = await Promise.all([
         window.BGPS_API.getPaperPreview(paper.paperId),
-        window.BGPS_API.getPaperFile(paper.paperId).catch(() => null)
+        window.BGPS_API.getPaperOriginalFile(paper.paperId).catch(() => null)
       ]);
       await renderUploadedPreview(previewResult, originalFile);
     } catch (error) {
@@ -2009,6 +2171,11 @@ window.BGPS_CONFIG = Object.freeze({
 
   async function updateStatus(status) {
     if (!currentPaper) return;
+    if (status === 'Approved' && isDocxStandardCandidate(currentPaper) && currentPaper.standardPreviewSaved !== true) {
+      window.BGPS_APP.toast('Preview and save the BGPS standard format before approval.', 'error');
+      openBgpsStandardPreview();
+      return;
+    }
     if (normalize(currentPaper.status) !== 'SUBMITTED') {
       window.BGPS_APP.toast(currentPaper.status === 'Approved'
         ? 'Approved papers are final.'
@@ -2141,6 +2308,7 @@ window.BGPS_CONFIG = Object.freeze({
     byId('paperReviewModal')?.addEventListener('click', (event) => {
       if (event.target === byId('paperReviewModal')) closeReview();
     });
+    byId('previewBgpsFormatButton')?.addEventListener('click', openBgpsStandardPreview);
     byId('approvePaperButton')?.addEventListener('click', () => updateStatus('Approved'));
     byId('editReviewedPaperButton')?.addEventListener('click', () => {
       if (!currentPaper) return;
@@ -2149,10 +2317,22 @@ window.BGPS_CONFIG = Object.freeze({
       window.BGPS_PAPER_CREATOR.openAdminEdit(paperId);
     });
     byId('returnPaperButton')?.addEventListener('click', () => updateStatus('Correction Required'));
+    byId('closeBgpsStandardPreview')?.addEventListener('click', closeStandardPreviewModal);
+    byId('backFromBgpsStandardPreview')?.addEventListener('click', closeStandardPreviewModal);
+    byId('saveBgpsStandardPreview')?.addEventListener('click', () => saveCurrentBgpsStandardPreview(false));
+    byId('saveAndApproveBgpsStandardPreview')?.addEventListener('click', () => saveCurrentBgpsStandardPreview(true));
+    byId('bgpsStandardPreviewModal')?.addEventListener('click', (event) => {
+      if (event.target === byId('bgpsStandardPreviewModal')) closeStandardPreviewModal();
+    });
     byId('deleteReviewedPaperButton')?.addEventListener('click', () => { if (currentPaper) deleteAdminPaper(currentPaper.paperId); });
     byId('downloadPaperButton')?.addEventListener('click', downloadCurrentFile);
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && byId('paperReviewModal')?.classList.contains('open')) closeReview();
+      if (event.key !== 'Escape') return;
+      if (byId('bgpsStandardPreviewModal')?.classList.contains('open')) {
+        closeStandardPreviewModal();
+        return;
+      }
+      if (byId('paperReviewModal')?.classList.contains('open')) closeReview();
     });
   }
 
@@ -2171,6 +2351,8 @@ window.BGPS_CONFIG = Object.freeze({
     session = null;
     papers = [];
     currentPaper = null;
+    standardPreviewResult = null;
+    standardPreviewInFlight = false;
     deleteInFlight = false;
     boardFilter = 'all';
     render();

@@ -137,6 +137,7 @@ window.BGPS_CONFIG = Object.freeze({
       getPaperPreview: 90000,
       getBgpsStandardPreview: 120000,
       saveBgpsStandardPreview: 120000,
+      bulkDeleteApprovedOriginals: 120000,
       updatePaperContentAdmin: 120000,
       submitPaperDraft: 120000
     };
@@ -167,12 +168,13 @@ window.BGPS_CONFIG = Object.freeze({
   const deletePaperDraft = (draftId) => request('deletePaperDraft', { draftId });
   const submitPaperDraft = (draftId) => request('submitPaperDraft', { draftId });
   const deletePaper = (paperId) => request('deletePaper', { paperId });
+  const bulkDeleteApprovedOriginals = () => request('bulkDeleteApprovedOriginals');
   const uploadPaper = (paper) => request('uploadPaper', { paper });
   const importDocxPaper = (paper) => request('importDocxPaper', { paper });
   const listPrincipalActivity = () => request('listPrincipalActivity');
   const updatePaperSettings = (settings) => request('updatePaperSettings', { settings });
 
-  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperOriginalFile, getPaperPreview, getBgpsStandardPreview, saveBgpsStandardPreview, updatePaperContentAdmin, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
+  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperOriginalFile, getPaperPreview, getBgpsStandardPreview, saveBgpsStandardPreview, updatePaperContentAdmin, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, bulkDeleteApprovedOriginals, uploadPaper, importDocxPaper, listPrincipalActivity, ApiError });
 })();
 
 
@@ -1402,7 +1404,10 @@ window.BGPS_CONFIG = Object.freeze({
     const correction = workflowPapers.filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED').length;
     const approved = workflowPapers.filter((paper) => normalize(paper.status) === 'APPROVED').length;
     const locked = workflowPapers.filter((paper) => normalize(paper.status) === 'LOCKED').length;
-    const resubmitted = workflowPapers.filter((paper) => normalize(paper.status) === 'SUBMITTED' && paper.resubmitted === true).length;
+    // Corrected & Resubmitted is a global Principal action queue. Keep this
+    // count identical to the Paper Approval board instead of limiting it to
+    // the currently selected term/year.
+    const resubmitted = papers.filter((paper) => normalize(paper.status) === 'SUBMITTED' && paper.resubmitted === true).length;
 
     setText('dashPapersResubmitted', resubmitted);
     setText('dashMarksPending', pending);
@@ -1676,6 +1681,7 @@ window.BGPS_CONFIG = Object.freeze({
   let standardPreviewSelectedBlock = null;
   let standardPreviewInFlight = false;
   let deleteInFlight = false;
+  let bulkOriginalDeleteInFlight = false;
   let initialized = false;
   let boardFilter = 'all';
 
@@ -1695,6 +1701,11 @@ window.BGPS_CONFIG = Object.freeze({
   function setText(id, value) {
     const node = byId(id);
     if (node) node.textContent = String(value == null ? '' : value);
+  }
+
+  function setHidden(id, hidden) {
+    const node = byId(id);
+    if (node) node.hidden = Boolean(hidden);
   }
 
   function statusClass(status) {
@@ -1735,12 +1746,72 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
+  function approvedOriginalCandidates() {
+    return papers.filter((paper) => normalize(paper.status) === 'APPROVED'
+      && paper.canStandardize === true
+      && paper.originalAvailable !== false
+      && paper.hasFinalPdf === true);
+  }
+
+  function syncBulkOriginalDeleteButton() {
+    const button = byId('deleteAllApprovedOriginalsButton');
+    if (!button) return;
+    const count = approvedOriginalCandidates().length;
+    button.disabled = bulkOriginalDeleteInFlight || count === 0;
+    button.textContent = bulkOriginalDeleteInFlight
+      ? 'Deleting originals…'
+      : (count ? `Delete Approved Originals (${count})` : 'No Approved Originals');
+    button.title = count
+      ? 'Move original DOCX files of approved papers to Drive Trash. Final approved PDFs and paper records remain.'
+      : 'No approved DOCX originals are currently eligible for cleanup.';
+  }
+
+  async function bulkDeleteApprovedOriginals() {
+    if (bulkOriginalDeleteInFlight) return;
+    const candidates = approvedOriginalCandidates();
+    if (!candidates.length) {
+      window.BGPS_APP.toast('No approved DOCX originals are available for cleanup.');
+      syncBulkOriginalDeleteButton();
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Move ${candidates.length} original DOCX file${candidates.length === 1 ? '' : 's'} of approved papers to Drive Trash?\n\n`
+      + 'Final approved PDFs, spreadsheet records, approval status and audit history will remain. '
+      + 'This action does not affect submitted or correction-pending papers.'
+    );
+    if (!confirmed) return;
+
+    bulkOriginalDeleteInFlight = true;
+    syncBulkOriginalDeleteButton();
+    try {
+      const result = await window.BGPS_API.bulkDeleteApprovedOriginals();
+      await load(false);
+      window.BGPS_DASHBOARD.refresh(false).catch(() => {});
+      const deleted = Number(result.deleted || 0);
+      const alreadyRemoved = Number(result.alreadyRemoved || 0);
+      const skipped = Number(result.skipped || 0);
+      const failed = Number(result.failed || 0);
+      const parts = [`${deleted} original DOCX file${deleted === 1 ? '' : 's'} moved to Trash`];
+      if (alreadyRemoved) parts.push(`${alreadyRemoved} already removed`);
+      if (skipped) parts.push(`${skipped} skipped`);
+      if (failed) parts.push(`${failed} failed`);
+      window.BGPS_APP.toast(parts.join(' · '), failed ? 'error' : undefined);
+    } catch (error) {
+      window.BGPS_APP.toast(error.message || 'Could not clean approved original DOCX files.', 'error');
+    } finally {
+      bulkOriginalDeleteInFlight = false;
+      syncBulkOriginalDeleteButton();
+    }
+  }
+
   function renderMetrics() {
     setText('papersMetricSubmitted', papers.filter(isAwaitingFirstReview).length);
     setText('papersMetricResubmitted', papers.filter(isReadyForRereview).length);
     setText('papersMetricApproved', papers.filter((p) => normalize(p.status) === 'APPROVED').length);
     setText('papersMetricCorrection', papers.filter((p) => normalize(p.status) === 'CORRECTION REQUIRED').length);
     setText('papersMetricTotal', papers.length);
+    syncBulkOriginalDeleteButton();
   }
 
   function matchesBoardFilter(paper) {
@@ -2406,6 +2477,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (initialized) return;
     initialized = true;
     byId('refreshPapersButton')?.addEventListener('click', () => load(true));
+    byId('deleteAllApprovedOriginalsButton')?.addEventListener('click', bulkDeleteApprovedOriginals);
     byId('paperClassFilter')?.addEventListener('change', render);
     byId('paperStatusFilter')?.addEventListener('change', (event) => setStatusFilter(event.target.value));
     byId('paperSearch')?.addEventListener('input', render);
@@ -2474,6 +2546,7 @@ window.BGPS_CONFIG = Object.freeze({
     standardPreviewResult = null;
     standardPreviewInFlight = false;
     deleteInFlight = false;
+    bulkOriginalDeleteInFlight = false;
     boardFilter = 'all';
     render();
   }

@@ -2890,6 +2890,11 @@ window.BGPS_CONFIG = Object.freeze({
     clone.querySelectorAll('.bgps-image-resize-handle,.bgps-image-drag-handle,.image-drop-marker,[data-bgps-transient]').forEach((node) => node.remove());
     clone.querySelectorAll('.is-image-selected').forEach((node) => node.classList.remove('is-image-selected'));
     clone.querySelectorAll('[data-editor-bound]').forEach((node) => node.removeAttribute('data-editor-bound'));
+    clone.querySelectorAll('[data-rotation-busy],[data-rotation-upgrade-started],[data-bgps-insert-token]').forEach((node) => {
+      node.removeAttribute('data-rotation-busy');
+      node.removeAttribute('data-rotation-upgrade-started');
+      node.removeAttribute('data-bgps-insert-token');
+    });
     clone.querySelectorAll('[contenteditable],[draggable],[tabindex]').forEach((node) => {
       node.removeAttribute('contenteditable');
       node.removeAttribute('draggable');
@@ -3127,7 +3132,11 @@ window.BGPS_CONFIG = Object.freeze({
     editorRange = null;
     ['paperTitleInput', 'paperMaxMarksInput', 'paperTimeInput', 'paperDateInput', 'paperChaptersInput', 'paperInstructionsInput'].forEach((id) => { const node = byId(id); if (node) node.value = ''; });
     if (byId('paperLanguageInput')) byId('paperLanguageInput').value = 'english';
-    if (byId('paperContentEditor')) byId('paperContentEditor').innerHTML = '';
+    if (byId('paperContentEditor')) {
+      byId('paperContentEditor').innerHTML = '';
+      byId('paperContentEditor').style.removeProperty('min-height');
+      delete byId('paperContentEditor').dataset.bgpsBaseMinHeight;
+    }
     const defaultClass = session?.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0];
     if (byId('paperClassInput')) byId('paperClassInput').value = defaultClass;
     populateSubjects('paperClassInput', 'paperSubjectInput');
@@ -3190,8 +3199,14 @@ window.BGPS_CONFIG = Object.freeze({
     populateSubjects('paperClassInput', 'paperSubjectInput');
     if (byId('paperSubjectInput')) byId('paperSubjectInput').value = draft.subject || '';
     if (byId('paperExamInput')) byId('paperExamInput').value = draft.exam || window.BGPS_DATA.EXAMS[0];
-    if (byId('paperContentEditor')) byId('paperContentEditor').innerHTML = draft.editorHtml || '';
+    if (byId('paperContentEditor')) {
+      byId('paperContentEditor').innerHTML = draft.editorHtml || '';
+      byId('paperContentEditor').style.removeProperty('min-height');
+      delete byId('paperContentEditor').dataset.bgpsBaseMinHeight;
+    }
     hydrateImages();
+    byId('paperContentEditor')?.querySelectorAll('.diagram-box.has-image').forEach(ensureParagraphAfterImage);
+    requestAnimationFrame(syncEditorFreeMoveHeight);
 
     if (Array.isArray(draft.importWarnings) && draft.importWarnings.length) {
       toast('Imported DOCX content loaded. Please verify equations and images before saving.');
@@ -3713,6 +3728,81 @@ window.BGPS_CONFIG = Object.freeze({
     return 'center';
   }
 
+  function ensureImageGeometryStyles() {
+    if (document.getElementById('bgps-image-geometry-style')) return;
+    const style = document.createElement('style');
+    style.id = 'bgps-image-geometry-style';
+    style.textContent = `
+      #paperContentEditor { position:relative !important; }
+      #paperContentEditor .diagram-box.bgps-img-free {
+        position:absolute !important;
+        left:var(--bgps-free-x,0px) !important;
+        top:var(--bgps-free-y,0px) !important;
+        transform:none !important;
+        margin:0 !important;
+        float:none !important;
+        clear:none !important;
+        z-index:4;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureParagraphAfterImage(box) {
+    if (!box?.parentNode) return null;
+    const next = box.nextElementSibling;
+    if (next?.tagName === 'P' && !next.classList.contains('question-line')) return next;
+    const paragraph = document.createElement('p');
+    paragraph.appendChild(document.createElement('br'));
+    box.insertAdjacentElement('afterend', paragraph);
+    return paragraph;
+  }
+
+  function placeCaretAfterImage(box, options = {}) {
+    const editor = byId('paperContentEditor');
+    if (!editor || !box || !editor.contains(box)) return false;
+    const paragraph = ensureParagraphAfterImage(box);
+    if (!paragraph) return false;
+    if (options.focus !== false) {
+      try { editor.focus({ preventScroll: true }); }
+      catch (_) { editor.focus(); }
+    }
+    const selection = window.getSelection();
+    if (!selection) return false;
+    const range = document.createRange();
+    range.selectNodeContents(paragraph);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    editorRange = range.cloneRange();
+    if (options.scroll !== false) paragraph.scrollIntoView?.({ block: 'nearest' });
+    return true;
+  }
+
+  function syncEditorFreeMoveHeight() {
+    const editor = byId('paperContentEditor');
+    if (!editor) return;
+    ensureImageGeometryStyles();
+    if (!editor.dataset.bgpsBaseMinHeight) {
+      const computed = parseFloat(getComputedStyle(editor).minHeight || 0);
+      editor.dataset.bgpsBaseMinHeight = String(Math.max(0, Number.isFinite(computed) ? computed : 0));
+    }
+    const editorRect = editor.getBoundingClientRect();
+    const baseMinHeight = parseFloat(editor.dataset.bgpsBaseMinHeight || 0) || 0;
+    let required = baseMinHeight;
+    Array.from(editor.children).forEach((child) => {
+      if (!(child instanceof HTMLElement)) return;
+      if (child.classList.contains('bgps-img-free')) {
+        const top = parseFloat(child.style.getPropertyValue('--bgps-free-y')) || 0;
+        required = Math.max(required, top + child.getBoundingClientRect().height + 24);
+        return;
+      }
+      const rect = child.getBoundingClientRect();
+      required = Math.max(required, rect.bottom - editorRect.top + editor.scrollTop + 18);
+    });
+    editor.style.minHeight = `${Math.ceil(Math.max(required, 120))}px`;
+  }
+
   function legacyImageRotation(box) {
     if (!box) return 0;
     if (box.classList.contains('bgps-img-rotate-90')) return 90;
@@ -3847,9 +3937,13 @@ window.BGPS_CONFIG = Object.freeze({
       requestAnimationFrame(() => { box.style.height = `${targetHeight}px`; });
       await new Promise((resolve) => window.setTimeout(resolve, 210));
       normalizeImageBoxGeometry(box);
+      syncEditorFreeMoveHeight();
 
       if (box.classList.contains('bgps-img-free')) {
-        requestAnimationFrame(() => clampFreeImageOffset(box));
+        requestAnimationFrame(() => {
+          clampFreeImageOffset(box);
+          syncEditorFreeMoveHeight();
+        });
       }
       if (options.markDirty !== false) {
         markDirty();
@@ -3917,7 +4011,14 @@ window.BGPS_CONFIG = Object.freeze({
       if (byId('paperImageWidth')) byId('paperImageWidth').value = String(value);
       setText('paperImageWidthValue', `${Math.round(value)}%`);
     }
-    if (box.classList.contains('bgps-img-free')) requestAnimationFrame(() => clampFreeImageOffset(box));
+    if (box.classList.contains('bgps-img-free')) {
+      requestAnimationFrame(() => {
+        clampFreeImageOffset(box);
+        syncEditorFreeMoveHeight();
+      });
+    } else {
+      requestAnimationFrame(syncEditorFreeMoveHeight);
+    }
     markDirty();
   }
 
@@ -3930,53 +4031,82 @@ window.BGPS_CONFIG = Object.freeze({
 
   function applyFreeImageOffset(box, x, y) {
     if (!box) return;
+    ensureImageGeometryStyles();
     const safeX = Number.isFinite(Number(x)) ? Math.round(Number(x) * 10) / 10 : 0;
     const safeY = Number.isFinite(Number(y)) ? Math.round(Number(y) * 10) / 10 : 0;
     box.style.setProperty('--bgps-free-x', `${safeX}px`);
     box.style.setProperty('--bgps-free-y', `${safeY}px`);
-    box.style.transform = 'translate3d(var(--bgps-free-x), var(--bgps-free-y), 0)';
+    box.style.position = 'absolute';
+    box.style.left = 'var(--bgps-free-x)';
+    box.style.top = 'var(--bgps-free-y)';
+    box.style.transform = 'none';
+    box.style.margin = '0';
+  }
+
+  function enterAbsoluteFreeMode(box) {
+    const editor = byId('paperContentEditor');
+    if (!box || !editor) return { x: 0, y: 0 };
+    ensureImageGeometryStyles();
+    const editorRect = editor.getBoundingClientRect();
+    const boxRect = box.getBoundingClientRect();
+    const alreadyAbsolute = box.classList.contains('bgps-img-free')
+      && box.style.position === 'absolute'
+      && Boolean(box.style.getPropertyValue('--bgps-free-x'))
+      && Boolean(box.style.getPropertyValue('--bgps-free-y'));
+    const current = freeImageOffset(box);
+    const x = alreadyAbsolute ? current.x : Math.max(0, boxRect.left - editorRect.left + editor.scrollLeft);
+    const y = alreadyAbsolute ? current.y : Math.max(0, boxRect.top - editorRect.top + editor.scrollTop);
+    box.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact');
+    box.classList.add('bgps-img-free');
+    applyFreeImageOffset(box, x, y);
+    syncEditorFreeMoveHeight();
+    return { x, y };
   }
 
   function resetFreeImageOffset(box) {
     if (!box) return;
     box.style.removeProperty('--bgps-free-x');
     box.style.removeProperty('--bgps-free-y');
+    box.style.removeProperty('position');
+    box.style.removeProperty('left');
+    box.style.removeProperty('top');
     box.style.removeProperty('transform');
+    box.style.removeProperty('margin');
+    box.style.removeProperty('z-index');
+    requestAnimationFrame(syncEditorFreeMoveHeight);
   }
 
   function clampFreeImageOffset(box) {
     const editor = byId('paperContentEditor');
     if (!box || !editor || !box.classList.contains('bgps-img-free')) return;
     const current = freeImageOffset(box);
-    const editorRect = editor.getBoundingClientRect();
     const boxRect = box.getBoundingClientRect();
-    const baseLeft = (boxRect.left - editorRect.left) - current.x;
-    const baseTop = (boxRect.top - editorRect.top) - current.y;
-    const minX = -baseLeft;
-    const maxX = Math.max(minX, editorRect.width - boxRect.width - baseLeft);
-    const minY = -baseTop;
-    const maxY = Math.max(minY, editor.scrollHeight - boxRect.height - baseTop);
+    const editorWidth = Math.max(1, editor.clientWidth);
+    const editorHeight = Math.max(editor.clientHeight, editor.scrollHeight);
+    const maxX = Math.max(0, editorWidth - boxRect.width);
+    const maxY = Math.max(0, editorHeight - boxRect.height);
     applyFreeImageOffset(
       box,
-      Math.max(minX, Math.min(maxX, current.x)),
-      Math.max(minY, Math.min(maxY, current.y))
+      Math.max(0, Math.min(maxX, current.x)),
+      Math.max(0, Math.min(maxY, current.y))
     );
+    syncEditorFreeMoveHeight();
   }
 
   function setImageLayout(layout) {
     if (!selectedImage) return;
-    selectedImage.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-free', 'bgps-img-compact');
-    selectedImage.classList.add(`bgps-img-${layout}`);
     if (layout === 'free') {
-      const current = freeImageOffset(selectedImage);
-      applyFreeImageOffset(selectedImage, current.x, current.y);
+      enterAbsoluteFreeMode(selectedImage);
       requestAnimationFrame(() => clampFreeImageOffset(selectedImage));
     } else {
+      selectedImage.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-free', 'bgps-img-compact');
       resetFreeImageOffset(selectedImage);
+      selectedImage.classList.add(`bgps-img-${layout}`);
     }
     applyImageWidth(selectedImage, imageWidth(selectedImage));
     updateImageInspector();
     markDirty();
+    placeCaretAfterImage(selectedImage, { scroll: false });
   }
 
   function ensureImageControls(box) {
@@ -4028,6 +4158,7 @@ window.BGPS_CONFIG = Object.freeze({
 
   function bindImageBox(box) {
     if (!box) return;
+    ensureImageGeometryStyles();
     if (!box.classList.contains('has-image')) box.classList.add('has-image');
     normalizeImageBoxGeometry(box);
     upgradeLegacyRotatedImage(box);
@@ -4035,10 +4166,7 @@ window.BGPS_CONFIG = Object.freeze({
     const width = imageWidth(box);
     box.style.setProperty('--bgps-image-width', `${width}%`);
     box.style.width = `${width}%`;
-    if (box.classList.contains('bgps-img-free')) {
-      const current = freeImageOffset(box);
-      applyFreeImageOffset(box, current.x, current.y);
-    }
+    if (box.classList.contains('bgps-img-free')) enterAbsoluteFreeMode(box);
     box.setAttribute('contenteditable', 'false');
     box.removeAttribute('draggable');
     ensureImageControls(box);
@@ -4055,7 +4183,9 @@ window.BGPS_CONFIG = Object.freeze({
   function hydrateImages() {
     const editor = byId('paperContentEditor');
     if (!editor) return;
+    ensureImageGeometryStyles();
     editor.querySelectorAll('.diagram-box.has-image').forEach(bindImageBox);
+    requestAnimationFrame(syncEditorFreeMoveHeight);
   }
 
   function startResize(event) {
@@ -4086,7 +4216,11 @@ window.BGPS_CONFIG = Object.freeze({
       if (raf) cancelAnimationFrame(raf);
       applyImageWidth(box, nextWidth);
       normalizeImageBoxGeometry(box);
-      requestAnimationFrame(() => clampFreeImageOffset(box));
+      requestAnimationFrame(() => {
+        clampFreeImageOffset(box);
+        syncEditorFreeMoveHeight();
+      });
+      placeCaretAfterImage(box, { scroll: false });
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', stop);
       window.removeEventListener('pointercancel', stop);
@@ -4106,20 +4240,14 @@ window.BGPS_CONFIG = Object.freeze({
     if (!box || !editor) return;
 
     selectImage(box);
-    box.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact');
-    box.classList.add('bgps-img-free', 'is-moving-image');
+    const current = enterAbsoluteFreeMode(box);
+    box.classList.add('is-moving-image');
 
-    const current = freeImageOffset(box);
-    applyFreeImageOffset(box, current.x, current.y);
-
-    const editorRect = editor.getBoundingClientRect();
     const boxRect = box.getBoundingClientRect();
-    const baseLeft = (boxRect.left - editorRect.left) - current.x;
-    const baseTop = (boxRect.top - editorRect.top) - current.y;
-    const minX = -baseLeft;
-    const maxX = Math.max(minX, editorRect.width - boxRect.width - baseLeft);
-    const minY = -baseTop;
-    const maxY = Math.max(minY, editor.scrollHeight - boxRect.height - baseTop);
+    const editorWidth = Math.max(1, editor.clientWidth);
+    const editorHeight = Math.max(editor.clientHeight, editor.scrollHeight);
+    const maxX = Math.max(0, editorWidth - boxRect.width);
+    const maxY = Math.max(0, editorHeight - boxRect.height);
     const startX = event.clientX;
     const startY = event.clientY;
 
@@ -4129,9 +4257,9 @@ window.BGPS_CONFIG = Object.freeze({
     let raf = 0;
 
     const snapX = (value) => {
-      const left = -baseLeft;
-      const centre = ((editorRect.width - boxRect.width) / 2) - baseLeft;
-      const right = (editorRect.width - boxRect.width) - baseLeft;
+      const left = 0;
+      const centre = Math.max(0, (editorWidth - boxRect.width) / 2);
+      const right = maxX;
       for (const target of [left, centre, right]) {
         if (Math.abs(value - target) <= 9) return target;
       }
@@ -4144,8 +4272,8 @@ window.BGPS_CONFIG = Object.freeze({
     };
 
     const move = (moveEvent) => {
-      nextX = snapX(Math.max(minX, Math.min(maxX, current.x + moveEvent.clientX - startX)));
-      nextY = Math.max(minY, Math.min(maxY, current.y + moveEvent.clientY - startY));
+      nextX = snapX(Math.max(0, Math.min(maxX, current.x + moveEvent.clientX - startX)));
+      nextY = Math.max(0, Math.min(maxY, current.y + moveEvent.clientY - startY));
       if (!raf) raf = requestAnimationFrame(paint);
     };
 
@@ -4154,6 +4282,9 @@ window.BGPS_CONFIG = Object.freeze({
       paint();
       box.classList.remove('is-moving-image');
       clampFreeImageOffset(box);
+      syncEditorFreeMoveHeight();
+      ensureParagraphAfterImage(box);
+      placeCaretAfterImage(box, { scroll: false });
       markDirty();
       updateChecks();
       updateImageInspector();
@@ -4186,6 +4317,9 @@ window.BGPS_CONFIG = Object.freeze({
     selectedImage.insertAdjacentElement('afterend', clone);
     bindImageBox(clone);
     selectImage(clone);
+    ensureParagraphAfterImage(clone);
+    placeCaretAfterImage(clone);
+    syncEditorFreeMoveHeight();
     markDirty();
   }
 
@@ -4204,6 +4338,7 @@ window.BGPS_CONFIG = Object.freeze({
     const target = selectedImage;
     deselectImage();
     target.remove();
+    syncEditorFreeMoveHeight();
     markDirty();
   }
 
@@ -4216,6 +4351,9 @@ window.BGPS_CONFIG = Object.freeze({
     else editor?.appendChild(clone);
     bindImageBox(clone);
     selectImage(clone);
+    ensureParagraphAfterImage(clone);
+    placeCaretAfterImage(clone);
+    syncEditorFreeMoveHeight();
     markDirty();
   }
 
@@ -4227,6 +4365,10 @@ window.BGPS_CONFIG = Object.freeze({
       if (!image) throw new Error('The selected image could not be replaced.');
       image.src = source;
       image.alt = file.name || 'Question paper diagram';
+      await waitForImageReady(image);
+      normalizeImageBoxGeometry(selectedImage);
+      syncEditorFreeMoveHeight();
+      placeCaretAfterImage(selectedImage, { scroll: false });
       markDirty();
       toast('Image replaced.');
     } catch (error) {
@@ -4261,6 +4403,7 @@ window.BGPS_CONFIG = Object.freeze({
     const target = selectedImage;
     deselectImage();
     target.remove();
+    syncEditorFreeMoveHeight();
     markDirty(); updateChecks();
   }
 
@@ -4294,6 +4437,9 @@ window.BGPS_CONFIG = Object.freeze({
     if (dropMarker?.parentNode) dropMarker.parentNode.insertBefore(dragImage, dropMarker);
     removeDropMarker();
     selectImage(dragImage);
+    ensureParagraphAfterImage(dragImage);
+    placeCaretAfterImage(dragImage);
+    syncEditorFreeMoveHeight();
     dragImage = null;
     markDirty();
   }
@@ -4301,11 +4447,19 @@ window.BGPS_CONFIG = Object.freeze({
   async function insertImageFile(file) {
     try {
       const source = await compressImage(file);
-      const html = `<div class="diagram-box has-image bgps-img-center" style="--bgps-image-width:100%;width:100%" contenteditable="false"><img class="diagram-image" src="${source}" alt="Question paper diagram"></div><p><br></p>`;
+      const token = `bgps-image-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const html = `<div class="diagram-box has-image bgps-img-center" data-bgps-insert-token="${token}" style="--bgps-image-width:100%;width:100%" contenteditable="false"><img class="diagram-image" src="${source}" alt="Question paper diagram"></div><p><br></p>`;
       insertHtml(html);
+      const editor = byId('paperContentEditor');
+      const box = editor?.querySelector(`[data-bgps-insert-token="${token}"]`);
+      box?.removeAttribute('data-bgps-insert-token');
       hydrateImages();
-      const boxes = byId('paperContentEditor')?.querySelectorAll('.diagram-box.has-image');
-      if (boxes?.length) selectImage(boxes[boxes.length - 1]);
+      if (box) {
+        selectImage(box);
+        ensureParagraphAfterImage(box);
+        placeCaretAfterImage(box);
+      }
+      syncEditorFreeMoveHeight();
       toast('Image inserted. Resize or position it using Selected Image controls.');
     } catch (error) {
       toast(error.message || 'The image could not be inserted.', 'error');

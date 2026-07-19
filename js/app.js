@@ -2890,6 +2890,7 @@ window.BGPS_CONFIG = Object.freeze({
     clone.querySelectorAll('.bgps-image-resize-handle,.bgps-image-drag-handle,.image-drop-marker,[data-bgps-transient]').forEach((node) => node.remove());
     clone.querySelectorAll('.is-image-selected').forEach((node) => node.classList.remove('is-image-selected'));
     clone.querySelectorAll('[data-editor-bound]').forEach((node) => node.removeAttribute('data-editor-bound'));
+    clone.querySelectorAll('[data-bgps-geometry-bound]').forEach((node) => node.removeAttribute('data-bgps-geometry-bound'));
     clone.querySelectorAll('[data-rotation-busy],[data-rotation-upgrade-started],[data-bgps-insert-token]').forEach((node) => {
       node.removeAttribute('data-rotation-busy');
       node.removeAttribute('data-rotation-upgrade-started');
@@ -2904,6 +2905,7 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function collectDraft() {
+    syncEditorFreeMoveHeight();
     const editor = byId('paperContentEditor');
     const className = normalize(byId('paperClassInput')?.value);
     const maxMarks = Number(byId('paperMaxMarksInput')?.value || 0);
@@ -3349,7 +3351,7 @@ window.BGPS_CONFIG = Object.freeze({
     const instructions = normalize(draft.instructions).split(/\n+/).map(normalize).filter(Boolean);
     const instructionsHtml = instructions.length ? `<div class="instructions"><strong>General Instructions</strong><ol>${instructions.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol></div>` : '';
     const date = draft.examDate || '____________';
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.bgps-free-stage{position:relative;display:block;width:100%;height:var(--bgps-free-stage-height,0px);min-height:0;margin:0;padding:0;border:0;clear:both}.bgps-free-stage>.diagram-box.bgps-img-free{position:absolute;left:var(--bgps-free-x,0px);top:var(--bgps-free-y,0px);float:none;clear:none;margin:0;transform:none;z-index:4}.content>.diagram-box.bgps-img-free{position:absolute;left:var(--bgps-free-x,0px);top:var(--bgps-free-y,0px);float:none;clear:none;margin:0;transform:none;z-index:4}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
   }
 
   function setPreviewHeader(title, meta, status) {
@@ -3734,7 +3736,30 @@ window.BGPS_CONFIG = Object.freeze({
     style.id = 'bgps-image-geometry-style';
     style.textContent = `
       #paperContentEditor { position:relative !important; }
-      #paperContentEditor .diagram-box.bgps-img-free {
+      #paperContentEditor .bgps-free-stage {
+        position:relative !important;
+        display:block !important;
+        width:100% !important;
+        height:var(--bgps-free-stage-height,0px) !important;
+        min-height:0 !important;
+        margin:0 !important;
+        padding:0 !important;
+        border:0 !important;
+        clear:both !important;
+        pointer-events:none;
+      }
+      #paperContentEditor .bgps-free-stage > .diagram-box.bgps-img-free {
+        position:absolute !important;
+        left:var(--bgps-free-x,0px) !important;
+        top:var(--bgps-free-y,0px) !important;
+        transform:none !important;
+        margin:0 !important;
+        float:none !important;
+        clear:none !important;
+        z-index:4;
+        pointer-events:auto;
+      }
+      #paperContentEditor > .diagram-box.bgps-img-free {
         position:absolute !important;
         left:var(--bgps-free-x,0px) !important;
         top:var(--bgps-free-y,0px) !important;
@@ -3744,17 +3769,37 @@ window.BGPS_CONFIG = Object.freeze({
         clear:none !important;
         z-index:4;
       }
+      #paperContentEditor .bgps-image-caret-paragraph {
+        min-height:1.35em;
+        margin:3px 0;
+      }
     `;
     document.head.appendChild(style);
   }
 
+  function isEmptyEditorParagraph(node) {
+    return Boolean(node?.tagName === 'P'
+      && !node.classList.contains('question-line')
+      && !String(node.textContent || '').replace(/\u00a0/g, ' ').trim());
+  }
+
+  function freeStageForBox(box) {
+    const parent = box?.parentElement;
+    return parent?.classList?.contains('bgps-free-stage') ? parent : null;
+  }
+
   function ensureParagraphAfterImage(box) {
     if (!box?.parentNode) return null;
-    const next = box.nextElementSibling;
-    if (next?.tagName === 'P' && !next.classList.contains('question-line')) return next;
+    const anchor = freeStageForBox(box) || box;
+    const next = anchor.nextElementSibling;
+    if (isEmptyEditorParagraph(next)) {
+      next.classList.add('bgps-image-caret-paragraph');
+      return next;
+    }
     const paragraph = document.createElement('p');
+    paragraph.className = 'bgps-image-caret-paragraph';
     paragraph.appendChild(document.createElement('br'));
-    box.insertAdjacentElement('afterend', paragraph);
+    anchor.insertAdjacentElement('afterend', paragraph);
     return paragraph;
   }
 
@@ -3779,6 +3824,49 @@ window.BGPS_CONFIG = Object.freeze({
     return true;
   }
 
+  function primaryFreeStage(editor) {
+    return Array.from(editor?.children || []).find((child) => child.classList?.contains('bgps-free-stage')) || null;
+  }
+
+  function removeEmptyImagePlaceholder(node) {
+    if (isEmptyEditorParagraph(node) && !node.classList.contains('question-line')) node.remove();
+  }
+
+  function ensureFreeStageForBox(box) {
+    const editor = byId('paperContentEditor');
+    if (!editor || !box || !editor.contains(box)) return null;
+    const currentStage = freeStageForBox(box);
+    if (currentStage) return currentStage;
+
+    const editorRect = editor.getBoundingClientRect();
+    const boxRect = box.getBoundingClientRect();
+    const absoluteX = boxRect.left - editorRect.left + editor.scrollLeft;
+    const absoluteY = boxRect.top - editorRect.top + editor.scrollTop;
+    const oldPlaceholder = box.nextElementSibling;
+
+    let stage = primaryFreeStage(editor);
+    if (!stage) {
+      stage = document.createElement('div');
+      stage.className = 'bgps-free-stage';
+      stage.setAttribute('contenteditable', 'false');
+      stage.setAttribute('aria-hidden', 'true');
+      stage.style.setProperty('--bgps-free-stage-height', '0px');
+      stage.style.height = 'var(--bgps-free-stage-height)';
+      editor.insertBefore(stage, box);
+    }
+
+    const stageRect = stage.getBoundingClientRect();
+    const stageX = stageRect.left - editorRect.left + editor.scrollLeft;
+    const stageY = stageRect.top - editorRect.top + editor.scrollTop;
+    stage.appendChild(box);
+    removeEmptyImagePlaceholder(oldPlaceholder);
+
+    box.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact');
+    box.classList.add('bgps-img-free');
+    applyFreeImageOffset(box, Math.max(0, absoluteX - stageX), Math.max(0, absoluteY - stageY));
+    return stage;
+  }
+
   function syncEditorFreeMoveHeight() {
     const editor = byId('paperContentEditor');
     if (!editor) return;
@@ -3787,20 +3875,42 @@ window.BGPS_CONFIG = Object.freeze({
       const computed = parseFloat(getComputedStyle(editor).minHeight || 0);
       editor.dataset.bgpsBaseMinHeight = String(Math.max(0, Number.isFinite(computed) ? computed : 0));
     }
-    const editorRect = editor.getBoundingClientRect();
-    const baseMinHeight = parseFloat(editor.dataset.bgpsBaseMinHeight || 0) || 0;
-    let required = baseMinHeight;
-    Array.from(editor.children).forEach((child) => {
-      if (!(child instanceof HTMLElement)) return;
-      if (child.classList.contains('bgps-img-free')) {
-        const top = parseFloat(child.style.getPropertyValue('--bgps-free-y')) || 0;
-        required = Math.max(required, top + child.getBoundingClientRect().height + 24);
-        return;
+
+    // Upgrade any older direct absolute images into one in-flow stage. The
+    // stage reserves vertical space while each image remains truly absolute.
+    Array.from(editor.children)
+      .filter((child) => child.classList?.contains('diagram-box') && child.classList.contains('bgps-img-free'))
+      .forEach((box) => ensureFreeStageForBox(box));
+
+    const stages = Array.from(editor.children).filter((child) => child.classList?.contains('bgps-free-stage'));
+    const primaryStage = stages[0] || null;
+    if (primaryStage) {
+      stages.slice(1).forEach((stage) => {
+        Array.from(stage.children)
+          .filter((child) => child.classList?.contains('diagram-box') && child.classList.contains('bgps-img-free'))
+          .forEach((box) => primaryStage.appendChild(box));
+        stage.remove();
+      });
+      const boxes = Array.from(primaryStage.children)
+        .filter((child) => child.classList?.contains('diagram-box') && child.classList.contains('bgps-img-free'));
+      if (!boxes.length) {
+        primaryStage.remove();
+      } else {
+        let requiredHeight = 0;
+        boxes.forEach((box) => {
+          const offset = freeImageOffset(box);
+          const height = Math.max(1, box.getBoundingClientRect().height || box.offsetHeight || 1);
+          requiredHeight = Math.max(requiredHeight, offset.y + height + 24);
+        });
+        const safeHeight = Math.max(24, Math.ceil(requiredHeight));
+        primaryStage.style.setProperty('--bgps-free-stage-height', `${safeHeight}px`);
+        primaryStage.style.height = 'var(--bgps-free-stage-height)';
+        ensureParagraphAfterImage(boxes[boxes.length - 1]);
       }
-      const rect = child.getBoundingClientRect();
-      required = Math.max(required, rect.bottom - editorRect.top + editor.scrollTop + 18);
-    });
-    editor.style.minHeight = `${Math.ceil(Math.max(required, 120))}px`;
+    }
+
+    const baseMinHeight = parseFloat(editor.dataset.bgpsBaseMinHeight || 0) || 0;
+    editor.style.minHeight = `${Math.ceil(Math.max(baseMinHeight, 120))}px`;
   }
 
   function legacyImageRotation(box) {
@@ -4047,24 +4157,27 @@ window.BGPS_CONFIG = Object.freeze({
     const editor = byId('paperContentEditor');
     if (!box || !editor) return { x: 0, y: 0 };
     ensureImageGeometryStyles();
-    const editorRect = editor.getBoundingClientRect();
-    const boxRect = box.getBoundingClientRect();
-    const alreadyAbsolute = box.classList.contains('bgps-img-free')
-      && box.style.position === 'absolute'
-      && Boolean(box.style.getPropertyValue('--bgps-free-x'))
-      && Boolean(box.style.getPropertyValue('--bgps-free-y'));
+    const alreadyStaged = Boolean(freeStageForBox(box));
+    if (!alreadyStaged) ensureFreeStageForBox(box);
     const current = freeImageOffset(box);
-    const x = alreadyAbsolute ? current.x : Math.max(0, boxRect.left - editorRect.left + editor.scrollLeft);
-    const y = alreadyAbsolute ? current.y : Math.max(0, boxRect.top - editorRect.top + editor.scrollTop);
     box.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact');
     box.classList.add('bgps-img-free');
-    applyFreeImageOffset(box, x, y);
+    applyFreeImageOffset(box, current.x, current.y);
     syncEditorFreeMoveHeight();
-    return { x, y };
+    return freeImageOffset(box);
   }
 
   function resetFreeImageOffset(box) {
     if (!box) return;
+    const stage = freeStageForBox(box);
+    if (stage) {
+      if (stage.children.length <= 1) {
+        stage.parentNode?.insertBefore(box, stage);
+        stage.remove();
+      } else {
+        stage.insertAdjacentElement('afterend', box);
+      }
+    }
     box.style.removeProperty('--bgps-free-x');
     box.style.removeProperty('--bgps-free-y');
     box.style.removeProperty('position');
@@ -4078,13 +4191,13 @@ window.BGPS_CONFIG = Object.freeze({
 
   function clampFreeImageOffset(box) {
     const editor = byId('paperContentEditor');
-    if (!box || !editor || !box.classList.contains('bgps-img-free')) return;
+    const stage = freeStageForBox(box);
+    if (!box || !editor || !stage || !box.classList.contains('bgps-img-free')) return;
     const current = freeImageOffset(box);
     const boxRect = box.getBoundingClientRect();
-    const editorWidth = Math.max(1, editor.clientWidth);
-    const editorHeight = Math.max(editor.clientHeight, editor.scrollHeight);
-    const maxX = Math.max(0, editorWidth - boxRect.width);
-    const maxY = Math.max(0, editorHeight - boxRect.height);
+    const stageWidth = Math.max(1, stage.clientWidth || editor.clientWidth);
+    const maxX = Math.max(0, stageWidth - boxRect.width);
+    const maxY = 2400;
     applyFreeImageOffset(
       box,
       Math.max(0, Math.min(maxX, current.x)),
@@ -4170,6 +4283,11 @@ window.BGPS_CONFIG = Object.freeze({
     box.setAttribute('contenteditable', 'false');
     box.removeAttribute('draggable');
     ensureImageControls(box);
+    const geometryImage = box.querySelector('img');
+    if (geometryImage && geometryImage.dataset.bgpsGeometryBound !== 'true') {
+      geometryImage.dataset.bgpsGeometryBound = 'true';
+      geometryImage.addEventListener('load', () => requestAnimationFrame(syncEditorFreeMoveHeight));
+    }
     if (box.dataset.editorBound === 'true') return;
     box.dataset.editorBound = 'true';
     box.addEventListener('click', (event) => { event.stopPropagation(); selectImage(box); });
@@ -4241,13 +4359,14 @@ window.BGPS_CONFIG = Object.freeze({
 
     selectImage(box);
     const current = enterAbsoluteFreeMode(box);
+    const stage = freeStageForBox(box);
+    if (!stage) return;
     box.classList.add('is-moving-image');
 
     const boxRect = box.getBoundingClientRect();
-    const editorWidth = Math.max(1, editor.clientWidth);
-    const editorHeight = Math.max(editor.clientHeight, editor.scrollHeight);
-    const maxX = Math.max(0, editorWidth - boxRect.width);
-    const maxY = Math.max(0, editorHeight - boxRect.height);
+    const stageWidth = Math.max(1, stage.clientWidth || editor.clientWidth);
+    const maxX = Math.max(0, stageWidth - boxRect.width);
+    const maxY = 2400;
     const startX = event.clientX;
     const startY = event.clientY;
 
@@ -4258,7 +4377,7 @@ window.BGPS_CONFIG = Object.freeze({
 
     const snapX = (value) => {
       const left = 0;
-      const centre = Math.max(0, (editorWidth - boxRect.width) / 2);
+      const centre = Math.max(0, (stageWidth - boxRect.width) / 2);
       const right = maxX;
       for (const target of [left, centre, right]) {
         if (Math.abs(value - target) <= 9) return target;
@@ -4269,6 +4388,7 @@ window.BGPS_CONFIG = Object.freeze({
     const paint = () => {
       raf = 0;
       applyFreeImageOffset(box, nextX, nextY);
+      syncEditorFreeMoveHeight();
     };
 
     const move = (moveEvent) => {
@@ -4283,7 +4403,6 @@ window.BGPS_CONFIG = Object.freeze({
       box.classList.remove('is-moving-image');
       clampFreeImageOffset(box);
       syncEditorFreeMoveHeight();
-      ensureParagraphAfterImage(box);
       placeCaretAfterImage(box, { scroll: false });
       markDirty();
       updateChecks();

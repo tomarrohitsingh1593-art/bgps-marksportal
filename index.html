@@ -596,7 +596,12 @@ Show complete working wherever required." rows="3"></textarea></div>
 <label for="paperReviewNote">Principal note</label>
 <textarea id="paperReviewNote" placeholder="Add a clear note when returning a paper for correction." rows="5"></textarea>
 </div>
+<div class="bgps-standard-review-status" hidden="" id="bgpsStandardReviewStatus">
+<span>BGPS Standard Format</span><strong id="bgpsStandardReviewValue">Not prepared</strong>
+<small id="bgpsStandardReviewHint">Preview and save the standardized copy before approval.</small>
+</div>
 <div class="paper-review-actions">
+<button class="btn primary" hidden="" id="previewBgpsFormatButton" type="button">Preview BGPS Format</button>
 <button class="btn success" id="approvePaperButton" type="button">Approve Paper</button>
 <button class="btn primary" id="editReviewedPaperButton" type="button">Edit Paper</button>
 <button class="btn danger-outline" id="returnPaperButton" type="button">Return for Correction</button>
@@ -605,6 +610,25 @@ Show complete working wherever required." rows="3"></textarea></div>
 </div>
 </aside>
 </div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="bgpsStandardPreviewTitle" aria-modal="true" class="modal-backdrop" id="bgpsStandardPreviewModal" role="dialog">
+<div class="paper-preview-modal-shell bgps-standard-preview-shell">
+<header class="paper-review-header">
+<div><span class="status-chip" id="bgpsStandardPreviewStatus">BGPS Format</span><h2 id="bgpsStandardPreviewTitle">BGPS Standard Preview</h2><p id="bgpsStandardPreviewMeta">Uniform numbering, font size and A4 layout</p></div>
+<button aria-label="Close BGPS standard preview" class="modal-close" id="closeBgpsStandardPreview" type="button">×</button>
+</header>
+<div class="bgps-standard-preview-notice" id="bgpsStandardPreviewNotice">
+<strong>Original DOCX remains unchanged.</strong>
+<span>This preview is a separate standardized BGPS copy for approval.</span>
+</div>
+<div class="teacher-paper-preview-body" id="bgpsStandardPreviewBody"><div class="empty-state"><strong>Preparing BGPS format</strong>Please wait.</div></div>
+<div class="bgps-standard-preview-warnings" hidden="" id="bgpsStandardPreviewWarnings"></div>
+<footer class="teacher-paper-preview-footer">
+<button class="btn" id="backFromBgpsStandardPreview" type="button">Back to Review</button>
+<button class="btn primary" id="saveBgpsStandardPreview" type="button">Save BGPS Format</button>
+<button class="btn success" id="saveAndApproveBgpsStandardPreview" type="button">Save &amp; Approve</button>
+</footer>
 </div>
 </div>
 <div aria-hidden="true" aria-labelledby="teacherPaperPreviewTitle" aria-modal="true" class="modal-backdrop" id="teacherPaperPreviewModal" role="dialog">

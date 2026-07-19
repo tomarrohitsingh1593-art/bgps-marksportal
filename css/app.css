@@ -1172,3 +1172,71 @@ body.modal-open { overflow: hidden; }
     min-height:34px;
   }
 }
+
+
+/* ===== PRINCIPAL BGPS STANDARD DOCX PREVIEW ===== */
+.bgps-standard-review-status {
+  display:grid;
+  gap:4px;
+  margin:10px 0 2px;
+  padding:11px 12px;
+  border:1px solid #c8d8e7;
+  border-radius:10px;
+  background:#f4f8fc;
+}
+.bgps-standard-review-status span {
+  color:#486580;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.45px;
+  text-transform:uppercase;
+}
+.bgps-standard-review-status strong { color:#173f68; font-size:13px; }
+.bgps-standard-review-status small { color:#60758a; font-size:10.5px; line-height:1.4; }
+.bgps-standard-review-status.saved {
+  border-color:#b9dbc7;
+  background:#eef9f2;
+}
+.bgps-standard-review-status.saved strong { color:#206840; }
+.bgps-standard-preview-shell { width:min(1220px,calc(100vw - 24px)); }
+.bgps-standard-preview-notice {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:5px 10px;
+  padding:9px 14px;
+  border-bottom:1px solid #d6e1eb;
+  background:#f5f9fd;
+  color:#49637b;
+  font-size:11px;
+}
+.bgps-standard-preview-notice strong { color:#173f68; }
+.bgps-standard-preview-warnings {
+  max-height:120px;
+  overflow:auto;
+  padding:9px 14px;
+  border-top:1px solid #ead8a8;
+  background:#fff9e8;
+  color:#76540b;
+  font-size:11px;
+  line-height:1.45;
+}
+.bgps-standard-preview-warnings strong { display:block; margin-bottom:3px; }
+.bgps-standard-preview-warnings ul { margin:0; padding-left:18px; }
+#previewBgpsFormatButton { grid-column:1 / -1; }
+@media (max-width:700px) {
+  .bgps-standard-preview-shell {
+    width:100vw;
+    max-height:100vh;
+    border-radius:0;
+  }
+  .bgps-standard-preview-notice { align-items:flex-start; }
+  .bgps-standard-preview-shell .teacher-paper-preview-footer {
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  .bgps-standard-preview-shell .teacher-paper-preview-footer .btn {
+    width:100%;
+    min-height:44px;
+  }
+}

@@ -157,9 +157,9 @@ window.BGPS_CONFIG = Object.freeze({
   const getPaperOriginalFile = (paperId) => request('getPaperOriginalFile', { paperId });
   const getPaperPreview = (paperId) => request('getPaperPreview', { paperId });
   const getBgpsStandardPreview = (paperId) => request('getBgpsStandardPreview', { paperId });
-  const saveBgpsStandardPreview = (paperId) => request('saveBgpsStandardPreview', { paperId });
+  const saveBgpsStandardPreview = (paperId, editedContentHtml) => request('saveBgpsStandardPreview', { paperId, editedContentHtml: editedContentHtml || '' });
   const updatePaperContentAdmin = (paperId, paper) => request('updatePaperContentAdmin', { paperId, paper });
-  const updatePaperStatus = (paperId, status, adminNote) => request('updatePaperStatus', { paperId, status, adminNote: adminNote || '' });
+  const updatePaperStatus = (paperId, status, adminNote, options = {}) => request('updatePaperStatus', { paperId, status, adminNote: adminNote || '', deleteOriginalAfterApproval: options.deleteOriginalAfterApproval === true });
   const listPaperDrafts = () => request('listPaperDrafts');
   const getPaperDraft = (draftId) => request('getPaperDraft', { draftId });
   const getPaperDraftPreview = (draftId) => request('getPaperDraftPreview', { draftId });
@@ -883,13 +883,14 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
-  function renderTeacherNotifications(termLabel, pendingSubjects, reviewPapers, returnedPapers) {
+  function renderTeacherNotifications(termLabel, pendingSubjects, reviewPapers, returnedPapers, approvedPapers) {
     const container = byId('recentMarksList');
     if (!container) return;
     const items = [];
     (returnedPapers || []).slice(0, 3).forEach((paper) => items.push(`<div class="teacher-notification danger"><div class="teacher-notification-copy"><strong>Correction required: ${escapeHtml(paper.subject || paper.title || 'Question Paper')}</strong>${escapeHtml(paper.exam || 'Exam')} · ${escapeHtml(paper.adminNote || 'Please review the Principal note and correct this paper.')}</div><button class="btn danger-outline" type="button" data-notification-action="corrections">Open</button></div>`));
     if ((pendingSubjects || []).length) items.push(`<div class="teacher-notification warning"><div class="teacher-notification-copy"><strong>${pendingSubjects.length} ${escapeHtml(termLabel)} subject${pendingSubjects.length === 1 ? '' : 's'} pending</strong>${escapeHtml(pendingSubjects.join(', '))}</div><button class="btn" type="button" data-notification-action="marks">Enter Marks</button></div>`);
-    if ((reviewPapers || []).length) items.push(`<div class="teacher-notification"><div class="teacher-notification-copy"><strong>${reviewPapers.length} paper${reviewPapers.length === 1 ? '' : 's'} awaiting Principal review</strong>${escapeHtml(reviewPapers.map((paper) => paper.subject || paper.title || 'Paper').slice(0, 4).join(', '))}</div><button class="btn" type="button" data-notification-action="review">View Papers</button></div>`);
+    if ((reviewPapers || []).length) items.push(`<div class="teacher-notification"><div class="teacher-notification-copy"><strong>${reviewPapers.length} paper${reviewPapers.length === 1 ? '' : 's'} submitted and awaiting Principal review</strong>${escapeHtml(reviewPapers.map((paper) => paper.subject || paper.title || 'Paper').slice(0, 4).join(', '))} · Status only</div></div>`);
+    (approvedPapers || []).slice(0, 3).forEach((paper) => items.push(`<div class="teacher-notification success"><div class="teacher-notification-copy"><strong>Approved: ${escapeHtml(paper.subject || paper.title || 'Question Paper')}</strong>${escapeHtml(paper.exam || termLabel || 'Exam')} · Final paper is with the Principal.</div></div>`));
     if (!items.length) items.push('<div class="teacher-notification success"><div class="teacher-notification-copy"><strong>All selected-term work is up to date</strong>No pending marks, paper reviews or corrections need your attention.</div></div>');
     container.innerHTML = `<div class="teacher-notification-list">${items.join('')}</div>`;
   }
@@ -978,12 +979,13 @@ window.BGPS_CONFIG = Object.freeze({
     const reviewPapers = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'SUBMITTED');
     const reviewPending = reviewPapers.length;
     const correctionRequired = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'CORRECTION REQUIRED').length;
-    const approved = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'APPROVED').length;
+    const approvedPapers = termPapers.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'APPROVED');
+    const approved = approvedPapers.length;
     const returnedPapers = papersForYear.filter((paper) => String(paper.status || '').trim().toUpperCase() === 'CORRECTION REQUIRED');
     const latest = [...termRows].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))[0];
     const label = terms.get(selectedOverviewTerm) || selectedOverviewTerm;
     const readiness = expectedKeys.size ? Math.round((marksSubmitted / expectedKeys.size) * 100) : 0;
-    renderTeacherNotifications(label, pendingSubjects, reviewPapers, returnedPapers);
+    renderTeacherNotifications(label, pendingSubjects, reviewPapers, returnedPapers, approvedPapers);
     container.innerHTML = `
       <article class="term-overview-card"><div class="term-progress-head"><div><h3>${escapeHtml(label)} Marks Progress</h3><small>${escapeHtml(session.assignedClass || 'Assigned class')} · ${escapeHtml(selectedYear.replace('-', '–'))}</small></div><span class="term-readiness">${readiness}%</span></div><div class="term-progress-track" aria-label="${readiness}% marks progress"><span style="width:${readiness}%"></span></div><div class="term-fact"><span>Subjects completed</span><strong>${marksSubmitted}/${expectedKeys.size}</strong></div><div class="term-fact"><span>Subjects pending</span><strong>${marksPending}</strong></div><div class="term-fact"><span>Latest marks update</span><strong>${escapeHtml(latest ? window.BGPS_DATA.safeDate(latest.timestamp) : 'No records')}</strong></div></article>
       <article class="term-overview-card"><div class="term-progress-head"><div><h3>Question Paper Workflow</h3><small>${escapeHtml(label)} status</small></div></div><div class="paper-workflow-grid"><div class="paper-workflow-stat"><span>Total submitted</span><strong>${paperSubmitted}</strong></div><div class="paper-workflow-stat warning"><span>Awaiting review</span><strong>${reviewPending}</strong></div><div class="paper-workflow-stat"><span>Approved</span><strong>${approved}</strong></div><div class="paper-workflow-stat danger"><span>Correction</span><strong>${correctionRequired}</strong></div></div></article>`;
@@ -1669,6 +1671,9 @@ window.BGPS_CONFIG = Object.freeze({
   let currentPreviewUrl = '';
   let standardPreviewUrl = '';
   let standardPreviewResult = null;
+  let standardPreviewEditableHtml = '';
+  let standardPreviewEditMode = false;
+  let standardPreviewSelectedBlock = null;
   let standardPreviewInFlight = false;
   let deleteInFlight = false;
   let initialized = false;
@@ -1902,6 +1907,15 @@ window.BGPS_CONFIG = Object.freeze({
       standardPreviewUrl = '';
     }
     standardPreviewResult = null;
+    standardPreviewEditableHtml = '';
+    standardPreviewEditMode = false;
+    standardPreviewSelectedBlock = null;
+    const deleteOriginal = byId('deleteOriginalAfterApproval');
+    if (deleteOriginal) deleteOriginal.checked = false;
+    const editButton = byId('editBgpsStandardPreview');
+    if (editButton) editButton.textContent = 'Edit / Delete Content';
+    setHidden('deleteBgpsSelectedContent', true);
+    setHidden('undoBgpsStandardEdit', true);
     if (!document.querySelector('.modal-backdrop.open')) document.body.classList.remove('modal-open');
     const body = byId('bgpsStandardPreviewBody');
     if (body) body.innerHTML = '';
@@ -1921,6 +1935,97 @@ window.BGPS_CONFIG = Object.freeze({
     node.innerHTML = warnings.length
       ? `<strong>Review notes</strong><ul>${warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
       : '';
+  }
+
+  function cleanStandardEditableHtml(value) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = String(value || '');
+    wrapper.querySelectorAll('.bgps-edit-selected,[contenteditable]').forEach((node) => {
+      node.classList.remove('bgps-edit-selected');
+      node.removeAttribute('contenteditable');
+    });
+    wrapper.querySelectorAll('script,style,iframe,object,embed').forEach((node) => node.remove());
+    return wrapper.innerHTML.trim();
+  }
+
+  function currentStandardEditableHtml() {
+    const surface = byId('bgpsStandardEditSurface');
+    return surface ? cleanStandardEditableHtml(surface.innerHTML) : cleanStandardEditableHtml(standardPreviewEditableHtml);
+  }
+
+  function selectStandardEditableBlock(target) {
+    const surface = byId('bgpsStandardEditSurface');
+    if (!surface || !target) return;
+    const block = target.closest('table,figure,.diagram-box,li,p,h1,h2,h3,h4,h5,h6,div');
+    if (!block || block === surface || !surface.contains(block)) return;
+    standardPreviewSelectedBlock?.classList.remove('bgps-edit-selected');
+    standardPreviewSelectedBlock = block;
+    block.classList.add('bgps-edit-selected');
+  }
+
+  function renderStandardEditablePreview() {
+    const body = byId('bgpsStandardPreviewBody');
+    if (!body) return;
+    standardPreviewEditMode = true;
+    if (standardPreviewUrl) { URL.revokeObjectURL(standardPreviewUrl); standardPreviewUrl = ''; }
+    body.innerHTML = '<div class="bgps-standard-edit-surface" id="bgpsStandardEditSurface" contenteditable="true" spellcheck="true"></div>';
+    const surface = byId('bgpsStandardEditSurface');
+    surface.innerHTML = standardPreviewEditableHtml || '<p>BGPS content is unavailable for editing.</p>';
+    surface.addEventListener('click', (event) => selectStandardEditableBlock(event.target));
+    surface.addEventListener('input', () => {
+      standardPreviewEditableHtml = currentStandardEditableHtml();
+      setText('bgpsStandardPreviewStatus', 'Unsaved edits');
+    });
+    byId('editBgpsStandardPreview').textContent = 'Show PDF Preview';
+    setHidden('deleteBgpsSelectedContent', false);
+    setHidden('undoBgpsStandardEdit', false);
+    setText('bgpsStandardEditHint', 'Select text or tap a question, image or table, then use Delete Selected. Changes affect only the BGPS working copy.');
+    surface.focus();
+  }
+
+  async function toggleStandardPreviewEditMode() {
+    if (!standardPreviewResult) return;
+    if (!standardPreviewEditMode) { renderStandardEditablePreview(); return; }
+    standardPreviewEditableHtml = currentStandardEditableHtml();
+    standardPreviewEditMode = false;
+    standardPreviewSelectedBlock = null;
+    byId('editBgpsStandardPreview').textContent = 'Edit / Delete Content';
+    setHidden('deleteBgpsSelectedContent', true);
+    setHidden('undoBgpsStandardEdit', true);
+    setText('bgpsStandardEditHint', 'PDF view shows the last generated preview. Save the working copy to regenerate it with your edits.');
+    await renderStandardPreviewPdf(standardPreviewResult);
+  }
+
+  function deleteSelectedStandardContent() {
+    const surface = byId('bgpsStandardEditSurface');
+    if (!surface) return;
+    const selection = window.getSelection();
+    const hasTextSelection = selection && !selection.isCollapsed && selection.rangeCount
+      && surface.contains(selection.anchorNode) && surface.contains(selection.focusNode);
+    if (hasTextSelection) {
+      selection.deleteFromDocument();
+    } else if (standardPreviewSelectedBlock && surface.contains(standardPreviewSelectedBlock)) {
+      const label = standardPreviewSelectedBlock.matches('table') ? 'table'
+        : standardPreviewSelectedBlock.matches('img,.diagram-box,figure') ? 'image'
+        : 'selected question/content block';
+      if (!window.confirm(`Delete this ${label} from the BGPS working copy?`)) return;
+      standardPreviewSelectedBlock.remove();
+      standardPreviewSelectedBlock = null;
+    } else {
+      window.BGPS_APP.toast('Select text or tap a question, image or table first.', 'error');
+      return;
+    }
+    standardPreviewEditableHtml = currentStandardEditableHtml();
+    setText('bgpsStandardPreviewStatus', 'Unsaved edits');
+  }
+
+  function undoStandardEdit() {
+    const surface = byId('bgpsStandardEditSurface');
+    if (!surface) return;
+    surface.focus();
+    document.execCommand('undo');
+    standardPreviewEditableHtml = currentStandardEditableHtml();
+    setText('bgpsStandardPreviewStatus', 'Unsaved edits');
   }
 
   async function renderStandardPreviewPdf(result) {
@@ -1956,11 +2061,20 @@ window.BGPS_CONFIG = Object.freeze({
     try {
       const result = await window.BGPS_API.getBgpsStandardPreview(currentPaper.paperId);
       standardPreviewResult = result;
-      setText('bgpsStandardPreviewStatus', result.saved ? 'Saved BGPS Format' : 'Preview');
+      standardPreviewEditableHtml = String(result.editableContentHtml || '');
+      standardPreviewEditMode = false;
+      standardPreviewSelectedBlock = null;
+      const deleteOriginal = byId('deleteOriginalAfterApproval');
+      if (deleteOriginal) deleteOriginal.checked = false;
+      const editButton = byId('editBgpsStandardPreview');
+      if (editButton) editButton.textContent = 'Edit / Delete Content';
+      setHidden('deleteBgpsSelectedContent', true);
+      setHidden('undoBgpsStandardEdit', true);
+      setText('bgpsStandardPreviewStatus', result.saved ? 'Saved BGPS Working Copy' : 'Preview');
       renderStandardWarnings(result.warnings);
       await renderStandardPreviewPdf(result);
       const saveButton = byId('saveBgpsStandardPreview');
-      if (saveButton) saveButton.textContent = result.saved ? 'Regenerate & Save' : 'Save BGPS Format';
+      if (saveButton) saveButton.textContent = result.saved ? 'Update BGPS Working Copy' : 'Save BGPS Working Copy';
     } catch (error) {
       if (body) body.innerHTML = `<div class="empty-state"><strong>BGPS format could not be prepared</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
       renderStandardWarnings([]);
@@ -1972,42 +2086,46 @@ window.BGPS_CONFIG = Object.freeze({
 
   async function saveCurrentBgpsStandardPreview(approveAfterSave) {
     if (!currentPaper || !isDocxStandardCandidate(currentPaper) || standardPreviewInFlight) return;
+    const deleteOriginalAfterApproval = approveAfterSave && byId('deleteOriginalAfterApproval')?.checked === true;
+    if (deleteOriginalAfterApproval) {
+      const confirmed = window.confirm('After the final approved PDF is created, move the teacher’s original DOCX to Drive Trash?\n\nThis does not delete the final approved PDF.');
+      if (!confirmed) return;
+    }
     standardPreviewInFlight = true;
     const saveButton = byId('saveBgpsStandardPreview');
     const saveApproveButton = byId('saveAndApproveBgpsStandardPreview');
     if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Saving…'; }
     if (saveApproveButton) { saveApproveButton.disabled = true; saveApproveButton.textContent = approveAfterSave ? 'Saving & Approving…' : 'Please wait…'; }
     try {
-      const result = await window.BGPS_API.saveBgpsStandardPreview(currentPaper.paperId);
+      const editedContentHtml = standardPreviewEditMode ? currentStandardEditableHtml() : cleanStandardEditableHtml(standardPreviewEditableHtml);
+      const result = await window.BGPS_API.saveBgpsStandardPreview(currentPaper.paperId, editedContentHtml);
       currentPaper.standardPreviewSaved = true;
       currentPaper.standardPreviewSavedAt = result.savedAt || new Date().toISOString();
-      currentPaper.hasFinalPdf = true;
+      currentPaper.hasFinalPdf = false;
       const listPaper = papers.find((item) => String(item.paperId) === String(currentPaper.paperId));
-      if (listPaper) Object.assign(listPaper, {
-        standardPreviewSaved: true,
-        standardPreviewSavedAt: currentPaper.standardPreviewSavedAt,
-        hasFinalPdf: true
-      });
+      if (listPaper) Object.assign(listPaper, { standardPreviewSaved: true, standardPreviewSavedAt: currentPaper.standardPreviewSavedAt, hasFinalPdf: false });
+      standardPreviewEditableHtml = String(result.editableContentHtml || editedContentHtml || '');
+      standardPreviewEditMode = false;
+      standardPreviewSelectedBlock = null;
       setReviewMeta(currentPaper);
       standardPreviewResult = result;
-      setText('bgpsStandardPreviewStatus', 'Saved BGPS Format');
+      setText('bgpsStandardPreviewStatus', 'Saved BGPS Working Copy');
       renderStandardWarnings(result.warnings);
+      byId('editBgpsStandardPreview').textContent = 'Edit / Delete Content';
+      setHidden('deleteBgpsSelectedContent', true);
+      setHidden('undoBgpsStandardEdit', true);
       await renderStandardPreviewPdf(result);
       render();
-      window.BGPS_APP.toast('BGPS standardized copy saved. Original DOCX remains unchanged.');
-      if (approveAfterSave) {
-        closeStandardPreviewModal();
-        await updateStatus('Approved');
-      }
+      window.BGPS_APP.toast('BGPS working copy saved. No permanent PDF has been added yet.');
+      if (approveAfterSave) { closeStandardPreviewModal(); await updateStatus('Approved', { deleteOriginalAfterApproval }); }
     } catch (error) {
-      window.BGPS_APP.toast(error.message || 'Could not save the BGPS standardized copy.', 'error');
+      window.BGPS_APP.toast(error.message || 'Could not save the BGPS working copy.', 'error');
     } finally {
       standardPreviewInFlight = false;
-      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.standardPreviewSaved ? 'Regenerate & Save' : 'Save BGPS Format'; }
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.standardPreviewSaved ? 'Update BGPS Working Copy' : 'Save BGPS Working Copy'; }
       if (saveApproveButton) { saveApproveButton.disabled = false; saveApproveButton.textContent = 'Save & Approve'; }
     }
   }
-
 
   function setReviewMeta(paper) {
     const revision = isRevision(paper);
@@ -2042,10 +2160,10 @@ window.BGPS_CONFIG = Object.freeze({
       standardStatus.hidden = !canStandardize;
       standardStatus.classList.toggle('saved', standardSaved);
     }
-    setText('bgpsStandardReviewValue', standardSaved ? 'Saved and ready for approval' : 'Preview required');
+    setText('bgpsStandardReviewValue', standardSaved ? 'Working copy saved and ready' : 'Preview required');
     setText('bgpsStandardReviewHint', standardSaved
-      ? 'The saved standardized PDF will be used as the approved final paper.'
-      : 'Preview and save the BGPS-formatted copy. The original DOCX remains unchanged.');
+      ? 'The saved working copy will generate one final PDF during approval.'
+      : 'Preview and save the BGPS working copy. Original deletion is optional at approval.');
     const standardButton = byId('previewBgpsFormatButton');
     if (standardButton) {
       standardButton.hidden = !canStandardize;
@@ -2169,17 +2287,15 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
-  async function updateStatus(status) {
+  async function updateStatus(status, options = {}) {
     if (!currentPaper) return;
     if (status === 'Approved' && isDocxStandardCandidate(currentPaper) && currentPaper.standardPreviewSaved !== true) {
-      window.BGPS_APP.toast('Preview and save the BGPS standard format before approval.', 'error');
+      window.BGPS_APP.toast('Preview and save the BGPS working copy before approval.', 'error');
       openBgpsStandardPreview();
       return;
     }
     if (normalize(currentPaper.status) !== 'SUBMITTED') {
-      window.BGPS_APP.toast(currentPaper.status === 'Approved'
-        ? 'Approved papers are final.'
-        : 'Wait for the teacher to correct and resubmit this paper.', 'error');
+      window.BGPS_APP.toast(currentPaper.status === 'Approved' ? 'Approved papers are final.' : 'Wait for the teacher to correct and resubmit this paper.', 'error');
       return;
     }
     const note = String(byId('paperReviewNote')?.value || '').trim();
@@ -2191,25 +2307,26 @@ window.BGPS_CONFIG = Object.freeze({
     const button = status === 'Approved' ? byId('approvePaperButton') : byId('returnPaperButton');
     if (button) { button.disabled = true; button.textContent = status === 'Approved' ? 'Approving…' : 'Returning…'; }
     try {
-      const result = await window.BGPS_API.updatePaperStatus(currentPaper.paperId, status, note);
+      const result = await window.BGPS_API.updatePaperStatus(currentPaper.paperId, status, note, options);
       currentPaper.status = status;
       currentPaper.adminNote = note;
+      if (result?.originalDeleted === true) { currentPaper.originalDeleted = true; currentPaper.originalAvailable = false; }
+      if (status === 'Approved') currentPaper.hasFinalPdf = true;
       setReviewMeta(currentPaper);
       render();
-      window.BGPS_APP.toast(status === 'Approved'
-        ? 'Paper approved.'
-        : (result?.requiresReplacement
-          ? 'Paper returned. Teacher will upload a corrected DOCX replacement under the same Paper ID.'
-          : 'Paper returned. Teacher can correct and resubmit it under the same Paper ID.'));
+      const approvedMessage = result?.originalDeleted
+        ? 'Paper approved. Final PDF saved and original DOCX moved to Drive Trash.'
+        : (result?.originalDeleteWarning ? `Paper approved. Final PDF saved, but the original DOCX could not be removed: ${result.originalDeleteWarning}` : 'Paper approved. Final PDF saved; original DOCX retained.');
+      window.BGPS_APP.toast(status === 'Approved' ? approvedMessage : (result?.requiresReplacement
+        ? 'Paper returned. Teacher will upload a corrected DOCX replacement under the same Paper ID.'
+        : 'Paper returned. Teacher can correct and resubmit it under the same Paper ID.'));
       await window.BGPS_DASHBOARD.refresh(false);
     } catch (error) {
       window.BGPS_APP.toast(error.message || 'Could not update paper status.', 'error');
     } finally {
       if (button) {
         button.textContent = status === 'Approved' ? 'Approve Paper' : 'Return for Correction';
-        button.disabled = status === 'Approved'
-          ? normalize(currentPaper?.status) === 'APPROVED'
-          : normalize(currentPaper?.status) === 'CORRECTION REQUIRED';
+        button.disabled = status === 'Approved' ? normalize(currentPaper?.status) === 'APPROVED' : normalize(currentPaper?.status) === 'CORRECTION REQUIRED';
       }
     }
   }
@@ -2309,6 +2426,9 @@ window.BGPS_CONFIG = Object.freeze({
       if (event.target === byId('paperReviewModal')) closeReview();
     });
     byId('previewBgpsFormatButton')?.addEventListener('click', openBgpsStandardPreview);
+    byId('editBgpsStandardPreview')?.addEventListener('click', toggleStandardPreviewEditMode);
+    byId('deleteBgpsSelectedContent')?.addEventListener('click', deleteSelectedStandardContent);
+    byId('undoBgpsStandardEdit')?.addEventListener('click', undoStandardEdit);
     byId('approvePaperButton')?.addEventListener('click', () => updateStatus('Approved'));
     byId('editReviewedPaperButton')?.addEventListener('click', () => {
       if (!currentPaper) return;
@@ -2871,6 +2991,7 @@ window.BGPS_CONFIG = Object.freeze({
     const draftItems = drafts.map((draft) => ({ ...draft, kind: 'draft', status: 'Draft', updatedSort: draft.updatedAt || draft.createdAt || '' }));
     const paperItems = papers
       .filter((paper) => !linkedPaperIds.has(String(paper.paperId || '')))
+      .filter((paper) => statusKey(paper.status) !== 'approved')
       .map((paper) => ({ ...paper, kind: 'paper', updatedSort: paper.updatedAt || paper.uploadedAt || '' }));
     return [...draftItems, ...paperItems].sort((a, b) => String(b.updatedSort).localeCompare(String(a.updatedSort)));
   }
@@ -2892,7 +3013,7 @@ window.BGPS_CONFIG = Object.freeze({
       return true;
     });
     if (!items.length) {
-      list.innerHTML = '<div class="empty-state"><strong>No question papers found</strong>Create a new paper or change the current filters.</div>';
+      list.innerHTML = '<div class="empty-state"><strong>No working papers</strong>Approved papers are shown in status notifications. Create a paper or wait for a correction request.</div>';
       return;
     }
     list.innerHTML = items.map((item) => {
@@ -2905,9 +3026,9 @@ window.BGPS_CONFIG = Object.freeze({
       let actions = '';
       if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">Continue Editing</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">Delete Draft</button>`;
       else if (correction) actions = `<button class="btn primary" type="button" data-edit-paper="${escapeHtml(item.paperId)}">Edit &amp; Resubmit</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
-      else if (submitted) actions = `<button class="btn primary" type="button" data-edit-paper="${escapeHtml(item.paperId)}">Edit Paper</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
+      else if (submitted) actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button><span class="teacher-paper-readonly-note">Awaiting Principal review</span>`;
       else actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
-      return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3><span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>${resubmitted ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>' : ''}${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${resubmitted ? `<div class="teacher-paper-note" style="border-left-color:#5b4bb7;background:#faf9ff;color:#46378f"><strong>Correction sent:</strong> Version ${escapeHtml(item.version || 1)} is awaiting Principal re-review.${item.adminNote ? ` Returned note: ${escapeHtml(item.adminNote)}` : ''}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> This paper is ready for use.</div>' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
+      return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3><span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>${resubmitted ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>' : ''}${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${submitted && !resubmitted ? '<div class="teacher-paper-note" style="border-left-color:#cf8a13;background:#fff8e8;color:#72520d"><strong>Submitted:</strong> This paper is locked while awaiting Principal review.</div>' : ''}${resubmitted ? `<div class="teacher-paper-note" style="border-left-color:#5b4bb7;background:#faf9ff;color:#46378f"><strong>Correction sent:</strong> Version ${escapeHtml(item.version || 1)} is awaiting Principal re-review.${item.adminNote ? ` Returned note: ${escapeHtml(item.adminNote)}` : ''}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> This paper is ready for use.</div>' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
     }).join('');
   }
 

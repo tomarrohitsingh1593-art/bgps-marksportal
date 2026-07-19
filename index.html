@@ -372,15 +372,15 @@
 <div class="paper-access-note" hidden="" id="paperAccessNote"></div>
 <section aria-label="Teacher paper summary" class="paper-metrics">
 <button class="metric-card metric-button" data-teacher-paper-filter="Draft" type="button"><span>My Drafts</span><strong id="teacherPaperMetricDraft">—</strong><small>Saved papers still being prepared.</small></button>
-<button class="metric-card metric-button" data-teacher-paper-filter="Submitted" type="button"><span>Submitted</span><strong id="teacherPaperMetricSubmitted">—</strong><small>Papers awaiting principal review.</small></button>
+<article class="metric-card status-only"><span>Submitted</span><strong id="teacherPaperMetricSubmitted">—</strong><small>Status notifications only; no longer editable.</small></article>
 <button class="metric-card metric-button danger-soft" data-teacher-paper-filter="Correction Required" type="button"><span>Correction Required</span><strong id="teacherPaperMetricCorrection">—</strong><small>Papers returned with a principal note.</small></button>
-<button class="metric-card metric-button success-soft" data-teacher-paper-filter="Approved" type="button"><span>Approved</span><strong id="teacherPaperMetricApproved">—</strong><small>Papers approved for use.</small></button>
+<article class="metric-card success-soft status-only"><span>Approved</span><strong id="teacherPaperMetricApproved">—</strong><small>Shown in notifications and term progress.</small></article>
 </section>
 <section class="page-card section-gap">
 <div class="card-head teacher-paper-list-head">
-<div><h2>My Question Papers</h2><p>Continue a draft, preview a paper, or edit a submitted paper before approval.</p></div>
+<div><h2>Working Papers</h2><p>Drafts, submitted papers awaiting review, and papers returned for correction appear here. Approved papers move to status notifications.</p></div>
 <div class="paper-filters teacher-paper-filters">
-<select aria-label="Filter my papers by status" id="teacherPaperStatusFilter"><option value="">All statuses</option><option>Draft</option><option>Submitted</option><option>Correction Required</option><option>Approved</option></select>
+<select aria-label="Filter my working papers by status" id="teacherPaperStatusFilter"><option value="">All working statuses</option><option>Draft</option><option>Submitted</option><option>Correction Required</option></select>
 <select aria-label="Filter my papers by class" id="teacherPaperClassFilter"><option value="">All classes</option></select>
 <input aria-label="Search my question papers" id="teacherPaperSearch" placeholder="Search subject, exam or title" type="search"/>
 </div>
@@ -619,14 +619,24 @@ Show complete working wherever required." rows="3"></textarea></div>
 <button aria-label="Close BGPS standard preview" class="modal-close" id="closeBgpsStandardPreview" type="button">×</button>
 </header>
 <div class="bgps-standard-preview-notice" id="bgpsStandardPreviewNotice">
-<strong>Original DOCX remains unchanged.</strong>
-<span>This preview is a separate standardized BGPS copy for approval.</span>
+<strong>Original DOCX remains unchanged by default.</strong>
+<span>Edit or delete content only in the separate BGPS working copy. The original is removed only when the Principal explicitly selects the approval option below.</span>
+</div>
+<div class="bgps-standard-edit-toolbar" id="bgpsStandardEditToolbar">
+<button class="btn" id="editBgpsStandardPreview" type="button">Edit / Delete Content</button>
+<button class="btn danger-outline" hidden="" id="deleteBgpsSelectedContent" type="button">Delete Selected</button>
+<button class="btn" hidden="" id="undoBgpsStandardEdit" type="button">Undo</button>
+<span id="bgpsStandardEditHint">Select edit mode to remove text, a question, image or table from the BGPS copy.</span>
 </div>
 <div class="teacher-paper-preview-body" id="bgpsStandardPreviewBody"><div class="empty-state"><strong>Preparing BGPS format</strong>Please wait.</div></div>
 <div class="bgps-standard-preview-warnings" hidden="" id="bgpsStandardPreviewWarnings"></div>
+<label class="bgps-original-delete-option" for="deleteOriginalAfterApproval">
+<input id="deleteOriginalAfterApproval" type="checkbox"/>
+<span><strong>Delete original DOCX after successful approval</strong><small>Optional and OFF by default. The final approved PDF will remain.</small></span>
+</label>
 <footer class="teacher-paper-preview-footer">
 <button class="btn" id="backFromBgpsStandardPreview" type="button">Back to Review</button>
-<button class="btn primary" id="saveBgpsStandardPreview" type="button">Save BGPS Format</button>
+<button class="btn primary" id="saveBgpsStandardPreview" type="button">Save BGPS Working Copy</button>
 <button class="btn success" id="saveAndApproveBgpsStandardPreview" type="button">Save &amp; Approve</button>
 </footer>
 </div>

@@ -3334,7 +3334,7 @@ window.BGPS_CONFIG = Object.freeze({
     const instructions = normalize(draft.instructions).split(/\n+/).map(normalize).filter(Boolean);
     const instructionsHtml = instructions.length ? `<div class="instructions"><strong>General Instructions</strong><ol>${instructions.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol></div>` : '';
     const date = draft.examDate || '____________';
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:auto;object-fit:contain}.diagram-box.has-image>img{transform-origin:center center}.diagram-box.bgps-img-rotate-90>img{transform:rotate(90deg)}.diagram-box.bgps-img-rotate-180>img{transform:rotate(180deg)}.diagram-box.bgps-img-rotate-270>img{transform:rotate(270deg)}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}.or-line{text-align:center;font-weight:900}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
   }
 
   function setPreviewHeader(title, meta, status) {
@@ -3713,7 +3713,7 @@ window.BGPS_CONFIG = Object.freeze({
     return 'center';
   }
 
-  function imageRotation(box) {
+  function legacyImageRotation(box) {
     if (!box) return 0;
     if (box.classList.contains('bgps-img-rotate-90')) return 90;
     if (box.classList.contains('bgps-img-rotate-180')) return 180;
@@ -3721,41 +3721,172 @@ window.BGPS_CONFIG = Object.freeze({
     return 0;
   }
 
-  function applyImageRotation(box, angle) {
-    if (!box) return;
+  function clearLegacyImageRotation(box) {
+    box?.classList.remove('bgps-img-rotate-90', 'bgps-img-rotate-180', 'bgps-img-rotate-270');
+  }
+
+  function imageMimeFromSource(source) {
+    const match = String(source || '').match(/^data:(image\/(?:png|jpeg|webp));/i);
+    return match ? match[1].toLowerCase() : 'image/png';
+  }
+
+  function waitForImageReady(image) {
+    if (!image) return Promise.reject(new Error('The selected image is unavailable.'));
+    if (image.complete && image.naturalWidth > 0) return Promise.resolve(image);
+    return new Promise((resolve, reject) => {
+      const onLoad = () => { cleanup(); resolve(image); };
+      const onError = () => { cleanup(); reject(new Error('The image could not be opened for rotation.')); };
+      const cleanup = () => {
+        image.removeEventListener('load', onLoad);
+        image.removeEventListener('error', onError);
+      };
+      image.addEventListener('load', onLoad, { once: true });
+      image.addEventListener('error', onError, { once: true });
+    });
+  }
+
+  function rotatedImageDataUrl(image, angle) {
     const normalized = ((Number(angle) || 0) % 360 + 360) % 360;
-    box.classList.remove('bgps-img-rotate-90', 'bgps-img-rotate-180', 'bgps-img-rotate-270');
-    if (normalized === 90) box.classList.add('bgps-img-rotate-90');
-    if (normalized === 180) box.classList.add('bgps-img-rotate-180');
-    if (normalized === 270) box.classList.add('bgps-img-rotate-270');
-    updateImageInspector();
-    markDirty();
-    saveRange();
+    const quarterTurn = normalized === 90 || normalized === 270;
+    const canvas = document.createElement('canvas');
+    canvas.width = quarterTurn ? image.naturalHeight : image.naturalWidth;
+    canvas.height = quarterTurn ? image.naturalWidth : image.naturalHeight;
+    const context = canvas.getContext('2d', { alpha: true });
+    if (!context) throw new Error('Image rotation is not supported by this browser.');
+
+    context.save();
+    context.translate(canvas.width / 2, canvas.height / 2);
+    context.rotate(normalized * Math.PI / 180);
+    context.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2);
+    context.restore();
+
+    const mime = imageMimeFromSource(image.currentSrc || image.src);
+    const outputMime = ['image/png', 'image/jpeg', 'image/webp'].includes(mime) ? mime : 'image/png';
+    return canvas.toDataURL(outputMime, outputMime === 'image/jpeg' ? 0.92 : undefined);
   }
 
-  function rotateSelectedImage() {
-    if (!selectedImage) return;
-    applyImageRotation(selectedImage, imageRotation(selectedImage) + 90);
+  function normalizeImageBoxGeometry(box) {
+    if (!box) return;
+    box.style.removeProperty('height');
+    box.style.removeProperty('min-height');
+    box.style.removeProperty('max-height');
+    box.style.removeProperty('overflow');
+    box.style.removeProperty('transition');
+    const image = box.querySelector('img');
+    if (image) {
+      image.style.removeProperty('transform');
+      image.style.removeProperty('width');
+      image.style.removeProperty('height');
+      image.style.removeProperty('max-height');
+      image.style.display = 'block';
+      image.style.width = '100%';
+      image.style.height = 'auto';
+      image.style.maxWidth = '100%';
+      image.style.objectFit = 'contain';
+    }
   }
 
-  function ensureImageRotationStyles() {
-    if (document.getElementById('bgps-image-rotation-style')) return;
-    const style = document.createElement('style');
-    style.id = 'bgps-image-rotation-style';
-    style.textContent = `
-      #paperContentEditor .diagram-box.has-image > img {
-        transform-origin:center center;
-        transition:transform .18s ease;
+  function imageTargetBoxHeight(box, image) {
+    const computed = getComputedStyle(box);
+    const horizontal = parseFloat(computed.paddingLeft || 0) + parseFloat(computed.paddingRight || 0)
+      + parseFloat(computed.borderLeftWidth || 0) + parseFloat(computed.borderRightWidth || 0);
+    const vertical = parseFloat(computed.paddingTop || 0) + parseFloat(computed.paddingBottom || 0)
+      + parseFloat(computed.borderTopWidth || 0) + parseFloat(computed.borderBottomWidth || 0);
+    const contentWidth = Math.max(1, box.getBoundingClientRect().width - horizontal);
+    const imageHeight = contentWidth * image.naturalHeight / Math.max(1, image.naturalWidth);
+    const caption = box.querySelector('.diagram-caption');
+    const captionHeight = caption ? caption.getBoundingClientRect().height + 4 : 0;
+    return Math.max(24, imageHeight + vertical + captionHeight);
+  }
+
+  async function rotateImagePixels(box, angle, options = {}) {
+    if (!box || box.dataset.rotationBusy === 'true') return false;
+    const image = box.querySelector('img');
+    if (!image) throw new Error('Select an image first.');
+
+    box.dataset.rotationBusy = 'true';
+    const button = byId('rotatePaperImage');
+    if (button && selectedImage === box) {
+      button.disabled = true;
+      button.textContent = 'Rotating…';
+    }
+
+    try {
+      await waitForImageReady(image);
+      const beforeHeight = box.getBoundingClientRect().height;
+      const animation = options.animate !== false && typeof image.animate === 'function'
+        ? image.animate([
+            { transform: 'rotate(0deg)', opacity: 1 },
+            { transform: `rotate(${Number(angle) || 90}deg)`, opacity: .78 }
+          ], { duration: 170, easing: 'ease-in-out', fill: 'forwards' })
+        : null;
+
+      if (animation) {
+        try { await animation.finished; } catch (_) {}
       }
-      #paperContentEditor .diagram-box.bgps-img-rotate-90 > img { transform:rotate(90deg); }
-      #paperContentEditor .diagram-box.bgps-img-rotate-180 > img { transform:rotate(180deg); }
-      #paperContentEditor .diagram-box.bgps-img-rotate-270 > img { transform:rotate(270deg); }
-    `;
-    document.head.appendChild(style);
+
+      const rotatedSource = rotatedImageDataUrl(image, angle);
+      box.style.height = `${Math.max(24, beforeHeight)}px`;
+      box.style.overflow = 'visible';
+      box.style.transition = 'height 190ms ease';
+
+      image.getAnimations?.().forEach((item) => item.cancel());
+      image.style.removeProperty('transform');
+      image.src = rotatedSource;
+      await waitForImageReady(image);
+
+      clearLegacyImageRotation(box);
+      normalizeImageBoxGeometry(box);
+
+      // Animate the wrapper to its true post-rotation dimensions, then return
+      // to automatic height so resize and following text use the real footprint.
+      const targetHeight = imageTargetBoxHeight(box, image);
+      box.style.height = `${Math.max(24, beforeHeight)}px`;
+      box.style.overflow = 'visible';
+      box.style.transition = 'height 190ms ease';
+      requestAnimationFrame(() => { box.style.height = `${targetHeight}px`; });
+      await new Promise((resolve) => window.setTimeout(resolve, 210));
+      normalizeImageBoxGeometry(box);
+
+      if (box.classList.contains('bgps-img-free')) {
+        requestAnimationFrame(() => clampFreeImageOffset(box));
+      }
+      if (options.markDirty !== false) {
+        markDirty();
+        updateChecks();
+        saveRange();
+      }
+      updateImageInspector();
+      return true;
+    } finally {
+      delete box.dataset.rotationBusy;
+      if (button && selectedImage === box) {
+        button.disabled = false;
+        button.textContent = 'Rotate 90°';
+      }
+    }
+  }
+
+  async function rotateSelectedImage() {
+    if (!selectedImage) return;
+    try {
+      await rotateImagePixels(selectedImage, 90);
+    } catch (error) {
+      toast(error.message || 'The image could not be rotated.', 'error');
+    }
+  }
+
+  function upgradeLegacyRotatedImage(box) {
+    const legacyAngle = legacyImageRotation(box);
+    if (!legacyAngle || box.dataset.rotationUpgradeStarted === 'true') return;
+    box.dataset.rotationUpgradeStarted = 'true';
+    rotateImagePixels(box, legacyAngle, { animate: false }).catch((error) => {
+      delete box.dataset.rotationUpgradeStarted;
+      console.warn('Legacy image rotation could not be upgraded.', error);
+    });
   }
 
   function ensureImageRotateControl() {
-    ensureImageRotationStyles();
     const controls = byId('paperImageControls');
     const grid = controls?.querySelector('.image-action-grid');
     if (!grid) return null;
@@ -3774,16 +3905,19 @@ window.BGPS_CONFIG = Object.freeze({
     return button;
   }
 
+
   function applyImageWidth(box, width) {
     // One sizing authority only: the Scale slider / resize handle.
-    // Alignment must never silently shrink or reset the selected image.
+    // Height stays automatic so the image never retains its old footprint.
     const value = Math.min(100, Math.max(20, Number(width) || 100));
+    normalizeImageBoxGeometry(box);
     box.style.setProperty('--bgps-image-width', `${value}%`);
     box.style.width = `${value}%`;
     if (selectedImage === box) {
       if (byId('paperImageWidth')) byId('paperImageWidth').value = String(value);
       setText('paperImageWidthValue', `${Math.round(value)}%`);
     }
+    if (box.classList.contains('bgps-img-free')) requestAnimationFrame(() => clampFreeImageOffset(box));
     markDirty();
   }
 
@@ -3881,8 +4015,8 @@ window.BGPS_CONFIG = Object.freeze({
     setHidden('paperImageControls', !active);
     const rotateButton = ensureImageRotateControl();
     if (rotateButton) {
-      rotateButton.disabled = !active;
-      rotateButton.textContent = active ? `Rotate 90° · ${imageRotation(selectedImage)}°` : 'Rotate 90°';
+      rotateButton.disabled = !active || selectedImage?.dataset.rotationBusy === 'true';
+      rotateButton.textContent = selectedImage?.dataset.rotationBusy === 'true' ? 'Rotating…' : 'Rotate 90°';
     }
     if (!active) return;
     const width = imageWidth(selectedImage);
@@ -3895,6 +4029,8 @@ window.BGPS_CONFIG = Object.freeze({
   function bindImageBox(box) {
     if (!box) return;
     if (!box.classList.contains('has-image')) box.classList.add('has-image');
+    normalizeImageBoxGeometry(box);
+    upgradeLegacyRotatedImage(box);
     if (!['bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-free'].some((name) => box.classList.contains(name))) box.classList.add('bgps-img-center');
     const width = imageWidth(box);
     box.style.setProperty('--bgps-image-width', `${width}%`);
@@ -3949,6 +4085,7 @@ window.BGPS_CONFIG = Object.freeze({
     const stop = () => {
       if (raf) cancelAnimationFrame(raf);
       applyImageWidth(box, nextWidth);
+      normalizeImageBoxGeometry(box);
       requestAnimationFrame(() => clampFreeImageOffset(box));
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', stop);

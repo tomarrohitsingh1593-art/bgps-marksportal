@@ -1240,3 +1240,15 @@ body.modal-open { overflow: hidden; }
     min-height:44px;
   }
 }
+
+
+/* ===== BGPS editable standardized copy + storage-safe approval ===== */
+.bgps-standard-edit-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 14px;border-bottom:1px solid #d7e0e8;background:#f8fafc}
+.bgps-standard-edit-toolbar span{flex:1 1 260px;color:#5f7284;font-size:12px;line-height:1.4}
+.bgps-standard-edit-surface{width:min(794px,100%);min-height:980px;margin:0 auto;padding:58px 54px;box-sizing:border-box;background:#fff;color:#111;font-family:"Times New Roman",serif;font-size:10.5pt;line-height:1.35;box-shadow:0 8px 24px rgba(15,42,76,.13);outline:none}
+.bgps-standard-edit-surface:focus{box-shadow:0 0 0 3px rgba(31,104,166,.18),0 8px 24px rgba(15,42,76,.13)}
+.bgps-standard-edit-surface .bgps-edit-selected{outline:2px dashed #c53b3b!important;outline-offset:3px;background:rgba(197,59,59,.05)!important}
+.bgps-original-delete-option{display:flex;gap:10px;align-items:flex-start;margin:10px 14px 0;padding:11px 12px;border:1px solid #e5baba;border-radius:9px;background:#fff8f8;color:#6d2929;cursor:pointer}
+.bgps-original-delete-option input{width:18px;height:18px;margin-top:2px;flex:0 0 auto}
+.bgps-original-delete-option span{display:grid;gap:2px}.bgps-original-delete-option small{color:#805050;line-height:1.35}.metric-card.status-only{cursor:default}
+@media(max-width:700px){.bgps-standard-edit-toolbar{align-items:stretch}.bgps-standard-edit-toolbar .btn{min-height:44px;flex:1 1 140px}.bgps-standard-edit-surface{width:100%;min-height:75vh;padding:28px 18px;font-size:10pt;overflow-wrap:anywhere}.bgps-original-delete-option{margin:8px}}

@@ -136,6 +136,7 @@ window.BGPS_CONFIG = Object.freeze({
       getPaperDraftPreview: 90000,
       getPaperPreview: 90000,
       getBgpsStandardPreview: 120000,
+      getPaperContent: 120000,
       saveBgpsStandardPreview: 120000,
       bulkDeleteApprovedOriginals: 120000,
       updatePaperContentAdmin: 120000,
@@ -1892,7 +1893,7 @@ window.BGPS_CONFIG = Object.freeze({
           <span><small>Version</small><strong>${escapeHtml(paper.version || 1)}</strong></span>
           <span><small>Updated</small><strong>${escapeHtml(window.BGPS_DATA.safeDate(paper.updatedAt) || '—')}</strong></span>
         </div>
-        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${escapeHtml(actionLabel)}</button><button class="btn compact" type="button" data-edit-admin-paper="${escapeHtml(paper.paperId)}">Edit</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
+        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${escapeHtml(actionLabel)}</button>${paper.editable === true ? `<button class="btn compact" type="button" data-edit-admin-paper="${escapeHtml(paper.paperId)}">Edit</button>` : ''}<button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
       </article>`;
     }).join('');
   }
@@ -3773,6 +3774,38 @@ window.BGPS_CONFIG = Object.freeze({
         min-height:1.35em;
         margin:3px 0;
       }
+      @media (max-width:700px) {
+        #paperContentEditor {
+          min-width:0 !important;
+          max-width:100% !important;
+          overflow-x:hidden !important;
+        }
+        #paperContentEditor .diagram-box.has-image {
+          max-width:100% !important;
+          touch-action:pan-y;
+        }
+        #paperContentEditor .diagram-box.has-image.is-image-selected,
+        #paperContentEditor .diagram-box.has-image.bgps-img-free {
+          touch-action:none;
+        }
+        #paperContentEditor .bgps-image-resize-handle,
+        #paperContentEditor .bgps-image-drag-handle {
+          min-width:24px !important;
+          min-height:24px !important;
+          touch-action:none !important;
+        }
+        #paperImageControls .image-action-grid {
+          grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+          gap:8px !important;
+        }
+        #paperImageControls button {
+          min-height:42px !important;
+          white-space:normal !important;
+        }
+        #paperImageControls input[type="range"] {
+          width:100% !important;
+        }
+      }
     `;
     document.head.appendChild(style);
   }
@@ -3824,12 +3857,39 @@ window.BGPS_CONFIG = Object.freeze({
     return true;
   }
 
-  function primaryFreeStage(editor) {
-    return Array.from(editor?.children || []).find((child) => child.classList?.contains('bgps-free-stage')) || null;
+  function freeStageHostForBox(box, editor) {
+    if (!box || !editor) return editor || null;
+    const standardized = box.closest('.bgps-standardized-docx');
+    return standardized && editor.contains(standardized) ? standardized : editor;
+  }
+
+  function nearbyFreeStage(anchor, host) {
+    const scan = (start, direction) => {
+      let node = start;
+      while (node && node.parentElement === host) {
+        if (node.classList?.contains('bgps-free-stage')) return node;
+        if (!isEmptyEditorParagraph(node)) return null;
+        node = direction < 0 ? node.previousElementSibling : node.nextElementSibling;
+      }
+      return null;
+    };
+    return scan(anchor.previousElementSibling, -1) || scan(anchor.nextElementSibling, 1);
+  }
+
+  function directChildWithin(node, host) {
+    let current = node;
+    while (current?.parentElement && current.parentElement !== host) current = current.parentElement;
+    return current?.parentElement === host ? current : null;
   }
 
   function removeEmptyImagePlaceholder(node) {
     if (isEmptyEditorParagraph(node) && !node.classList.contains('question-line')) node.remove();
+  }
+
+  function removeEmptyImageParent(node, host) {
+    if (!node || node === host || node.classList?.contains('bgps-standardized-docx')) return;
+    if (node.tagName === 'P' && !String(node.textContent || '').replace(/\u00a0/g, ' ').trim()
+      && !node.querySelector('img,table,.diagram-box,.page-break')) node.remove();
   }
 
   function ensureFreeStageForBox(box) {
@@ -3838,13 +3898,18 @@ window.BGPS_CONFIG = Object.freeze({
     const currentStage = freeStageForBox(box);
     if (currentStage) return currentStage;
 
-    const editorRect = editor.getBoundingClientRect();
+    const host = freeStageHostForBox(box, editor);
+    const anchor = directChildWithin(box, host);
+    if (!host || !anchor) return null;
+
+    const hostRect = host.getBoundingClientRect();
     const boxRect = box.getBoundingClientRect();
-    const absoluteX = boxRect.left - editorRect.left + editor.scrollLeft;
-    const absoluteY = boxRect.top - editorRect.top + editor.scrollTop;
+    const absoluteX = boxRect.left - hostRect.left + host.scrollLeft;
+    const absoluteY = boxRect.top - hostRect.top + host.scrollTop;
+    const oldParent = box.parentElement;
     const oldPlaceholder = box.nextElementSibling;
 
-    let stage = primaryFreeStage(editor);
+    let stage = nearbyFreeStage(anchor, host);
     if (!stage) {
       stage = document.createElement('div');
       stage.className = 'bgps-free-stage';
@@ -3852,19 +3917,45 @@ window.BGPS_CONFIG = Object.freeze({
       stage.setAttribute('aria-hidden', 'true');
       stage.style.setProperty('--bgps-free-stage-height', '0px');
       stage.style.height = 'var(--bgps-free-stage-height)';
-      editor.insertBefore(stage, box);
+      host.insertBefore(stage, anchor);
     }
 
     const stageRect = stage.getBoundingClientRect();
-    const stageX = stageRect.left - editorRect.left + editor.scrollLeft;
-    const stageY = stageRect.top - editorRect.top + editor.scrollTop;
+    const stageX = stageRect.left - hostRect.left + host.scrollLeft;
+    const stageY = stageRect.top - hostRect.top + host.scrollTop;
     stage.appendChild(box);
     removeEmptyImagePlaceholder(oldPlaceholder);
+    removeEmptyImageParent(oldParent, host);
 
     box.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact');
     box.classList.add('bgps-img-free');
     applyFreeImageOffset(box, Math.max(0, absoluteX - stageX), Math.max(0, absoluteY - stageY));
     return stage;
+  }
+
+  function syncFreeStagesWithinHost(host) {
+    if (!host) return;
+    Array.from(host.children)
+      .filter((child) => child.classList?.contains('bgps-free-stage'))
+      .forEach((stage) => {
+        const boxes = Array.from(stage.children)
+          .filter((child) => child.classList?.contains('diagram-box') && child.classList.contains('bgps-img-free'));
+        if (!boxes.length) {
+          stage.remove();
+          return;
+        }
+
+        let requiredHeight = 0;
+        boxes.forEach((box) => {
+          const offset = freeImageOffset(box);
+          const height = Math.max(1, box.getBoundingClientRect().height || box.offsetHeight || 1);
+          requiredHeight = Math.max(requiredHeight, offset.y + height + 24);
+        });
+        const safeHeight = Math.max(24, Math.ceil(requiredHeight));
+        stage.style.setProperty('--bgps-free-stage-height', `${safeHeight}px`);
+        stage.style.height = 'var(--bgps-free-stage-height)';
+        ensureParagraphAfterImage(boxes[boxes.length - 1]);
+      });
   }
 
   function syncEditorFreeMoveHeight() {
@@ -3876,38 +3967,19 @@ window.BGPS_CONFIG = Object.freeze({
       editor.dataset.bgpsBaseMinHeight = String(Math.max(0, Number.isFinite(computed) ? computed : 0));
     }
 
-    // Upgrade any older direct absolute images into one in-flow stage. The
-    // stage reserves vertical space while each image remains truly absolute.
-    Array.from(editor.children)
-      .filter((child) => child.classList?.contains('diagram-box') && child.classList.contains('bgps-img-free'))
+    // Support both normal teacher-created papers and imported DOCX content
+    // nested inside .bgps-standardized-docx. Each host receives an in-flow
+    // stage so absolute images never overlap the following questions.
+    Array.from(editor.querySelectorAll('.diagram-box.has-image.bgps-img-free'))
+      .filter((box) => !freeStageForBox(box))
       .forEach((box) => ensureFreeStageForBox(box));
 
-    const stages = Array.from(editor.children).filter((child) => child.classList?.contains('bgps-free-stage'));
-    const primaryStage = stages[0] || null;
-    if (primaryStage) {
-      stages.slice(1).forEach((stage) => {
-        Array.from(stage.children)
-          .filter((child) => child.classList?.contains('diagram-box') && child.classList.contains('bgps-img-free'))
-          .forEach((box) => primaryStage.appendChild(box));
-        stage.remove();
-      });
-      const boxes = Array.from(primaryStage.children)
-        .filter((child) => child.classList?.contains('diagram-box') && child.classList.contains('bgps-img-free'));
-      if (!boxes.length) {
-        primaryStage.remove();
-      } else {
-        let requiredHeight = 0;
-        boxes.forEach((box) => {
-          const offset = freeImageOffset(box);
-          const height = Math.max(1, box.getBoundingClientRect().height || box.offsetHeight || 1);
-          requiredHeight = Math.max(requiredHeight, offset.y + height + 24);
-        });
-        const safeHeight = Math.max(24, Math.ceil(requiredHeight));
-        primaryStage.style.setProperty('--bgps-free-stage-height', `${safeHeight}px`);
-        primaryStage.style.height = 'var(--bgps-free-stage-height)';
-        ensureParagraphAfterImage(boxes[boxes.length - 1]);
-      }
-    }
+    const hosts = new Set([editor]);
+    editor.querySelectorAll('.bgps-standardized-docx').forEach((host) => hosts.add(host));
+    editor.querySelectorAll('.bgps-free-stage').forEach((stage) => {
+      if (stage.parentElement) hosts.add(stage.parentElement);
+    });
+    hosts.forEach(syncFreeStagesWithinHost);
 
     const baseMinHeight = parseFloat(editor.dataset.bgpsBaseMinHeight || 0) || 0;
     editor.style.minHeight = `${Math.ceil(Math.max(baseMinHeight, 120))}px`;
@@ -4791,6 +4863,18 @@ window.BGPS_CONFIG = Object.freeze({
     byId('replacePaperImageFile')?.addEventListener('change', (event) => replaceSelectedImage(event.target.files?.[0]));
     byId('addImageCaption')?.addEventListener('click', addCaption);
     byId('deletePaperImage')?.addEventListener('click', deleteSelectedImage);
+
+    let editorViewportRaf = 0;
+    window.addEventListener('resize', () => {
+      if (editorViewportRaf) cancelAnimationFrame(editorViewportRaf);
+      editorViewportRaf = requestAnimationFrame(() => {
+        editorViewportRaf = 0;
+        const workspace = byId('paperEditorWorkspace');
+        if (!workspace || workspace.hidden) return;
+        byId('paperContentEditor')?.querySelectorAll('.diagram-box.has-image.bgps-img-free').forEach(clampFreeImageOffset);
+        syncEditorFreeMoveHeight();
+      });
+    }, { passive: true });
 
     byId('teacherPaperStatusFilter')?.addEventListener('change', renderList);
     byId('teacherPaperClassFilter')?.addEventListener('change', renderList);

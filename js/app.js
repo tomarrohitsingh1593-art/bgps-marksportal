@@ -2248,10 +2248,7 @@ window.BGPS_CONFIG = Object.freeze({
       approve.title = canStandardize && !standardSaved ? 'Preview and save the BGPS format before approval.' : '';
     }
     const edit = byId('editReviewedPaperButton');
-    if (edit) {
-      edit.hidden = paper.editable !== true && !canStandardize;
-      edit.textContent = 'Edit';
-    }
+    if (edit) edit.hidden = paper.editable !== true;
     const returned = byId('returnPaperButton');
     if (returned) returned.disabled = normalize(paper.status) !== 'SUBMITTED';
   }
@@ -2508,10 +2505,6 @@ window.BGPS_CONFIG = Object.freeze({
     byId('editReviewedPaperButton')?.addEventListener('click', () => {
       if (!currentPaper) return;
       const paperId = currentPaper.paperId;
-      if (currentPaper.editable !== true && isDocxStandardCandidate(currentPaper)) {
-        openBgpsStandardPreview();
-        return;
-      }
       closeReview();
       window.BGPS_PAPER_CREATOR.openAdminEdit(paperId);
     });
@@ -2558,31 +2551,7 @@ window.BGPS_CONFIG = Object.freeze({
     render();
   }
 
-  async function openBgpsEditor(paperId) {
-    let paper = paperById(paperId);
-    if (!paper) {
-      await load(false);
-      paper = paperById(paperId);
-    }
-    if (!paper) throw new Error('Paper record was not found.');
-    if (!isDocxStandardCandidate(paper)) {
-      throw new Error('This uploaded file does not support BGPS editable format.');
-    }
-    await openReview(paperId);
-    await openBgpsStandardPreview();
-  }
-
-  window.BGPS_PAPERS = Object.freeze({
-    onAuthenticated,
-    load,
-    render,
-    openReview,
-    openBgpsEditor,
-    setStatusFilter,
-    setResubmittedFilter,
-    reset,
-    getPapers: () => [...papers]
-  });
+  window.BGPS_PAPERS = Object.freeze({ onAuthenticated, load, render, openReview, setStatusFilter, setResubmittedFilter, reset, getPapers: () => [...papers] });
 })();
 
 
@@ -3387,26 +3356,11 @@ window.BGPS_CONFIG = Object.freeze({
     try {
       if (!session?.isAdmin) throw new Error('Admin access is required.');
       const result = await window.BGPS_API.getPaperContent(paperId);
-      const paper = result.paper || {};
-      const listedPaper = window.BGPS_PAPERS?.getPapers?.().find(
-        (item) => String(item.paperId) === String(paperId)
-      );
-      const canStandardize = result.editMode === 'bgps-standard'
-        || result.canStandardize === true
-        || paper.canStandardize === true
-        || listedPaper?.canStandardize === true;
-
-      if (result.editable === false && canStandardize) {
-        await window.BGPS_PAPERS.openBgpsEditor(paperId);
-        return;
+      if (result.requiresReplacement || result.editable === false) {
+        throw new Error('This paper is reference-only and cannot be edited safely in the portal.');
       }
-
-      if (result.editable === false || result.editMode === 'reference') {
-        throw new Error('This uploaded file cannot be edited in the full portal editor. Open Review to preview it or return it for correction.');
-      }
-
       window.BGPS_APP.openView('teacher-papers');
-      loadDraftIntoEditor(paper, false, { admin: true });
+      loadDraftIntoEditor(result.paper || {}, false, { admin: true });
     } catch (error) {
       toast(error.message || 'Could not open Admin paper edit mode.', 'error');
     }

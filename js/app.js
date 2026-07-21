@@ -1892,7 +1892,15 @@ window.BGPS_CONFIG = Object.freeze({
           <span><small>Version</small><strong>${escapeHtml(paper.version || 1)}</strong></span>
           <span><small>Updated</small><strong>${escapeHtml(window.BGPS_DATA.safeDate(paper.updatedAt) || '—')}</strong></span>
         </div>
-        <div class="paper-row-actions"><button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${escapeHtml(actionLabel)}</button><button class="btn compact" type="button" data-edit-admin-paper="${escapeHtml(paper.paperId)}">Edit</button><button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button></div>
+        <div class="paper-row-actions">
+          <button class="btn primary compact" type="button" data-open-paper="${escapeHtml(paper.paperId)}">${escapeHtml(actionLabel)}</button>
+          ${paper.editable === true
+            ? `<button class="btn compact" type="button" data-edit-admin-paper="${escapeHtml(paper.paperId)}">Edit</button>`
+            : paper.canStandardize === true
+              ? `<button class="btn compact" type="button" data-standardize-admin-paper="${escapeHtml(paper.paperId)}">Edit BGPS</button>`
+              : `<button class="btn compact" type="button" disabled title="Uploaded PDF is reference-only">Reference Only</button>`}
+          <button class="btn danger-outline compact" type="button" data-delete-paper="${escapeHtml(paper.paperId)}">Delete</button>
+        </div>
       </article>`;
     }).join('');
   }
@@ -2248,7 +2256,11 @@ window.BGPS_CONFIG = Object.freeze({
       approve.title = canStandardize && !standardSaved ? 'Preview and save the BGPS format before approval.' : '';
     }
     const edit = byId('editReviewedPaperButton');
-    if (edit) edit.hidden = paper.editable !== true;
+    if (edit) {
+      edit.hidden = paper.editable !== true && !canStandardize;
+      edit.textContent = paper.editable === true ? 'Edit Paper' : 'Edit BGPS Format';
+      edit.dataset.reviewEditMode = paper.editable === true ? 'portal' : (canStandardize ? 'bgps-standard' : 'reference');
+    }
     const returned = byId('returnPaperButton');
     if (returned) returned.disabled = normalize(paper.status) !== 'SUBMITTED';
   }
@@ -2490,6 +2502,12 @@ window.BGPS_CONFIG = Object.freeze({
       if (deleteButton) { deleteAdminPaper(deleteButton.dataset.deletePaper); return; }
       const editButton = event.target.closest('[data-edit-admin-paper]');
       if (editButton) { window.BGPS_PAPER_CREATOR.openAdminEdit(editButton.dataset.editAdminPaper); return; }
+      const standardizeButton = event.target.closest('[data-standardize-admin-paper]');
+      if (standardizeButton) {
+        openBgpsEditor(standardizeButton.dataset.standardizeAdminPaper)
+          .catch((error) => window.BGPS_APP.toast(error.message || 'Could not open BGPS editor.', 'error'));
+        return;
+      }
       const button = event.target.closest('[data-open-paper]');
       if (button) openReview(button.dataset.openPaper);
     });
@@ -2505,6 +2523,11 @@ window.BGPS_CONFIG = Object.freeze({
     byId('editReviewedPaperButton')?.addEventListener('click', () => {
       if (!currentPaper) return;
       const paperId = currentPaper.paperId;
+      const mode = byId('editReviewedPaperButton')?.dataset.reviewEditMode || 'portal';
+      if (mode === 'bgps-standard') {
+        openBgpsStandardPreview();
+        return;
+      }
       closeReview();
       window.BGPS_PAPER_CREATOR.openAdminEdit(paperId);
     });
@@ -2551,7 +2574,31 @@ window.BGPS_CONFIG = Object.freeze({
     render();
   }
 
-  window.BGPS_PAPERS = Object.freeze({ onAuthenticated, load, render, openReview, setStatusFilter, setResubmittedFilter, reset, getPapers: () => [...papers] });
+  async function openBgpsEditor(paperId) {
+    let paper = paperById(paperId);
+    if (!paper) {
+      await load(false);
+      paper = paperById(paperId);
+    }
+    if (!paper) throw new Error('Paper record was not found.');
+    if (!isDocxStandardCandidate(paper)) {
+      throw new Error('BGPS editable preview is available only for uploaded DOCX papers.');
+    }
+    await openReview(paperId);
+    await openBgpsStandardPreview();
+  }
+
+  window.BGPS_PAPERS = Object.freeze({
+    onAuthenticated,
+    load,
+    render,
+    openReview,
+    openBgpsEditor,
+    setStatusFilter,
+    setResubmittedFilter,
+    reset,
+    getPapers: () => [...papers]
+  });
 })();
 
 
@@ -3356,11 +3403,30 @@ window.BGPS_CONFIG = Object.freeze({
     try {
       if (!session?.isAdmin) throw new Error('Admin access is required.');
       const result = await window.BGPS_API.getPaperContent(paperId);
-      if (result.requiresReplacement || result.editable === false) {
-        throw new Error('This paper is reference-only and cannot be edited safely in the portal.');
+      const paper = result.paper || {};
+      const listedPaper = window.BGPS_PAPERS?.getPapers?.().find(
+        (item) => String(item.paperId) === String(paperId)
+      );
+      const canStandardize = result.editMode === 'bgps-standard'
+        || result.canStandardize === true
+        || paper.canStandardize === true
+        || listedPaper?.canStandardize === true;
+
+      if (result.editable === false && canStandardize) {
+        await window.BGPS_PAPERS.openBgpsEditor(paperId);
+        return;
       }
+
+      if (result.editable === false || result.editMode === 'reference') {
+        const isPdf = String(paper.mimeType || listedPaper?.mimeType || '').toLowerCase().includes('pdf')
+          || String(paper.fileName || listedPaper?.fileName || '').toLowerCase().endsWith('.pdf');
+        throw new Error(isPdf
+          ? 'This uploaded PDF is reference-only. Download it or return it to the teacher for a corrected DOCX.'
+          : 'Editable paper content is unavailable. Open Preview and return the paper to the teacher if correction is needed.');
+      }
+
       window.BGPS_APP.openView('teacher-papers');
-      loadDraftIntoEditor(result.paper || {}, false, { admin: true });
+      loadDraftIntoEditor(paper, false, { admin: true });
     } catch (error) {
       toast(error.message || 'Could not open Admin paper edit mode.', 'error');
     }

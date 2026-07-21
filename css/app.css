@@ -1479,3 +1479,50 @@ body.modal-open { overflow: hidden; }
     grid-column: 1 / -1;
   }
 }
+/* ===== BGPS QUESTION SUBPART NUMBERING ===== */
+.paper-content-editor ol.bgps-subparts-alpha,
+.paper-content-editor ol.bgps-subparts-roman {
+  list-style: none;
+  counter-reset: bgps-subpart;
+  margin: 7px 0 9px 34px;
+  padding: 0;
+}
+
+.paper-content-editor ol.bgps-subparts-alpha > li,
+.paper-content-editor ol.bgps-subparts-roman > li {
+  position: relative;
+  counter-increment: bgps-subpart;
+  min-height: 24px;
+  margin: 5px 0;
+  padding-left: 34px;
+}
+
+.paper-content-editor ol.bgps-subparts-alpha > li::before,
+.paper-content-editor ol.bgps-subparts-roman > li::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 28px;
+  color: #111;
+  font-weight: 800;
+}
+
+.paper-content-editor ol.bgps-subparts-alpha > li::before {
+  content: "(" counter(bgps-subpart, lower-alpha) ")";
+}
+
+.paper-content-editor ol.bgps-subparts-roman > li::before {
+  content: "(" counter(bgps-subpart, lower-roman) ")";
+}
+
+@media (max-width: 560px) {
+  .paper-content-editor ol.bgps-subparts-alpha,
+  .paper-content-editor ol.bgps-subparts-roman {
+    margin-left: 24px;
+  }
+
+  .paper-content-editor ol.bgps-subparts-alpha > li,
+  .paper-content-editor ol.bgps-subparts-roman > li {
+    padding-left: 30px;
+  }
+}

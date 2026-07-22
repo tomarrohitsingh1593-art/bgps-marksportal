@@ -1243,6 +1243,210 @@ window.BGPS_CONFIG = Object.freeze({
   let classProgress = [];
   let teacherProgress = [];
   let initialized = false;
+  let pendingSummaryRefreshing = false;
+
+  const PENDING_SUMMARY_IDS = Object.freeze({
+    style: 'bgpsPendingSummaryStyle',
+    button: 'bgpsPendingSummaryButton',
+    overlay: 'bgpsPendingSummaryOverlay',
+    drawer: 'bgpsPendingSummaryDrawer',
+    content: 'bgpsPendingSummaryContent',
+    context: 'bgpsPendingSummaryContext',
+    refresh: 'bgpsPendingSummaryRefresh'
+  });
+
+  function ensurePendingSummaryUi() {
+    if (!byId(PENDING_SUMMARY_IDS.style)) {
+      const style = document.createElement('style');
+      style.id = PENDING_SUMMARY_IDS.style;
+      style.textContent = `
+        .bgps-pending-summary-launcher{position:fixed;right:22px;bottom:22px;z-index:9990;min-height:48px;padding:0 18px;border:0;border-radius:999px;background:#123f70;color:#fff;font:inherit;font-size:14px;font-weight:800;line-height:1;box-shadow:0 10px 28px rgba(8,38,67,.28);cursor:pointer;display:none;align-items:center;gap:9px}
+        .bgps-pending-summary-launcher:hover{background:#0b3159;transform:translateY(-1px)}
+        .bgps-pending-summary-launcher:focus-visible{outline:3px solid #f2a900;outline-offset:3px}
+        .bgps-pending-summary-launcher .summary-launcher-dot{width:9px;height:9px;border-radius:50%;background:#f2a900;box-shadow:0 0 0 4px rgba(242,169,0,.18)}
+        .bgps-pending-summary-overlay{position:fixed;inset:0;z-index:12000;background:rgba(4,25,45,.54);opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s ease}
+        .bgps-pending-summary-overlay.is-open{opacity:1;visibility:visible}
+        .bgps-pending-summary-drawer{position:absolute;top:0;right:0;width:min(720px,100%);height:100%;height:100dvh;background:#f5f8fb;box-shadow:-16px 0 42px rgba(5,34,61,.22);transform:translateX(102%);transition:transform .24s ease;display:flex;flex-direction:column;overflow:hidden}
+        .bgps-pending-summary-overlay.is-open .bgps-pending-summary-drawer{transform:translateX(0)}
+        .bgps-pending-summary-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px 16px;background:#fff;border-bottom:1px solid #d7e1eb}
+        .bgps-pending-summary-title{margin:0;color:#0c3560;font-size:24px;line-height:1.15}
+        .bgps-pending-summary-context{display:block;margin-top:5px;color:#667b91;font-size:13px}
+        .bgps-pending-summary-head-actions{display:flex;gap:8px;flex:0 0 auto}
+        .bgps-pending-summary-icon-button{min-width:44px;height:44px;padding:0 12px;border:1px solid #c6d5e4;border-radius:12px;background:#fff;color:#123f70;font-weight:800;cursor:pointer}
+        .bgps-pending-summary-icon-button:hover{background:#edf4fa}
+        .bgps-pending-summary-icon-button:disabled{opacity:.55;cursor:wait}
+        .bgps-pending-summary-body{padding:18px 22px calc(24px + env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain}
+        .bgps-pending-summary-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
+        .bgps-pending-summary-kpi{padding:15px 16px;border:1px solid #d6e1eb;border-radius:16px;background:#fff;box-shadow:0 5px 16px rgba(22,58,91,.06)}
+        .bgps-pending-summary-kpi.paper{border-top:4px solid #f2a900}
+        .bgps-pending-summary-kpi.marks{border-top:4px solid #2c7b63}
+        .bgps-pending-summary-kpi small{display:block;color:#6a7d91;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+        .bgps-pending-summary-kpi strong{display:block;margin-top:5px;color:#103c69;font-size:25px;line-height:1.1}
+        .bgps-pending-summary-kpi span{display:block;margin-top:5px;color:#536b84;font-size:13px;line-height:1.4}
+        .bgps-pending-summary-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 2px 10px;color:#123f70}
+        .bgps-pending-summary-section-title h3{margin:0;font-size:17px}
+        .bgps-pending-summary-section-title span{color:#6a7d91;font-size:12px;font-weight:700}
+        .bgps-pending-summary-list{display:grid;gap:11px}
+        .bgps-pending-class-card{padding:15px;border:1px solid #d6e1eb;border-radius:16px;background:#fff;box-shadow:0 4px 14px rgba(22,58,91,.05)}
+        .bgps-pending-class-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+        .bgps-pending-class-head strong{display:block;color:#0d3966;font-size:17px}
+        .bgps-pending-class-head small{display:block;margin-top:3px;color:#718397}
+        .bgps-pending-badges{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}
+        .bgps-pending-badge{padding:5px 8px;border-radius:999px;background:#fff1d1;color:#77520a;font-size:11px;font-weight:800;white-space:nowrap}
+        .bgps-pending-badge.correction{background:#fde7e7;color:#9e2929}
+        .bgps-pending-badge.marks{background:#e3f3ed;color:#216650}
+        .bgps-pending-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+        .bgps-pending-detail{padding:11px 12px;border-radius:12px;background:#f5f8fb;color:#536b84;font-size:13px;line-height:1.45;min-width:0}
+        .bgps-pending-detail b{display:block;margin-bottom:3px;color:#173f69;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+        .bgps-pending-detail.is-off{color:#7d8792;background:#f1f2f4}
+        .bgps-pending-class-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+        .bgps-pending-class-actions button{min-height:44px;padding:0 14px;border:1px solid #bfd0e1;border-radius:11px;background:#fff;color:#123f70;font-weight:800;cursor:pointer}
+        .bgps-pending-class-actions button.primary{border-color:#123f70;background:#123f70;color:#fff}
+        .bgps-pending-summary-empty{padding:32px 20px;border:1px dashed #b9cbdc;border-radius:16px;background:#fff;text-align:center;color:#577088}
+        .bgps-pending-summary-empty strong{display:block;margin-bottom:5px;color:#216650;font-size:18px}
+        body.bgps-pending-summary-open{overflow:hidden}
+        @media(max-width:640px){
+          .bgps-pending-summary-launcher{right:12px;bottom:calc(82px + env(safe-area-inset-bottom));min-height:46px;padding:0 14px;font-size:13px}
+          .bgps-pending-summary-drawer{width:100%;border-radius:0}
+          .bgps-pending-summary-head{padding:15px 14px 12px;align-items:center}
+          .bgps-pending-summary-title{font-size:20px}
+          .bgps-pending-summary-head-actions{gap:6px}
+          .bgps-pending-summary-icon-button{min-width:44px;padding:0 9px}
+          .bgps-pending-summary-body{padding:14px 12px calc(20px + env(safe-area-inset-bottom))}
+          .bgps-pending-summary-kpis,.bgps-pending-detail-grid{grid-template-columns:1fr}
+          .bgps-pending-class-head{display:block}
+          .bgps-pending-badges{justify-content:flex-start;margin-top:9px}
+          .bgps-pending-class-actions{display:grid;grid-template-columns:1fr 1fr}
+          .bgps-pending-class-actions button{width:100%}
+          .bgps-pending-class-actions button:only-child{grid-column:1/-1}
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    if (!byId(PENDING_SUMMARY_IDS.button)) {
+      const button = document.createElement('button');
+      button.id = PENDING_SUMMARY_IDS.button;
+      button.className = 'bgps-pending-summary-launcher';
+      button.type = 'button';
+      button.setAttribute('aria-haspopup', 'dialog');
+      button.setAttribute('aria-controls', PENDING_SUMMARY_IDS.drawer);
+      button.innerHTML = '<span class="summary-launcher-dot" aria-hidden="true"></span><span>Missing Papers</span>';
+      button.addEventListener('click', openPendingSummary);
+      document.body.appendChild(button);
+    }
+
+    if (!byId(PENDING_SUMMARY_IDS.overlay)) {
+      const overlay = document.createElement('div');
+      overlay.id = PENDING_SUMMARY_IDS.overlay;
+      overlay.className = 'bgps-pending-summary-overlay';
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.innerHTML = `
+        <section id="${PENDING_SUMMARY_IDS.drawer}" class="bgps-pending-summary-drawer" role="dialog" aria-modal="true" aria-labelledby="bgpsPendingSummaryTitle" tabindex="-1">
+          <header class="bgps-pending-summary-head">
+            <div><h2 id="bgpsPendingSummaryTitle" class="bgps-pending-summary-title">Class-wise Missing Papers</h2><span id="${PENDING_SUMMARY_IDS.context}" class="bgps-pending-summary-context"></span></div>
+            <div class="bgps-pending-summary-head-actions">
+              <button id="${PENDING_SUMMARY_IDS.refresh}" class="bgps-pending-summary-icon-button" type="button" title="Refresh summary">Refresh</button>
+              <button class="bgps-pending-summary-icon-button" type="button" data-close-pending-summary aria-label="Close pending summary">Close</button>
+            </div>
+          </header>
+          <div id="${PENDING_SUMMARY_IDS.content}" class="bgps-pending-summary-body"></div>
+        </section>`;
+      overlay.addEventListener('click', handlePendingSummaryClick);
+      document.body.appendChild(overlay);
+    }
+  }
+
+  function closePendingSummary() {
+    const overlay = byId(PENDING_SUMMARY_IDS.overlay);
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('bgps-pending-summary-open');
+    byId(PENDING_SUMMARY_IDS.button)?.focus({ preventScroll: true });
+  }
+
+  function renderPendingSummary() {
+    const content = byId(PENDING_SUMMARY_IDS.content);
+    if (!content) return;
+    const pendingRows = classProgress.filter((item) => item.pendingPaperSubjects.length > 0);
+    const missingPapers = pendingRows.reduce((sum, item) => sum + item.pendingPaperSubjects.length, 0);
+    const completedClasses = Math.max(0, classProgress.length - pendingRows.length);
+    setText(PENDING_SUMMARY_IDS.context, `${selectedExam()} · ${academicYearLabel(selectedAcademicYear())}`);
+
+    const cards = pendingRows.map((item) => {
+      return `
+        <article class="bgps-pending-class-card">
+          <div class="bgps-pending-class-head">
+            <div><strong>${escapeHtml(item.className)}</strong><small>${escapeHtml(item.teacherId)}</small></div>
+            <div class="bgps-pending-badges"><span class="bgps-pending-badge">${item.pendingPaperSubjects.length} paper${item.pendingPaperSubjects.length === 1 ? '' : 's'} missing</span></div>
+          </div>
+          <div class="bgps-pending-detail"><b>Not submitted yet</b>${escapeHtml(item.pendingPaperSubjects.join(', '))}</div>
+          <div class="bgps-pending-class-actions">
+            <button class="primary" type="button" data-summary-open-papers="${escapeHtml(item.className)}">Open Class Papers</button>
+          </div>
+        </article>`;
+    }).join('');
+
+    content.innerHTML = `
+      <div class="bgps-pending-summary-kpis">
+        <div class="bgps-pending-summary-kpi paper"><small>Classes with missing papers</small><strong>${pendingRows.length}</strong><span>${missingPapers} subject paper${missingPapers === 1 ? '' : 's'} not submitted yet.</span></div>
+        <div class="bgps-pending-summary-kpi marks"><small>Classes complete</small><strong>${completedClasses}</strong><span>All expected subject papers have been submitted.</span></div>
+      </div>
+      <div class="bgps-pending-summary-section-title"><h3>Missing papers by class</h3><span>${pendingRows.length} class${pendingRows.length === 1 ? '' : 'es'}</span></div>
+      <div class="bgps-pending-summary-list">${cards || '<div class="bgps-pending-summary-empty"><strong>All papers submitted</strong>Every expected subject paper is available for the selected exam and academic year.</div>'}</div>`;
+  }
+
+  async function openPendingSummary() {
+    if (!session?.isAdmin) return;
+    ensurePendingSummaryUi();
+    const overlay = byId(PENDING_SUMMARY_IDS.overlay);
+    overlay?.classList.add('is-open');
+    overlay?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('bgps-pending-summary-open');
+    renderPendingSummary();
+    byId(PENDING_SUMMARY_IDS.drawer)?.focus?.({ preventScroll: true });
+    if (!classProgress.length && !pendingSummaryRefreshing) await refreshPendingSummary();
+  }
+
+  async function refreshPendingSummary() {
+    if (pendingSummaryRefreshing || !session?.isAdmin) return;
+    pendingSummaryRefreshing = true;
+    const button = byId(PENDING_SUMMARY_IDS.refresh);
+    if (button) { button.disabled = true; button.textContent = 'Loading...'; }
+    try {
+      await refresh(false);
+      renderPendingSummary();
+    } finally {
+      pendingSummaryRefreshing = false;
+      if (button) { button.disabled = false; button.textContent = 'Refresh'; }
+    }
+  }
+
+  function openSummaryPapers(className) {
+    closePendingSummary();
+    window.BGPS_APP.openView('papers');
+    const classFilter = byId('paperClassFilter');
+    if (classFilter) classFilter.value = className;
+    window.BGPS_PAPERS.setStatusFilter('');
+    window.BGPS_PAPERS.render();
+  }
+
+  function handlePendingSummaryClick(event) {
+    if (event.target === byId(PENDING_SUMMARY_IDS.overlay) || event.target.closest('[data-close-pending-summary]')) {
+      closePendingSummary();
+      return;
+    }
+    if (event.target.closest(`#${PENDING_SUMMARY_IDS.refresh}`)) {
+      refreshPendingSummary();
+      return;
+    }
+    const paperButton = event.target.closest('[data-summary-open-papers]');
+    if (paperButton) {
+      openSummaryPapers(paperButton.dataset.summaryOpenPapers);
+      return;
+    }
+  }
 
   function escapeHtml(value) {
     return String(value == null ? '' : value)
@@ -1260,6 +1464,11 @@ window.BGPS_CONFIG = Object.freeze({
 
   function normalize(value) {
     return String(value == null ? '' : value).trim().toUpperCase().replace(/\s+/g, ' ');
+  }
+
+  function isCorrectedSubmission(paper) {
+    return normalize(paper?.status) === 'SUBMITTED'
+      && (paper?.resubmitted === true || Boolean(String(paper?.adminNote || '').trim()));
   }
 
   function dedupeMarks(rows) {
@@ -1408,7 +1617,7 @@ window.BGPS_CONFIG = Object.freeze({
     // Corrected & Resubmitted is a global Principal action queue. Keep this
     // count identical to the Paper Approval board instead of limiting it to
     // the currently selected term/year.
-    const resubmitted = papers.filter((paper) => normalize(paper.status) === 'SUBMITTED' && paper.resubmitted === true).length;
+    const resubmitted = papers.filter(isCorrectedSubmission).length;
 
     setText('dashPapersResubmitted', resubmitted);
     setText('dashMarksPending', pending);
@@ -1446,7 +1655,7 @@ window.BGPS_CONFIG = Object.freeze({
     const examPapers = papers.filter((paper) => normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
 
     examPapers
-      .filter((paper) => normalize(paper.status) === 'SUBMITTED' && paper.resubmitted === true)
+      .filter(isCorrectedSubmission)
       .slice(0, 5)
       .forEach((paper) => {
         actions.push({
@@ -1459,7 +1668,7 @@ window.BGPS_CONFIG = Object.freeze({
       });
 
     examPapers
-      .filter((paper) => normalize(paper.status) === 'SUBMITTED' && paper.resubmitted !== true)
+      .filter((paper) => normalize(paper.status) === 'SUBMITTED' && !isCorrectedSubmission(paper))
       .slice(0, 5)
       .forEach((paper) => {
         actions.push({
@@ -1562,6 +1771,7 @@ window.BGPS_CONFIG = Object.freeze({
     renderActions();
     renderClassTracking();
     renderTeacherProgress();
+    if (byId(PENDING_SUMMARY_IDS.overlay)?.classList.contains('is-open')) renderPendingSummary();
   }
 
   async function refresh(showToast) {
@@ -1642,6 +1852,9 @@ window.BGPS_CONFIG = Object.freeze({
     byId('dashboardExamFilter')?.addEventListener('change', renderAll);
     byId('classTrackingSearch')?.addEventListener('input', renderClassTracking);
     byId('adminHomeContent')?.addEventListener('click', handleDashboardClick);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && byId(PENDING_SUMMARY_IDS.overlay)?.classList.contains('is-open')) closePendingSummary();
+    });
   }
 
   async function onAuthenticated(user) {
@@ -1649,7 +1862,11 @@ window.BGPS_CONFIG = Object.freeze({
     configureExamFilter();
     configureAcademicYearFilter();
     bind();
+    ensurePendingSummaryUi();
+    const summaryButton = byId(PENDING_SUMMARY_IDS.button);
+    if (summaryButton) summaryButton.style.display = user.isAdmin ? 'flex' : 'none';
     if (user.isAdmin) await refresh(false);
+    else closePendingSummary();
   }
 
   function reset() {
@@ -1658,11 +1875,14 @@ window.BGPS_CONFIG = Object.freeze({
     papers = [];
     classProgress = [];
     teacherProgress = [];
+    closePendingSummary();
+    const summaryButton = byId(PENDING_SUMMARY_IDS.button);
+    if (summaryButton) summaryButton.style.display = 'none';
     setText('dashPapersResubmitted', '—');
     setText('dashMarksPending', '—');
   }
 
-  window.BGPS_DASHBOARD = Object.freeze({ onAuthenticated, refresh, reset, openClassReport });
+  window.BGPS_DASHBOARD = Object.freeze({ onAuthenticated, refresh, reset, openClassReport, openPendingSummary });
 })();
 
 
@@ -1718,7 +1938,8 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function isRevision(paper) {
-    return paper?.resubmitted === true;
+    return paper?.resubmitted === true
+      || (normalize(paper?.status) === 'SUBMITTED' && Boolean(String(paper?.adminNote || '').trim()));
   }
 
   function isReadyForRereview(paper) {
@@ -3671,7 +3892,7 @@ window.BGPS_CONFIG = Object.freeze({
       const correction = statusKey(item.status) === 'correction required';
       const approved = statusKey(item.status) === 'approved';
       const submitted = statusKey(item.status) === 'submitted';
-      const resubmitted = submitted && item.resubmitted === true;
+      const resubmitted = submitted && (item.resubmitted === true || Boolean(String(item.adminNote || '').trim()));
       const title = item.title || `${item.className || ''} ${item.subject || ''} ${item.exam || ''}`.trim() || 'Question Paper';
       let actions = '';
       if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">Continue Editing</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">Delete Draft</button>`;

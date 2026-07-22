@@ -1199,8 +1199,10 @@ window.BGPS_CONFIG = Object.freeze({
     adminSummary = [];
     const teacherPanel = byId('teacherMarksWorkspace');
     const adminPanel = byId('adminCommandWorkspace');
-    if (teacherPanel) teacherPanel.hidden = Boolean(user.isAdmin);
+    if (teacherPanel) teacherPanel.hidden = Boolean(user.isAdmin || user.paperOnly);
     if (adminPanel) adminPanel.hidden = !user.isAdmin;
+
+    if (user.paperOnly) return;
 
     await loadSettings();
     if (user.isAdmin) {
@@ -4115,7 +4117,7 @@ window.BGPS_CONFIG = Object.freeze({
       byId('paperContentEditor').style.removeProperty('min-height');
       delete byId('paperContentEditor').dataset.bgpsBaseMinHeight;
     }
-    const defaultClass = session?.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0];
+    const defaultClass = session?.paperOnly ? '' : (session?.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0]);
     if (byId('paperClassInput')) byId('paperClassInput').value = defaultClass;
     populateSubjects('paperClassInput', 'paperSubjectInput');
     if (byId('paperExamInput')) byId('paperExamInput').value = window.BGPS_DATA.EXAMS[0] || '';
@@ -5954,7 +5956,7 @@ window.BGPS_CONFIG = Object.freeze({
     setText('paperUploadDescription', correctionPaper
       ? 'Upload the corrected DOCX. It will open in the full Paper Editor for final checking; the original file remains safely preserved.'
       : 'Upload a DOCX to import it into the full Paper Editor, or upload a PDF as reference-only. The original DOCX remains safely preserved.');
-    const className = correctionPaper?.className || (session?.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0]);
+    const className = correctionPaper?.className || (session?.paperOnly ? '' : (session?.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0]));
     if (byId('uploadPaperClass')) byId('uploadPaperClass').value = className;
     populateSubjects('uploadPaperClass', 'uploadPaperSubject');
     if (byId('uploadPaperSubject')) byId('uploadPaperSubject').value = correctionPaper?.subject || '';
@@ -6210,7 +6212,7 @@ window.BGPS_CONFIG = Object.freeze({
     reset();
     session = user || null;
     if (!session || session.isAdmin) return;
-    const defaultClass = session.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0];
+    const defaultClass = session.paperOnly ? '' : (session.assignedClass && window.BGPS_DATA.CLASSES.includes(session.assignedClass) ? session.assignedClass : window.BGPS_DATA.CLASSES[0]);
     if (byId('paperClassInput')) byId('paperClassInput').value = defaultClass;
     populateSubjects('paperClassInput', 'paperSubjectInput');
     if (byId('uploadPaperClass')) byId('uploadPaperClass').value = defaultClass;
@@ -6670,7 +6672,7 @@ window.BGPS_CONFIG = Object.freeze({
     session = user;
     report = null;
     selectedRoll = '';
-    if (user.isAdmin) return;
+    if (user.isAdmin || user.paperOnly) return;
     if (byId('teacherReportClass')) byId('teacherReportClass').value = user.assignedClass || '';
     if (byId('teacherReportExam')) byId('teacherReportExam').innerHTML = optionMarkup(window.BGPS_DATA.EXAMS, 'Select examination');
     setText('teacherReportStatus', 'Select an examination to load the report.');
@@ -6844,10 +6846,10 @@ window.BGPS_CONFIG = Object.freeze({
     byId('loginScreen')?.classList.add('hidden');
     byId('appShell')?.classList.remove('hidden');
 
-    const role = user.isAdmin ? 'Principal / Admin' : 'Teacher';
+    const role = user.isAdmin ? 'Principal / Admin' : (user.paperOnly ? 'Subject Teacher · Papers' : 'Teacher');
     setText('userId', user.teacherId);
     setText('userRole', role);
-    setText('userAvatar', user.isAdmin ? 'A' : 'T');
+    setText('userAvatar', user.isAdmin ? 'A' : (user.paperOnly ? 'S' : 'T'));
 
     const marksNav = byId('marksNav');
     const teacherReportNav = byId('teacherReportNav');
@@ -6855,8 +6857,10 @@ window.BGPS_CONFIG = Object.freeze({
     const adminNav = byId('adminNav');
     const papersNav = byId('papersNav');
     const settingsNav = byId('settingsNav');
-    if (marksNav) marksNav.classList.toggle('hidden', Boolean(user.isAdmin));
-    if (teacherReportNav) teacherReportNav.classList.toggle('hidden', Boolean(user.isAdmin));
+    const homeNav = document.querySelector('.nav-btn[data-view="home"]');
+    if (homeNav) homeNav.classList.toggle('hidden', Boolean(user.paperOnly));
+    if (marksNav) marksNav.classList.toggle('hidden', Boolean(user.isAdmin || user.paperOnly));
+    if (teacherReportNav) teacherReportNav.classList.toggle('hidden', Boolean(user.isAdmin || user.paperOnly));
     if (teacherPapersNav) teacherPapersNav.classList.toggle('hidden', Boolean(user.isAdmin));
     if (adminNav) adminNav.classList.toggle('hidden', !user.isAdmin);
     if (papersNav) papersNav.classList.toggle('hidden', !user.isAdmin);
@@ -6867,7 +6871,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (teacherHome) teacherHome.hidden = Boolean(user.isAdmin);
     if (adminHome) adminHome.hidden = !user.isAdmin;
 
-    document.title = `BG Public School | ${user.isAdmin ? 'Principal Dashboard' : 'Teacher Workspace'}`;
+    document.title = `BG Public School | ${user.isAdmin ? 'Principal Dashboard' : (user.paperOnly ? 'Subject Teacher Papers' : 'Teacher Workspace')}`;
   }
 
   async function signIn(event) {
@@ -6893,6 +6897,7 @@ window.BGPS_CONFIG = Object.freeze({
         teacherId: normalizeId(user.teacherId),
         pin: password,
         isAdmin: Boolean(user.isAdmin),
+        paperOnly: Boolean(user.paperOnly),
         assignedClass: String(user.assignedClass || '')
       };
       window.BGPS_STATE.setSession(session);
@@ -7038,7 +7043,7 @@ window.BGPS_CONFIG = Object.freeze({
     await window.BGPS_PAPER_CREATOR.onAuthenticated(session);
     await window.BGPS_DASHBOARD.onAuthenticated(session);
     await window.BGPS_SETTINGS.onAuthenticated(session);
-    openView('home');
+    openView(session.paperOnly ? 'teacher-papers' : 'home');
   }
 
   function resetViews() {

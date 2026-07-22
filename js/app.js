@@ -2580,6 +2580,7 @@ window.BGPS_CONFIG = Object.freeze({
   let currentDraftId = '';
   let currentRevision = {};
   let selectedImage = null;
+  let cropState = null;
   let editorRange = null;
   let dirty = false;
   let editRevision = 0;
@@ -3209,6 +3210,7 @@ window.BGPS_CONFIG = Object.freeze({
           <button type="button" data-mobile-paper-action="larger">Size +</button>
           <button type="button" data-mobile-paper-action="move">Move</button>
           <button type="button" data-mobile-paper-action="rotate">Rotate</button>
+          <button type="button" data-mobile-paper-action="crop">Crop</button>
           <button type="button" data-mobile-paper-action="centre">Centre</button>
           <button type="button" data-mobile-paper-action="replace">Replace</button>
           <button class="danger" type="button" data-mobile-paper-action="delete">Delete</button>
@@ -3230,6 +3232,7 @@ window.BGPS_CONFIG = Object.freeze({
         else if (action === 'larger' && selectedImage) applyImageWidth(selectedImage, imageWidth(selectedImage) + 5);
         else if (action === 'move' && selectedImage) { setImageLayout('free'); toast('Drag the image to place it.'); }
         else if (action === 'rotate') rotateSelectedImage();
+        else if (action === 'crop') openImageCropper();
         else if (action === 'centre') setImageLayout('center');
         else if (action === 'replace') byId('replacePaperImageFile')?.click();
         else if (action === 'delete') deleteSelectedImage();
@@ -4756,6 +4759,243 @@ window.BGPS_CONFIG = Object.freeze({
     return button;
   }
 
+  function ensureImageCropUi() {
+    if (!byId('bgpsImageCropStyle')) {
+      const style = document.createElement('style');
+      style.id = 'bgpsImageCropStyle';
+      style.textContent = `
+        #bgpsImageCropModal{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(7,24,42,.78)}
+        #bgpsImageCropModal.open{display:flex}
+        #bgpsImageCropModal .bgps-crop-dialog{width:min(960px,100%);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;overflow:hidden;border-radius:16px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+        #bgpsImageCropModal .bgps-crop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid #d8e1e9}
+        #bgpsImageCropModal .bgps-crop-head strong{font-size:16px;color:#123e6c}
+        #bgpsImageCropModal .bgps-crop-head small{display:block;margin-top:2px;color:#64788b}
+        #bgpsImageCropModal .bgps-crop-close{width:42px;height:42px;border:1px solid #c8d5e2;border-radius:10px;background:#fff;font-size:22px;line-height:1;cursor:pointer}
+        #bgpsImageCropModal .bgps-crop-work{min-height:0;overflow:auto;padding:18px;background:#e8eef3;text-align:center;overscroll-behavior:contain}
+        #bgpsImageCropModal .bgps-crop-stage{position:relative;display:inline-block;line-height:0;touch-action:none;user-select:none;box-shadow:0 5px 22px rgba(20,43,65,.2)}
+        #bgpsImageCropCanvas{display:block;background:#fff;max-width:none}
+        #bgpsImageCropSelection{position:absolute;border:2px solid #fff;outline:1px solid #123e6c;background:rgba(18,62,108,.08);box-shadow:0 0 0 9999px rgba(0,0,0,.42);cursor:move;touch-action:none}
+        #bgpsImageCropSelection .bgps-crop-handle{position:absolute;width:32px;height:32px;border:3px solid #fff;border-radius:50%;background:#123e6c;box-shadow:0 1px 5px rgba(0,0,0,.35);touch-action:none}
+        #bgpsImageCropSelection [data-crop-handle="nw"]{left:-17px;top:-17px;cursor:nwse-resize}
+        #bgpsImageCropSelection [data-crop-handle="ne"]{right:-17px;top:-17px;cursor:nesw-resize}
+        #bgpsImageCropSelection [data-crop-handle="sw"]{left:-17px;bottom:-17px;cursor:nesw-resize}
+        #bgpsImageCropSelection [data-crop-handle="se"]{right:-17px;bottom:-17px;cursor:nwse-resize}
+        #bgpsImageCropModal .bgps-crop-actions{display:flex;justify-content:flex-end;gap:9px;padding:12px 16px;border-top:1px solid #d8e1e9;background:#fff}
+        #bgpsImageCropModal .bgps-crop-actions button{min-height:44px;padding:8px 15px;border:1px solid #b9cad9;border-radius:10px;background:#fff;color:#123e6c;font-weight:800;cursor:pointer}
+        #bgpsImageCropModal .bgps-crop-actions .primary{background:#123e6c;color:#fff;border-color:#123e6c}
+        @media(max-width:700px){
+          #bgpsImageCropModal{padding:0;align-items:stretch}
+          #bgpsImageCropModal .bgps-crop-dialog{width:100%;max-height:100vh;max-height:100dvh;height:100vh;height:100dvh;border-radius:0}
+          #bgpsImageCropModal .bgps-crop-head{padding:10px 12px}
+          #bgpsImageCropModal .bgps-crop-work{display:flex;align-items:center;justify-content:center;padding:18px 14px}
+          #bgpsImageCropModal .bgps-crop-actions{display:grid;grid-template-columns:1fr 1fr 1.25fr;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+          #bgpsImageCropModal .bgps-crop-actions button{padding:7px 8px}
+          #bgpsImageCropSelection .bgps-crop-handle{width:38px;height:38px}
+          #bgpsImageCropSelection [data-crop-handle="nw"]{left:-20px;top:-20px}
+          #bgpsImageCropSelection [data-crop-handle="ne"]{right:-20px;top:-20px}
+          #bgpsImageCropSelection [data-crop-handle="sw"]{left:-20px;bottom:-20px}
+          #bgpsImageCropSelection [data-crop-handle="se"]{right:-20px;bottom:-20px}
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    let modal = byId('bgpsImageCropModal');
+    if (modal) return modal;
+    modal = document.createElement('div');
+    modal.id = 'bgpsImageCropModal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `
+      <div class="bgps-crop-dialog">
+        <div class="bgps-crop-head"><div><strong>Crop Image</strong><small>Drag inside to move. Drag a corner to crop.</small></div><button class="bgps-crop-close" type="button" aria-label="Close crop tool">Ã—</button></div>
+        <div class="bgps-crop-work"><div class="bgps-crop-stage"><canvas id="bgpsImageCropCanvas"></canvas><div id="bgpsImageCropSelection"><i class="bgps-crop-handle" data-crop-handle="nw"></i><i class="bgps-crop-handle" data-crop-handle="ne"></i><i class="bgps-crop-handle" data-crop-handle="sw"></i><i class="bgps-crop-handle" data-crop-handle="se"></i></div></div></div>
+        <div class="bgps-crop-actions"><button type="button" data-crop-action="reset">Reset</button><button type="button" data-crop-action="cancel">Cancel</button><button class="primary" type="button" data-crop-action="apply">Apply Crop</button></div>
+      </div>`;
+    document.body.appendChild(modal);
+
+    modal.querySelector('.bgps-crop-close')?.addEventListener('click', closeImageCropper);
+    modal.querySelector('[data-crop-action="cancel"]')?.addEventListener('click', closeImageCropper);
+    modal.querySelector('[data-crop-action="reset"]')?.addEventListener('click', resetImageCropSelection);
+    modal.querySelector('[data-crop-action="apply"]')?.addEventListener('click', applyImageCrop);
+    modal.addEventListener('click', (event) => { if (event.target === modal) closeImageCropper(); });
+    byId('bgpsImageCropSelection')?.addEventListener('pointerdown', startImageCropGesture);
+    return modal;
+  }
+
+  function renderImageCropSelection() {
+    const selection = byId('bgpsImageCropSelection');
+    if (!selection || !cropState) return;
+    const rect = cropState.rect;
+    selection.style.left = `${rect.x}px`;
+    selection.style.top = `${rect.y}px`;
+    selection.style.width = `${rect.width}px`;
+    selection.style.height = `${rect.height}px`;
+  }
+
+  function resetImageCropSelection() {
+    if (!cropState) return;
+    cropState.rect = { x: 0, y: 0, width: cropState.canvas.width, height: cropState.canvas.height };
+    renderImageCropSelection();
+  }
+
+  function closeImageCropper() {
+    const modal = byId('bgpsImageCropModal');
+    modal?.classList.remove('open');
+    modal?.setAttribute('aria-hidden', 'true');
+    cropState = null;
+    if (!document.querySelector('.modal-backdrop.open,#bgpsImageCropModal.open')) document.body.classList.remove('modal-open');
+    syncMobilePaperBar();
+  }
+
+  function startImageCropGesture(event) {
+    if (!cropState || event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const selection = byId('bgpsImageCropSelection');
+    const canvas = cropState.canvas;
+    if (!selection || !canvas) return;
+    selection.setPointerCapture?.(event.pointerId);
+    const handle = event.target.closest('[data-crop-handle]')?.dataset.cropHandle || 'move';
+    const start = { x: event.clientX, y: event.clientY, ...cropState.rect };
+    const canvasRect = canvas.getBoundingClientRect();
+    const ratioX = canvas.width / Math.max(1, canvasRect.width);
+    const ratioY = canvas.height / Math.max(1, canvasRect.height);
+    const minimum = Math.max(24, Math.min(canvas.width, canvas.height) * .06);
+
+    const move = (moveEvent) => {
+      const dx = (moveEvent.clientX - start.x) * ratioX;
+      const dy = (moveEvent.clientY - start.y) * ratioY;
+      let left = start.x;
+      let top = start.y;
+      let right = start.x + start.width;
+      let bottom = start.y + start.height;
+      if (handle === 'move') {
+        left = Math.max(0, Math.min(canvas.width - start.width, start.x + dx));
+        top = Math.max(0, Math.min(canvas.height - start.height, start.y + dy));
+        right = left + start.width;
+        bottom = top + start.height;
+      } else {
+        if (handle.includes('w')) left = Math.max(0, Math.min(right - minimum, start.x + dx));
+        if (handle.includes('e')) right = Math.min(canvas.width, Math.max(left + minimum, start.x + start.width + dx));
+        if (handle.includes('n')) top = Math.max(0, Math.min(bottom - minimum, start.y + dy));
+        if (handle.includes('s')) bottom = Math.min(canvas.height, Math.max(top + minimum, start.y + start.height + dy));
+      }
+      cropState.rect = { x: left, y: top, width: right - left, height: bottom - top };
+      renderImageCropSelection();
+    };
+    const stop = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+      window.removeEventListener('pointercancel', stop);
+    };
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerup', stop, { once: true });
+    window.addEventListener('pointercancel', stop, { once: true });
+  }
+
+  async function openImageCropper() {
+    const box = selectedImage;
+    const image = box?.querySelector('img');
+    if (!box || !image) { toast('Select an image first.', 'error'); return; }
+    if (box.dataset.rotationBusy === 'true') { toast('Wait for image rotation to finish.', 'error'); return; }
+    try {
+      await waitForImageReady(image);
+      const sourceImage = new Image();
+      sourceImage.src = image.currentSrc || image.src;
+      await waitForImageReady(sourceImage);
+      const viewport = window.visualViewport;
+      const availableWidth = Math.max(220, Math.min(900, (viewport?.width || window.innerWidth) - (window.innerWidth <= 700 ? 28 : 80)));
+      const availableHeight = Math.max(180, Math.min(650, (viewport?.height || window.innerHeight) - (window.innerWidth <= 700 ? 190 : 250)));
+      const scale = Math.min(1, availableWidth / sourceImage.naturalWidth, availableHeight / sourceImage.naturalHeight);
+      const canvas = ensureImageCropUi().querySelector('#bgpsImageCropCanvas');
+      canvas.width = Math.max(1, Math.round(sourceImage.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(sourceImage.naturalHeight * scale));
+      canvas.style.width = `${canvas.width}px`;
+      canvas.style.height = `${canvas.height}px`;
+      const context = canvas.getContext('2d', { alpha: true });
+      if (!context) throw new Error('Image crop is not supported by this browser.');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
+      cropState = {
+        box, image, sourceImage, canvas, scale,
+        rect: { x: 0, y: 0, width: canvas.width, height: canvas.height }
+      };
+      renderImageCropSelection();
+      const modal = byId('bgpsImageCropModal');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      syncMobilePaperBar();
+    } catch (error) {
+      closeImageCropper();
+      toast(error.message || 'The image could not be opened for cropping.', 'error');
+    }
+  }
+
+  async function applyImageCrop() {
+    if (!cropState) return;
+    const state = cropState;
+    const applyButton = byId('bgpsImageCropModal')?.querySelector('[data-crop-action="apply"]');
+    if (applyButton) { applyButton.disabled = true; applyButton.textContent = 'Croppingâ€¦'; }
+    try {
+      if (!state.box.isConnected) throw new Error('The selected image is no longer available.');
+      const sourceX = Math.max(0, Math.min(state.sourceImage.naturalWidth - 1, Math.round(state.rect.x / state.scale)));
+      const sourceY = Math.max(0, Math.min(state.sourceImage.naturalHeight - 1, Math.round(state.rect.y / state.scale)));
+      const sourceWidth = Math.min(state.sourceImage.naturalWidth - sourceX, Math.max(1, Math.round(state.rect.width / state.scale)));
+      const sourceHeight = Math.min(state.sourceImage.naturalHeight - sourceY, Math.max(1, Math.round(state.rect.height / state.scale)));
+      if (sourceWidth < 10 || sourceHeight < 10) throw new Error('Crop area is too small.');
+      const output = document.createElement('canvas');
+      const outputScale = Math.min(1, 2400 / sourceWidth, 2400 / sourceHeight);
+      output.width = Math.max(1, Math.round(sourceWidth * outputScale));
+      output.height = Math.max(1, Math.round(sourceHeight * outputScale));
+      const context = output.getContext('2d', { alpha: true });
+      if (!context) throw new Error('Image crop is not supported by this browser.');
+      context.drawImage(state.sourceImage, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, output.width, output.height);
+      const mime = imageMimeFromSource(state.image.currentSrc || state.image.src);
+      const outputMime = ['image/png', 'image/jpeg', 'image/webp'].includes(mime) ? mime : 'image/png';
+      const croppedSource = output.toDataURL(outputMime, outputMime === 'image/jpeg' ? 0.9 : undefined);
+      state.image.src = croppedSource;
+      await waitForImageReady(state.image);
+      normalizeImageBoxGeometry(state.box);
+      syncEditorFreeMoveHeight();
+      if (state.box.classList.contains('bgps-img-free')) requestAnimationFrame(() => clampFreeImageOffset(state.box));
+      ensureParagraphAfterImage(state.box);
+      placeCaretAfterImage(state.box, { scroll: false });
+      closeImageCropper();
+      selectImage(state.box);
+      markDirty();
+      updateChecks();
+      saveRange();
+      toast('Image cropped. Save the paper to keep this change.');
+    } catch (error) {
+      toast(error.message || 'The image could not be cropped.', 'error');
+    } finally {
+      if (applyButton) { applyButton.disabled = false; applyButton.textContent = 'Apply Crop'; }
+    }
+  }
+
+  function ensureImageCropControl() {
+    const controls = byId('paperImageControls');
+    const grid = controls?.querySelector('.image-action-grid');
+    if (!grid) return null;
+    ensureImageCropUi();
+    let button = byId('cropPaperImage');
+    if (!button) {
+      button = document.createElement('button');
+      button.id = 'cropPaperImage';
+      button.type = 'button';
+      button.title = 'Crop the selected image';
+      button.textContent = 'Crop Image';
+      button.addEventListener('click', openImageCropper);
+      const rotateButton = ensureImageRotateControl();
+      if (rotateButton?.parentElement === grid) rotateButton.insertAdjacentElement('afterend', button);
+      else grid.appendChild(button);
+    }
+    return button;
+  }
+
 
   function applyImageWidth(box, width) {
     // One sizing authority only: the Scale slider / resize handle.
@@ -4910,6 +5150,8 @@ window.BGPS_CONFIG = Object.freeze({
       rotateButton.disabled = !active || selectedImage?.dataset.rotationBusy === 'true';
       rotateButton.textContent = selectedImage?.dataset.rotationBusy === 'true' ? 'Rotating…' : 'Rotate 90°';
     }
+    const cropButton = ensureImageCropControl();
+    if (cropButton) cropButton.disabled = !active || selectedImage?.dataset.rotationBusy === 'true';
     if (!active) return;
     const width = imageWidth(selectedImage);
     if (byId('paperImageWidth')) byId('paperImageWidth').value = String(width);
@@ -5524,7 +5766,8 @@ window.BGPS_CONFIG = Object.freeze({
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        if (byId('teacherPaperPreviewModal')?.classList.contains('open')) closePreview();
+        if (byId('bgpsImageCropModal')?.classList.contains('open')) closeImageCropper();
+        else if (byId('teacherPaperPreviewModal')?.classList.contains('open')) closePreview();
         else if (byId('paperUploadModal')?.classList.contains('open')) closeUploadModalSafely();
         else if (byId('paperSubmitModal')?.classList.contains('open')) cancelPaperSubmit();
         else if (byId('paperSubmitSuccessModal')?.classList.contains('open')) closeModal('paperSubmitSuccessModal');

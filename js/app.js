@@ -4815,7 +4815,9 @@ window.BGPS_CONFIG = Object.freeze({
       </div>`;
     document.body.appendChild(modal);
 
-    modal.querySelector('.bgps-crop-close')?.addEventListener('click', closeImageCropper);
+    const closeButton = modal.querySelector('.bgps-crop-close');
+    if (closeButton) closeButton.textContent = 'X';
+    closeButton?.addEventListener('click', closeImageCropper);
     modal.querySelector('[data-crop-action="cancel"]')?.addEventListener('click', closeImageCropper);
     modal.querySelector('[data-crop-action="reset"]')?.addEventListener('click', resetImageCropSelection);
     modal.querySelector('[data-crop-action="apply"]')?.addEventListener('click', applyImageCrop);
@@ -4834,9 +4836,21 @@ window.BGPS_CONFIG = Object.freeze({
     selection.style.height = `${rect.height}px`;
   }
 
+  function defaultImageCropRect(canvas) {
+    const width = Math.max(1, Number(canvas?.width) || 1);
+    const height = Math.max(1, Number(canvas?.height) || 1);
+    const inset = Math.min(width / 4, height / 4, Math.max(16, Math.min(width, height) * .06));
+    return {
+      x: inset,
+      y: inset,
+      width: Math.max(24, width - inset * 2),
+      height: Math.max(24, height - inset * 2)
+    };
+  }
+
   function resetImageCropSelection() {
     if (!cropState) return;
-    cropState.rect = { x: 0, y: 0, width: cropState.canvas.width, height: cropState.canvas.height };
+    cropState.rect = defaultImageCropRect(cropState.canvas);
     renderImageCropSelection();
   }
 
@@ -4858,29 +4872,36 @@ window.BGPS_CONFIG = Object.freeze({
     if (!selection || !canvas) return;
     selection.setPointerCapture?.(event.pointerId);
     const handle = event.target.closest('[data-crop-handle]')?.dataset.cropHandle || 'move';
-    const start = { x: event.clientX, y: event.clientY, ...cropState.rect };
+    const start = {
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+      left: cropState.rect.x,
+      top: cropState.rect.y,
+      width: cropState.rect.width,
+      height: cropState.rect.height
+    };
     const canvasRect = canvas.getBoundingClientRect();
     const ratioX = canvas.width / Math.max(1, canvasRect.width);
     const ratioY = canvas.height / Math.max(1, canvasRect.height);
     const minimum = Math.max(24, Math.min(canvas.width, canvas.height) * .06);
 
     const move = (moveEvent) => {
-      const dx = (moveEvent.clientX - start.x) * ratioX;
-      const dy = (moveEvent.clientY - start.y) * ratioY;
-      let left = start.x;
-      let top = start.y;
-      let right = start.x + start.width;
-      let bottom = start.y + start.height;
+      const dx = (moveEvent.clientX - start.pointerX) * ratioX;
+      const dy = (moveEvent.clientY - start.pointerY) * ratioY;
+      let left = start.left;
+      let top = start.top;
+      let right = start.left + start.width;
+      let bottom = start.top + start.height;
       if (handle === 'move') {
-        left = Math.max(0, Math.min(canvas.width - start.width, start.x + dx));
-        top = Math.max(0, Math.min(canvas.height - start.height, start.y + dy));
+        left = Math.max(0, Math.min(canvas.width - start.width, start.left + dx));
+        top = Math.max(0, Math.min(canvas.height - start.height, start.top + dy));
         right = left + start.width;
         bottom = top + start.height;
       } else {
-        if (handle.includes('w')) left = Math.max(0, Math.min(right - minimum, start.x + dx));
-        if (handle.includes('e')) right = Math.min(canvas.width, Math.max(left + minimum, start.x + start.width + dx));
-        if (handle.includes('n')) top = Math.max(0, Math.min(bottom - minimum, start.y + dy));
-        if (handle.includes('s')) bottom = Math.min(canvas.height, Math.max(top + minimum, start.y + start.height + dy));
+        if (handle.includes('w')) left = Math.max(0, Math.min(right - minimum, start.left + dx));
+        if (handle.includes('e')) right = Math.min(canvas.width, Math.max(left + minimum, start.left + start.width + dx));
+        if (handle.includes('n')) top = Math.max(0, Math.min(bottom - minimum, start.top + dy));
+        if (handle.includes('s')) bottom = Math.min(canvas.height, Math.max(top + minimum, start.top + start.height + dy));
       }
       cropState.rect = { x: left, y: top, width: right - left, height: bottom - top };
       renderImageCropSelection();
@@ -4920,7 +4941,7 @@ window.BGPS_CONFIG = Object.freeze({
       context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
       cropState = {
         box, image, sourceImage, canvas, scale,
-        rect: { x: 0, y: 0, width: canvas.width, height: canvas.height }
+        rect: defaultImageCropRect(canvas)
       };
       renderImageCropSelection();
       const modal = byId('bgpsImageCropModal');

@@ -2089,6 +2089,7 @@ window.BGPS_CONFIG = Object.freeze({
   let bulkOriginalDeleteInFlight = false;
   let initialized = false;
   let boardFilter = 'all';
+  let reviewOpenRequest = 0;
 
   function escapeHtml(value) {
     return String(value == null ? '' : value)
@@ -2351,6 +2352,7 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function closeReview() {
+    reviewOpenRequest += 1;
     revokeObjectUrl();
     currentPaper = null;
     const modal = byId('paperReviewModal');
@@ -2740,11 +2742,23 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   async function openReview(paperId) {
-    const paper = paperById(paperId);
+    const requestId = ++reviewOpenRequest;
+    let paper = paperById(paperId);
     if (!paper) {
       window.BGPS_APP.toast('Paper record was not found.', 'error');
       return;
     }
+    // Always reconcile the selected row with the latest Sheet status before
+    // enabling Approve/Return. This prevents an older tab/list snapshot from
+    // offering review actions after the paper has already been approved.
+    try {
+      await load(false);
+      if (requestId !== reviewOpenRequest) return;
+      paper = paperById(paperId) || paper;
+    } catch (refreshError) {
+      console.warn('Using cached paper status because refresh failed:', refreshError);
+    }
+    if (requestId !== reviewOpenRequest) return;
     currentPaper = paper;
     setReviewMeta(paper);
     const download = byId('downloadPaperButton');
@@ -2758,6 +2772,7 @@ window.BGPS_CONFIG = Object.freeze({
         window.BGPS_API.getPaperPreview(paper.paperId),
         window.BGPS_API.getPaperOriginalFile(paper.paperId).catch(() => null)
       ]);
+      if (requestId !== reviewOpenRequest) return;
       await renderUploadedPreview(previewResult, originalFile);
     } catch (error) {
       if (preview) preview.innerHTML = `<div class="empty-state"><strong>Paper could not be opened</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
@@ -2799,7 +2814,23 @@ window.BGPS_CONFIG = Object.freeze({
         : 'Paper returned. Teacher can correct and resubmit it under the same Paper ID.'));
       await window.BGPS_DASHBOARD.refresh(false);
     } catch (error) {
-      window.BGPS_APP.toast(error.message || 'Could not update paper status.', 'error');
+      const message = error.message || 'Could not update paper status.';
+      if (/approved papers are final/i.test(message)) {
+        try {
+          await load(false);
+          const freshPaper = paperById(currentPaper.paperId);
+          if (freshPaper) {
+            currentPaper = freshPaper;
+            setReviewMeta(currentPaper);
+            render();
+          }
+        } catch (refreshError) {
+          console.warn('Could not refresh the already-approved paper:', refreshError);
+        }
+        window.BGPS_APP.toast('This paper is already approved. The latest status has been refreshed.');
+      } else {
+        window.BGPS_APP.toast(message, 'error');
+      }
     } finally {
       if (button) {
         button.textContent = status === 'Approved' ? 'Approve Paper' : 'Return for Correction';

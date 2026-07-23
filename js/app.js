@@ -268,7 +268,24 @@ window.BGPS_CONFIG = Object.freeze({
     return { pageCount: pdf.numPages };
   }
 
-  window.BGPS_PDF_PREVIEW = Object.freeze({ shouldUseCanvas, render });
+  async function countPages(blob) {
+    if (!(blob instanceof Blob)) throw new Error('The PDF data is unavailable.');
+    const pdfjs = await loadPdfJs();
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const loadingTask = pdfjs.getDocument({
+      data: bytes,
+      cMapUrl: `${PDFJS_BASE}cmaps/`,
+      cMapPacked: true,
+      standardFontDataUrl: `${PDFJS_BASE}standard_fonts/`,
+      wasmUrl: `${PDFJS_BASE}wasm/`
+    });
+    const pdf = await loadingTask.promise;
+    const pageCount = Number(pdf.numPages || 0);
+    if (typeof pdf.destroy === 'function') await pdf.destroy();
+    return pageCount;
+  }
+
+  window.BGPS_PDF_PREVIEW = Object.freeze({ shouldUseCanvas, render, countPages });
 })();
 
 
@@ -2085,6 +2102,8 @@ window.BGPS_CONFIG = Object.freeze({
   let standardPreviewEditMode = false;
   let standardPreviewSelectedBlock = null;
   let standardPreviewInFlight = false;
+  let standardPreviewPageCount = 0;
+  let standardPreviewUndoHtml = '';
   let deleteInFlight = false;
   let bulkOriginalDeleteInFlight = false;
   let initialized = false;
@@ -2389,6 +2408,8 @@ window.BGPS_CONFIG = Object.freeze({
     standardPreviewEditableHtml = '';
     standardPreviewEditMode = false;
     standardPreviewSelectedBlock = null;
+    standardPreviewPageCount = 0;
+    standardPreviewUndoHtml = '';
     const deleteOriginal = byId('deleteOriginalAfterApproval');
     if (deleteOriginal) deleteOriginal.checked = false;
     const editButton = byId('editBgpsStandardPreview');
@@ -2400,6 +2421,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (body) body.innerHTML = '';
     const warnings = byId('bgpsStandardPreviewWarnings');
     if (warnings) { warnings.hidden = true; warnings.innerHTML = ''; }
+    updateStandardPageFitControls();
   }
 
   function isDocxStandardCandidate(paper) {
@@ -2430,6 +2452,85 @@ window.BGPS_CONFIG = Object.freeze({
   function currentStandardEditableHtml() {
     const surface = byId('bgpsStandardEditSurface');
     return surface ? cleanStandardEditableHtml(surface.innerHTML) : cleanStandardEditableHtml(standardPreviewEditableHtml);
+  }
+
+  function standardLayoutIsCompact(html) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = String(html || '');
+    return Boolean(wrapper.querySelector('.bgps-layout-compact'));
+  }
+
+  function setStandardCompactLayout(html, compact) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = cleanStandardEditableHtml(html);
+    let root = wrapper.querySelector('.bgps-standardized-docx');
+    if (!root) {
+      root = document.createElement('div');
+      root.className = 'bgps-standardized-docx';
+      while (wrapper.firstChild) root.appendChild(wrapper.firstChild);
+      wrapper.appendChild(root);
+    }
+    root.classList.toggle('bgps-layout-compact', Boolean(compact));
+    return wrapper.innerHTML.trim();
+  }
+
+  function updateStandardPageFitControls(message) {
+    const pageText = byId('bgpsStandardPageCount');
+    if (pageText) {
+      pageText.textContent = standardPreviewPageCount > 0
+        ? `${standardPreviewPageCount} page${standardPreviewPageCount === 1 ? '' : 's'}`
+        : 'Calculating pages…';
+    }
+    const compact = standardLayoutIsCompact(standardPreviewEditableHtml);
+    const fitButton = byId('bgpsAutoFitPages');
+    if (fitButton) {
+      fitButton.disabled = standardPreviewInFlight || standardPreviewPageCount <= 1 || compact;
+      fitButton.textContent = compact ? 'Compact Layout Applied' : 'Auto-Fit Fewer Pages';
+    }
+    const undoButton = byId('bgpsUndoPageFit');
+    if (undoButton) {
+      undoButton.hidden = !standardPreviewUndoHtml;
+      undoButton.disabled = standardPreviewInFlight;
+    }
+    const note = byId('bgpsPageFitMessage');
+    if (note) {
+      note.textContent = message || (compact
+        ? 'Compact layout is active. Review readability before approval.'
+        : 'Auto-Fit reduces safe spacing and image size without changing questions or marks.');
+    }
+  }
+
+  function ensureStandardPageFitControls() {
+    if (byId('bgpsStandardPageFitControls')) return;
+    const body = byId('bgpsStandardPreviewBody');
+    if (!body) return;
+    if (!byId('bgpsStandardPageFitStyles')) {
+      const style = document.createElement('style');
+      style.id = 'bgpsStandardPageFitStyles';
+      style.textContent = `
+        .bgps-page-fit-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0;padding:10px 12px;border:1px solid #c9d8e6;border-radius:12px;background:#f7fafc}
+        .bgps-page-fit-count{display:flex;align-items:center;gap:7px;color:#123f70;font-weight:800}
+        .bgps-page-fit-count strong{font-size:16px}
+        .bgps-page-fit-controls button{min-height:42px;padding:8px 13px;border:1px solid #b7cadc;border-radius:10px;background:#fff;color:#123f70;font:inherit;font-weight:800;cursor:pointer}
+        .bgps-page-fit-controls button.primary{border-color:#123f70;background:#123f70;color:#fff}
+        .bgps-page-fit-controls button:disabled{opacity:.55;cursor:not-allowed}
+        .bgps-page-fit-message{flex:1 1 240px;color:#5d7185;font-size:12px;line-height:1.35}
+        @media(max-width:700px){.bgps-page-fit-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bgps-page-fit-count,.bgps-page-fit-message{grid-column:1/-1}.bgps-page-fit-controls button{width:100%;min-height:46px}}
+      `;
+      document.head.appendChild(style);
+    }
+    const controls = document.createElement('div');
+    controls.id = 'bgpsStandardPageFitControls';
+    controls.className = 'bgps-page-fit-controls';
+    controls.innerHTML = `
+      <div class="bgps-page-fit-count">Preview: <strong id="bgpsStandardPageCount">Calculating pages…</strong></div>
+      <button class="primary" id="bgpsAutoFitPages" type="button">Auto-Fit Fewer Pages</button>
+      <button id="bgpsUndoPageFit" type="button" hidden>Undo Page Fit</button>
+      <div class="bgps-page-fit-message" id="bgpsPageFitMessage">Auto-Fit reduces safe spacing and image size without changing questions or marks.</div>`;
+    body.insertAdjacentElement('beforebegin', controls);
+    byId('bgpsAutoFitPages')?.addEventListener('click', autoFitStandardPreviewPages);
+    byId('bgpsUndoPageFit')?.addEventListener('click', undoStandardPreviewPageFit);
+    updateStandardPageFitControls();
   }
 
   function selectStandardEditableBlock(target) {
@@ -2517,12 +2618,71 @@ window.BGPS_CONFIG = Object.freeze({
     const blob = base64ToBlob(result.fileBase64, result.mimeType || 'application/pdf');
     if (standardPreviewUrl) URL.revokeObjectURL(standardPreviewUrl);
     standardPreviewUrl = URL.createObjectURL(blob);
-    if (window.BGPS_PDF_PREVIEW.shouldUseCanvas()) {
-      await window.BGPS_PDF_PREVIEW.render(blob, body);
-    } else {
-      body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="BGPS standardized question paper preview"></iframe>';
-      body.querySelector('iframe').src = standardPreviewUrl;
+    try {
+      if (window.BGPS_PDF_PREVIEW.shouldUseCanvas()) {
+        const rendered = await window.BGPS_PDF_PREVIEW.render(blob, body);
+        standardPreviewPageCount = Number(rendered?.pageCount || 0);
+      } else {
+        body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="BGPS standardized question paper preview"></iframe>';
+        body.querySelector('iframe').src = standardPreviewUrl;
+        standardPreviewPageCount = await window.BGPS_PDF_PREVIEW.countPages(blob);
+      }
+    } catch (error) {
+      standardPreviewPageCount = 0;
+      if (!body.querySelector('iframe')) {
+        body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="BGPS standardized question paper preview"></iframe>';
+        body.querySelector('iframe').src = standardPreviewUrl;
+      }
+      console.warn('Could not calculate BGPS preview page count.', error);
     }
+    updateStandardPageFitControls();
+  }
+
+  async function autoFitStandardPreviewPages() {
+    if (!currentPaper || standardPreviewInFlight) return;
+    const previousHtml = standardPreviewEditMode ? currentStandardEditableHtml() : cleanStandardEditableHtml(standardPreviewEditableHtml);
+    if (standardLayoutIsCompact(previousHtml)) {
+      window.BGPS_APP.toast('Compact page layout is already active.');
+      return;
+    }
+    const previousCount = standardPreviewPageCount;
+    standardPreviewUndoHtml = previousHtml;
+    standardPreviewEditableHtml = setStandardCompactLayout(previousHtml, true);
+    standardPreviewEditMode = false;
+    standardPreviewSelectedBlock = null;
+    setHidden('deleteBgpsSelectedContent', true);
+    setHidden('undoBgpsStandardEdit', true);
+    const editButton = byId('editBgpsStandardPreview');
+    if (editButton) editButton.textContent = 'Edit / Delete Content';
+    updateStandardPageFitControls('Applying compact but readable A4 spacing…');
+    const saved = await saveCurrentBgpsStandardPreview(false, { quiet: true });
+    if (!saved) {
+      standardPreviewEditableHtml = previousHtml;
+      standardPreviewUndoHtml = '';
+      updateStandardPageFitControls('Auto-Fit could not be applied. The previous layout is unchanged.');
+      return;
+    }
+    const reduced = previousCount > 0 && standardPreviewPageCount > 0 && standardPreviewPageCount < previousCount;
+    updateStandardPageFitControls(reduced
+      ? `Optimized successfully: ${previousCount} → ${standardPreviewPageCount} pages. Review before approval.`
+      : `Compact layout applied. It still requires ${standardPreviewPageCount || previousCount || 'the current number of'} pages for safe readability.`);
+    window.BGPS_APP.toast(reduced
+      ? `Paper optimized from ${previousCount} to ${standardPreviewPageCount} pages.`
+      : 'Compact layout applied. Page count could not be reduced safely.');
+  }
+
+  async function undoStandardPreviewPageFit() {
+    if (!standardPreviewUndoHtml || standardPreviewInFlight) return;
+    const restoreHtml = standardPreviewUndoHtml;
+    standardPreviewUndoHtml = '';
+    standardPreviewEditableHtml = restoreHtml;
+    standardPreviewEditMode = false;
+    updateStandardPageFitControls('Restoring the previous BGPS working layout…');
+    const saved = await saveCurrentBgpsStandardPreview(false, { quiet: true });
+    updateStandardPageFitControls(saved
+      ? 'Previous layout restored.'
+      : 'The previous layout could not be restored. Retry before approval.');
+    if (saved) window.BGPS_APP.toast('Previous page layout restored.');
   }
 
   async function openBgpsStandardPreview() {
@@ -2543,6 +2703,7 @@ window.BGPS_CONFIG = Object.freeze({
       standardPreviewEditableHtml = String(result.editableContentHtml || '');
       standardPreviewEditMode = false;
       standardPreviewSelectedBlock = null;
+      standardPreviewUndoHtml = '';
       const deleteOriginal = byId('deleteOriginalAfterApproval');
       if (deleteOriginal) deleteOriginal.checked = false;
       const editButton = byId('editBgpsStandardPreview');
@@ -2563,7 +2724,7 @@ window.BGPS_CONFIG = Object.freeze({
     }
   }
 
-  async function saveCurrentBgpsStandardPreview(approveAfterSave) {
+  async function saveCurrentBgpsStandardPreview(approveAfterSave, behavior = {}) {
     if (!currentPaper || !isDocxStandardCandidate(currentPaper) || standardPreviewInFlight) return;
     const deleteOriginalAfterApproval = approveAfterSave && byId('deleteOriginalAfterApproval')?.checked === true;
     if (deleteOriginalAfterApproval) {
@@ -2595,10 +2756,12 @@ window.BGPS_CONFIG = Object.freeze({
       setHidden('undoBgpsStandardEdit', true);
       await renderStandardPreviewPdf(result);
       render();
-      window.BGPS_APP.toast('BGPS working copy saved. No permanent PDF has been added yet.');
+      if (behavior.quiet !== true) window.BGPS_APP.toast('BGPS working copy saved. No permanent PDF has been added yet.');
       if (approveAfterSave) { closeStandardPreviewModal(); await updateStatus('Approved', { deleteOriginalAfterApproval }); }
+      return true;
     } catch (error) {
       window.BGPS_APP.toast(error.message || 'Could not save the BGPS working copy.', 'error');
+      return false;
     } finally {
       standardPreviewInFlight = false;
       if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.standardPreviewSaved ? 'Update BGPS Working Copy' : 'Save BGPS Working Copy'; }
@@ -2913,6 +3076,7 @@ window.BGPS_CONFIG = Object.freeze({
   function bind() {
     if (initialized) return;
     initialized = true;
+    ensureStandardPageFitControls();
     byId('refreshPapersButton')?.addEventListener('click', () => load(true));
     byId('deleteAllApprovedOriginalsButton')?.addEventListener('click', bulkDeleteApprovedOriginals);
     byId('paperClassFilter')?.addEventListener('change', render);
@@ -2982,6 +3146,8 @@ window.BGPS_CONFIG = Object.freeze({
     currentPaper = null;
     standardPreviewResult = null;
     standardPreviewInFlight = false;
+    standardPreviewPageCount = 0;
+    standardPreviewUndoHtml = '';
     deleteInFlight = false;
     bulkOriginalDeleteInFlight = false;
     boardFilter = 'all';
@@ -3011,6 +3177,69 @@ window.BGPS_CONFIG = Object.freeze({
   let initialized = false;
   let session = null;
   let settings = null;
+  const WORKSHEET_VECTORS = Object.freeze([
+    { category: 'Animals', label: 'Cat', glyph: '🐱' },
+    { category: 'Animals', label: 'Dog', glyph: '🐶' },
+    { category: 'Animals', label: 'Fish', glyph: '🐟' },
+    { category: 'Animals', label: 'Butterfly', glyph: '🦋' },
+    { category: 'Animals', label: 'Elephant', glyph: '🐘' },
+    { category: 'Animals', label: 'Ant', glyph: '🐜' },
+    { category: 'Animals', label: 'Bird', glyph: '🐦' },
+    { category: 'Animals', label: 'Hen', glyph: '🐔' },
+    { category: 'Animals', label: 'Lion', glyph: '🦁' },
+    { category: 'Animals', label: 'Cow', glyph: '🐄' },
+    { category: 'Animals', label: 'Rabbit', glyph: '🐰' },
+    { category: 'Animals', label: 'Bee', glyph: '🐝' },
+    { category: 'Fruits & Food', label: 'Apple', glyph: '🍎' },
+    { category: 'Fruits & Food', label: 'Grapes', glyph: '🍇' },
+    { category: 'Fruits & Food', label: 'Mango', glyph: '🥭' },
+    { category: 'Fruits & Food', label: 'Banana', glyph: '🍌' },
+    { category: 'Fruits & Food', label: 'Orange', glyph: '🍊' },
+    { category: 'Fruits & Food', label: 'Strawberry', glyph: '🍓' },
+    { category: 'Fruits & Food', label: 'Egg', glyph: '🥚' },
+    { category: 'Fruits & Food', label: 'Ice Cream', glyph: '🍦' },
+    { category: 'Fruits & Food', label: 'Cake', glyph: '🍰' },
+    { category: 'Objects', label: 'Ball', glyph: '⚽' },
+    { category: 'Objects', label: 'Bat', glyph: '🏏' },
+    { category: 'Objects', label: 'Hat', glyph: '👒' },
+    { category: 'Objects', label: 'Book', glyph: '📘' },
+    { category: 'Objects', label: 'Pencil', glyph: '✏️' },
+    { category: 'Objects', label: 'Cup', glyph: '☕' },
+    { category: 'Objects', label: 'Clock', glyph: '🕒' },
+    { category: 'Objects', label: 'Key', glyph: '🔑' },
+    { category: 'Objects', label: 'Umbrella', glyph: '☂️' },
+    { category: 'Objects', label: 'School Bag', glyph: '🎒' },
+    { category: 'Objects', label: 'Bell', glyph: '🔔' },
+    { category: 'Transport', label: 'Car', glyph: '🚗' },
+    { category: 'Transport', label: 'Bus', glyph: '🚌' },
+    { category: 'Transport', label: 'Train', glyph: '🚂' },
+    { category: 'Transport', label: 'Boat', glyph: '⛵' },
+    { category: 'Transport', label: 'Bicycle', glyph: '🚲' },
+    { category: 'Transport', label: 'Aeroplane', glyph: '✈️' },
+    { category: 'Nature', label: 'Sun', glyph: '☀️' },
+    { category: 'Nature', label: 'Moon', glyph: '🌙' },
+    { category: 'Nature', label: 'Star', glyph: '⭐' },
+    { category: 'Nature', label: 'Flower', glyph: '🌷' },
+    { category: 'Nature', label: 'Tree', glyph: '🌳' },
+    { category: 'Nature', label: 'Rain', glyph: '🌧️' },
+    { category: 'Nature', label: 'Cloud', glyph: '☁️' },
+    { category: 'Festivals', label: 'Diwali Diya', glyph: '🪔' },
+    { category: 'Festivals', label: 'Holi Colours', glyph: '🎨' },
+    { category: 'Festivals', label: 'Christmas Tree', glyph: '🎄' },
+    { category: 'Festivals', label: 'Eid Moon', glyph: '🌙' },
+    { category: 'Festivals', label: 'Indian Flag', glyph: '🇮🇳' },
+    { category: 'Festivals', label: 'Festival Kite', glyph: '🪁' },
+    { category: 'Festivals', label: 'Gift', glyph: '🎁' },
+    { category: 'Festivals', label: 'Candle', glyph: '🕯️' },
+    { category: 'Festivals', label: 'Fireworks', glyph: '🎆' },
+    { category: 'Festivals', label: 'Celebration', glyph: '🎉' },
+    { category: 'Shapes', label: 'Red Circle', glyph: '🔴' },
+    { category: 'Shapes', label: 'Blue Square', glyph: '🟦' },
+    { category: 'Shapes', label: 'Yellow Circle', glyph: '🟡' },
+    { category: 'Shapes', label: 'Green Square', glyph: '🟩' },
+    { category: 'Shapes', label: 'Heart', glyph: '❤️' },
+    { category: 'Shapes', label: 'Diamond', glyph: '🔶' }
+  ]);
   let drafts = [];
   let papers = [];
   let currentDraftId = '';
@@ -3213,6 +3442,140 @@ window.BGPS_CONFIG = Object.freeze({
 
   function togglePalette(name) {
     document.querySelectorAll('.symbol-palette').forEach((palette) => palette.classList.toggle('open', palette.dataset.palette === name && !palette.classList.contains('open')));
+  }
+
+  function renderWorksheetVectorItems() {
+    const grid = byId('bgpsVectorGrid');
+    if (!grid) return;
+    const category = normalize(byId('bgpsVectorCategory')?.value);
+    const query = normalize(byId('bgpsVectorSearch')?.value).toLowerCase();
+    const rows = WORKSHEET_VECTORS.map((item, index) => ({ ...item, index })).filter((item) => {
+      if (category && item.category !== category) return false;
+      if (query && !`${item.label} ${item.category}`.toLowerCase().includes(query)) return false;
+      return true;
+    });
+    grid.innerHTML = rows.length
+      ? rows.map((item) => `<button type="button" class="bgps-vector-item" data-vector-index="${item.index}" title="Insert ${escapeHtml(item.label)}"><span aria-hidden="true">${item.glyph}</span><small>${escapeHtml(item.label)}</small></button>`).join('')
+      : '<div class="bgps-vector-empty">No matching illustration. Try another search or category.</div>';
+  }
+
+  function openWorksheetVectorLibrary() {
+    saveRange();
+    const modal = byId('bgpsVectorLibraryModal');
+    if (!modal) return;
+    modal.hidden = false;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    renderWorksheetVectorItems();
+    window.setTimeout(() => byId('bgpsVectorSearch')?.focus(), 50);
+  }
+
+  function closeWorksheetVectorLibrary() {
+    const modal = byId('bgpsVectorLibraryModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    if (!document.querySelector('.modal-backdrop.open')) document.body.classList.remove('modal-open');
+  }
+
+  async function worksheetVectorPng(item) {
+    if (document.fonts?.ready) {
+      try { await document.fonts.ready; } catch (_) {}
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = 384;
+    canvas.height = 384;
+    const context = canvas.getContext('2d', { alpha: true });
+    if (!context) throw new Error('This browser could not prepare the illustration.');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.font = '255px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+    context.fillText(item.glyph, canvas.width / 2, canvas.height / 2 + 7);
+    return canvas.toDataURL('image/png');
+  }
+
+  async function insertWorksheetVector(index) {
+    const item = WORKSHEET_VECTORS[Number(index)];
+    if (!item) return;
+    const grid = byId('bgpsVectorGrid');
+    if (grid) grid.setAttribute('aria-busy', 'true');
+    try {
+      const source = await worksheetVectorPng(item);
+      closeWorksheetVectorLibrary();
+      insertImageSource(source, `${item.label} worksheet illustration`, 32);
+      toast(`${item.label} illustration inserted.`);
+    } catch (error) {
+      toast(error.message || 'The illustration could not be inserted.', 'error');
+    } finally {
+      if (grid) grid.removeAttribute('aria-busy');
+    }
+  }
+
+  function ensureWorksheetVectorLibrary() {
+    const imageButton = byId('insertPaperImageButton');
+    if (imageButton && !byId('openWorksheetVectors')) {
+      const button = document.createElement('button');
+      button.id = 'openWorksheetVectors';
+      button.type = 'button';
+      button.className = 'editor-command';
+      button.textContent = 'Illustrations';
+      button.title = 'Insert a clean worksheet illustration';
+      imageButton.insertAdjacentElement('afterend', button);
+      button.addEventListener('click', openWorksheetVectorLibrary);
+    }
+
+    if (!byId('bgpsVectorLibraryStyles')) {
+      const style = document.createElement('style');
+      style.id = 'bgpsVectorLibraryStyles';
+      style.textContent = `
+        .bgps-vector-modal{position:fixed;inset:0;z-index:16000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(5,27,48,.62)}
+        .bgps-vector-modal.open{display:flex}
+        .bgps-vector-panel{width:min(860px,100%);max-height:min(84dvh,760px);display:flex;flex-direction:column;border-radius:18px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.3);overflow:hidden}
+        .bgps-vector-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #d5e0ea}
+        .bgps-vector-head h2{margin:0;color:#103c69;font-size:22px}.bgps-vector-head p{margin:4px 0 0;color:#667b90;font-size:13px}
+        .bgps-vector-close{width:44px;height:44px;border:1px solid #c3d2e0;border-radius:11px;background:#fff;color:#123f70;font-size:25px;cursor:pointer}
+        .bgps-vector-filters{display:grid;grid-template-columns:1fr 220px;gap:10px;padding:12px 18px;background:#f7fafc;border-bottom:1px solid #dce5ed}
+        .bgps-vector-filters input,.bgps-vector-filters select{width:100%;min-height:44px;padding:9px 11px;border:1px solid #b9cad9;border-radius:10px;background:#fff;color:#173f69;font:inherit;font-size:16px}
+        .bgps-vector-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;padding:16px 18px 20px;overflow:auto;overscroll-behavior:contain}
+        .bgps-vector-item{min-height:116px;padding:9px 6px;border:1px solid #d0dce7;border-radius:14px;background:#fff;color:#173f69;cursor:pointer;touch-action:manipulation}
+        .bgps-vector-item:hover,.bgps-vector-item:focus-visible{border-color:#1686c4;box-shadow:0 5px 15px rgba(18,63,112,.12);outline:none}
+        .bgps-vector-item span{display:block;font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;font-size:48px;line-height:1.15}
+        .bgps-vector-item small{display:block;margin-top:7px;font-size:11px;font-weight:800;line-height:1.2}
+        .bgps-vector-grid[aria-busy="true"]{opacity:.6;pointer-events:none}
+        .bgps-vector-empty{grid-column:1/-1;padding:34px;text-align:center;color:#667b90}
+        @media(max-width:700px){.bgps-vector-modal{align-items:flex-end;padding:0}.bgps-vector-panel{width:100%;max-height:92dvh;border-radius:18px 18px 0 0}.bgps-vector-filters{grid-template-columns:1fr;padding:10px 12px}.bgps-vector-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px}.bgps-vector-item{min-height:104px}.bgps-vector-item span{font-size:43px}}
+      `;
+      document.head.appendChild(style);
+    }
+
+    if (!byId('bgpsVectorLibraryModal')) {
+      const modal = document.createElement('div');
+      modal.id = 'bgpsVectorLibraryModal';
+      modal.className = 'bgps-vector-modal';
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      modal.innerHTML = `
+        <section class="bgps-vector-panel" role="dialog" aria-modal="true" aria-labelledby="bgpsVectorLibraryTitle">
+          <header class="bgps-vector-head"><div><h2 id="bgpsVectorLibraryTitle">Worksheet Illustrations</h2><p>Clean print-ready pictures for question papers. Select one to insert.</p></div><button class="bgps-vector-close" id="closeWorksheetVectors" type="button" aria-label="Close">×</button></header>
+          <div class="bgps-vector-filters"><input id="bgpsVectorSearch" type="search" placeholder="Search cat, fruit, Diwali, train…" autocomplete="off"><select id="bgpsVectorCategory" aria-label="Illustration category"></select></div>
+          <div class="bgps-vector-grid" id="bgpsVectorGrid"></div>
+        </section>`;
+      document.body.appendChild(modal);
+      const categories = [...new Set(WORKSHEET_VECTORS.map((item) => item.category))];
+      byId('bgpsVectorCategory').innerHTML = '<option value="">All categories</option>' + categories.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+      byId('bgpsVectorSearch')?.addEventListener('input', renderWorksheetVectorItems);
+      byId('bgpsVectorCategory')?.addEventListener('change', renderWorksheetVectorItems);
+      byId('closeWorksheetVectors')?.addEventListener('click', closeWorksheetVectorLibrary);
+      byId('bgpsVectorGrid')?.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-vector-index]');
+        if (button) insertWorksheetVector(button.dataset.vectorIndex);
+      });
+      modal.addEventListener('click', (event) => { if (event.target === modal) closeWorksheetVectorLibrary(); });
+      renderWorksheetVectorItems();
+    }
   }
 
   function ensureSubpartControls() {
@@ -3658,6 +4021,7 @@ window.BGPS_CONFIG = Object.freeze({
           <button type="button" data-mobile-paper-action="undo">Undo</button>
           <button type="button" data-mobile-paper-action="question">+ Question</button>
           <button type="button" data-mobile-paper-action="image">Image</button>
+          <button type="button" data-mobile-paper-action="vectors">Illustrations</button>
           <button type="button" data-mobile-paper-action="preview">Preview</button>
           <button class="primary" type="button" data-mobile-paper-action="save">Save</button>
           <button class="success" type="button" data-mobile-paper-action="submit">Submit</button>
@@ -3682,6 +4046,7 @@ window.BGPS_CONFIG = Object.freeze({
         if (action === 'undo') execCommand('undo');
         else if (action === 'question') insertQuestion();
         else if (action === 'image') byId('paperImageFile')?.click();
+        else if (action === 'vectors') openWorksheetVectorLibrary();
         else if (action === 'preview') previewCurrent();
         else if (action === 'save') saveEditorChanges(true).catch((error) => toast(error.message, 'error'));
         else if (action === 'submit') prepareSubmit();
@@ -5933,22 +6298,28 @@ window.BGPS_CONFIG = Object.freeze({
     markDirty();
   }
 
+  function insertImageSource(source, altText, widthPercent = 100) {
+    const width = Math.min(100, Math.max(20, Number(widthPercent) || 100));
+    const token = `bgps-image-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const html = `<div class="diagram-box has-image bgps-img-center" data-bgps-insert-token="${token}" style="--bgps-image-width:${width}%;width:${width}%" contenteditable="false"><img class="diagram-image" src="${source}" alt="${escapeHtml(altText || 'Question paper diagram')}"></div><p><br></p>`;
+    insertHtml(html);
+    const editor = byId('paperContentEditor');
+    const box = editor?.querySelector(`[data-bgps-insert-token="${token}"]`);
+    box?.removeAttribute('data-bgps-insert-token');
+    hydrateImages();
+    if (box) {
+      selectImage(box);
+      ensureParagraphAfterImage(box);
+      placeCaretAfterImage(box);
+    }
+    syncEditorFreeMoveHeight();
+    return box;
+  }
+
   async function insertImageFile(file) {
     try {
       const source = await compressImage(file);
-      const token = `bgps-image-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const html = `<div class="diagram-box has-image bgps-img-center" data-bgps-insert-token="${token}" style="--bgps-image-width:100%;width:100%" contenteditable="false"><img class="diagram-image" src="${source}" alt="Question paper diagram"></div><p><br></p>`;
-      insertHtml(html);
-      const editor = byId('paperContentEditor');
-      const box = editor?.querySelector(`[data-bgps-insert-token="${token}"]`);
-      box?.removeAttribute('data-bgps-insert-token');
-      hydrateImages();
-      if (box) {
-        selectImage(box);
-        ensureParagraphAfterImage(box);
-        placeCaretAfterImage(box);
-      }
-      syncEditorFreeMoveHeight();
+      insertImageSource(source, 'Question paper diagram', 100);
       toast('Image inserted. Resize or position it using Selected Image controls.');
     } catch (error) {
       toast(error.message || 'The image could not be inserted.', 'error');
@@ -6095,6 +6466,7 @@ window.BGPS_CONFIG = Object.freeze({
     renderSymbolPalettes();
     ensureSubpartControls();
     ensureMobilePaperExperience();
+    ensureWorksheetVectorLibrary();
 
     window.addEventListener('online', () => {
       if (dirty && editorWorkspaceOpen()) {
@@ -6244,7 +6616,8 @@ window.BGPS_CONFIG = Object.freeze({
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        if (byId('bgpsImageCropModal')?.classList.contains('open')) closeImageCropper();
+        if (byId('bgpsVectorLibraryModal')?.classList.contains('open')) closeWorksheetVectorLibrary();
+        else if (byId('bgpsImageCropModal')?.classList.contains('open')) closeImageCropper();
         else if (byId('teacherPaperPreviewModal')?.classList.contains('open')) closePreview();
         else if (byId('paperUploadModal')?.classList.contains('open')) closeUploadModalSafely();
         else if (byId('paperSubmitModal')?.classList.contains('open')) cancelPaperSubmit();
@@ -6309,6 +6682,7 @@ window.BGPS_CONFIG = Object.freeze({
     closeModal('paperUploadModal');
     closeModal('paperSubmitModal');
     closeModal('paperSubmitSuccessModal');
+    closeWorksheetVectorLibrary();
   }
 
   window.BGPS_PAPER_CREATOR = Object.freeze({ onAuthenticated, reset, loadData, renderList, openNewPaper, openAdminEdit });

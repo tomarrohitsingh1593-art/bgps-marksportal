@@ -2485,7 +2485,9 @@ window.BGPS_CONFIG = Object.freeze({
     const fitButton = byId('bgpsAutoFitPages');
     if (fitButton) {
       fitButton.disabled = standardPreviewInFlight || standardPreviewPageCount <= 1 || compact;
-      fitButton.textContent = compact ? 'Compact Layout Applied' : 'Auto-Fit Fewer Pages';
+      fitButton.textContent = compact
+        ? 'Compact Layout Applied'
+        : (standardPreviewPageCount > 1 ? `Fit ${standardPreviewPageCount} Pages → Fewer` : 'Auto-Fit Fewer Pages');
     }
     const undoButton = byId('bgpsUndoPageFit');
     if (undoButton) {
@@ -2496,7 +2498,7 @@ window.BGPS_CONFIG = Object.freeze({
     if (note) {
       note.textContent = message || (compact
         ? 'Compact layout is active. Review readability before approval.'
-        : 'Auto-Fit reduces safe spacing and image size without changing questions or marks.');
+        : 'BGPS alignment is applied when this preview opens. Before approval, use Fit Pages only if you want a shorter paper.');
     }
   }
 
@@ -2526,7 +2528,7 @@ window.BGPS_CONFIG = Object.freeze({
       <div class="bgps-page-fit-count">Preview: <strong id="bgpsStandardPageCount">Calculating pages…</strong></div>
       <button class="primary" id="bgpsAutoFitPages" type="button">Auto-Fit Fewer Pages</button>
       <button id="bgpsUndoPageFit" type="button" hidden>Undo Page Fit</button>
-      <div class="bgps-page-fit-message" id="bgpsPageFitMessage">Auto-Fit reduces safe spacing and image size without changing questions or marks.</div>`;
+      <div class="bgps-page-fit-message" id="bgpsPageFitMessage">BGPS alignment is applied when this preview opens. Before approval, use Fit Pages only if you want a shorter paper.</div>`;
     body.insertAdjacentElement('beforebegin', controls);
     byId('bgpsAutoFitPages')?.addEventListener('click', autoFitStandardPreviewPages);
     byId('bgpsUndoPageFit')?.addEventListener('click', undoStandardPreviewPageFit);
@@ -4043,6 +4045,7 @@ window.BGPS_CONFIG = Object.freeze({
           <button type="button" data-mobile-paper-action="undo">Undo</button>
           <button type="button" data-mobile-paper-action="question">+ Question</button>
           <button type="button" data-mobile-paper-action="image">Image</button>
+          <button type="button" data-mobile-paper-action="paste" hidden>Paste Image</button>
           <button type="button" data-mobile-paper-action="vectors">Illustrations</button>
           <button type="button" data-mobile-paper-action="preview">Preview</button>
           <button class="primary" type="button" data-mobile-paper-action="save">Save</button>
@@ -4068,6 +4071,7 @@ window.BGPS_CONFIG = Object.freeze({
         if (action === 'undo') execCommand('undo');
         else if (action === 'question') insertQuestion();
         else if (action === 'image') byId('paperImageFile')?.click();
+        else if (action === 'paste') pasteCopiedImage();
         else if (action === 'vectors') openWorksheetVectorLibrary();
         else if (action === 'preview') previewCurrent();
         else if (action === 'save') saveEditorChanges(true).catch((error) => toast(error.message, 'error'));
@@ -4111,6 +4115,8 @@ window.BGPS_CONFIG = Object.freeze({
     if (submit) submit.hidden = editorMode === 'admin' || Boolean(byId('submitPaperForReview')?.hidden);
     const save = mobilePaperBar.querySelector('[data-mobile-paper-action="save"]');
     if (save) save.textContent = editorMode === 'admin' ? 'Save Changes' : 'Save';
+    const paste = mobilePaperBar.querySelector('[data-mobile-paper-action="paste"]');
+    if (paste) paste.hidden = !imageClipboard;
     const status = byId('paperSaveStatus')?.textContent || (navigator.onLine ? 'Ready' : 'Offline');
     const mobileState = byId('bgpsMobilePaperSaveState');
     if (mobileState) mobileState.textContent = status;
@@ -5169,12 +5175,13 @@ window.BGPS_CONFIG = Object.freeze({
         position:relative !important;
         display:block !important;
         width:100% !important;
-        height:var(--bgps-free-stage-height,0px) !important;
+        height:0 !important;
         min-height:0 !important;
         margin:0 !important;
         padding:0 !important;
         border:0 !important;
         clear:both !important;
+        overflow:visible !important;
         pointer-events:none;
       }
       #paperContentEditor .bgps-free-stage > .diagram-box.bgps-img-free {
@@ -5373,15 +5380,10 @@ window.BGPS_CONFIG = Object.freeze({
           return;
         }
 
-        let requiredHeight = 0;
-        boxes.forEach((box) => {
-          const offset = freeImageOffset(box);
-          const height = Math.max(1, box.getBoundingClientRect().height || box.offsetHeight || 1);
-          requiredHeight = Math.max(requiredHeight, offset.y + height + 24);
-        });
-        const safeHeight = Math.max(24, Math.ceil(requiredHeight));
-        stage.style.setProperty('--bgps-free-stage-height', `${safeHeight}px`);
-        stage.style.height = 'var(--bgps-free-stage-height)';
+        // Free Move is intentionally out of flow. The picture can be placed
+        // anywhere without keeping an invisible image-sized blank block.
+        stage.style.setProperty('--bgps-free-stage-height', '0px');
+        stage.style.height = '0px';
         ensureParagraphAfterImage(boxes[boxes.length - 1]);
       });
   }
@@ -5395,9 +5397,8 @@ window.BGPS_CONFIG = Object.freeze({
       editor.dataset.bgpsBaseMinHeight = String(Math.max(0, Number.isFinite(computed) ? computed : 0));
     }
 
-    // Support both normal teacher-created papers and imported DOCX content
-    // nested inside .bgps-standardized-docx. Each host receives an in-flow
-    // stage so absolute images never overlap the following questions.
+    // Support both normal teacher-created papers and imported DOCX content.
+    // A zero-height anchor keeps Free Move images out of document flow.
     Array.from(editor.querySelectorAll('.diagram-box.has-image.bgps-img-free'))
       .filter((box) => !freeStageForBox(box))
       .forEach((box) => ensureFreeStageForBox(box));
@@ -6012,6 +6013,32 @@ window.BGPS_CONFIG = Object.freeze({
     syncMobilePaperBar();
   }
 
+  function ensureImageClipboardPasteControl() {
+    let button = byId('pastePaperImageGlobal');
+    if (button) return button;
+    const imageButton = byId('insertPaperImageButton');
+    if (!imageButton?.parentElement) return null;
+    button = document.createElement('button');
+    button.id = 'pastePaperImageGlobal';
+    button.type = 'button';
+    button.className = imageButton.className;
+    button.textContent = 'Paste Image';
+    button.title = 'Paste the image that was copied or cut';
+    button.hidden = true;
+    button.addEventListener('click', pasteCopiedImage);
+    imageButton.insertAdjacentElement('afterend', button);
+    return button;
+  }
+
+  function syncImageClipboardControls() {
+    const button = ensureImageClipboardPasteControl();
+    if (button) button.hidden = !imageClipboard;
+    const inspectorPaste = byId('pastePaperImage');
+    if (inspectorPaste) inspectorPaste.disabled = !imageClipboard;
+    const mobilePaste = mobilePaperBar?.querySelector('[data-mobile-paper-action="paste"]');
+    if (mobilePaste) mobilePaste.hidden = !imageClipboard;
+  }
+
   function updateImageInspector() {
     const active = Boolean(selectedImage && selectedImage.isConnected);
     setHidden('paperImageEmpty', active);
@@ -6211,6 +6238,7 @@ window.BGPS_CONFIG = Object.freeze({
     imageClipboard.removeAttribute('data-editor-bound');
     imageClipboard.classList.remove('is-image-selected');
     imageClipboard.querySelectorAll('.bgps-image-resize-handle,.bgps-image-drag-handle').forEach((node) => node.remove());
+    syncImageClipboardControls();
     toast('Image copied.');
   }
 
@@ -6218,25 +6246,38 @@ window.BGPS_CONFIG = Object.freeze({
     if (!selectedImage) return;
     copySelectedImage();
     const target = selectedImage;
+    placeCaretAfterImage(target, { scroll: false });
     deselectImage();
     target.remove();
     syncEditorFreeMoveHeight();
+    syncImageClipboardControls();
     markDirty();
   }
 
   function pasteCopiedImage() {
     if (!imageClipboard) { toast('Copy or cut an image first.', 'error'); return; }
-    const clone = imageClipboard.cloneNode(true);
+    let clone = imageClipboard.cloneNode(true);
     clone.removeAttribute('data-editor-bound');
     const editor = byId('paperContentEditor');
-    if (selectedImage?.isConnected) selectedImage.insertAdjacentElement('afterend', clone);
-    else editor?.appendChild(clone);
+    if (!editor) return;
+    if (selectedImage?.isConnected) {
+      selectedImage.insertAdjacentElement('afterend', clone);
+    } else {
+      const token = `bgps-paste-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      clone.dataset.bgpsPasteToken = token;
+      insertHtml(clone.outerHTML);
+      clone = editor.querySelector(`[data-bgps-paste-token="${token}"]`) || clone;
+      clone.removeAttribute('data-bgps-paste-token');
+      if (!clone.isConnected) editor.appendChild(clone);
+    }
     bindImageBox(clone);
     selectImage(clone);
     ensureParagraphAfterImage(clone);
     placeCaretAfterImage(clone);
     syncEditorFreeMoveHeight();
+    syncImageClipboardControls();
     markDirty();
+    toast('Image pasted. You can paste it again if needed.');
   }
 
   async function replaceSelectedImage(file) {
@@ -6358,7 +6399,14 @@ window.BGPS_CONFIG = Object.freeze({
 
   async function handlePaste(event) {
     const files = [...(event.clipboardData?.files || [])].filter((file) => file.type.startsWith('image/'));
-    if (!files.length) return;
+    if (!files.length) {
+      const hasClipboardText = Boolean(event.clipboardData?.getData('text/plain') || event.clipboardData?.getData('text/html'));
+      if (imageClipboard && !hasClipboardText) {
+        event.preventDefault();
+        pasteCopiedImage();
+      }
+      return;
+    }
     event.preventDefault();
     for (const file of files.slice(0, 5)) await insertImageFile(file);
   }
@@ -6495,6 +6543,8 @@ window.BGPS_CONFIG = Object.freeze({
     ensureSubpartControls();
     ensureMobilePaperExperience();
     ensureWorksheetVectorLibrary();
+    ensureImageClipboardPasteControl();
+    syncImageClipboardControls();
 
     window.addEventListener('online', () => {
       if (dirty && editorWorkspaceOpen()) {
@@ -6687,6 +6737,7 @@ window.BGPS_CONFIG = Object.freeze({
     dirty = false;
     editRevision = 0;
     imageClipboard = null;
+    syncImageClipboardControls();
     saveInFlight = false;
     submitInFlight = false;
     previewInFlight = false;

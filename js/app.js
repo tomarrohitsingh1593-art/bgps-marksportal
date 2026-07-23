@@ -6,6 +6,19 @@ window.BGPS_CONFIG = Object.freeze({
   rollCount: 50
 });
 
+window.BGPS_PRINT_LAYOUT = Object.freeze({
+  prepareFreeMoveHtml(value) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = String(value || '');
+    wrapper.querySelectorAll('.bgps-free-stage').forEach((stage) => {
+      const printHeight = Math.max(24, parseFloat(stage.style.getPropertyValue('--bgps-free-print-height') || 24) || 24);
+      stage.style.setProperty('--bgps-free-stage-height', `${printHeight}px`);
+      stage.style.height = 'var(--bgps-free-stage-height)';
+    });
+    return wrapper.innerHTML;
+  }
+});
+
 
 (function () {
   'use strict';
@@ -2830,7 +2843,7 @@ window.BGPS_CONFIG = Object.freeze({
     const preview = byId('paperPreviewArea');
     if (!preview) return;
     const paper = content.paper || {};
-    const html = String(paper.editorHtml || '').trim();
+    const html = window.BGPS_PRINT_LAYOUT.prepareFreeMoveHtml(paper.editorHtml).trim();
     const bodyText = String(paper.bodyText || '').trim();
     const documentHtml = `<!doctype html><html><head><meta charset="utf-8"><meta name="color-scheme" content="light only"><style>
       html{color-scheme:light}body{margin:0;background:#e7edf4;font-family:Arial,sans-serif;color:#111}.sheet{width:min(794px,calc(100% - 24px));min-height:1123px;margin:14px auto;padding:42px 50px;background:#fff;box-shadow:0 8px 30px rgba(15,42,76,.18);box-sizing:border-box}.sheet img{max-width:100%;height:auto}.sheet table{max-width:100%;border-collapse:collapse}.sheet td,.sheet th{border:1px solid #333;padding:5px}@media(max-width:700px){.sheet{width:100%;min-height:0;margin:0;padding:22px 18px;box-shadow:none}}</style></head><body><main class="sheet">${html || `<pre style="white-space:pre-wrap;font:15px/1.6 Arial,sans-serif">${escapeHtml(bodyText || 'Paper content is unavailable.')}</pre>`}</main></body></html>`;
@@ -4155,7 +4168,7 @@ window.BGPS_CONFIG = Object.freeze({
       }
       if (box.classList.contains('bgps-img-free')) {
         const stage = freeStageForBox(box);
-        const stageHeight = parseFloat(stage?.style.getPropertyValue('--bgps-free-stage-height') || stage?.style.height || 0) || 0;
+        const stageHeight = parseFloat(stage?.style.getPropertyValue('--bgps-free-print-height') || 0) || 0;
         const offset = freeImageOffset(box);
         const required = offset.y + Math.max(1, rect.height) + 8;
         if (!stage || required > stageHeight + 3) issues.push({ message: `Image ${index + 1} needs layout recalculation.`, node: box });
@@ -4780,6 +4793,9 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function buildPreviewDocument(draft) {
+    draft = Object.assign({}, draft, {
+      editorHtml: window.BGPS_PRINT_LAYOUT.prepareFreeMoveHtml(draft?.editorHtml)
+    });
     const instructions = normalize(draft.instructions).split(/\n+/).map(normalize).filter(Boolean);
     const instructionsHtml = instructions.length ? `<div class="instructions"><strong>General Instructions</strong><ol>${instructions.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol></div>` : '';
     const date = draft.examDate || '____________';
@@ -5351,6 +5367,7 @@ window.BGPS_CONFIG = Object.freeze({
       stage.setAttribute('contenteditable', 'false');
       stage.setAttribute('aria-hidden', 'true');
       stage.style.setProperty('--bgps-free-stage-height', '0px');
+      stage.style.setProperty('--bgps-free-print-height', '24px');
       stage.style.height = 'var(--bgps-free-stage-height)';
       host.insertBefore(stage, anchor);
     }
@@ -5380,9 +5397,16 @@ window.BGPS_CONFIG = Object.freeze({
           return;
         }
 
-        // Free Move is intentionally out of flow. The picture can be placed
-        // anywhere without keeping an invisible image-sized blank block.
+        let printHeight = 24;
+        boxes.forEach((box) => {
+          const offset = freeImageOffset(box);
+          const height = Math.max(1, box.getBoundingClientRect().height || box.offsetHeight || 1);
+          printHeight = Math.max(printHeight, offset.y + height + 12);
+        });
+        // Editor stays zero-height so typing is never blocked. The separate
+        // print envelope is used only by preview/PDF pagination.
         stage.style.setProperty('--bgps-free-stage-height', '0px');
+        stage.style.setProperty('--bgps-free-print-height', `${Math.ceil(printHeight)}px`);
         stage.style.height = '0px';
         ensureParagraphAfterImage(boxes[boxes.length - 1]);
       });

@@ -3292,12 +3292,33 @@ window.BGPS_CONFIG = Object.freeze({
     return byId('paperContentEditor')?.querySelectorAll('.question-line').length || 0;
   }
 
+  function markTokenValue(value) {
+    const cleaned = String(value || '')
+      .replace(/^[\s[(]+|[\s)\]]+$/g, '')
+      .replace(/\s*marks?\s*$/i, '')
+      .trim();
+    if (!/^\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*$/.test(cleaned)) return 0;
+    return cleaned.split('+').reduce((sum, part) => sum + (Number(part.trim()) || 0), 0);
+  }
+
   function detectedMarks() {
-    const text = byId('paperContentEditor')?.innerText || '';
+    const editor = byId('paperContentEditor');
+    if (!editor) return 0;
+
+    // Portal-created questions carry an explicit mark-token class. Prefer those
+    // tokens so bracketed question numbers/references elsewhere are not counted.
+    const explicitTokens = [...editor.querySelectorAll('.mark-token')];
+    if (explicitTokens.length) {
+      const total = explicitTokens.reduce((sum, token) => sum + markTokenValue(token.textContent), 0);
+      return Number(total.toFixed(2));
+    }
+
+    // Imported/legacy papers may not have mark-token classes.
+    const text = editor.innerText || '';
     let total = 0;
-    const regex = /\[\s*(\d+(?:\.\d+)?)\s*(?:marks?)?\s*\]/gi;
+    const regex = /\[\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*(?:marks?)?\s*\]/gi;
     let match;
-    while ((match = regex.exec(text))) total += Number(match[1]) || 0;
+    while ((match = regex.exec(text))) total += markTokenValue(match[0]);
     return Number(total.toFixed(2));
   }
 

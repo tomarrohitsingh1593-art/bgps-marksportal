@@ -3177,6 +3177,28 @@ window.BGPS_CONFIG = Object.freeze({
   let initialized = false;
   let session = null;
   let settings = null;
+
+  function looksLikePortalApplicationSource(value) {
+    const holder = document.createElement('div');
+    holder.innerHTML = String(value || '');
+    const text = String(holder.textContent || '').toLowerCase();
+    const signatures = [
+      'let settings = null',
+      'function escapehtml(value)',
+      "byid('settingsstatus')",
+      'function applysettings(value)',
+      'window.bgps_',
+      'papercontenteditor',
+      'function setstatus(message'
+    ];
+    let matches = 0;
+    signatures.forEach((signature) => {
+      if (text.includes(signature)) matches += 1;
+    });
+    return matches >= 3
+      || (text.includes('let settings = null') && text.includes('function escapehtml(value)'));
+  }
+
   const WORKSHEET_VECTORS = Object.freeze([
     { category: 'Animals', label: 'Cat', glyph: '🐱' },
     { category: 'Animals', label: 'Dog', glyph: '🐶' },
@@ -4562,6 +4584,10 @@ window.BGPS_CONFIG = Object.freeze({
   }
 
   function loadDraftIntoEditor(draft, correctionMode, options = {}) {
+    if (looksLikePortalApplicationSource(draft?.editorHtml || '')) {
+      toast('Unsafe portal source was blocked. Reopen the paper after the backend update to recover its real content.', 'error');
+      return false;
+    }
     clearEditor();
     const isAdminEdit = options.admin === true;
     const linkedPaper = Boolean(isAdminEdit || correctionMode || draft.parentPaperId || (draft.paperId && !draft.draftId));
@@ -4659,6 +4685,7 @@ window.BGPS_CONFIG = Object.freeze({
     setEditorMode(true);
     syncMobilePaperBar();
     offerRecovery(draft.updatedAt || '').catch(() => {});
+    return true;
   }
 
   async function openDraft(draftId) {
@@ -4695,6 +4722,7 @@ window.BGPS_CONFIG = Object.freeze({
       const result = await window.BGPS_API.getPaperContent(paperId);
       const paper = result.paper || {};
       if (!String(paper.editorHtml || '').trim()) throw new Error('Editable paper content is unavailable. Refresh Paper Approval and try again.');
+      if (looksLikePortalApplicationSource(paper.editorHtml)) throw new Error('Unsafe stored content was blocked. Refresh after deploying the matching backend fix.');
       window.BGPS_APP.openView('teacher-papers');
       loadDraftIntoEditor(paper, false, { admin: true });
     } catch (error) {

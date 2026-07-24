@@ -688,6 +688,20 @@ Show complete working wherever required." rows="3"></textarea></div>
 </div>
 </div>
 <div aria-live="polite" class="toast-region" id="toastRegion"></div>
-<script src="js/app.js"></script><script src="js/hotfix.js"></script>
+<!-- BGPS frontend modules: load order is intentional. -->
+<script defer src="js/app-config.js"></script>
+<script defer src="js/modules/state.js"></script>
+<script defer src="js/modules/api.js"></script>
+<script defer src="js/modules/pdf-preview.js"></script>
+<script defer src="js/modules/data.js"></script>
+<script defer src="js/modules/marks.js"></script>
+<script defer src="js/modules/dashboard.js"></script>
+<script defer src="js/modules/papers.js"></script>
+<script defer src="js/modules/paper-creator.js"></script>
+<script defer src="js/modules/reports.js"></script>
+<script defer src="js/modules/settings.js"></script>
+<script defer src="js/modules/auth.js"></script>
+<script defer src="js/app.js"></script>
+<script defer src="js/hotfix.js"></script>
 </body>
 </html>

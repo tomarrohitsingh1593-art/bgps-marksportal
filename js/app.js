@@ -4125,9 +4125,17 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
     mobilePaperBar.querySelector('[data-mobile-mode="normal"]')?.toggleAttribute('hidden', imageMode);
     mobilePaperBar.querySelector('[data-mobile-mode="image"]')?.toggleAttribute('hidden', !imageMode);
     const submit = mobilePaperBar.querySelector('[data-mobile-paper-action="submit"]');
-    if (submit) submit.hidden = editorMode === 'admin' || Boolean(byId('submitPaperForReview')?.hidden);
+    if (submit) {
+      const desktopSubmit = byId('submitPaperForReview');
+      submit.hidden = editorMode === 'admin' || Boolean(desktopSubmit?.hidden);
+      submit.disabled = submitInFlight || saveInFlight || Boolean(desktopSubmit?.disabled);
+      submit.textContent = currentRevision.parentPaperId ? 'Resubmit' : 'Submit';
+    }
     const save = mobilePaperBar.querySelector('[data-mobile-paper-action="save"]');
-    if (save) save.textContent = editorMode === 'admin' ? 'Save Changes' : 'Save';
+    if (save) {
+      save.disabled = saveInFlight || submitInFlight;
+      save.textContent = editorMode === 'admin' ? 'Save Changes' : 'Save';
+    }
     const paste = mobilePaperBar.querySelector('[data-mobile-paper-action="paste"]');
     if (paste) paste.hidden = !imageClipboard;
     const status = byId('paperSaveStatus')?.textContent || (navigator.onLine ? 'Ready' : 'Offline');
@@ -4201,9 +4209,22 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
     if (!draft.editorHtml || draft.bodyText.length < 5) issues.push({ message: 'Write the question paper before submission.', node: byId('paperContentEditor') });
     if (draft.bodyText.toLowerCase().includes('type question here')) issues.push({ message: 'Replace every “Type question here” placeholder.', node: byId('paperContentEditor')?.querySelector('.q-placeholder') || byId('paperContentEditor') });
     if (draft.totalQuestions <= 0) issues.push({ message: 'Add at least one question.', node: byId('paperContentEditor') });
-    if (Math.abs(draft.detectedMarks - draft.maxMarks) > 0.01) issues.push({ message: `Detected marks (${draft.detectedMarks}) must match Maximum Marks (${draft.maxMarks}).`, node: byId('paperMarksGauge') || byId('paperMaxMarksInput') });
+    // Imported DOCX papers can contain marks in tables, drawings or Word fields that
+    // the browser cannot count reliably. Keep the live marks gauge as a review aid,
+    // but do not falsely block a DOCX correction/resubmission. Portal-created papers
+    // still require an exact detected total.
+    if (!isDocxBasedDraft(draft) && Math.abs(draft.detectedMarks - draft.maxMarks) > 0.01) {
+      issues.push({ message: `Detected marks (${draft.detectedMarks}) must match Maximum Marks (${draft.maxMarks}).`, node: byId('paperMarksGauge') || byId('paperMaxMarksInput') });
+    }
     issues.push(...imageLayoutIssues());
     return issues;
+  }
+
+  function isDocxBasedDraft(draft) {
+    const sourceType = normalize(draft?.sourceType).toLowerCase();
+    const fileName = normalize(draft?.originalFileName).toLowerCase();
+    return sourceType.includes('docx')
+      || ((sourceType === 'upload' || sourceType === 'import') && fileName.endsWith('.docx'));
   }
 
   function focusPaperIssue(issue) {
@@ -4259,6 +4280,10 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
     const used = detectedMarks();
     const remaining = Number((target - used).toFixed(2));
     const count = currentQuestionCount();
+    const docxMarksAdvisory = isDocxBasedDraft({
+      sourceType: currentRevision.sourceType,
+      originalFileName: currentRevision.originalFileName
+    });
     setText('paperDetectedMarks', used);
     setText('paperTargetMarks', target || 0);
     setText('paperRemainingMarks', remaining);
@@ -4267,14 +4292,15 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
     if (progress) progress.style.width = `${target > 0 ? Math.min(100, Math.max(0, (used / target) * 100)) : 0}%`;
     const card = byId('paperMarksGauge')?.closest('.marks-check-card');
     if (card) {
-      card.classList.toggle('mismatch', target > 0 && used < target);
-      card.classList.toggle('over', target > 0 && used > target);
+      card.classList.toggle('mismatch', !docxMarksAdvisory && target > 0 && used < target);
+      card.classList.toggle('over', !docxMarksAdvisory && target > 0 && used > target);
     }
     const message = byId('paperMarksMessage');
     if (message) {
       if (!target) message.textContent = 'Enter maximum marks and add questions.';
       else if (!count) message.textContent = 'Add at least one question.';
       else if (remaining === 0) message.textContent = 'Marks total is correct. The paper is ready for final checking.';
+      else if (docxMarksAdvisory) message.textContent = `Imported DOCX: verify the ${target}-mark total visually. Word tables or text boxes may not be counted automatically; this will not block resubmission.`;
       else if (remaining > 0) message.textContent = `${remaining} mark${remaining === 1 ? '' : 's'} still need to be added.`;
       else message.textContent = `The paper is ${Math.abs(remaining)} mark${Math.abs(remaining) === 1 ? '' : 's'} over the maximum.`;
     }
@@ -4370,6 +4396,7 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
     const saveRevision = editRevision;
     validateBasic(draft);
     saveInFlight = true;
+    syncMobilePaperBar();
     const buttons = [byId('savePaperDraft'), byId('sidebarSaveDraft')].filter(Boolean);
     buttons.forEach((button) => { button.disabled = true; button.textContent = 'Saving…'; });
     try {
@@ -4397,6 +4424,7 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
     } finally {
       saveInFlight = false;
       buttons.forEach((button) => { button.disabled = false; button.textContent = button.id === 'savePaperDraft' ? 'Save Draft' : 'Save Draft'; });
+      syncMobilePaperBar();
     }
   }
 
@@ -4447,7 +4475,10 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
     const createAllowed = permissions.canCreate !== false;
     const uploadAllowed = permissions.canUpload !== false;
     const sourceType = normalize(currentRevision?.sourceType).toLowerCase();
-    const submitAllowed = ['docx upload', 'docx import', 'upload'].includes(sourceType) ? uploadAllowed : createAllowed;
+    const correctionResubmission = Boolean(currentRevision.parentPaperId)
+      && byId('paperCorrectionBanner')?.hidden === false;
+    const submitAllowed = correctionResubmission
+      || (['docx upload', 'docx import', 'upload'].includes(sourceType) ? uploadAllowed : createAllowed);
     byId('createNewPaper').disabled = !createAllowed;
     byId('openPaperUpload').disabled = !uploadAllowed;
     byId('submitPaperForReview').disabled = !submitAllowed;
@@ -4674,6 +4705,7 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
       setText('closePaperEditor', 'Back to My Papers');
       setText('savePaperDraft', 'Save Draft');
       setText('sidebarSaveDraft', 'Save Draft');
+      setText('submitPaperForReview', 'Resubmit Corrected Paper');
       setHidden('submitPaperForReview', false);
       markDirty();
     } else if (pendingTeacherEdit) {
@@ -4684,6 +4716,7 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
       setText('closePaperEditor', 'Back to My Papers');
       setText('savePaperDraft', 'Save Draft');
       setText('sidebarSaveDraft', 'Save Draft');
+      setText('submitPaperForReview', 'Submit Updated Paper');
       setHidden('submitPaperForReview', false);
       markSaved(`Submitted paper loaded · ${safeDate(draft.updatedAt) || 'ready to edit'}`);
     } else {
@@ -4694,6 +4727,7 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
       setText('closePaperEditor', 'Back to My Papers');
       setText('savePaperDraft', 'Save Draft');
       setText('sidebarSaveDraft', 'Save Draft');
+      setText('submitPaperForReview', 'Submit for Review');
       setHidden('submitPaperForReview', false);
       markSaved(`Draft loaded · ${safeDate(draft.updatedAt)}`);
     }
@@ -5031,7 +5065,8 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
   function prepareSubmit() {
     try {
       pendingPdfUpload = null;
-      setText('paperSubmitTitle', 'Submit Question Paper');
+      const resubmitting = Boolean(currentRevision.parentPaperId);
+      setText('paperSubmitTitle', resubmitting ? 'Resubmit Corrected Question Paper' : 'Submit Question Paper');
       const draft = collectDraft();
       validateForSubmit(draft);
       setText('submitPaperClass', draft.className);
@@ -5040,6 +5075,8 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
       setText('submitPaperQuestions', draft.totalQuestions);
       setText('submitPaperMarks', draft.detectedMarks);
       setText('submitPaperMaxMarks', draft.maxMarks);
+      const confirm = byId('confirmPaperSubmit');
+      if (confirm) confirm.textContent = resubmitting ? 'Resubmit for Approval' : 'Submit for Approval';
       openModal('paperSubmitModal');
     } catch (error) {
       toast(error.message, 'error');
@@ -5084,6 +5121,7 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
     if (submitInFlight) return;
     if (saveInFlight) { toast('Please wait for the current save to finish.', 'error'); return; }
     submitInFlight = true;
+    syncMobilePaperBar();
     const button = byId('confirmPaperSubmit');
     if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
     try {
@@ -5114,10 +5152,20 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
         toast('Paper was sent successfully. Refresh My Papers to update the list.');
       });
     } catch (error) {
-      toast(error.message || 'Could not submit the paper.', 'error');
+      const message = error.message || 'Could not submit the paper.';
+      const status = byId('paperSaveStatus');
+      if (status) {
+        status.textContent = `Submission failed: ${message}`;
+        status.className = 'paper-save-status dirty';
+      }
+      toast(message, 'error');
     } finally {
       submitInFlight = false;
-      if (button) { button.disabled = false; button.textContent = 'Submit for Approval'; }
+      if (button) {
+        button.disabled = false;
+        button.textContent = currentRevision.parentPaperId ? 'Resubmit for Approval' : 'Submit for Approval';
+      }
+      syncMobilePaperBar();
     }
   }
 

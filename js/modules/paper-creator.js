@@ -1339,8 +1339,12 @@
     byId('submitPaperForReview').disabled = !submitAllowed;
     if (notice) {
       const message = settings?.settings?.adminNotice || '';
-      notice.hidden = createAllowed && uploadAllowed && !message;
-      notice.textContent = message || (!createAllowed && !uploadAllowed ? 'Question-paper creation and upload are currently unavailable.' : !createAllowed ? 'Manual paper creation is currently unavailable.' : 'Question-paper upload is currently unavailable.');
+      const bothClosed = !createAllowed && !uploadAllowed;
+      const repeatsVisibleAccessState = /upload\s+is\s+open|manual\s+creator\s+can\s+be\s+enabled/i.test(message);
+      notice.hidden = !bothClosed && (!message || repeatsVisibleAccessState);
+      notice.textContent = bothClosed
+        ? (message || 'Question-paper creation and upload are currently unavailable.')
+        : (repeatsVisibleAccessState ? '' : message);
     }
   }
 
@@ -1376,7 +1380,7 @@
     // When a submitted/correction paper has an active linked draft, combinedItems() hides
     // the parent paper and shows the draft instead. Counting raw `papers` caused cards
     // such as Correction Required to be higher than the visible current-paper list.
-    const currentItems = combinedItems();
+    const currentItems = combinedItems(true);
     const currentPapers = currentItems.filter((item) => item.kind === 'paper');
     const currentDrafts = currentItems.filter((item) => item.kind === 'draft');
     setText('teacherPaperMetricDraft', currentDrafts.length);
@@ -1385,12 +1389,12 @@
     setText('teacherPaperMetricApproved', currentPapers.filter((paper) => statusKey(paper.status) === 'approved').length);
   }
 
-  function combinedItems() {
+  function combinedItems(includeApproved = false) {
     const linkedPaperIds = new Set(drafts.map((draft) => String(draft.parentPaperId || '')).filter(Boolean));
     const draftItems = drafts.map((draft) => ({ ...draft, kind: 'draft', status: 'Draft', updatedSort: draft.updatedAt || draft.createdAt || '' }));
     const paperItems = papers
       .filter((paper) => !linkedPaperIds.has(String(paper.paperId || '')))
-      .filter((paper) => statusKey(paper.status) !== 'approved')
+      .filter((paper) => includeApproved || statusKey(paper.status) !== 'approved')
       .map((paper) => ({ ...paper, kind: 'paper', updatedSort: paper.updatedAt || paper.uploadedAt || '' }));
     return [...draftItems, ...paperItems].sort((a, b) => String(b.updatedSort).localeCompare(String(a.updatedSort)));
   }
@@ -1400,9 +1404,22 @@
     const list = byId('teacherPaperList');
     if (!list) return;
     const status = normalize(byId('teacherPaperStatusFilter')?.value);
+    const statusKeyValue = statusKey(status);
     const className = normalize(byId('teacherPaperClassFilter')?.value);
     const search = normalize(byId('teacherPaperSearch')?.value).toLowerCase();
-    const items = combinedItems().filter((item) => {
+    const listCopy = statusKeyValue === 'approved'
+      ? ['Approved Papers', 'Final papers are read-only. Open Preview to view or download the approved copy.']
+      : statusKeyValue === 'submitted'
+        ? ['Submitted Papers', 'Papers waiting for the Principal’s first review or re-review.']
+        : statusKeyValue === 'correction required'
+          ? ['Correction Required', 'Open a returned paper, follow the Principal note and resubmit it.']
+          : statusKeyValue === 'draft'
+            ? ['My Drafts', 'Continue preparing, previewing or deleting unfinished papers.']
+            : ['Active Papers', 'Track drafts, submissions and papers returned for correction.'];
+    setText('teacherPaperListTitle', listCopy[0]);
+    setText('teacherPaperListSubtitle', listCopy[1]);
+
+    const items = combinedItems(statusKeyValue === 'approved').filter((item) => {
       if (status && normalize(item.status) !== status) return false;
       if (className && normalize(item.className) !== className) return false;
       if (search) {
@@ -1412,7 +1429,9 @@
       return true;
     });
     if (!items.length) {
-      list.innerHTML = '<div class="empty-state"><strong>No working papers</strong>Approved papers are shown in status notifications. Create a paper or wait for a correction request.</div>';
+      list.innerHTML = statusKeyValue === 'approved'
+        ? '<div class="empty-state"><strong>No approved papers yet</strong>Approved papers will appear here automatically after the Principal’s decision.</div>'
+        : '<div class="empty-state"><strong>No active papers</strong>Create a paper or wait for a correction request.</div>';
       return;
     }
     list.innerHTML = items.map((item) => {
@@ -1425,9 +1444,12 @@
       let actions = '';
       if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">Continue Editing</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">Delete Draft</button>`;
       else if (correction) actions = `<button class="btn primary" type="button" data-edit-paper="${escapeHtml(item.paperId)}">Edit &amp; Resubmit</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
-      else if (submitted) actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button><span class="teacher-paper-readonly-note">Awaiting Principal review</span>`;
+      else if (submitted) actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>${resubmitted ? '' : '<span class="teacher-paper-readonly-note">Awaiting Principal review</span>'}`;
       else actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
-      return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3><span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>${resubmitted ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>' : ''}${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${submitted && !resubmitted ? '<div class="teacher-paper-note" style="border-left-color:#cf8a13;background:#fff8e8;color:#72520d"><strong>Submitted:</strong> This paper is locked while awaiting Principal review.</div>' : ''}${resubmitted ? `<div class="teacher-paper-note" style="border-left-color:#5b4bb7;background:#faf9ff;color:#46378f"><strong>Correction sent:</strong> Version ${escapeHtml(item.version || 1)} is awaiting Principal re-review.${item.adminNote ? ` Returned note: ${escapeHtml(item.adminNote)}` : ''}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> This paper is ready for use.</div>' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
+      const statusChip = resubmitted
+        ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>'
+        : `<span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>`;
+      return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3>${statusChip}${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${submitted && !resubmitted ? '<div class="teacher-paper-note" style="border-left-color:#cf8a13;background:#fff8e8;color:#72520d"><strong>Submitted:</strong> Locked while awaiting Principal review.</div>' : ''}${resubmitted ? `<div class="teacher-paper-note" style="border-left-color:#5b4bb7;background:#faf9ff;color:#46378f"><strong>Correction sent:</strong> Awaiting Principal re-review.${item.adminNote ? ` Previous note: ${escapeHtml(item.adminNote)}` : ''}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> Final paper is ready to view or download.</div>' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
     }).join('');
   }
 

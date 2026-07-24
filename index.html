@@ -372,15 +372,15 @@
 <div class="paper-access-note" hidden="" id="paperAccessNote"></div>
 <section aria-label="Teacher paper summary" class="paper-metrics">
 <button class="metric-card metric-button" data-teacher-paper-filter="Draft" type="button"><span>My Drafts</span><strong id="teacherPaperMetricDraft">—</strong><small>Saved papers still being prepared.</small></button>
-<article class="metric-card status-only"><span>Submitted</span><strong id="teacherPaperMetricSubmitted">—</strong><small>Status notifications only; no longer editable.</small></article>
+<button class="metric-card metric-button" data-teacher-paper-filter="Submitted" type="button"><span>Submitted</span><strong id="teacherPaperMetricSubmitted">—</strong><small>Waiting for Principal review.</small></button>
 <button class="metric-card metric-button danger-soft" data-teacher-paper-filter="Correction Required" type="button"><span>Correction Required</span><strong id="teacherPaperMetricCorrection">—</strong><small>Papers returned with a principal note.</small></button>
-<article class="metric-card success-soft status-only"><span>Approved</span><strong id="teacherPaperMetricApproved">—</strong><small>Shown in notifications and term progress.</small></article>
+<button class="metric-card metric-button success-soft" data-teacher-paper-filter="Approved" type="button"><span>Approved</span><strong id="teacherPaperMetricApproved">—</strong><small>Open final approved papers.</small></button>
 </section>
 <section class="page-card section-gap">
 <div class="card-head teacher-paper-list-head">
-<div><h2>Working Papers</h2><p>Drafts, submitted papers awaiting review, and papers returned for correction appear here. Approved papers move to status notifications.</p></div>
+<div><h2 id="teacherPaperListTitle">Active Papers</h2><p id="teacherPaperListSubtitle">Track drafts, submissions and papers returned for correction.</p></div>
 <div class="paper-filters teacher-paper-filters">
-<select aria-label="Filter my working papers by status" id="teacherPaperStatusFilter"><option value="">All working statuses</option><option>Draft</option><option>Submitted</option><option>Correction Required</option></select>
+<select aria-label="Filter my papers by status" id="teacherPaperStatusFilter"><option value="">All active statuses</option><option>Draft</option><option>Submitted</option><option>Correction Required</option><option>Approved</option></select>
 <select aria-label="Filter my papers by class" id="teacherPaperClassFilter"><option value="">All classes</option></select>
 <input aria-label="Search my question papers" id="teacherPaperSearch" placeholder="Search subject, exam or title" type="search"/>
 </div>

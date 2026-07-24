@@ -3360,6 +3360,14 @@ window.BGPS_PRINT_LAYOUT = Object.freeze({
   function classSubjects(className) {
     const normalizedClass = String(className || '').trim();
     const subjects = [...window.BGPS_DATA.subjectsForClass(normalizedClass)];
+    // Paper Creation and Upload use this shared list. Offer GK and Moral Science
+    // separately for every class without changing the Marks portal's expected-
+    // subject calculations or removing the legacy combined GK/Moral Science value.
+    ['GK', 'Moral Science'].forEach((paperSubject) => {
+      if (subjects.some((subject) => String(subject || '').trim().toUpperCase() === paperSubject.toUpperCase())) return;
+      const computerIndex = subjects.findIndex((subject) => String(subject || '').trim().toUpperCase() === 'COMPUTER');
+      subjects.splice(computerIndex >= 0 ? computerIndex : subjects.length, 0, paperSubject);
+    });
     // Paper Creation and Upload may offer Entrepreneurship without changing
     // the marks portal's expected-subject calculations.
     if (/^Class\s+(11|12)$/i.test(normalizedClass)

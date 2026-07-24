@@ -9,7 +9,16 @@
   const statusKey = (value) => normalize(value).toLowerCase();
 
   const SYMBOLS = Object.freeze({
-    maths: Object.freeze(['sin', 'cos', 'tan', 'log', 'ln', 'lim', '∫', '∑', '√', 'π', 'θ', 'α', 'β', 'γ', '≤', '≥', '≠', '≈', '∴', '∵', '±', '×', '÷', '∞', 'x²', 'x³', 'x₁', 'x₂', '½', '⅓', '¼']),
+    maths: Object.freeze([
+      'sin', 'cos', 'tan', 'cosec', 'sec', 'cot', 'log', 'ln', 'lim',
+      '∫', '∬', '∮', '∑', '∏', '√', '∛', '∂', '∇',
+      'π', 'θ', 'α', 'β', 'γ', 'δ', 'λ', 'μ', 'σ', 'φ', 'ω',
+      '≤', '≥', '≠', '≈', '≡', '∝', '∴', '∵', '±', '×', '÷', '∞',
+      '∈', '∉', '⊂', '⊆', '⊃', '⊇', '∪', '∩', '∅',
+      'ℕ', 'ℤ', 'ℚ', 'ℝ', '⇒', '⇔', '↦', '⊥', '∥', '∠', '°',
+      'x²', 'x³', 'xⁿ', 'x₁', 'x₂', 'aₙ', '½', '⅓', '¼',
+      '|x|', 'dy/dx', 'd²y/dx²'
+    ]),
     physics: Object.freeze(['λ', 'μ', 'Ω', 'ρ', 'ε', 'Δ', '∇', 'φ', 'ω', 'τ', 'η', 'm/s', 'm/s²', 'kg', 'N', 'J', 'W', 'V', 'A', 'Hz', 'Pa', '°C', '→v', '→F', 'q', 'E', 'B']),
     common: Object.freeze(['•', '→', '←', '↔', '↑', '↓', '✓', '✗', '§', '—', '–', '“ ”', '‘ ’', '…', '₹', '%', '°', ':', ';'])
   });
@@ -522,7 +531,17 @@
   }
 
   function currentQuestionCount() {
-    return byId('paperContentEditor')?.querySelectorAll('.question-line').length || 0;
+    const editor = byId('paperContentEditor');
+    if (!editor) return 0;
+    const structured = editor.querySelectorAll('.question-line').length;
+    if (structured > 0) return structured;
+
+    // Imported DOCX content does not always carry the portal's question-line
+    // classes. Count explicit Q/Question prefixes for the on-screen summary,
+    // without misclassifying numbered subparts as full questions.
+    const text = String(editor.innerText || '').replace(/\u00a0/g, ' ');
+    const imported = text.match(/^\s*(?:Q(?:uestion)?\s*\.?\s*)\d+[.)-]?\s+/gim);
+    return imported ? imported.length : 0;
   }
 
   function markTokenValue(value) {
@@ -1041,7 +1060,9 @@
     if (!draft.chapters && !isPrePrimary(draft.className)) issues.push({ message: 'Enter Chapters / Portion.', node: byId('paperChaptersInput') });
     if (!draft.editorHtml || draft.bodyText.length < 5) issues.push({ message: 'Write the question paper before submission.', node: byId('paperContentEditor') });
     if (draft.bodyText.toLowerCase().includes('type question here')) issues.push({ message: 'Replace every “Type question here” placeholder.', node: byId('paperContentEditor')?.querySelector('.q-placeholder') || byId('paperContentEditor') });
-    if (draft.totalQuestions <= 0) issues.push({ message: 'Add at least one question.', node: byId('paperContentEditor') });
+    if (!isDocxBasedDraft(draft) && draft.totalQuestions <= 0) {
+      issues.push({ message: 'Add at least one question.', node: byId('paperContentEditor') });
+    }
     // Imported DOCX papers can contain marks in tables, drawings or Word fields that
     // the browser cannot count reliably. Keep the live marks gauge as a review aid,
     // but do not falsely block a DOCX correction/resubmission. Portal-created papers
@@ -1131,6 +1152,7 @@
     const message = byId('paperMarksMessage');
     if (message) {
       if (!target) message.textContent = 'Enter maximum marks and add questions.';
+      else if (!count && docxMarksAdvisory) message.textContent = `Imported DOCX: verify question numbering and the ${target}-mark total visually. Word question blocks may not be counted automatically; this will not block resubmission.`;
       else if (!count) message.textContent = 'Add at least one question.';
       else if (remaining === 0) message.textContent = 'Marks total is correct. The paper is ready for final checking.';
       else if (docxMarksAdvisory) message.textContent = `Imported DOCX: verify the ${target}-mark total visually. Word tables or text boxes may not be counted automatically; this will not block resubmission.`;
@@ -2316,7 +2338,18 @@
     hosts.forEach(syncFreeStagesWithinHost);
 
     const baseMinHeight = parseFloat(editor.dataset.bgpsBaseMinHeight || 0) || 0;
-    editor.style.minHeight = `${Math.ceil(Math.max(baseMinHeight, 120))}px`;
+    const editorRect = editor.getBoundingClientRect();
+    let visualBottom = 0;
+    editor.querySelectorAll('.diagram-box.has-image').forEach((box) => {
+      const rect = box.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      visualBottom = Math.max(visualBottom, rect.bottom - editorRect.top + 28);
+    });
+
+    // Absolutely-positioned Free Move images do not contribute to normal DOM
+    // height. Extend the editable white paper to their real visual bottom so an
+    // image can never hang over the grey canvas or disappear beyond the sheet.
+    editor.style.minHeight = `${Math.ceil(Math.max(baseMinHeight, visualBottom, 120))}px`;
   }
 
   function legacyImageRotation(box) {

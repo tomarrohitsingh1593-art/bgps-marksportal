@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+
+<html lang="en" style="color-scheme: light;">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="light only" name="color-scheme"/>
+<meta content="#0b294a" name="theme-color"/>
+<title>BG Public School | Academic Portal</title>
+<link href="css/app.css" rel="stylesheet"/>
+<!-- BGPS modular shell: app logic and future fixes are loaded externally. --></head>
+<body>
+<section aria-labelledby="loginTitle" class="login-screen" id="loginScreen">
+<div class="login-shell">
+<aside class="login-brand">
+<div>
+<div class="brand-mark">BGPS</div>
+<h1>BG Public School<br/>Academic Portal</h1>
+<p>Marks management, question-paper review and academic reporting for authorized school staff.</p>
+<div class="brand-points">
+<div class="brand-point">Teacher marks entry</div>
+<div class="brand-point">Principal review and approval</div>
+<div class="brand-point">Class-wise academic reports</div>
+</div>
+</div>
+<div class="login-version" id="buildVersion">Academic Operations</div>
+</aside>
+<main class="login-panel">
+<h2 id="loginTitle">Sign in</h2>
+<p class="login-copy">Enter your Teacher ID or administrator credentials.</p>
+<form id="loginForm" novalidate="">
+<div class="form-field">
+<label for="teacherId">Teacher ID</label>
+<div class="input-wrap">
+<input autocapitalize="characters" autocomplete="username" id="teacherId" maxlength="20" name="teacherId" placeholder="T-1 or ADMIN" required="" spellcheck="false"/>
+</div>
+</div>
+<div class="form-field">
+<label for="pin">Password</label>
+<div class="input-wrap">
+<input autocomplete="current-password" id="pin" inputmode="text" maxlength="40" name="pin" placeholder="Enter password" required="" type="password"/>
+<button aria-label="Show password" class="pin-toggle" id="pinToggle" type="button">Show</button>
+</div>
+</div>
+<div aria-live="polite" class="login-error" id="loginError" role="alert"></div>
+<button class="primary-btn" id="loginButton" type="submit">Sign in</button>
+<p class="secure-note">Authorized school staff only.</p>
+</form>
+</main>
+</div>
+</section>
+<div class="app-shell hidden" id="appShell">
+<aside class="sidebar">
+<div class="sidebar-brand">
+<strong>BG Public School</strong>
+<span>Academic Portal</span>
+</div>
+<nav aria-label="Main navigation" class="nav-list">
+<button class="nav-btn active" data-view="home" type="button"><span class="nav-icon">⌂</span>Overview</button>
+<button class="nav-btn" data-view="marks" id="marksNav" type="button"><span class="nav-icon">▦</span>Marks Entry</button>
+<button class="nav-btn hidden" data-view="teacher-report" id="teacherReportNav" type="button"><span class="nav-icon">▤</span>Consolidated Report</button>
+<button class="nav-btn" data-view="teacher-papers" id="teacherPapersNav" type="button"><span class="nav-icon">✎</span>Question Papers</button>
+<button class="nav-btn hidden" data-view="admin" id="adminNav" type="button"><span class="nav-icon">▤</span>Marks &amp; Reports</button>
+<button class="nav-btn hidden" data-view="papers" id="papersNav" type="button"><span class="nav-icon">▧</span>Paper Approval</button>
+<button class="nav-btn hidden" data-view="settings" id="settingsNav" type="button"><span class="nav-icon">⚙</span>Settings</button>
+</nav>
+<div class="sidebar-footer">
+<button class="logout-btn" data-action="logout" type="button">Sign out</button>
+</div>
+</aside>
+<main class="main-area">
+<header class="topbar">
+<div class="page-title">
+<strong id="pageHeading">Overview</strong>
+<span id="pageSubtitle">Academic work and pending actions</span>
+</div>
+<div class="topbar-actions">
+<div aria-label="Signed in user" class="user-chip">
+<div class="user-avatar" id="userAvatar">U</div>
+<div class="user-meta">
+<strong id="userId">—</strong>
+<span id="userRole">—</span>
+</div>
+</div>
+<button class="topbar-logout" data-action="logout" type="button">Sign out</button>
+</div>
+</header>
+<div class="content">
+<section class="view active" data-view-section="home" id="homeView">
+<div id="teacherHomeContent">
+<div class="dashboard-title-row">
+<div>
+<div class="eyebrow">Teacher Workspace</div>
+<h1>Your Academic Work</h1>
+<p>Enter marks, create question papers and review your academic work.</p>
+</div>
+<button class="btn" id="refreshTeacherSummary" type="button">Refresh</button>
+</div>
+<section class="page-card section-gap teacher-term-premium" id="teacherTermOverviewSection">
+<div class="card-head"><div><h2>Term-wise Overview</h2><p>Essential marks and question-paper progress for the selected academic year and term.</p></div></div>
+<div class="card-body">
+<div class="term-overview-controls">
+<label for="teacherTermYearFilter"><span>Academic Year</span><select aria-label="Teacher overview academic year" id="teacherTermYearFilter"></select></label>
+<div aria-label="Select term" class="term-overview-tabs" id="teacherTermTabs" role="tablist"></div>
+</div>
+<div class="term-overview-grid" id="teacherTermOverview"><div class="empty-state"><strong>Loading term information</strong>Please wait while your academic work is checked.</div></div>
+</div>
+</section>
+<section class="welcome-grid section-gap">
+<article class="page-card">
+<div class="card-head"><div><h2>Quick actions</h2><p>Continue your current work.</p></div></div>
+<div class="card-body quick-actions teacher-quick-actions">
+<button class="quick-action" data-open-view="marks" type="button"><strong>Enter or Update Marks</strong><span>Load saved records, enter marks and update absent entries.</span></button>
+<button class="quick-action" data-open-view="teacher-report" type="button"><strong>View Consolidated Report</strong><span>Review class results, rankers, subject totals and individual progress reports.</span></button>
+<button class="quick-action" data-open-view="teacher-papers" type="button"><strong>Create Question Paper</strong><span>Prepare an A4 question paper, add diagrams and submit it for approval.</span></button>
+</div>
+</article>
+<aside class="page-card">
+<div class="card-head"><div><h2>Assigned class</h2><p>Your current marks-entry scope.</p></div></div>
+<div class="card-body">
+<div class="summary-row"><span>Class</span><strong id="teacherSummaryClass">—</strong></div>
+<div class="summary-row"><span>Marks entry</span><strong class="status-chip" id="homeMarksState">—</strong></div>
+<div class="summary-row"><span>Latest update</span><strong id="teacherSummaryLatest">—</strong></div>
+<div class="summary-row"><span>Student roll range</span><strong>01–50</strong></div>
+<div class="summary-row"><span>Components</span><strong>Written · Oral · Practical</strong></div>
+</div>
+</aside>
+</section>
+<section class="page-card section-gap">
+<div class="card-head"><div><h2>Notifications &amp; Pending Work</h2><p>Important marks and question-paper actions for the selected term.</p></div></div>
+<div class="card-body" id="recentMarksList"><div class="empty-state"><strong>Checking pending work</strong>Please wait while your records are checked.</div></div>
+</section>
+</div>
+<div hidden="" id="adminHomeContent">
+<div class="dashboard-title-row principal-title-row">
+<div>
+<div class="eyebrow">Principal Dashboard</div>
+<h1>Academic Overview</h1>
+<p>Review marks progress, paper approvals and actions requiring attention.</p>
+</div>
+<div class="dashboard-controls">
+<label class="compact-field" for="dashboardAcademicYearFilter"><span>Academic Year</span><select aria-label="Academic year" id="dashboardAcademicYearFilter"></select></label>
+<label class="compact-field" for="dashboardExamFilter"><span>Exam / Term</span><select id="dashboardExamFilter"></select></label>
+<button class="btn primary" id="refreshPrincipalDashboard" type="button">Refresh</button>
+</div>
+</div>
+<section aria-label="Principal summary" class="principal-kpis">
+<button class="principal-kpi resubmitted" data-dashboard-action="papers-resubmitted" type="button">
+<span>Corrected &amp; Resubmitted</span><strong id="dashPapersResubmitted">—</strong><small>Ready for principal re-review</small>
+</button>
+<button class="principal-kpi warning" data-dashboard-action="marks-pending" type="button">
+<span>Marks Pending</span><strong id="dashMarksPending">—</strong><small>Subjects without records</small>
+</button>
+<button class="principal-kpi" data-dashboard-action="teachers-pending" type="button">
+<span>Teachers Pending</span><strong id="dashTeachersPending">—</strong><small>Classes requiring follow-up</small>
+</button>
+<button class="principal-kpi" data-dashboard-action="papers-all" type="button">
+<span>Papers Submitted</span><strong id="dashPapersSubmitted">—</strong><small>All submitted papers</small>
+</button>
+<button class="principal-kpi warning" data-dashboard-action="papers-review" type="button">
+<span>Review Required</span><strong id="dashPapersReview">—</strong><small>Awaiting principal review</small>
+</button>
+<button class="principal-kpi danger" data-dashboard-action="papers-correction" type="button">
+<span>Corrections Pending</span><strong id="dashPapersCorrection">—</strong><small>Returned to teachers</small>
+</button>
+</section>
+<section class="principal-dashboard-grid section-gap">
+<article class="page-card teacher-progress-primary">
+<div class="card-head"><div><h2>Teacher Progress</h2><p>Marks and question-paper progress by teacher.</p></div></div>
+<div class="card-body teacher-progress-list" id="teacherProgressList">
+<div class="empty-state"><strong>Loading teacher progress</strong>Please wait.</div>
+</div>
+</article>
+<aside class="admin-side-stack">
+<section class="page-card">
+<div class="card-head"><div><h2>Paper Status</h2><p>Current question-paper workflow.</p></div></div>
+<div class="card-body paper-status-summary">
+<button data-paper-status="Submitted" type="button"><span>Awaiting review</span><strong id="paperStatusSubmitted">—</strong></button>
+<button data-paper-status="Approved" type="button"><span>Approved</span><strong id="paperStatusApproved">—</strong></button>
+<button data-paper-status="Correction Required" type="button"><span>Correction required</span><strong id="paperStatusCorrection">—</strong></button>
+<button data-paper-status="Locked" type="button"><span>Locked</span><strong id="paperStatusLocked">—</strong></button>
+</div>
+</section>
+<section class="page-card action-card action-card-compact">
+<div class="card-head">
+<div><h2>Action Required</h2><p>Open the exact task requiring attention.</p></div>
+<span class="count-badge" id="actionRequiredCount">0</span>
+</div>
+<div class="card-body action-list" id="actionRequiredList">
+<div class="empty-state"><strong>Loading actions</strong>Please wait while the latest records are checked.</div>
+</div>
+</section>
+</aside>
+</section>
+<section class="page-card section-gap">
+<div class="card-head tracking-head">
+<div><h2>Class Progress</h2><p>Marks and paper completion for every class.</p></div>
+<div class="table-search"><input aria-label="Search class tracking" id="classTrackingSearch" placeholder="Search class or teacher" type="search"/></div>
+</div>
+<div class="card-body class-tracking-list" id="classTrackingList">
+<div class="empty-state"><strong>Loading class progress</strong>Please wait while the dashboard is prepared.</div>
+</div>
+</section>
+</div>
+</section>
+<section class="view" data-view-section="marks" id="marksView">
+<div class="view-heading">
+<div><h1>Marks Entry</h1><p>Enter, load and update class-wise subject marks.</p></div>
+<div class="view-actions"><button class="btn" data-open-view="home" type="button">Back to overview</button></div>
+</div>
+<div id="teacherMarksWorkspace">
+<div class="module-lock" id="marksModuleLock"></div>
+<section aria-label="Entry progress" class="marks-summary">
+<article class="metric-card"><span>Entered</span><strong id="countEntered">0</strong><small>Marks entered on this form.</small></article>
+<article class="metric-card"><span>Absent</span><strong id="countAbsent">0</strong><small>Students marked absent.</small></article>
+<article class="metric-card"><span>Remaining</span><strong id="countRemaining">50</strong><small>Rows not yet entered.</small></article>
+<article class="metric-card"><span>Invalid</span><strong id="countInvalid">0</strong><small>Rows requiring correction.</small></article>
+</section>
+<section class="page-card section-gap">
+<div class="card-head"><div><h2>Entry details</h2><p>Select the subject, examination, component and maximum marks.</p></div></div>
+<div class="card-body">
+<div class="form-grid">
+<div class="field"><label for="marksClass">Class</label><select id="marksClass"></select></div>
+<div class="field"><label for="marksSubject">Subject</label><select id="marksSubject"><option value="">Select subject</option></select></div>
+<div class="field"><label for="marksExam">Exam</label><select id="marksExam"><option value="">Select exam</option></select></div>
+<div class="field"><label for="marksComponent">Component</label><select id="marksComponent"><option>Written</option><option>Oral</option><option>Practical</option></select></div>
+<div class="field"><label for="marksMax">Maximum Marks</label><input id="marksMax" min="0.01" placeholder="e.g. 80" step="0.01" type="number"/></div>
+</div>
+<div class="toolbar-row">
+<div aria-live="polite" class="inline-status" id="marksStatus" role="status">Select a subject and exam to begin.</div>
+<div class="marks-form-actions">
+<span class="marks-edit-chip" id="marksEditMode">New entry</span>
+<button class="btn" id="loadMarksButton" type="button">Load / Edit Saved Marks</button>
+<button class="btn" id="clearMarksButton" type="button">Clear form</button>
+</div>
+</div>
+</div>
+</section>
+<section class="page-card section-gap">
+<div class="roll-toolbar">
+<div><strong>Student marks</strong><br/><span>Enter marks or select Absent for Roll No. 01–50.</span></div>
+<input aria-label="Find roll number" class="roll-search" id="rollSearch" inputmode="numeric" placeholder="Find roll number" type="search"/>
+</div>
+<div class="roll-grid" id="rollGrid"></div>
+<div class="save-bar">
+<div class="save-summary"><strong id="saveSummary">0 entered · 0 absent · 50 remaining</strong><br/>Only entered or absent rows will be saved.</div>
+<button class="btn primary" id="saveMarksButton" type="button">Save / Update records</button>
+</div>
+</section>
+</div>
+</section>
+<section class="view" data-view-section="teacher-report" id="teacherReportView">
+<div id="teacherReportOverview">
+<div class="view-heading">
+<div><h1>Consolidated Marks Report</h1><p>Review class performance, subject totals, rankers and student progress reports.</p></div>
+<div class="view-actions"><button class="btn" data-open-view="home" type="button">Back to overview</button></div>
+</div>
+<section class="page-card">
+<div class="card-head"><div><h2>Class report</h2><p>Select the examination to prepare the consolidated report for your assigned class.</p></div></div>
+<div class="card-body">
+<div class="report-filter-grid">
+<div class="field"><label for="teacherReportClass">Class</label><input id="teacherReportClass" readonly="" type="text"/></div>
+<div class="field"><label for="teacherReportExam">Examination</label><select id="teacherReportExam"><option value="">Select examination</option></select></div>
+<button class="btn primary" id="loadTeacherReportButton" type="button">Load report</button>
+<button class="btn" disabled="" id="printTeacherReportButton" type="button">Print consolidated</button>
+</div>
+<div class="inline-status section-gap" id="teacherReportStatus">Select an examination to load the report.</div>
+</div>
+</section>
+<section aria-label="Consolidated report summary" class="marks-summary section-gap">
+<article class="metric-card"><span>Students</span><strong id="teacherReportStudents">—</strong><small>Students included in the report.</small></article>
+<article class="metric-card"><span>Subjects</span><strong id="teacherReportSubjects">—</strong><small>Subjects included in consolidation.</small></article>
+<article class="metric-card"><span>Complete</span><strong id="teacherReportComplete">—</strong><small>Students with all subject records.</small></article>
+<article class="metric-card"><span>Incomplete</span><strong id="teacherReportIncomplete">—</strong><small>Students with one or more missing subjects.</small></article>
+</section>
+<section class="teacher-report-analytics section-gap" id="teacherReportAnalytics">
+<article class="report-analytics-card"><h3>Overall result</h3><div id="teacherReportOverall">Load a report to view the result summary.</div></article>
+<article class="report-analytics-card"><h3>Top three rankers</h3><div class="report-analytics-list" id="teacherReportRankers">Load a report to view rankers.</div></article>
+<article class="report-analytics-card"><h3>Highest in subject</h3><div class="report-analytics-list" id="teacherReportHighs">Load a report to view subject highs.</div></article>
+</section>
+<section class="page-card section-gap">
+<div class="card-head"><div><h2 id="teacherReportTableTitle">Student-wise consolidated report</h2><p>Click a subject mark to view the Written, Oral and Practical breakup.</p></div></div>
+<div class="card-body">
+<div class="teacher-report-note"><strong>Report guide:</strong> Missing indicates that no marks are saved for that subject. AB indicates an absent component. Use View to open the individual progress report.</div>
+<div class="report-table-wrap section-gap">
+<table class="report-table-wide" id="teacherConsolidatedTable">
+<thead id="teacherReportHead"><tr><th>Roll</th><th>Report</th></tr></thead>
+<tbody id="teacherReportBody"><tr><td colspan="2"><div class="empty-state"><strong>No report loaded</strong>Select an examination and click Load report.</div></td></tr></tbody>
+</table>
+</div>
+</div>
+</section>
+</div>
+<div hidden="" id="teacherIndividualReport">
+<div class="view-heading">
+<div><h1>Student Progress Report</h1><p>Individual subject and component-wise marks.</p></div>
+<div class="view-actions"><button class="btn" id="backToTeacherReport" type="button">Back to consolidated report</button><button class="btn primary" id="printIndividualTeacherReport" type="button">Print report card</button></div>
+</div>
+<section class="individual-report-card" id="teacherIndividualPrintArea">
+<div class="individual-school-header"><h2>BG PUBLIC SCHOOL</h2><p>Progress Report</p></div>
+<div class="individual-report-meta"><div><span>Roll Number</span><strong id="teacherIndividualRoll">—</strong></div><div><span>Class</span><strong id="teacherIndividualClass">—</strong></div><div><span>Examination</span><strong id="teacherIndividualExam">—</strong></div></div>
+<div class="report-table-wrap">
+<table class="report-table">
+<thead><tr><th>Subject</th><th>Written</th><th>Oral</th><th>Practical</th><th>Total Max</th><th>Total Obtained</th></tr></thead>
+<tbody id="teacherIndividualBody"></tbody>
+</table>
+</div>
+<div class="individual-summary-grid"><div class="individual-summary-box" id="teacherIndividualTotal">Total: —</div><div class="individual-summary-box" id="teacherIndividualPercentage">Percentage: —</div><div class="individual-summary-box" id="teacherIndividualRank">Class Rank: —</div><div class="individual-summary-box" id="teacherIndividualResult">Result: —</div></div>
+<div class="individual-signatures"><span>Class Teacher</span><span>Principal</span></div>
+</section>
+</div>
+</section>
+<section class="view" data-view-section="admin" id="adminView">
+<div class="view-heading">
+<div><h1>Marks &amp; Reports</h1><p>Review class-wise marks activity and saved records.</p></div>
+<div class="view-actions"><button class="btn" data-open-view="home" type="button">Back to overview</button></div>
+</div>
+<div hidden="" id="adminCommandWorkspace">
+<section class="page-card">
+<div class="card-head"><div><h2>Class report</h2><p>Select a class and examination to load marks records.</p></div></div>
+<div class="card-body">
+<div class="admin-filter-grid">
+<div class="field"><label for="adminClassFilter">Class</label><select id="adminClassFilter"><option value="">Select class</option></select></div>
+<div class="field"><label for="adminExamFilter">Exam</label><select id="adminExamFilter"><option value="">All exams</option></select></div>
+<button class="btn primary" id="loadAdminReportButton" type="button">Load report</button>
+</div>
+<div class="inline-status section-gap" id="adminReportStatus">Select a class to review marks progress.</div>
+</div>
+</section>
+<section aria-label="Class report summary" class="marks-summary section-gap">
+<article class="metric-card"><span>Saved records</span><strong id="adminMetricRecords">—</strong><small>Latest roll-wise records.</small></article>
+<article class="metric-card"><span>Subjects</span><strong id="adminMetricSubjects">—</strong><small>Subjects with saved entries.</small></article>
+<article class="metric-card"><span>Absent</span><strong id="adminMetricAbsent">—</strong><small>Saved absent records.</small></article>
+<article class="metric-card"><span>Teachers</span><strong id="adminMetricTeachers">—</strong><small>Teachers represented in records.</small></article>
+</section>
+<section class="page-card section-gap">
+<div class="card-head">
+<div><h2>Subject and component summary</h2><p><span id="adminSelectedClass">No class selected</span> · <span id="adminSelectedExam">All exams</span></p></div>
+</div>
+<div class="card-body">
+<div class="report-table-wrap">
+<table class="report-table">
+<thead><tr><th>Subject</th><th>Component</th><th>Records</th><th>Present</th><th>Absent</th><th>Max Marks</th><th>Latest Update</th><th>Status</th></tr></thead>
+<tbody id="adminSummaryBody"><tr><td colspan="8"><div class="empty-state"><strong>No report loaded</strong>Select a class and click Load report.</div></td></tr></tbody>
+</table>
+</div>
+</div>
+</section>
+<section class="page-card section-gap">
+<div class="card-head"><div><h2>Saved records</h2><p>Search and export the loaded class records.</p></div></div>
+<div class="card-body">
+<div class="admin-details-toolbar">
+<input aria-label="Search saved marks records" id="adminRecordSearch" placeholder="Search subject, roll, teacher or component" type="search"/>
+<button class="btn" id="exportAdminCsvButton" type="button">Export CSV</button>
+</div>
+<div class="report-table-wrap">
+<table class="report-table">
+<thead><tr><th>Roll</th><th>Subject</th><th>Exam</th><th>Component</th><th>Marks</th><th>Max</th><th>Teacher</th><th>Updated</th><th>Attendance</th></tr></thead>
+<tbody id="adminDetailsBody"><tr><td colspan="9"><div class="empty-state"><strong>No records loaded</strong>Load a class report to view saved records.</div></td></tr></tbody>
+</table>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section class="view" data-view-section="teacher-papers" id="teacherPapersView">
+<div id="paperCentreHome">
+<div class="view-heading paper-centre-heading">
+<div><h1>Question Paper Centre</h1><p>Create a standard BGPS paper or upload an existing paper without changing its original layout.</p></div>
+<div class="view-actions"><button class="btn" id="refreshTeacherPapers" type="button">Refresh</button><button class="btn" id="openPaperUpload" type="button">Upload Existing Paper</button><button class="btn primary" id="createNewPaper" type="button">Create Standard Paper</button></div>
+</div>
+<div class="paper-access-note" hidden="" id="paperAccessNote"></div>
+<section aria-label="Teacher paper summary" class="paper-metrics">
+<button class="metric-card metric-button" data-teacher-paper-filter="Draft" type="button"><span>My Drafts</span><strong id="teacherPaperMetricDraft">—</strong><small>Saved papers still being prepared.</small></button>
+<button class="metric-card metric-button" data-teacher-paper-filter="Submitted" type="button"><span>Submitted</span><strong id="teacherPaperMetricSubmitted">—</strong><small>Waiting for Principal review.</small></button>
+<button class="metric-card metric-button danger-soft" data-teacher-paper-filter="Correction Required" type="button"><span>Correction Required</span><strong id="teacherPaperMetricCorrection">—</strong><small>Papers returned with a principal note.</small></button>
+<button class="metric-card metric-button success-soft" data-teacher-paper-filter="Approved" type="button"><span>Approved</span><strong id="teacherPaperMetricApproved">—</strong><small>Open final approved papers.</small></button>
+</section>
+<section class="page-card section-gap">
+<div class="card-head teacher-paper-list-head">
+<div><h2 id="teacherPaperListTitle">Active Papers</h2><p id="teacherPaperListSubtitle">Track drafts, submissions and papers returned for correction.</p></div>
+<div class="paper-filters teacher-paper-filters">
+<select aria-label="Filter my papers by status" id="teacherPaperStatusFilter"><option value="">All active statuses</option><option>Draft</option><option>Submitted</option><option>Correction Required</option><option>Approved</option></select>
+<select aria-label="Filter my papers by class" id="teacherPaperClassFilter"><option value="">All classes</option></select>
+<input aria-label="Search my question papers" id="teacherPaperSearch" placeholder="Search subject, exam or title" type="search"/>
+</div>
+</div>
+<div class="card-body teacher-paper-list" id="teacherPaperList"><div class="empty-state"><strong>Loading papers</strong>Please wait while your work is checked.</div></div>
+</section>
+</div>
+<div hidden="" id="paperEditorWorkspace">
+<div class="view-heading paper-editor-heading">
+<div><div class="eyebrow" id="paperEditorEyebrow">Question Paper Creator</div><h1 id="paperEditorTitle">Create Question Paper</h1><p id="paperEditorSubtitle">Prepare the paper in A4 format and save it as a draft before submission.</p></div>
+<div class="view-actions"><button class="btn" id="closePaperEditor" type="button">Back to My Papers</button><button class="btn" id="previewCurrentPaper" type="button">Preview</button><button class="btn danger-outline" hidden="" id="deleteCurrentPaperDraft" type="button">Delete Draft</button><button class="btn primary" id="savePaperDraft" type="button">Save Draft</button></div>
+</div>
+<div class="correction-banner" hidden="" id="paperCorrectionBanner"><strong>Principal correction note</strong><span id="paperCorrectionNote"></span></div>
+<section class="paper-setup-card">
+<div class="paper-setup-grid">
+<div class="field paper-title-field"><label for="paperTitleInput">Paper Title</label><input id="paperTitleInput" maxlength="180" placeholder="Class 10 Physics Unit Test 1"/></div>
+<div class="field"><label for="paperClassInput">Class</label><select id="paperClassInput"></select></div>
+<div class="field"><label for="paperSubjectInput">Subject</label><select id="paperSubjectInput"></select></div>
+<div class="field"><label for="paperExamInput">Exam / Term</label><select id="paperExamInput"></select></div>
+<div class="field"><label for="paperMaxMarksInput">Maximum Marks</label><input id="paperMaxMarksInput" max="200" min="1" placeholder="40" step="1" type="number"/></div>
+<div class="field"><label for="paperTimeInput">Time Allowed</label><input id="paperTimeInput" maxlength="80" placeholder="1½ Hours"/></div>
+<div class="field"><label for="paperLanguageInput">Language</label><select id="paperLanguageInput"><option value="english">English</option><option value="hindi">Hindi</option><option value="bilingual">Bilingual</option></select></div>
+<div class="field"><label for="paperDateInput">Exam Date <span class="optional-label">Optional</span></label><input id="paperDateInput" type="date"/></div>
+<div class="field paper-chapters-field"><label for="paperChaptersInput">Chapters / Portion</label><input id="paperChaptersInput" maxlength="500" placeholder="Enter chapters or syllabus portion"/></div>
+<div class="field paper-instructions-field"><label for="paperInstructionsInput">General Instructions <span class="optional-label">one instruction per line</span></label><textarea id="paperInstructionsInput" maxlength="4000" placeholder="All questions are compulsory.
+Show complete working wherever required." rows="3"></textarea></div>
+</div>
+</section>
+<div class="paper-editor-layout section-gap">
+<section class="paper-composer-card">
+<div aria-label="Question paper editing toolbar" class="paper-editor-toolbar" id="paperEditorToolbar">
+<div class="toolbar-row">
+<button class="editor-command" data-editor-command="undo" title="Undo" type="button">↶</button>
+<button class="editor-command" data-editor-command="redo" title="Redo" type="button">↷</button>
+<span class="toolbar-separator"></span>
+<button class="editor-command text-tool" data-editor-command="bold" title="Bold" type="button"><strong>B</strong></button>
+<button class="editor-command text-tool" data-editor-command="italic" title="Italic" type="button"><em>I</em></button>
+<button class="editor-command text-tool" data-editor-command="underline" title="Underline" type="button"><u>U</u></button>
+<select aria-label="Font size" class="editor-command" id="paperFontSize" title="Font size"><option value="3">Normal</option><option value="2">Small</option><option value="4">Large</option><option value="5">Heading</option></select>
+<button class="editor-command" data-editor-command="superscript" title="Superscript" type="button">x²</button>
+<button class="editor-command" data-editor-command="subscript" title="Subscript" type="button">x₂</button>
+<button class="editor-command" data-editor-command="justifyLeft" title="Align left" type="button">≡</button>
+<button class="editor-command" data-editor-command="justifyCenter" title="Align centre" type="button">≣</button>
+<button class="editor-command" data-editor-command="justifyRight" title="Align right" type="button">≡</button>
+<button class="editor-command" data-editor-command="insertUnorderedList" title="Bulleted list" type="button">• List</button>
+<button class="editor-command" data-editor-command="insertOrderedList" title="Numbered list" type="button">1. List</button>
+</div>
+<div class="toolbar-row paper-insert-row">
+<label class="question-marks-control"><span>Marks</span><input id="newQuestionMarks" max="100" min="0.5" step="0.5" type="number" value="1"/></label>
+<button class="editor-command emphasis" id="insertQuestionButton" type="button">+ Question</button>
+<button class="editor-command" id="insertSectionButton" type="button">Section</button>
+<button class="editor-command" id="insertOrButton" type="button">OR</button>
+<button class="editor-command" id="insertTableButton" type="button">Table</button>
+<button class="editor-command" id="insertPageBreakButton" type="button">Page Break</button>
+<button class="editor-command" id="insertFractionButton" type="button">Fraction</button>
+<button class="editor-command" id="insertRootButton" type="button">√ Root</button>
+<button class="editor-command image-command" id="insertPaperImageButton" type="button">Image / Diagram</button>
+<input accept="image/png,image/jpeg,image/webp" hidden="" id="paperImageFile" type="file"/>
+<span class="toolbar-separator"></span>
+<button class="editor-command palette-toggle" data-symbol-palette="maths" type="button">∑ Maths</button>
+<button class="editor-command palette-toggle" data-symbol-palette="physics" type="button">λ Physics</button>
+<button class="editor-command palette-toggle" data-symbol-palette="common" type="button">Ω Symbols</button>
+</div>
+<div class="symbol-palette" data-palette="maths" id="mathsSymbolPalette"></div>
+<div class="symbol-palette" data-palette="physics" id="physicsSymbolPalette"></div>
+<div class="symbol-palette" data-palette="common" id="commonSymbolPalette"></div>
+</div>
+<div aria-hidden="true" class="paper-ruler"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12</span><span>14</span><span>16</span><span>18 cm</span></div>
+<div class="paper-canvas-wrap">
+<article class="paper-sheet" id="paperSheet">
+<header class="paper-sheet-header">
+<h2>BG PUBLIC SCHOOL</h2>
+<strong id="paperPreviewExam">EXAM / TERM</strong>
+<span class="paper-sheet-session">Academic Session: <b id="paperPreviewSession">2026–27</b></span>
+</header>
+<div class="paper-sheet-meta">
+<span>Class: <strong id="paperPreviewClass">—</strong></span><span>Subject: <strong id="paperPreviewSubject">—</strong></span>
+<span>Time Allowed: <strong id="paperPreviewTime">—</strong></span><span>Maximum Marks: <strong id="paperPreviewMaxMarks">—</strong></span>
+<span>Reading Time: <strong id="paperPreviewReadingTime">Additional 10 Minutes</strong></span><span>Date: <strong id="paperPreviewDate">____________</strong></span>
+</div>
+<div class="paper-instructions-preview" hidden="" id="paperInstructionsPreview"></div>
+<div aria-multiline="true" class="paper-content-editor" contenteditable="true" data-placeholder="Start writing the question paper here. Use + Question to keep marks accurate." id="paperContentEditor" role="textbox" spellcheck="true"></div>
+</article>
+</div>
+</section>
+<aside class="paper-editor-sidebar">
+<section class="editor-side-card marks-check-card">
+<h2>Marks Check</h2>
+<div class="marks-gauge" id="paperMarksGauge"><strong id="paperDetectedMarks">0</strong><span>of <b id="paperTargetMarks">0</b></span></div>
+<div class="marks-progress"><span id="paperMarksProgress"></span></div>
+<div class="marks-check-row"><span>Questions</span><strong id="paperQuestionCount">0</strong></div>
+<div class="marks-check-row"><span>Remaining</span><strong id="paperRemainingMarks">0</strong></div>
+<p class="marks-check-message" id="paperMarksMessage">Enter maximum marks and add questions.</p>
+</section>
+<section class="editor-side-card image-inspector" id="paperImageInspector">
+<h2>Selected Image</h2>
+<p id="paperImageEmpty">Select an image. Use Scale to control size; alignment will not change the scale.</p>
+<div hidden="" id="paperImageControls">
+<label class="image-width-control"><span>Scale</span><strong id="paperImageWidthValue">100%</strong><input aria-label="Image scale" id="paperImageWidth" max="100" min="20" step="1" type="range" value="100"/></label>
+<div class="image-layout-grid"><button data-image-layout="left" type="button">Wrap Left</button><button data-image-layout="center" type="button">Centre</button><button data-image-layout="right" type="button">Wrap Right</button><button data-image-layout="inline" type="button">Inline</button><button data-image-layout="free" type="button" title="Drag the selected image freely inside the paper">Free Move</button></div>
+<div class="image-action-grid"><button id="moveImageUp" type="button">Move Up</button><button id="moveImageDown" type="button">Move Down</button><button id="replacePaperImage" type="button">Replace</button><button id="copyPaperImage" type="button">Copy</button><button id="cutPaperImage" type="button">Cut</button><button id="pastePaperImage" type="button">Paste</button><button id="duplicateImage" type="button">Duplicate</button><button id="addImageCaption" type="button">Caption</button><button class="danger-text" id="deletePaperImage" type="button">Delete</button></div>
+<input accept="image/png,image/jpeg,image/webp" hidden="" id="replacePaperImageFile" type="file"/>
+</div>
+</section>
+<section class="editor-side-card paper-save-card">
+<h2>Paper Actions</h2>
+<div class="paper-save-status" id="paperSaveStatus">Not saved yet</div>
+<button class="btn" id="sidebarPreviewPaper" type="button">Preview Paper</button>
+<button class="btn primary" id="sidebarSaveDraft" type="button">Save Draft</button>
+<button class="btn success" id="submitPaperForReview" type="button">Submit for Approval</button>
+<small>Portal-created drafts can be edited before approval. Uploaded DOCX/PDF files are preserved exactly and replaced only when a correction is required.</small>
+</section>
+</aside>
+</div>
+</div>
+</section>
+<section class="view" data-view-section="papers" id="papersView">
+<div class="view-heading">
+<div><h1>Paper Approval</h1><p>Review submitted question papers, approve them or return them for correction.</p></div>
+<div class="view-actions"><button class="btn danger-outline" disabled="" id="deleteAllApprovedOriginalsButton" type="button">Delete Approved Originals</button><button class="btn" id="refreshPapersButton" type="button">Refresh</button><button class="btn" data-open-view="home" type="button">Back to overview</button></div>
+</div>
+<section aria-label="Paper approval workflow" class="paper-metrics approval-metrics" id="approvalMetrics">
+<button aria-pressed="false" class="metric-card metric-button approval-metric" data-paper-board-filter="first-review" type="button"><span>Awaiting First Review</span><strong id="papersMetricSubmitted">—</strong><small>New papers not reviewed yet.</small></button>
+<button aria-pressed="false" class="metric-card metric-button approval-metric resubmitted-soft" data-paper-board-filter="resubmitted" type="button"><span>Corrected &amp; Resubmitted</span><strong id="papersMetricResubmitted">—</strong><small>Priority papers ready for re-review.</small></button>
+<button aria-pressed="false" class="metric-card metric-button approval-metric danger-soft" data-paper-board-filter="correction" type="button"><span>With Teacher</span><strong id="papersMetricCorrection">—</strong><small>Correction currently pending.</small></button>
+<button aria-pressed="false" class="metric-card metric-button approval-metric success-soft" data-paper-board-filter="approved" type="button"><span>Approved</span><strong id="papersMetricApproved">—</strong><small>Final papers ready for use.</small></button>
+<button aria-pressed="true" class="metric-card metric-button approval-metric" data-paper-board-filter="all" type="button"><span>All Papers</span><strong id="papersMetricTotal">—</strong><small>Complete approval history.</small></button>
+</section>
+<section class="page-card section-gap">
+<div class="card-head paper-list-head">
+<div><div class="paper-list-title-line"><h2 id="paperListTitle">All Papers</h2><span class="count-badge" id="paperListCount">0</span></div><p id="paperListDescription">Complete paper approval history, prioritised by pending action.</p></div>
+<div class="paper-filters">
+<select aria-label="Filter papers by class" id="paperClassFilter"><option value="">All classes</option></select>
+<select aria-label="Filter papers by status" id="paperStatusFilter"><option value="">All statuses</option><option value="First Review">Awaiting First Review</option><option value="Resubmitted">Corrected &amp; Resubmitted</option><option>Submitted</option><option>Approved</option><option>Correction Required</option><option>Locked</option></select>
+<input aria-label="Search submitted papers" id="paperSearch" placeholder="Search teacher, subject or exam" type="search"/>
+</div>
+</div>
+<div class="card-body paper-list" id="paperList">
+<div class="empty-state"><strong>Loading papers</strong>Please wait while submitted papers are checked.</div>
+</div>
+</section>
+</section>
+<section class="view" data-view-section="settings" id="settingsView">
+<div class="view-heading">
+<div><h1>Administration Settings</h1><p>Control marks entry, paper creation and question-paper submission.</p></div>
+<div class="view-actions"><button class="btn" id="refreshSettingsButton" type="button">Refresh</button><button class="btn" data-open-view="home" type="button">Back to overview</button></div>
+</div>
+<div class="settings-grid">
+<section class="page-card">
+<div class="card-head"><div><h2>Academic Work Controls</h2><p>Changes apply to teacher accounts immediately.</p></div></div>
+<div class="card-body">
+<div class="settings-list">
+<div class="setting-row"><div><strong>Marks Entry</strong><span>Allow teachers to enter and update marks.</span></div><label class="switch"><input id="settingMarksEntry" type="checkbox"/><span class="switch-ui"></span></label></div>
+<div class="setting-row"><div><strong>Paper Creator</strong><span>Allow teachers to create papers in the portal editor.</span></div><label class="switch"><input id="settingPaperCreator" type="checkbox"/><span class="switch-ui"></span></label></div>
+<div class="setting-row"><div><strong>Paper Upload</strong><span>Allow teachers to upload completed PDF or DOCX papers.</span></div><label class="switch"><input id="settingPaperUpload" type="checkbox"/><span class="switch-ui"></span></label></div>
+<div class="setting-row"><div><strong>Paper Submission</strong><span>Allow new papers and corrected papers to be submitted for review.</span></div><label class="switch"><input id="settingPaperSubmission" type="checkbox"/><span class="switch-ui"></span></label></div>
+<div class="setting-row"><div><strong>Emergency Lock</strong><span>Temporarily close all paper creation, upload and submission activity.</span></div><label class="switch"><input id="settingEmergencyLock" type="checkbox"/><span class="switch-ui"></span></label></div>
+</div>
+<div class="field section-gap"><label for="settingAdminNotice">Message shown to teachers</label><textarea class="settings-notice" id="settingAdminNotice" maxlength="300" placeholder="Enter a clear notice for teachers."></textarea></div>
+<div class="settings-actions"><button class="btn primary" id="saveSettingsButton" type="button">Save Settings</button></div>
+<div aria-live="polite" class="settings-status" id="settingsStatus" role="status"></div>
+</div>
+</section>
+<section class="page-card">
+<div class="card-head"><div><h2>Saved Drafts</h2><p>Remove abandoned teacher drafts without affecting submitted or approved papers.</p></div><span class="count-badge" id="adminDraftCount">0</span></div>
+<div class="card-body admin-draft-list" id="adminDraftList"><div class="empty-state"><strong>Loading drafts</strong>Please wait.</div></div>
+</section>
+</div>
+</section>
+</div>
+</main>
+</div>
+<div aria-hidden="true" aria-labelledby="confirmTitle" aria-modal="true" class="modal-backdrop" id="saveConfirmModal" role="dialog">
+<div class="modal">
+<header><h2 id="confirmTitle">Confirm marks submission</h2><p>Please verify the details before saving.</p><p class="helper-text" hidden="" id="confirmLoadWarning">Existing records were not loaded for this selection. Only the rows shown below will be saved or updated.</p></header>
+<div class="modal-summary">
+<div><span>Class</span><strong id="confirmClass">—</strong></div>
+<div><span>Subject</span><strong id="confirmSubject">—</strong></div>
+<div><span>Exam</span><strong id="confirmExam">—</strong></div>
+<div><span>Component</span><strong id="confirmComponent">—</strong></div>
+<div><span>Records</span><strong id="confirmCount">—</strong></div>
+<div><span>Maximum Marks</span><strong id="confirmMax">—</strong></div>
+</div>
+<div class="modal-actions">
+<button class="btn" id="cancelSaveButton" type="button">Cancel</button>
+<button class="btn primary" id="confirmSaveButton" type="button">Confirm and save</button>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="paperReviewTitle" aria-modal="true" class="modal-backdrop" id="paperReviewModal" role="dialog">
+<div class="paper-review-modal">
+<header class="paper-review-header">
+<div>
+<span class="status-chip" id="paperReviewStatus">Submitted</span>
+<h2 id="paperReviewTitle">Question Paper</h2>
+<p id="paperReviewMeta">—</p>
+</div>
+<button aria-label="Close paper review" class="modal-close" id="closePaperReview" type="button">×</button>
+</header>
+<div class="paper-review-body">
+<div class="paper-preview" id="paperPreviewArea">
+<div class="empty-state"><strong>Loading paper</strong>Please wait while the paper is opened.</div>
+</div>
+<aside class="paper-review-panel">
+<div class="review-detail"><span>Teacher</span><strong id="reviewTeacher">—</strong></div>
+<div class="review-detail"><span>Class</span><strong id="reviewClass">—</strong></div>
+<div class="review-detail"><span>Subject</span><strong id="reviewSubject">—</strong></div>
+<div class="review-detail"><span>Exam</span><strong id="reviewExam">—</strong></div>
+<div class="review-detail"><span>Maximum Marks</span><strong id="reviewMaxMarks">—</strong></div>
+<div class="review-detail"><span>Version</span><strong id="reviewVersion">—</strong></div>
+<div class="review-correction-history" hidden="" id="paperCorrectionHistory"></div>
+<div class="review-note-wrap">
+<label for="paperReviewNote">Principal note</label>
+<textarea id="paperReviewNote" placeholder="Add a clear note when returning a paper for correction." rows="5"></textarea>
+</div>
+<div class="bgps-standard-review-status" hidden="" id="bgpsStandardReviewStatus">
+<span>BGPS Standard Format</span><strong id="bgpsStandardReviewValue">Not prepared</strong>
+<small id="bgpsStandardReviewHint">Preview and save the standardized copy before approval.</small>
+</div>
+<div class="paper-review-actions">
+<button class="btn primary" hidden="" id="previewBgpsFormatButton" type="button">Preview BGPS Format</button>
+<button class="btn success" id="approvePaperButton" type="button">Approve Paper</button>
+<button class="btn primary" id="editReviewedPaperButton" type="button">Edit Paper</button>
+<button class="btn danger-outline" id="returnPaperButton" type="button">Return for Correction</button>
+<button class="btn" hidden="" id="downloadPaperButton" type="button">Download File</button>
+<button class="btn danger-outline" id="deleteReviewedPaperButton" type="button">Delete Paper</button>
+</div>
+</aside>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="bgpsStandardPreviewTitle" aria-modal="true" class="modal-backdrop" id="bgpsStandardPreviewModal" role="dialog">
+<div class="paper-preview-modal-shell bgps-standard-preview-shell">
+<header class="paper-review-header">
+<div><span class="status-chip" id="bgpsStandardPreviewStatus">BGPS Format</span><h2 id="bgpsStandardPreviewTitle">BGPS Standard Preview</h2><p id="bgpsStandardPreviewMeta">Uniform numbering, font size and A4 layout</p></div>
+<button aria-label="Close BGPS standard preview" class="modal-close" id="closeBgpsStandardPreview" type="button">×</button>
+</header>
+<div class="bgps-standard-preview-notice" id="bgpsStandardPreviewNotice">
+<strong>Original DOCX remains unchanged by default.</strong>
+<span>Edit or delete content only in the separate BGPS working copy. The original is removed only when the Principal explicitly selects the approval option below.</span>
+</div>
+<div class="bgps-standard-edit-toolbar" id="bgpsStandardEditToolbar">
+<button class="btn" id="editBgpsStandardPreview" type="button">Edit / Delete Content</button>
+<button class="btn danger-outline" hidden="" id="deleteBgpsSelectedContent" type="button">Delete Selected</button>
+<button class="btn" hidden="" id="undoBgpsStandardEdit" type="button">Undo</button>
+<span id="bgpsStandardEditHint">Select edit mode to remove text, a question, image or table from the BGPS copy.</span>
+</div>
+<div class="teacher-paper-preview-body" id="bgpsStandardPreviewBody"><div class="empty-state"><strong>Preparing BGPS format</strong>Please wait.</div></div>
+<div class="bgps-standard-preview-warnings" hidden="" id="bgpsStandardPreviewWarnings"></div>
+<label class="bgps-original-delete-option" for="deleteOriginalAfterApproval">
+<input id="deleteOriginalAfterApproval" type="checkbox"/>
+<span><strong>Delete original DOCX after successful approval</strong><small>Optional and OFF by default. The final approved PDF will remain.</small></span>
+</label>
+<footer class="teacher-paper-preview-footer">
+<button class="btn" id="backFromBgpsStandardPreview" type="button">Back to Review</button>
+<button class="btn primary" id="saveBgpsStandardPreview" type="button">Save BGPS Working Copy</button>
+<button class="btn success" id="saveAndApproveBgpsStandardPreview" type="button">Save &amp; Approve</button>
+</footer>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="teacherPaperPreviewTitle" aria-modal="true" class="modal-backdrop" id="teacherPaperPreviewModal" role="dialog">
+<div class="paper-preview-modal-shell">
+<header class="paper-review-header"><div><span class="status-chip" id="teacherPaperPreviewStatus">Preview</span><h2 id="teacherPaperPreviewTitle">Question Paper Preview</h2><p id="teacherPaperPreviewMeta">—</p></div><button aria-label="Close preview" class="modal-close" id="closeTeacherPaperPreview" type="button">×</button></header>
+<div class="teacher-paper-preview-body" id="teacherPaperPreviewBody"><div class="empty-state"><strong>Preparing preview</strong>Please wait.</div></div>
+<footer class="teacher-paper-preview-footer"><button class="btn" hidden="" id="downloadTeacherPaper" type="button">Download Final PDF</button><button class="btn" hidden="" id="openTeacherPaperPreviewExternal" type="button">Open PDF</button><button class="btn" id="printTeacherPaper" type="button">Print / Save PDF</button><button class="btn" id="closeTeacherPaperPreviewFooter" type="button">Back to Edit</button><button class="btn primary" hidden="" id="submitFromTeacherPaperPreview" type="button">Continue to Submit</button></footer>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="paperUploadTitle" aria-modal="true" class="modal-backdrop" id="paperUploadModal" role="dialog">
+<div class="modal paper-upload-modal">
+<header><h2 id="paperUploadTitle">Upload Existing Question Paper</h2><p id="paperUploadDescription">Upload a completed DOCX or PDF. The original file is preserved exactly; the portal does not rebuild, resize or reflow its content.</p></header>
+<form class="paper-upload-form" id="paperUploadForm" novalidate="">
+<div class="field"><label for="uploadPaperClass">Class</label><select id="uploadPaperClass" required=""></select></div>
+<div class="field"><label for="uploadPaperSubject">Subject</label><select id="uploadPaperSubject" required=""></select></div>
+<div class="field"><label for="uploadPaperExam">Exam / Term</label><select id="uploadPaperExam" required=""></select></div>
+<div class="field"><label for="uploadPaperMaxMarks">Maximum Marks</label><input id="uploadPaperMaxMarks" max="200" min="1" required="" type="number"/></div>
+<div class="field"><label for="uploadPaperTime">Time Allowed</label><input id="uploadPaperTime" maxlength="80" placeholder="1½ Hours" required=""/></div>
+<div class="field upload-wide"><label for="uploadPaperChapters">Chapters / Portion</label><input id="uploadPaperChapters" maxlength="500" required=""/></div>
+<div class="field upload-wide"><label for="uploadPaperFile">Question Paper File</label><input accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx" id="uploadPaperFile" required="" type="file"/><small>DOCX/PDF is stored in its original form. Images, equations, tables and page layout are not reconstructed. Maximum 8 MB.</small></div>
+<div class="field upload-wide"><label for="uploadPaperNote">Teacher Note <span class="optional-label">Optional</span></label><textarea id="uploadPaperNote" maxlength="250" rows="3"></textarea></div>
+<div aria-live="polite" class="paper-upload-progress" hidden="" id="paperUploadProgress" role="status"></div>
+<div class="modal-actions upload-wide"><button class="btn" id="cancelPaperUpload" type="button">Cancel</button><button class="btn primary" id="confirmPaperUpload" type="submit">Review &amp; Submit</button></div>
+</form>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="paperSubmitTitle" aria-modal="true" class="modal-backdrop" id="paperSubmitModal" role="dialog">
+<div class="modal">
+<header><h2 id="paperSubmitTitle">Submit Question Paper</h2><p>Confirm the paper details before sending it to the principal.</p></header>
+<div class="modal-summary"><div><span>Class</span><strong id="submitPaperClass">—</strong></div><div><span>Subject</span><strong id="submitPaperSubject">—</strong></div><div><span>Exam</span><strong id="submitPaperExam">—</strong></div><div><span>Questions</span><strong id="submitPaperQuestions">—</strong></div><div><span>Detected Marks</span><strong id="submitPaperMarks">—</strong></div><div><span>Maximum Marks</span><strong id="submitPaperMaxMarks">—</strong></div></div>
+<div class="modal-actions"><button class="btn" id="cancelPaperSubmit" type="button">Continue Editing</button><button class="btn success" id="confirmPaperSubmit" type="button">Submit for Approval</button></div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="paperSubmitSuccessTitle" aria-modal="true" class="modal-backdrop" id="paperSubmitSuccessModal" role="dialog">
+<div class="modal submission-success-modal">
+<header><div aria-hidden="true" class="submission-success-icon">✓</div><h2 id="paperSubmitSuccessTitle">Paper Sent Successfully</h2><p>Your question paper is now in the Principal review queue.</p></header>
+<div class="modal-summary"><div><span>Paper ID</span><strong id="submittedPaperId">—</strong></div><div><span>Status</span><strong id="submittedPaperStatus">Submitted</strong></div><div><span>Version</span><strong id="submittedPaperVersion">1</strong></div><div><span>Next Step</span><strong>Principal Review</strong></div></div>
+<div class="modal-actions"><button class="btn" id="closePaperSubmitSuccess" type="button">Close</button><button class="btn primary" id="viewSubmittedPaper" type="button">View Submitted Papers</button></div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="teacherBreakdownTitle" aria-modal="true" class="modal-backdrop" id="teacherBreakdownModal" role="dialog">
+<div class="modal">
+<header><h2 id="teacherBreakdownTitle">Marks Breakup</h2><p id="teacherBreakdownSubtitle">Written, Oral and Practical components.</p></header>
+<div class="breakdown-summary" id="teacherBreakdownItems"></div>
+<div class="breakdown-total-line"><span>Subject Total</span><strong id="teacherBreakdownTotal">—</strong></div>
+<div class="modal-actions"><button class="btn primary" id="closeTeacherBreakdown" type="button">Close</button></div>
+</div>
+</div>
+<div aria-live="polite" class="toast-region" id="toastRegion"></div>
+<!-- BGPS frontend modules: load order is intentional. -->
+<script defer src="js/app-config.js"></script>
+<script defer src="js/modules/state.js"></script>
+<script defer src="js/modules/api.js"></script>
+<script defer src="js/modules/pdf-preview.js"></script>
+<script defer src="js/modules/data.js"></script>
+<script defer src="js/modules/marks.js"></script>
+<script defer src="js/modules/dashboard.js"></script>
+<script defer src="js/modules/papers.js"></script>
+<script defer src="js/modules/paper-creator.js"></script>
+<script defer src="js/modules/reports.js"></script>
+<script defer src="js/modules/settings.js"></script>
+<script defer src="js/modules/auth.js"></script>
+<script defer src="js/app.js"></script>
+<script defer src="js/hotfix.js"></script>
+</body>
+</html>

@@ -66,6 +66,43 @@
     return !isRevision(paper) && normalize(paper.status) === 'SUBMITTED';
   }
 
+  function correctionRemarks(paper) {
+    const source = Array.isArray(paper?.correctionHistory) ? paper.correctionHistory : [];
+    const remarks = [];
+    source.forEach((entry) => {
+      const value = entry && typeof entry === 'object' ? entry : { note: entry };
+      const note = String(value.note || value.message || '').trim();
+      if (!note) return;
+      const version = Number(value.version || 0);
+      if (remarks.some((item) => item.note === note && Number(item.version || 0) === version)) return;
+      remarks.push({
+        note,
+        version,
+        returnedAt: String(value.returnedAt || value.timestamp || '').trim(),
+        returnedBy: String(value.returnedBy || value.adminId || '').trim()
+      });
+    });
+    const latest = String(paper?.adminNote || '').trim();
+    if (latest && !remarks.some((item) => item.note === latest)) {
+      remarks.push({ note: latest, version: Number(paper?.version || 0), returnedAt: '', returnedBy: '' });
+    }
+    return remarks;
+  }
+
+  function renderCorrectionRemarks(paper, open = false) {
+    const remarks = correctionRemarks(paper);
+    if (!remarks.length) return '';
+    const items = remarks.slice().reverse().map((entry) => {
+      const meta = [
+        entry.version ? `Version ${entry.version}` : '',
+        entry.returnedAt ? window.BGPS_DATA.safeDate(entry.returnedAt) : '',
+        entry.returnedBy && normalize(entry.returnedBy) !== 'ADMIN' ? entry.returnedBy : ''
+      ].filter(Boolean).join(' · ');
+      return `<li><div>${escapeHtml(entry.note)}</div>${meta ? `<small>${escapeHtml(meta)}</small>` : ''}</li>`;
+    }).join('');
+    return `<details class="teacher-paper-remarks admin-paper-remarks"${open ? ' open' : ''}><summary>Principal remarks (${remarks.length})</summary><ol>${items}</ol></details>`;
+  }
+
   const BOARD_COPY = Object.freeze({
     all: ['All Papers', 'Complete paper approval history, prioritised by pending action.'],
     'first-review': ['Awaiting First Review', 'New submissions waiting for the Principal’s first decision.'],
@@ -223,7 +260,7 @@
             <span>${escapeHtml(paper.exam)}</span>
             <span>${escapeHtml(paper.teacherName || paper.teacherId)}</span>
           </div>
-          ${revision ? `<div class="paper-row-note"><strong>${rereview ? 'Ready for re-review.' : 'Revision history retained.'}</strong>${paper.adminNote ? ` Previous Principal remark: ${escapeHtml(paper.adminNote)}` : ''}</div>` : ''}
+          ${revision ? `<div class="paper-row-note"><strong>${rereview ? 'Ready for re-review.' : 'Revision history retained.'}</strong></div>${renderCorrectionRemarks(paper, rereview)}` : ''}
         </div>
         <div class="paper-facts">
           <span><small>Marks</small><strong>${escapeHtml(paper.maxMarks || '—')}</strong></span>
@@ -701,10 +738,11 @@
     setText('reviewVersion', paper.version || 1);
     const history = byId('paperCorrectionHistory');
     if (history) {
-      history.hidden = !revision;
-      history.textContent = revision
-        ? `${resubmitted ? 'Corrected version received for re-review.' : 'This paper belongs to a corrected revision workflow.'}${paper.adminNote ? ` Principal correction instruction: ${paper.adminNote}` : ''}`
-        : '';
+      const remarksHtml = renderCorrectionRemarks(paper, true);
+      history.hidden = !revision && !remarksHtml;
+      history.innerHTML = remarksHtml || (revision
+        ? escapeHtml(resubmitted ? 'Corrected version received for re-review.' : 'This paper belongs to a corrected revision workflow.')
+        : '');
     }
     const note = byId('paperReviewNote');
     if (note) note.value = paper.adminNote || '';
@@ -880,6 +918,10 @@
       const result = await window.BGPS_API.updatePaperStatus(currentPaper.paperId, status, note, options);
       currentPaper.status = status;
       currentPaper.adminNote = note;
+      if (Array.isArray(result?.correctionHistory)) {
+        currentPaper.correctionHistory = result.correctionHistory;
+        currentPaper.correctionCount = result.correctionHistory.length;
+      }
       if (result?.originalDeleted === true) { currentPaper.originalDeleted = true; currentPaper.originalAvailable = false; }
       if (status === 'Approved') currentPaper.hasFinalPdf = true;
       setReviewMeta(currentPaper);

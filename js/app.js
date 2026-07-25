@@ -19,11 +19,15 @@
     const region = byId('toastRegion');
     if (!region) return;
     const node = document.createElement('div');
-    node.className = `toast${type === 'error' ? ' error' : ''}`;
-    node.setAttribute('role', 'status');
+    const isError = type === 'error';
+    node.className = `toast${isError ? ' error' : ''}`;
+    node.setAttribute('role', isError ? 'alert' : 'status');
+    node.setAttribute('aria-live', isError ? 'assertive' : 'polite');
     node.textContent = String(message || '');
+    node.title = 'Tap to dismiss';
+    node.addEventListener('click', () => node.remove(), { once: true });
     region.appendChild(node);
-    window.setTimeout(() => node.remove(), 3400);
+    window.setTimeout(() => node.remove(), isError ? 7000 : 3400);
   }
 
   async function checkBackend() {

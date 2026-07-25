@@ -148,6 +148,73 @@
     window.BGPS_APP?.toast(message, type);
   }
 
+  function mobileViewport() {
+    return window.matchMedia('(max-width:820px)').matches;
+  }
+
+  function dismissMobileKeyboard() {
+    const active = document.activeElement;
+    if (active && typeof active.blur === 'function' && active !== document.body) active.blur();
+    document.body.classList.remove('bgps-keyboard-open');
+  }
+
+  function clearPaperValidation() {
+    const alert = byId('paperValidationAlert');
+    if (alert) alert.hidden = true;
+    setText('paperValidationMessage', '');
+    document.querySelectorAll('.bgps-paper-issue').forEach((node) => node.classList.remove('bgps-paper-issue'));
+  }
+
+  function showPaperValidation(message, issue) {
+    dismissMobileKeyboard();
+    clearPaperValidation();
+    const alert = byId('paperValidationAlert');
+    setText('paperValidationTitle', 'Please check the paper');
+    setText('paperValidationMessage', message || 'Please correct the highlighted item and try again.');
+    if (alert) alert.hidden = false;
+    const node = issue?.node;
+    if (node?.classList) node.classList.add('bgps-paper-issue');
+    window.setTimeout(() => {
+      (alert || node)?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+    }, 80);
+    toast(message || 'Please check the paper.', 'error');
+  }
+
+  function showSubmitError(message) {
+    dismissMobileKeyboard();
+    const node = byId('paperSubmitError');
+    if (node) {
+      node.hidden = !message;
+      node.textContent = message || '';
+      if (message) window.setTimeout(() => node.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    }
+  }
+
+  function correctionRemarks(item) {
+    const source = Array.isArray(item?.correctionHistory) ? item.correctionHistory : [];
+    const result = [];
+    source.forEach((entry) => {
+      const value = entry && typeof entry === 'object' ? entry : { note: entry };
+      const note = normalize(value.note || value.message);
+      if (!note) return;
+      if (result.some((existing) => existing.note === note && Number(existing.version || 0) === Number(value.version || 0))) return;
+      result.push({ note, version: Number(value.version || 0), returnedAt: normalize(value.returnedAt || value.timestamp), returnedBy: normalize(value.returnedBy || value.adminId) });
+    });
+    const latest = normalize(item?.adminNote);
+    if (latest && !result.some((entry) => entry.note === latest)) result.push({ note: latest, version: Number(item?.version || 0), returnedAt: '', returnedBy: '' });
+    return result;
+  }
+
+  function renderCorrectionRemarks(item, open = false) {
+    const remarks = correctionRemarks(item);
+    if (!remarks.length) return '';
+    const items = remarks.slice().reverse().map((entry, index) => {
+      const meta = [entry.version ? `Version ${entry.version}` : '', entry.returnedAt ? safeDate(entry.returnedAt) : '', entry.returnedBy && entry.returnedBy !== 'ADMIN' ? entry.returnedBy : ''].filter(Boolean).join(' · ');
+      return `<li><div>${escapeHtml(entry.note)}</div>${meta ? `<small>${escapeHtml(meta)}</small>` : ''}</li>`;
+    }).join('');
+    return `<details class="teacher-paper-remarks"${open ? ' open' : ''}><summary>Principal remarks (${remarks.length})</summary><ol>${items}</ol></details>`;
+  }
+
   function setText(id, value) {
     const node = byId(id);
     if (node) node.textContent = String(value == null ? '' : value);
@@ -830,6 +897,28 @@
       && (draft.chapters || isPrePrimary(draft.className)));
   }
 
+  function isTerminalPaperWorkflowError(error) {
+    const message = String(error?.message || error || '').toLowerCase();
+    return /approved papers are final|already been resubmitted|already submitted and locked|already submitted and cannot be changed|not currently available for editing/.test(message);
+  }
+
+  function reconcileLockedPaperEditor(error) {
+    if (!isTerminalPaperWorkflowError(error)) return false;
+    const message = String(error?.message || 'This paper is now locked.').trim();
+    const staleRecoveryKey = recoveryKey();
+    clearAutosaveTimers();
+    dismissMobileKeyboard();
+    currentDraftId = '';
+    currentRevision = {};
+    dirty = false;
+    deleteRecoveryRecord(staleRecoveryKey).catch(() => {});
+    setEditorMode(false);
+    syncDraftDeleteControl();
+    loadData(false).catch(() => {});
+    toast(`${message} My Papers has been refreshed.`, 'error');
+    return true;
+  }
+
   async function runServerAutosave() {
     serverAutosaveTimer = 0;
     if (!dirty || !editorWorkspaceOpen() || !session || session.isAdmin || editorMode === 'admin') return;
@@ -849,7 +938,8 @@
     try {
       setAutosaveStatus('Saving…', 'dirty');
       await saveDraft(false);
-    } catch (_) {
+    } catch (error) {
+      if (reconcileLockedPaperEditor(error)) return;
       setAutosaveStatus('Save pending · safe on this device', 'dirty');
       scheduleServerAutosave(20000);
     }
@@ -1021,7 +1111,7 @@
         else if (action === 'paste') pasteCopiedImage();
         else if (action === 'vectors') openWorksheetVectorLibrary();
         else if (action === 'preview') previewCurrent();
-        else if (action === 'save') saveEditorChanges(true).catch((error) => toast(error.message, 'error'));
+        else if (action === 'save') saveEditorChanges(true).catch((error) => showPaperValidation(error.message, error.paperIssue));
         else if (action === 'submit') prepareSubmit();
         else if (action === 'smaller' && selectedImage) applyImageWidth(selectedImage, imageWidth(selectedImage) - 5);
         else if (action === 'larger' && selectedImage) applyImageWidth(selectedImage, imageWidth(selectedImage) + 5);
@@ -1039,6 +1129,7 @@
       window.__BGPS_MOBILE_KEYBOARD_BOUND__ = true;
       const syncKeyboard = () => {
         const keyboardOpen = window.innerHeight - window.visualViewport.height > 180;
+        document.body.classList.toggle('bgps-keyboard-open', keyboardOpen);
         mobilePaperBar?.classList.toggle('keyboard-open', keyboardOpen);
         if (mobilePaperBar) mobilePaperBar.style.display = keyboardOpen ? 'none' : '';
       };
@@ -1166,11 +1257,13 @@
   function focusPaperIssue(issue) {
     const node = issue?.node;
     if (!node?.scrollIntoView) return;
+    if (mobileViewport()) dismissMobileKeyboard();
     node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (typeof node.focus === 'function') window.setTimeout(() => node.focus({ preventScroll: true }), 300);
+    if (!mobileViewport() && typeof node.focus === 'function') window.setTimeout(() => node.focus({ preventScroll: true }), 300);
   }
 
   function markDirty() {
+    clearPaperValidation();
     dirty = true;
     editRevision += 1;
     const message = currentDraftId ? 'Changes not saved' : 'Draft not saved';
@@ -1317,7 +1410,10 @@
     focusPaperIssue(issues[0]);
     const summary = issues.slice(0, 4).map((issue) => `• ${issue.message}`).join('\n');
     const remaining = issues.length > 4 ? `\n• ${issues.length - 4} more item${issues.length - 4 === 1 ? '' : 's'} need attention.` : '';
-    throw new Error(`${issues.length} item${issues.length === 1 ? '' : 's'} need attention before submission:\n${summary}${remaining}`);
+    const error = new Error(`${issues.length} item${issues.length === 1 ? '' : 's'} need attention before submission:\n${summary}${remaining}`);
+    error.paperIssue = issues[0];
+    error.paperIssues = issues;
+    throw error;
   }
 
   async function saveDraft(showToast = true) {
@@ -1459,21 +1555,23 @@
 
   function renderMetrics() {
     // Keep summary cards aligned with the exact items visible in My Question Papers.
-    // When a submitted/correction paper has an active linked draft, combinedItems() hides
-    // the parent paper and shows the draft instead. Counting raw `papers` caused cards
-    // such as Correction Required to be higher than the visible current-paper list.
+    // A linked draft is still a correction workflow item: it remains visible under
+    // Correction Required while also counting as a saved draft.
     const currentItems = combinedItems(true);
     const currentPapers = currentItems.filter((item) => item.kind === 'paper');
     const currentDrafts = currentItems.filter((item) => item.kind === 'draft');
     setText('teacherPaperMetricDraft', currentDrafts.length);
     setText('teacherPaperMetricSubmitted', currentPapers.filter((paper) => statusKey(paper.status) === 'submitted').length);
-    setText('teacherPaperMetricCorrection', currentPapers.filter((paper) => statusKey(paper.status) === 'correction required').length);
+    setText('teacherPaperMetricCorrection', currentItems.filter((paper) => statusKey(paper.status) === 'correction required').length);
     setText('teacherPaperMetricApproved', currentPapers.filter((paper) => statusKey(paper.status) === 'approved').length);
   }
 
   function combinedItems(includeApproved = false) {
     const linkedPaperIds = new Set(drafts.map((draft) => String(draft.parentPaperId || '')).filter(Boolean));
-    const draftItems = drafts.map((draft) => ({ ...draft, kind: 'draft', status: 'Draft', updatedSort: draft.updatedAt || draft.createdAt || '' }));
+    const draftItems = drafts.map((draft) => {
+      const correctionDraft = Boolean(String(draft.parentPaperId || '').trim());
+      return { ...draft, kind: 'draft', correctionDraft, status: correctionDraft ? 'Correction Required' : 'Draft', updatedSort: draft.updatedAt || draft.createdAt || '' };
+    });
     const paperItems = papers
       .filter((paper) => !linkedPaperIds.has(String(paper.paperId || '')))
       .filter((paper) => includeApproved || statusKey(paper.status) !== 'approved')
@@ -1524,14 +1622,15 @@
       const resubmitted = submitted && (item.resubmitted === true || Boolean(String(item.adminNote || '').trim()));
       const title = item.title || `${item.className || ''} ${item.subject || ''} ${item.exam || ''}`.trim() || 'Question Paper';
       let actions = '';
-      if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">Continue Editing</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">Delete Draft</button>`;
+      if (isDraft) actions = `<button class="btn primary" type="button" data-edit-draft="${escapeHtml(item.draftId)}">${correction ? 'Continue Correction' : 'Continue Editing'}</button><button class="btn" type="button" data-preview-draft="${escapeHtml(item.draftId)}">Preview</button><button class="btn danger-outline" type="button" data-delete-draft="${escapeHtml(item.draftId)}">${correction ? 'Delete Correction Draft' : 'Delete Draft'}</button>`;
       else if (correction) actions = `<button class="btn primary" type="button" data-edit-paper="${escapeHtml(item.paperId)}">Edit &amp; Resubmit</button><button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
       else if (submitted) actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>${resubmitted ? '' : '<span class="teacher-paper-readonly-note">Awaiting Principal review</span>'}`;
       else actions = `<button class="btn" type="button" data-preview-paper="${escapeHtml(item.paperId)}">Preview</button>`;
       const statusChip = resubmitted
         ? '<span class="status-chip resubmitted">Corrected &amp; Resubmitted</span>'
         : `<span class="status-chip ${statusClass(item.status)}">${escapeHtml(item.status || 'Submitted')}</span>`;
-      return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3>${statusChip}${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${submitted && !resubmitted ? '<div class="teacher-paper-note" style="border-left-color:#cf8a13;background:#fff8e8;color:#72520d"><strong>Submitted:</strong> Locked while awaiting Principal review.</div>' : ''}${resubmitted ? `<div class="teacher-paper-note" style="border-left-color:#5b4bb7;background:#faf9ff;color:#46378f"><strong>Correction sent:</strong> Awaiting Principal re-review.${item.adminNote ? ` Previous note: ${escapeHtml(item.adminNote)}` : ''}</div>` : ''}${approved ? '<div class="teacher-paper-note" style="border-left-color:#188f4d;background:#f1faf4;color:#245f3c"><strong>Approved:</strong> Final paper is ready to view or download.</div>' : ''}</div><div class="teacher-paper-actions">${actions}</div></article>`;
+      const remarksHtml = renderCorrectionRemarks(item, correction || resubmitted);
+      return `<article class="teacher-paper-item"><div class="teacher-paper-main"><div class="teacher-paper-title-row"><h3>${escapeHtml(title)}</h3>${statusChip}${item.version ? `<span class="status-chip">Version ${escapeHtml(item.version)}</span>` : ''}</div><div class="teacher-paper-meta"><span>${escapeHtml(item.className || '—')}</span><span>${escapeHtml(item.subject || '—')}</span><span>${escapeHtml(item.exam || '—')}</span><span>${escapeHtml(item.maxMarks || '—')} marks</span><span>Updated ${escapeHtml(safeDate(item.updatedAt || item.updatedSort))}</span></div>${correction && item.adminNote ? `<div class="teacher-paper-note"><strong>Latest Principal note:</strong> ${escapeHtml(item.adminNote)}</div>` : ''}${submitted && !resubmitted ? '<div class="teacher-paper-note submitted-note"><strong>Submitted:</strong> Locked while awaiting Principal review.</div>' : ''}${resubmitted ? '<div class="teacher-paper-note resubmitted-note"><strong>Correction sent:</strong> Awaiting Principal re-review.</div>' : ''}${approved ? '<div class="teacher-paper-note approved-note"><strong>Approved:</strong> Final paper is ready to view or download.</div>' : ''}${remarksHtml}</div><div class="teacher-paper-actions">${actions}</div></article>`;
     }).join('');
   }
 
@@ -1587,8 +1686,9 @@
     }
     clearEditor();
     updatePaperAccess();
+    clearPaperValidation();
     setEditorMode(true);
-    byId('paperTitleInput')?.focus();
+    if (!mobileViewport()) byId('paperTitleInput')?.focus();
     offerRecovery('').catch(() => {});
   }
 
@@ -1598,6 +1698,7 @@
       return false;
     }
     clearEditor();
+    clearPaperValidation();
     const isAdminEdit = options.admin === true;
     const linkedPaper = Boolean(isAdminEdit || correctionMode || draft.parentPaperId || (draft.paperId && !draft.draftId));
     const correctionRequired = !isAdminEdit && (Boolean(correctionMode) || statusKey(draft.status) === 'correction required');
@@ -1657,7 +1758,8 @@
       markSaved(`Admin edit mode · Version ${draft.version || 1}`);
     } else if (correctionRequired) {
       setHidden('paperCorrectionBanner', false);
-      setText('paperCorrectionNote', draft.adminNote || draft.note || 'Please revise the paper as advised by the principal.');
+      const correctionNote = byId('paperCorrectionNote');
+      if (correctionNote) correctionNote.innerHTML = renderCorrectionRemarks(draft, true) || escapeHtml(draft.adminNote || draft.note || 'Please revise the paper as advised by the principal.');
       setText('paperEditorEyebrow', 'Correction Required');
       setText('paperEditorTitle', 'Correct and Resubmit Paper');
       setText('paperEditorSubtitle', `Revision of Version ${draft.version || draft.previousVersion || 1}`);
@@ -1703,7 +1805,10 @@
   async function openDraft(draftId) {
     try {
       const result = await window.BGPS_API.getPaperDraft(draftId);
-      loadDraftIntoEditor(result.draft || {}, false);
+      const draft = result.draft || {};
+      // A saved draft linked to a returned paper must reopen in correction mode,
+      // otherwise the Principal remarks banner and Resubmit wording disappear.
+      loadDraftIntoEditor(draft, Boolean(String(draft.parentPaperId || '').trim()));
     } catch (error) {
       toast(error.message || 'Could not open the draft.', 'error');
     }
@@ -1977,7 +2082,7 @@
       if (body && byId('teacherPaperPreviewModal')?.classList.contains('open')) {
         body.innerHTML = `<div class="empty-state"><strong>Preview could not be prepared</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
       } else {
-        toast(error.message || 'Preview could not be prepared.', 'error');
+        showPaperValidation(error.message || 'Preview could not be prepared.', error.paperIssue);
       }
     } finally {
       previewInFlight = false;
@@ -2023,6 +2128,8 @@
 
   function prepareSubmit() {
     try {
+      clearPaperValidation();
+      showSubmitError('');
       pendingPdfUpload = null;
       const resubmitting = Boolean(currentRevision.parentPaperId);
       setText('paperSubmitTitle', resubmitting ? 'Resubmit Corrected Question Paper' : 'Submit Question Paper');
@@ -2036,9 +2143,10 @@
       setText('submitPaperMaxMarks', draft.maxMarks);
       const confirm = byId('confirmPaperSubmit');
       if (confirm) confirm.textContent = resubmitting ? 'Resubmit for Approval' : 'Submit for Approval';
+      dismissMobileKeyboard();
       openModal('paperSubmitModal');
     } catch (error) {
-      toast(error.message, 'error');
+      showPaperValidation(error.message, error.paperIssue);
     }
   }
 
@@ -2053,12 +2161,15 @@
     setText('submitPaperQuestions', isDocx ? 'Original DOCX' : 'Reference PDF');
     setText('submitPaperMarks', isDocx ? 'Layout preserved' : 'Check preview');
     setText('submitPaperMaxMarks', pendingPdfUpload.maxMarks);
+    showSubmitError('');
+    dismissMobileKeyboard();
     openModal('paperSubmitModal');
   }
 
   function cancelPaperSubmit() {
     const wasPdf = Boolean(pendingPdfUpload);
     closeModal('paperSubmitModal');
+    showSubmitError('');
     setText('paperSubmitTitle', 'Submit Question Paper');
     if (wasPdf) {
       pendingPdfUpload = null;
@@ -2118,6 +2229,7 @@
         status.textContent = `Submission failed: ${message}`;
         status.className = 'paper-save-status dirty';
       }
+      showSubmitError(message);
       toast(message, 'error');
     } finally {
       submitInFlight = false;
@@ -3497,6 +3609,16 @@
     progress.hidden = !message;
     progress.textContent = message || '';
     progress.classList.toggle('error', Boolean(message) && type === 'error');
+    if (!message) byId('paperUploadForm')?.querySelectorAll('.bgps-paper-issue').forEach((node) => node.classList.remove('bgps-paper-issue'));
+  }
+
+  function showUploadError(message, target) {
+    dismissMobileKeyboard();
+    setUploadProgress(message, 'error');
+    const progress = byId('paperUploadProgress');
+    if (target?.classList) target.classList.add('bgps-paper-issue');
+    window.setTimeout(() => (progress || target)?.scrollIntoView?.({ behavior: 'smooth', block: 'center' }), 60);
+    toast(message, 'error');
   }
 
   function closeUploadModalSafely() {
@@ -3559,18 +3681,18 @@
     event.preventDefault();
     if (uploadInFlight) return;
     const file = byId('uploadPaperFile')?.files?.[0];
-    if (!file) { toast('Select a PDF or DOCX file.', 'error'); return; }
-    if (file.size > 8 * 1024 * 1024) { toast('The file exceeds the 8 MB upload limit.', 'error'); return; }
+    if (!file) { showUploadError('Select a PDF or DOCX file.', byId('uploadPaperFile')); return; }
+    if (file.size > 8 * 1024 * 1024) { showUploadError('The file exceeds the 8 MB upload limit.', byId('uploadPaperFile')); return; }
     const extension = String(file.name || '').toLowerCase().split('.').pop();
-    if (!['docx', 'pdf'].includes(extension)) { toast('Select a DOCX file, or a PDF for reference-only submission.', 'error'); return; }
-    if (uploadRevisionContext && extension !== 'docx') { toast('A returned uploaded paper must be replaced with a corrected DOCX so the original-format workflow stays intact.', 'error'); return; }
+    if (!['docx', 'pdf'].includes(extension)) { showUploadError('Select a DOCX file, or a PDF for reference-only submission.', byId('uploadPaperFile')); return; }
+    if (uploadRevisionContext && extension !== 'docx') { showUploadError('A returned uploaded paper must be replaced with a corrected DOCX so the original-format workflow stays intact.', byId('uploadPaperFile')); return; }
     const className = normalize(byId('uploadPaperClass')?.value);
     const subject = normalize(byId('uploadPaperSubject')?.value);
     const exam = normalize(byId('uploadPaperExam')?.value);
     const maxMarks = Number(byId('uploadPaperMaxMarks')?.value || 0);
     const timeAllowed = normalize(byId('uploadPaperTime')?.value) || inferTime(maxMarks);
     const chapters = normalize(byId('uploadPaperChapters')?.value) || (isPrePrimary(className) ? 'Class-level learning outcomes' : '');
-    if (!className || !subject || !exam || !maxMarks || !timeAllowed || !chapters) { toast('Complete Class, Subject, Exam, Maximum Marks, Time Allowed and Chapters.', 'error'); return; }
+    if (!className || !subject || !exam || !maxMarks || !timeAllowed || !chapters) { showUploadError('Complete Class, Subject, Exam, Maximum Marks, Time Allowed and Chapters.', byId('paperUploadForm')); return; }
     const button = byId('confirmPaperUpload');
     uploadInFlight = true;
     if (button) { button.disabled = true; button.textContent = extension === 'docx' ? 'Reading DOCX…' : 'Reading PDF…'; }
@@ -3604,8 +3726,7 @@
         revokeObjectUrl();
         openModal('paperUploadModal');
       }
-      setUploadProgress(message, 'error');
-      toast(message, 'error');
+      showUploadError(message, byId('paperUploadForm'));
     } finally {
       uploadInFlight = false;
       if (button) { button.disabled = false; button.textContent = uploadRevisionContext ? 'Import Corrected DOCX' : 'Import and Review'; }
@@ -3642,12 +3763,13 @@
       event.returnValue = '';
     });
 
+    byId('dismissPaperValidation')?.addEventListener('click', clearPaperValidation);
     byId('refreshTeacherPapers')?.addEventListener('click', () => loadData(true));
     byId('createNewPaper')?.addEventListener('click', openNewPaper);
     byId('openPaperUpload')?.addEventListener('click', () => openUploadModal());
     byId('closePaperEditor')?.addEventListener('click', closeEditor);
-    byId('savePaperDraft')?.addEventListener('click', () => saveEditorChanges(true).catch((error) => toast(error.message, 'error')));
-    byId('sidebarSaveDraft')?.addEventListener('click', () => saveEditorChanges(true).catch((error) => toast(error.message, 'error')));
+    byId('savePaperDraft')?.addEventListener('click', () => saveEditorChanges(true).catch((error) => showPaperValidation(error.message, error.paperIssue)));
+    byId('sidebarSaveDraft')?.addEventListener('click', () => saveEditorChanges(true).catch((error) => showPaperValidation(error.message, error.paperIssue)));
     byId('deleteCurrentPaperDraft')?.addEventListener('click', () => deleteDraft(currentDraftId));
     byId('previewCurrentPaper')?.addEventListener('click', previewCurrent);
     byId('sidebarPreviewPaper')?.addEventListener('click', previewCurrent);
@@ -3763,6 +3885,8 @@
     byId('cancelPaperUpload')?.addEventListener('click', closeUploadModalSafely);
     byId('paperUploadModal')?.addEventListener('click', (event) => { if (event.target === byId('paperUploadModal')) closeUploadModalSafely(); });
     byId('paperUploadForm')?.addEventListener('submit', submitUpload);
+    byId('paperUploadForm')?.addEventListener('input', () => { if (!uploadInFlight) setUploadProgress(''); });
+    byId('paperUploadForm')?.addEventListener('change', () => { if (!uploadInFlight) setUploadProgress(''); });
     byId('uploadPaperFile')?.addEventListener('change', () => { uploadRequestId = ''; });
     byId('uploadPaperClass')?.addEventListener('change', () => populateSubjects('uploadPaperClass', 'uploadPaperSubject'));
     byId('uploadPaperMaxMarks')?.addEventListener('input', (event) => {
@@ -3782,7 +3906,7 @@
       }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && !byId('paperEditorWorkspace')?.hidden) {
         event.preventDefault();
-        saveEditorChanges(true).catch((error) => toast(error.message, 'error'));
+        saveEditorChanges(true).catch((error) => showPaperValidation(error.message, error.paperIssue));
       }
     });
   }
@@ -3825,7 +3949,9 @@
     clearAutosaveTimers();
     promptedRecoveryKeys.clear();
     if (imageGeometryObserver) { imageGeometryObserver.disconnect(); imageGeometryObserver = null; }
-    document.body.classList.remove('bgps-paper-editor-active');
+    document.body.classList.remove('bgps-paper-editor-active', 'bgps-keyboard-open');
+    clearPaperValidation();
+    showSubmitError('');
     if (mobilePaperBar) mobilePaperBar.hidden = true;
     revokeObjectUrl();
     setEditorMode(false);

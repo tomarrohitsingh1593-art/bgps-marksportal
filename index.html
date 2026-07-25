@@ -393,7 +393,8 @@
 <div><div class="eyebrow" id="paperEditorEyebrow">Question Paper Creator</div><h1 id="paperEditorTitle">Create Question Paper</h1><p id="paperEditorSubtitle">Prepare the paper in A4 format and save it as a draft before submission.</p></div>
 <div class="view-actions"><button class="btn" id="closePaperEditor" type="button">Back to My Papers</button><button class="btn" id="previewCurrentPaper" type="button">Preview</button><button class="btn danger-outline" hidden="" id="deleteCurrentPaperDraft" type="button">Delete Draft</button><button class="btn primary" id="savePaperDraft" type="button">Save Draft</button></div>
 </div>
-<div class="correction-banner" hidden="" id="paperCorrectionBanner"><strong>Principal correction note</strong><span id="paperCorrectionNote"></span></div>
+<div class="correction-banner" hidden="" id="paperCorrectionBanner"><strong>Principal correction remarks</strong><span id="paperCorrectionNote"></span></div>
+<div aria-live="assertive" class="paper-validation-alert" hidden="" id="paperValidationAlert" role="alert"><div><strong id="paperValidationTitle">Please check the paper</strong><div id="paperValidationMessage"></div></div><button aria-label="Dismiss paper error" id="dismissPaperValidation" type="button">×</button></div>
 <section class="paper-setup-card">
 <div class="paper-setup-grid">
 <div class="field paper-title-field"><label for="paperTitleInput">Paper Title</label><input id="paperTitleInput" maxlength="180" placeholder="Class 10 Physics Unit Test 1"/></div>
@@ -669,6 +670,7 @@ Show complete working wherever required." rows="3"></textarea></div>
 <div class="modal">
 <header><h2 id="paperSubmitTitle">Submit Question Paper</h2><p>Confirm the paper details before sending it to the principal.</p></header>
 <div class="modal-summary"><div><span>Class</span><strong id="submitPaperClass">—</strong></div><div><span>Subject</span><strong id="submitPaperSubject">—</strong></div><div><span>Exam</span><strong id="submitPaperExam">—</strong></div><div><span>Questions</span><strong id="submitPaperQuestions">—</strong></div><div><span>Detected Marks</span><strong id="submitPaperMarks">—</strong></div><div><span>Maximum Marks</span><strong id="submitPaperMaxMarks">—</strong></div></div>
+<div aria-live="assertive" class="paper-submit-error" hidden="" id="paperSubmitError" role="alert"></div>
 <div class="modal-actions"><button class="btn" id="cancelPaperSubmit" type="button">Continue Editing</button><button class="btn success" id="confirmPaperSubmit" type="button">Submit for Approval</button></div>
 </div>
 </div>

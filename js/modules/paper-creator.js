@@ -706,20 +706,11 @@
     const editor = byId('paperContentEditor');
     if (!editor) return 0;
 
-    // Portal-created questions carry an explicit mark-token class. Prefer those
-    // tokens so bracketed question numbers/references elsewhere are not counted.
-    const explicitTokens = [...editor.querySelectorAll('.mark-token')];
-    if (explicitTokens.length) {
-      const total = explicitTokens.reduce((sum, token) => sum + markTokenValue(token.textContent), 0);
-      return Number(total.toFixed(2));
-    }
-
-    // Imported/legacy papers may not have mark-token classes.
-    const text = editor.innerText || '';
-    let total = 0;
-    const regex = /\[\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*(?:marks?)?\s*\]/gi;
-    let match;
-    while ((match = regex.exec(text))) total += markTokenValue(match[0]);
+    // V13.2.3: only marks inside the portal's visible mark boxes count.
+    // Plain [5], bracketed references, answer keys, years and copied hidden text
+    // are deliberately ignored so the browser and backend always agree.
+    const boxedTokens = [...editor.querySelectorAll('.mark-token')];
+    const total = boxedTokens.reduce((sum, token) => sum + markTokenValue(token.textContent), 0);
     return Number(total.toFixed(2));
   }
 
@@ -1360,6 +1351,10 @@
       node.removeAttribute('draggable');
       node.removeAttribute('tabindex');
     });
+    // Persist an explicit server-verifiable marker on the same visible boxes
+    // used by the live marks gauge. No unboxed number is treated as marks.
+    clone.querySelectorAll('[data-bgps-count-mark]').forEach((node) => node.removeAttribute('data-bgps-count-mark'));
+    clone.querySelectorAll('.mark-token').forEach((node) => node.setAttribute('data-bgps-count-mark', '1'));
     return clone.innerHTML.trim();
   }
 

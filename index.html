@@ -598,11 +598,11 @@ Show complete working wherever required." rows="3"></textarea></div>
 <textarea id="paperReviewNote" placeholder="Add a clear note when returning a paper for correction." rows="5"></textarea>
 </div>
 <div class="bgps-standard-review-status" hidden="" id="bgpsStandardReviewStatus">
-<span>BGPS Standard Format</span><strong id="bgpsStandardReviewValue">Not prepared</strong>
-<small id="bgpsStandardReviewHint">Preview and save the standardized copy before approval.</small>
+<span>Professional A4 Final Format</span><strong id="bgpsStandardReviewValue">Not prepared</strong>
+<small id="bgpsStandardReviewHint">Validate and save the exact print-ready A4 copy before approval.</small>
 </div>
 <div class="paper-review-actions">
-<button class="btn primary" hidden="" id="previewBgpsFormatButton" type="button">Preview BGPS Format</button>
+<button class="btn primary" hidden="" id="previewBgpsFormatButton" type="button">Professional A4 Preview</button>
 <button class="btn success" id="approvePaperButton" type="button">Approve Paper</button>
 <button class="btn primary" id="editReviewedPaperButton" type="button">Edit Paper</button>
 <button class="btn danger-outline" id="returnPaperButton" type="button">Return for Correction</button>
@@ -616,20 +616,38 @@ Show complete working wherever required." rows="3"></textarea></div>
 <div aria-hidden="true" aria-labelledby="bgpsStandardPreviewTitle" aria-modal="true" class="modal-backdrop" id="bgpsStandardPreviewModal" role="dialog">
 <div class="paper-preview-modal-shell bgps-standard-preview-shell">
 <header class="paper-review-header">
-<div><span class="status-chip" id="bgpsStandardPreviewStatus">BGPS Format</span><h2 id="bgpsStandardPreviewTitle">BGPS Standard Preview</h2><p id="bgpsStandardPreviewMeta">Uniform numbering, font size and A4 layout</p></div>
-<button aria-label="Close BGPS standard preview" class="modal-close" id="closeBgpsStandardPreview" type="button">×</button>
+<div><span class="status-chip" id="bgpsStandardPreviewStatus">A4 Final Format</span><h2 id="bgpsStandardPreviewTitle">Professional A4 Preview</h2><p id="bgpsStandardPreviewMeta">Validated A4 pagination, marks, questions, images and print layout</p></div>
+<button aria-label="Close professional A4 preview" class="modal-close" id="closeBgpsStandardPreview" type="button">×</button>
 </header>
 <div class="bgps-standard-preview-notice" id="bgpsStandardPreviewNotice">
-<strong>Original DOCX remains unchanged by default.</strong>
-<span>Edit or delete content only in the separate BGPS working copy. The original is removed only when the Principal explicitly selects the approval option below.</span>
+<strong>Admin-only professional A4 preview.</strong>
+<span>The teacher source remains unchanged. Review every page, validation message and mark total before saving or approving the exact rendered version.</span>
+</div>
+<section class="bgps-a4-summary" aria-label="A4 paper summary">
+<div><span>Teacher</span><strong id="a4PreviewTeacher">—</strong></div>
+<div><span>Questions</span><strong id="a4PreviewQuestions">—</strong></div>
+<div><span>Marks</span><strong id="a4PreviewMarks">—</strong></div>
+<div><span>A4 Pages</span><strong id="a4PreviewPages">—</strong></div>
+<div><span>Version</span><strong id="a4PreviewVersion">—</strong></div>
+<div><span>Validation</span><strong id="a4PreviewValidation">Preparing…</strong></div>
+<div><span>Submitted</span><strong id="a4PreviewSubmitted">—</strong></div>
+<div><span>Status</span><strong id="a4PreviewWorkflowStatus">—</strong></div>
+</section>
+<div class="bgps-a4-toolbar" id="bgpsA4Toolbar">
+<button class="btn" id="bgpsA4ZoomOut" type="button">Zoom Out</button>
+<button class="btn" id="bgpsA4FitPage" type="button">Fit Page</button>
+<button class="btn" id="bgpsA4ZoomIn" type="button">Zoom In</button>
+<span id="bgpsA4ZoomValue">100%</span>
+<button class="btn" id="printBgpsA4Preview" type="button">Print</button>
+<button class="btn primary" id="savePdfBgpsA4Preview" type="button">Print / Save PDF</button>
 </div>
 <div class="bgps-standard-edit-toolbar" id="bgpsStandardEditToolbar">
 <button class="btn" id="editBgpsStandardPreview" type="button">Edit / Delete Content</button>
 <button class="btn danger-outline" hidden="" id="deleteBgpsSelectedContent" type="button">Delete Selected</button>
 <button class="btn" hidden="" id="undoBgpsStandardEdit" type="button">Undo</button>
-<span id="bgpsStandardEditHint">Select edit mode to remove text, a question, image or table from the BGPS copy.</span>
+<span id="bgpsStandardEditHint">Use edit mode only to remove or correct content in this admin working copy, then regenerate the A4 preview.</span>
 </div>
-<div class="teacher-paper-preview-body" id="bgpsStandardPreviewBody"><div class="empty-state"><strong>Preparing BGPS format</strong>Please wait.</div></div>
+<div class="teacher-paper-preview-body" id="bgpsStandardPreviewBody"><div class="empty-state"><strong>Preparing professional A4 preview</strong>Please wait.</div></div>
 <div class="bgps-standard-preview-warnings" hidden="" id="bgpsStandardPreviewWarnings"></div>
 <label class="bgps-original-delete-option" for="deleteOriginalAfterApproval">
 <input id="deleteOriginalAfterApproval" type="checkbox"/>
@@ -637,7 +655,7 @@ Show complete working wherever required." rows="3"></textarea></div>
 </label>
 <footer class="teacher-paper-preview-footer">
 <button class="btn" id="backFromBgpsStandardPreview" type="button">Back to Review</button>
-<button class="btn primary" id="saveBgpsStandardPreview" type="button">Save BGPS Working Copy</button>
+<button class="btn primary" id="saveBgpsStandardPreview" type="button">Save A4 Preview</button>
 <button class="btn success" id="saveAndApproveBgpsStandardPreview" type="button">Save &amp; Approve</button>
 </footer>
 </div>
@@ -698,6 +716,7 @@ Show complete working wherever required." rows="3"></textarea></div>
 <script defer src="js/modules/data.js"></script>
 <script defer src="js/modules/marks.js"></script>
 <script defer src="js/modules/dashboard.js"></script>
+<script defer src="js/modules/a4-renderer.js"></script>
 <script defer src="js/modules/papers.js"></script>
 <script defer src="js/modules/paper-creator.js"></script>
 <script defer src="js/modules/reports.js"></script>

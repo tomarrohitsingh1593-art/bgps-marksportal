@@ -86,6 +86,7 @@
       getBgpsStandardPreview: 120000,
       getPaperContent: 120000,
       saveBgpsStandardPreview: 120000,
+      saveAdminA4Preview: 120000,
       bulkDeleteApprovedOriginals: 120000,
       updatePaperContentAdmin: 120000,
       submitPaperDraft: 120000
@@ -106,8 +107,9 @@
   const getPaperFile = (paperId) => request('getPaperFile', { paperId });
   const getPaperOriginalFile = (paperId) => request('getPaperOriginalFile', { paperId });
   const getPaperPreview = (paperId) => request('getPaperPreview', { paperId });
-  const getBgpsStandardPreview = (paperId) => request('getBgpsStandardPreview', { paperId });
+  const getBgpsStandardPreview = (paperId) => request('getBgpsStandardPreview', { paperId, previewMode: 'source-only' });
   const saveBgpsStandardPreview = (paperId, editedContentHtml) => request('saveBgpsStandardPreview', { paperId, editedContentHtml: editedContentHtml || '' });
+  const saveAdminA4Preview = (paperId, preview) => request('saveAdminA4Preview', { paperId, preview: preview || {} });
   const updatePaperContentAdmin = (paperId, paper) => request('updatePaperContentAdmin', { paperId, paper });
   const updatePaperStatus = (paperId, status, adminNote, options = {}) => request('updatePaperStatus', { paperId, status, adminNote: adminNote || '', deleteOriginalAfterApproval: options.deleteOriginalAfterApproval === true });
   const listPaperDrafts = () => request('listPaperDrafts');
@@ -124,5 +126,5 @@
   const updatePaperSettings = (settings) => request('updatePaperSettings', { settings });
   const repairPaperWorkflow = () => request('repairPaperWorkflow');
 
-  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperOriginalFile, getPaperPreview, getBgpsStandardPreview, saveBgpsStandardPreview, updatePaperContentAdmin, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, bulkDeleteApprovedOriginals, uploadPaper, importDocxPaper, listPrincipalActivity, repairPaperWorkflow, ApiError });
+  window.BGPS_API = Object.freeze({ health, login, request, getMarks, saveMarks, getPaperSettings, updatePaperSettings, listPapers, getPaperContent, getPaperFile, getPaperOriginalFile, getPaperPreview, getBgpsStandardPreview, saveBgpsStandardPreview, saveAdminA4Preview, updatePaperContentAdmin, updatePaperStatus, listPaperDrafts, getPaperDraft, getPaperDraftPreview, savePaperDraft, deletePaperDraft, submitPaperDraft, deletePaper, bulkDeleteApprovedOriginals, uploadPaper, importDocxPaper, listPrincipalActivity, repairPaperWorkflow, ApiError });
 })();

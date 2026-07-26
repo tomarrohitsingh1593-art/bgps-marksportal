@@ -1411,3 +1411,72 @@ body.modal-open { overflow: hidden; }
 .bgps-a4-measurement .bgps-a4-footer{display:flex;justify-content:space-between;gap:5mm;flex:0 0 auto;border-top:.2mm solid #8fa1b2;padding-top:1.6mm;margin-top:2mm;color:#52677d;font-size:7.6pt}
 @media(max-width:900px){.bgps-a4-summary{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.bgps-a4-summary{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px}.bgps-a4-toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:8px}.bgps-a4-toolbar .btn{min-width:0;min-height:44px;padding:7px 4px}.bgps-a4-toolbar>span{grid-column:1/-1;grid-row:2}.bgps-a4-toolbar .btn:nth-last-child(2){margin-left:0}#bgpsStandardPreviewBody .bgps-a4-document{justify-items:start;gap:14px;padding:9px;transform-origin:top left}}
+
+/* V13.1 - single admin preview workspace */
+.paper-review-modal{width:min(1500px,calc(100vw - 24px));height:min(96vh,980px)}
+.paper-review-body{grid-template-columns:minmax(0,1fr) 320px}
+.paper-review-workspace{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#dfe7ef;border-right:1px solid var(--border)}
+.paper-review-workspace>.paper-preview{flex:1;min-height:0;border:0}
+.bgps-unified-a4-shell{min-width:0;min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden;background:#edf2f6}
+.bgps-unified-preview-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 14px;border-bottom:1px solid #d7e0e8;background:#fff}
+.bgps-unified-preview-heading>div{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:3px 10px;min-width:0}
+.bgps-unified-preview-heading strong{min-width:0;color:#123f70;font-size:15px;overflow-wrap:anywhere}
+.bgps-unified-preview-heading small{grid-column:2;color:#667b91;font-size:11px}
+.bgps-single-preview-note{flex:0 0 auto;padding:6px 9px;border-radius:999px;background:#e8f7ee;color:#187348;font-size:11px;font-weight:900}
+.bgps-a4-summary>div,.bgps-a4-summary>.bgps-a4-summary-card{display:grid;gap:3px;min-width:0;padding:9px 10px;border:1px solid #d9e3ec;border-radius:9px;background:#f8fafc;text-align:left;font:inherit}
+.bgps-a4-summary>.bgps-a4-summary-card{appearance:none;cursor:pointer}
+.bgps-a4-summary>.bgps-a4-summary-card:hover{border-color:#8fb2d2;background:#f0f6fc}
+.bgps-a4-summary>.bgps-a4-summary-card:focus-visible{outline:3px solid rgba(36,85,132,.2);outline-offset:1px}
+.bgps-a4-validation-card small{color:#667b91;font-size:10px;font-weight:700}
+.bgps-a4-validation-card.has-errors{border-color:#e6a4a4;background:#fff5f5}
+.bgps-a4-validation-card.is-valid{border-color:#a9d5ba;background:#f2fbf5}
+.bgps-a4-validation-card:disabled{cursor:default;opacity:1}
+.bgps-a4-toolbar .btn:last-child{margin-left:auto}
+.bgps-unified-a4-body{min-height:0;flex:1 1 auto;padding:14px;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.bgps-standard-preview-warnings{margin:10px 14px 0;padding:12px 14px;border:1px solid #e2b3b3;border-radius:10px;background:#fff8f8;color:#7d2525;max-height:220px;overflow:auto}
+.bgps-standard-preview-warnings .bgps-issues-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+.bgps-standard-preview-warnings .bgps-issues-head strong{margin:0;color:#8f2020}
+.bgps-standard-preview-warnings .bgps-issues-close{border:0;background:transparent;color:#123f70;font:inherit;font-weight:900;cursor:pointer}
+.bgps-standard-preview-warnings h4{margin:9px 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.bgps-standard-preview-warnings ul{margin:0;padding-left:20px}
+.bgps-standard-preview-warnings li{margin:4px 0;line-height:1.4}
+.bgps-standard-preview-warnings .warning-group{color:#6e5716}
+.bgps-standard-preview-warnings .bgps-no-critical{color:#187348;font-weight:800}
+.bgps-review-delete-option{margin:0;padding:10px 11px}
+.paper-review-panel{overflow:auto}
+.paper-review-actions{position:sticky;bottom:0;background:#fff;padding-top:8px}
+#saveBgpsStandardPreview{grid-column:1/-1}
+#bgpsStandardPreviewBody .bgps-a4-document{transform-origin:top center}
+
+@media(max-width:980px){
+  .paper-review-body{grid-template-columns:minmax(0,1fr) 285px}
+  .bgps-a4-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .paper-review-body{display:flex;flex-direction:column;overflow:auto}
+  .paper-review-workspace{min-height:68vh;overflow:visible;border-right:0;border-bottom:1px solid var(--border)}
+  .bgps-unified-a4-shell{min-height:68vh;overflow:visible}
+  .bgps-unified-preview-heading{align-items:flex-start}
+  .bgps-single-preview-note{display:none}
+  .bgps-a4-summary{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px}
+  .bgps-a4-toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:8px}
+  .bgps-a4-toolbar .btn{min-width:0;min-height:44px;padding:7px 4px}
+  .bgps-a4-toolbar>span{grid-column:1/-1;grid-row:2}
+  .bgps-a4-toolbar .btn:last-child{grid-column:1/-1;margin-left:0}
+  .bgps-unified-a4-body{min-height:62vh;padding:8px}
+  .paper-review-panel{overflow:visible}
+  .paper-review-actions{position:static}
+}
+/* V13.1 print-preview cleanup: keep question grouping for pagination, remove card boxes. */
+#bgpsStandardPreviewBody .bgps-a4-question-card,
+.bgps-a4-measurement .bgps-a4-question-card{margin:0 0 11px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#bgpsStandardPreviewBody .bgps-a4-question-card.bgps-a4-continued-block,
+.bgps-a4-measurement .bgps-a4-question-card.bgps-a4-continued-block{padding-top:4px!important}
+#bgpsStandardPreviewBody .question-block,
+#bgpsStandardPreviewBody .question-card,
+#bgpsStandardPreviewBody .paper-question,
+#bgpsStandardPreviewBody .bgps-question-block,
+.bgps-a4-measurement .question-block,
+.bgps-a4-measurement .question-card,
+.bgps-a4-measurement .paper-question,
+.bgps-a4-measurement .bgps-question-block{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:0!important}

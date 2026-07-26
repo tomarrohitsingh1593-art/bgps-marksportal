@@ -17,6 +17,8 @@
   let standardPreviewPaperData = null;
   let a4PreviewState = null;
   let a4PreviewZoom = 1;
+  let a4IssuesExpanded = false;
+  let standardPreviewBaseWarnings = [];
   let deleteInFlight = false;
   let statusUpdateInFlight = false;
   let bulkOriginalDeleteInFlight = false;
@@ -324,6 +326,7 @@
   function closeReview() {
     reviewOpenRequest += 1;
     revokeObjectUrl();
+    resetUnifiedA4Preview();
     currentPaper = null;
     const modal = byId('paperReviewModal');
     if (modal) {
@@ -337,20 +340,15 @@
     if (note) note.value = '';
   }
 
-  function openStandardPreviewModal() {
-    const modal = byId('bgpsStandardPreviewModal');
-    if (!modal) return;
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
+  function setUnifiedPreviewMode(mode) {
+    const a4 = byId('bgpsUnifiedA4Shell');
+    const file = byId('paperPreviewArea');
+    const useA4 = mode === 'a4';
+    if (a4) a4.hidden = !useA4;
+    if (file) file.hidden = useA4;
   }
 
-  function closeStandardPreviewModal() {
-    const modal = byId('bgpsStandardPreviewModal');
-    if (modal) {
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden', 'true');
-    }
+  function resetUnifiedA4Preview() {
     if (standardPreviewUrl) {
       URL.revokeObjectURL(standardPreviewUrl);
       standardPreviewUrl = '';
@@ -361,21 +359,26 @@
     standardPreviewSelectedBlock = null;
     standardPreviewPageCount = 0;
     standardPreviewPaperData = null;
+    standardPreviewBaseWarnings = [];
     a4PreviewState = null;
     a4PreviewZoom = 1;
-    updateA4Summary();
-    const deleteOriginal = byId('deleteOriginalAfterApproval');
-    if (deleteOriginal) deleteOriginal.checked = false;
-    const editButton = byId('editBgpsStandardPreview');
-    if (editButton) editButton.textContent = 'Edit / Delete Content';
-    setHidden('deleteBgpsSelectedContent', true);
-    setHidden('undoBgpsStandardEdit', true);
-    if (!document.querySelector('.modal-backdrop.open')) document.body.classList.remove('modal-open');
+    a4IssuesExpanded = false;
     const body = byId('bgpsStandardPreviewBody');
     if (body) body.innerHTML = '';
     const warnings = byId('bgpsStandardPreviewWarnings');
     if (warnings) { warnings.hidden = true; warnings.innerHTML = ''; }
+    const card = byId('a4PreviewValidationCard');
+    if (card) card.setAttribute('aria-expanded', 'false');
+    const deleteOriginal = byId('deleteOriginalAfterApproval');
+    if (deleteOriginal) deleteOriginal.checked = false;
+    const editButton = byId('editBgpsStandardPreview');
+    if (editButton) editButton.textContent = 'Edit Content';
+    setHidden('deleteBgpsSelectedContent', true);
+    setHidden('undoBgpsStandardEdit', true);
+    setText('bgpsStandardEditHint', 'Edit only the admin working copy. The teacher source remains unchanged.');
+    updateA4Summary();
   }
+
 
   function isDocxStandardCandidate(paper) {
     return Boolean(paper?.canStandardize === true);
@@ -397,12 +400,22 @@
     setText('a4PreviewSubmitted', currentPaper?.updatedAt ? window.BGPS_DATA.safeDate(currentPaper.updatedAt) : (currentPaper?.uploadedAt ? window.BGPS_DATA.safeDate(currentPaper.uploadedAt) : '—'));
     setText('a4PreviewWorkflowStatus', currentPaper?.status || '—');
     const status = byId('a4PreviewValidation');
+    const card = byId('a4PreviewValidationCard');
+    const hint = byId('a4PreviewValidationHint');
+    const errors = validation?.critical?.length || 0;
+    const warnings = (validation?.warnings?.length || 0) + standardPreviewBaseWarnings.length;
     if (status) {
-      const errors = validation?.critical?.length || 0;
       status.textContent = !validation
-        ? (currentPaper?.a4PreviewSaved === true ? 'Saved - open to verify' : 'Preparing…')
-        : (errors ? `${errors} critical issue${errors === 1 ? '' : 's'}` : 'Ready');
+        ? (currentPaper?.a4PreviewSaved === true ? 'Saved - verify' : 'Preparing…')
+        : (errors ? `${errors} critical issue${errors === 1 ? '' : 's'}` : (warnings ? `Ready · ${warnings} note${warnings === 1 ? '' : 's'}` : 'Ready'));
       status.className = errors ? 'has-errors' : (validation ? 'is-valid' : '');
+    }
+    if (hint) hint.textContent = !validation ? 'Validation is running' : (errors || warnings ? 'Tap to view details' : 'No issues found');
+    if (card) {
+      card.classList.toggle('has-errors', errors > 0);
+      card.classList.toggle('is-valid', Boolean(validation) && errors === 0);
+      card.disabled = !validation || (errors === 0 && warnings === 0);
+      card.setAttribute('aria-expanded', String(a4IssuesExpanded && !card.disabled));
     }
   }
 
@@ -428,7 +441,7 @@
   async function renderProfessionalA4() {
     const body = byId('bgpsStandardPreviewBody');
     if (!body || !standardPreviewPaperData || !standardPreviewEditableHtml.trim()) return null;
-    if (!window.BGPS_A4_RENDERER?.render) throw new Error('Professional A4 renderer is unavailable. Refresh the portal.');
+    if (!window.BGPS_A4_RENDERER?.render) throw new Error('Final A4 renderer is unavailable. Refresh the portal.');
     a4PreviewState = await window.BGPS_A4_RENDERER.render({
       mount: body,
       paper: { ...currentPaper, ...standardPreviewPaperData },
@@ -436,24 +449,44 @@
     });
     standardPreviewPageCount = a4PreviewState.pageCount;
     updateA4Summary();
-    renderStandardWarnings([
-      ...(Array.isArray(standardPreviewResult?.warnings) ? standardPreviewResult.warnings : []),
-      ...a4PreviewState.validation.critical,
-      ...a4PreviewState.validation.warnings
-    ]);
+    renderStandardWarnings();
     fitA4Preview();
     return a4PreviewState;
   }
 
   function renderStandardWarnings(items) {
+    if (Array.isArray(items)) standardPreviewBaseWarnings = [...new Set(items.filter(Boolean).map(String))];
     const node = byId('bgpsStandardPreviewWarnings');
     if (!node) return;
-    const warnings = Array.isArray(items) ? items.filter(Boolean) : [];
-    node.hidden = warnings.length === 0;
-    node.innerHTML = warnings.length
-      ? `<strong>Review notes</strong><ul>${warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
-      : '';
+    const critical = Array.isArray(a4PreviewState?.validation?.critical) ? a4PreviewState.validation.critical : [];
+    const warnings = [...new Set([
+      ...standardPreviewBaseWarnings,
+      ...(Array.isArray(a4PreviewState?.validation?.warnings) ? a4PreviewState.validation.warnings : [])
+    ].filter(Boolean).map(String))];
+    const hasDetails = critical.length > 0 || warnings.length > 0;
+    node.hidden = !hasDetails || !a4IssuesExpanded;
+    if (!hasDetails) {
+      node.innerHTML = '';
+      updateA4Summary();
+      return;
+    }
+    node.innerHTML = `<div class="bgps-issues-head"><strong>Validation details</strong><button class="bgps-issues-close" data-close-a4-issues type="button">Close</button></div>`
+      + (critical.length
+        ? `<h4>Critical - fix before saving</h4><ul>${critical.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+        : '<div class="bgps-no-critical">No critical issue. This preview can be saved.</div>')
+      + (warnings.length ? `<div class="warning-group"><h4>Review notes</h4><ul>${warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>` : '');
+    updateA4Summary();
   }
+
+  function toggleA4Issues(force) {
+    const validation = a4PreviewState?.validation;
+    const hasDetails = Boolean((validation?.critical?.length || 0) || (validation?.warnings?.length || 0) || standardPreviewBaseWarnings.length);
+    if (!hasDetails) return;
+    a4IssuesExpanded = typeof force === 'boolean' ? force : !a4IssuesExpanded;
+    renderStandardWarnings();
+    if (a4IssuesExpanded) byId('bgpsStandardPreviewWarnings')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
 
   function cleanStandardEditableHtml(value) {
     const wrapper = document.createElement('div');
@@ -494,7 +527,7 @@
       standardPreviewEditableHtml = currentStandardEditableHtml();
       setText('bgpsStandardPreviewStatus', 'Unsaved edits');
     });
-    byId('editBgpsStandardPreview').textContent = 'Show PDF Preview';
+    byId('editBgpsStandardPreview').textContent = 'Regenerate A4 Preview';
     setHidden('deleteBgpsSelectedContent', false);
     setHidden('undoBgpsStandardEdit', false);
     setText('bgpsStandardEditHint', 'Select text or tap a question, image or table, then use Delete Selected. Changes affect only the BGPS working copy.');
@@ -507,10 +540,10 @@
     standardPreviewEditableHtml = currentStandardEditableHtml();
     standardPreviewEditMode = false;
     standardPreviewSelectedBlock = null;
-    byId('editBgpsStandardPreview').textContent = 'Edit / Delete Content';
+    byId('editBgpsStandardPreview').textContent = 'Edit Content';
     setHidden('deleteBgpsSelectedContent', true);
     setHidden('undoBgpsStandardEdit', true);
-    setText('bgpsStandardEditHint', 'PDF view shows the last generated preview. Save the working copy to regenerate it with your edits.');
+    setText('bgpsStandardEditHint', 'The A4 preview has been regenerated from your working-copy edits.');
     await renderStandardPreviewPdf(standardPreviewResult);
   }
 
@@ -570,16 +603,18 @@
   async function openBgpsStandardPreview() {
     if (!currentPaper || !canOpenProfessionalA4(currentPaper) || standardPreviewInFlight) return;
     standardPreviewInFlight = true;
-    setText('bgpsStandardPreviewTitle', currentPaper.title || 'Professional A4 Preview');
+    setUnifiedPreviewMode('a4');
+    setText('bgpsStandardPreviewTitle', currentPaper.title || 'Final A4 Preview');
     setText('bgpsStandardPreviewMeta', `${currentPaper.className} · ${currentPaper.subject} · ${currentPaper.exam} · Version ${currentPaper.version || 1}`);
-    setText('bgpsStandardPreviewStatus', currentPaper.a4PreviewSaved ? 'Saved A4 Preview' : 'Preparing Preview');
+    setText('bgpsStandardPreviewStatus', currentPaper.a4PreviewSaved ? 'Saved Final Preview' : 'Preparing Final Preview');
     const body = byId('bgpsStandardPreviewBody');
-    if (body) body.innerHTML = '<div class="empty-state"><strong>Preparing professional A4 preview</strong>Checking questions, marks, images, page breaks and print layout.</div>';
-    renderStandardWarnings([]);
-    openStandardPreviewModal();
+    if (body) body.innerHTML = '<div class="empty-state"><strong>Preparing final A4 preview</strong>Checking questions, marks, images, page breaks and print layout.</div>';
+    standardPreviewBaseWarnings = [];
+    a4IssuesExpanded = false;
+    renderStandardWarnings();
     updateA4Summary();
-    const previewButton = byId('previewBgpsFormatButton');
-    if (previewButton) { previewButton.disabled = true; previewButton.textContent = 'Preparing…'; }
+    const saveButton = byId('saveBgpsStandardPreview');
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Preparing…'; }
     try {
       const result = isDocxStandardCandidate(currentPaper)
         ? await window.BGPS_API.getBgpsStandardPreview(currentPaper.paperId)
@@ -590,26 +625,27 @@
       if (!standardPreviewEditableHtml.trim()) throw new Error('Editable paper content is unavailable. Return this paper for correction or review the uploaded reference file.');
       standardPreviewEditMode = false;
       standardPreviewSelectedBlock = null;
-        const deleteOriginalWrap = byId('deleteOriginalAfterApproval')?.closest('label');
+      const deleteOriginalWrap = byId('deleteOriginalAfterApproval')?.closest('label');
       if (deleteOriginalWrap) deleteOriginalWrap.hidden = !isDocxStandardCandidate(currentPaper);
       const deleteOriginal = byId('deleteOriginalAfterApproval');
       if (deleteOriginal) deleteOriginal.checked = false;
       const editButton = byId('editBgpsStandardPreview');
-      if (editButton) editButton.textContent = 'Edit / Delete Content';
+      if (editButton) editButton.textContent = 'Edit Content';
       setHidden('deleteBgpsSelectedContent', true);
       setHidden('undoBgpsStandardEdit', true);
-      setText('bgpsStandardPreviewStatus', currentPaper.a4PreviewSaved ? 'Saved A4 Preview · verify before approval' : 'Preview · not yet saved');
-      renderStandardWarnings(result.warnings || result.paper?.importWarnings || []);
+      setText('bgpsStandardPreviewStatus', currentPaper.a4PreviewSaved ? 'Saved Final Preview · verify before approval' : 'Final Preview · not yet saved');
+      standardPreviewBaseWarnings = [...new Set([...(result.warnings || []), ...(result.paper?.importWarnings || [])].filter(Boolean).map(String))];
       await renderProfessionalA4();
-      const saveButton = byId('saveBgpsStandardPreview');
-      if (saveButton) saveButton.textContent = currentPaper.a4PreviewSaved ? 'Update A4 Preview' : 'Save A4 Preview';
+      if (saveButton) saveButton.textContent = currentPaper.a4PreviewSaved ? 'Update Final Preview' : 'Save Final Preview';
     } catch (error) {
       if (body) body.innerHTML = `<div class="empty-state"><strong>A4 preview could not be prepared</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
-      renderStandardWarnings([]);
+      standardPreviewBaseWarnings = [error.message || 'The preview could not be prepared.'];
+      a4IssuesExpanded = true;
+      renderStandardWarnings();
       updateA4Summary();
     } finally {
       standardPreviewInFlight = false;
-      if (previewButton) { previewButton.disabled = false; previewButton.textContent = currentPaper?.a4PreviewSaved ? 'Review Saved A4 Preview' : 'Professional A4 Preview'; }
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.a4PreviewSaved ? 'Update Final Preview' : 'Save Final Preview'; }
     }
   }
 
@@ -623,9 +659,7 @@
     }
     standardPreviewInFlight = true;
     const saveButton = byId('saveBgpsStandardPreview');
-    const saveApproveButton = byId('saveAndApproveBgpsStandardPreview');
     if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Validating & Saving…'; }
-    if (saveApproveButton) { saveApproveButton.disabled = true; saveApproveButton.textContent = approveAfterSave ? 'Saving & Approving…' : 'Please wait…'; }
     try {
       standardPreviewEditableHtml = standardPreviewEditMode
         ? currentStandardEditableHtml()
@@ -635,7 +669,8 @@
       const state = await renderProfessionalA4();
       if (!state) throw new Error('A4 preview could not be generated.');
       if (state.validation.critical.length) {
-        throw new Error(`Fix the A4 preview before saving: ${state.validation.critical.join(' ')}`);
+        toggleA4Issues(true);
+        throw new Error('Fix the critical validation issues shown above before saving.');
       }
       standardPreviewEditableHtml = state.sourceHtml;
       const result = await window.BGPS_API.saveAdminA4Preview(currentPaper.paperId, {
@@ -666,19 +701,17 @@
       setText('bgpsStandardPreviewStatus', 'Saved A4 Preview · ready for approval');
       updateA4Summary();
       render();
-      if (behavior.quiet !== true) window.BGPS_APP.toast(`Professional A4 preview saved (${state.pageCount} page${state.pageCount === 1 ? '' : 's'}).`);
+      if (behavior.quiet !== true) window.BGPS_APP.toast(`Final A4 preview saved (${state.pageCount} page${state.pageCount === 1 ? '' : 's'}).`);
       if (approveAfterSave) {
-        closeStandardPreviewModal();
         await updateStatus('Approved', { deleteOriginalAfterApproval });
       }
       return true;
     } catch (error) {
-      window.BGPS_APP.toast(error.message || 'Could not save the professional A4 preview.', 'error');
+      window.BGPS_APP.toast(error.message || 'Could not save the final A4 preview.', 'error');
       return false;
     } finally {
       standardPreviewInFlight = false;
-      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.a4PreviewSaved ? 'Update A4 Preview' : 'Save A4 Preview'; }
-      if (saveApproveButton) { saveApproveButton.disabled = false; saveApproveButton.textContent = 'Save & Approve'; }
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.a4PreviewSaved ? 'Update Final Preview' : 'Save Final Preview'; }
     }
   }
 
@@ -717,22 +750,25 @@
       standardStatus.classList.toggle('saved', standardSaved);
     }
     setText('bgpsStandardReviewValue', standardSaved
-      ? `Professional A4 saved · ${paper.a4PreviewPageCount || '—'} page${Number(paper.a4PreviewPageCount || 0) === 1 ? '' : 's'}`
-      : 'Professional A4 preview required');
+      ? `Final preview saved · ${paper.a4PreviewPageCount || '—'} page${Number(paper.a4PreviewPageCount || 0) === 1 ? '' : 's'}`
+      : 'Final A4 preview required');
     setText('bgpsStandardReviewHint', standardSaved
       ? 'Approval will generate one final PDF from this exact saved A4 layout.'
       : 'Open, validate and save the print-ready A4 preview before approval.');
-    const standardButton = byId('previewBgpsFormatButton');
-    if (standardButton) {
-      standardButton.hidden = !canStandardize;
-      standardButton.disabled = normalize(paper.status) !== 'SUBMITTED';
-      standardButton.textContent = standardSaved ? 'Review Saved A4 Preview' : 'Professional A4 Preview';
+    const savePreview = byId('saveBgpsStandardPreview');
+    if (savePreview) {
+      savePreview.hidden = !canStandardize || normalize(paper.status) !== 'SUBMITTED';
+      savePreview.disabled = standardPreviewInFlight;
+      savePreview.textContent = standardSaved ? 'Update Final Preview' : 'Save Final Preview';
     }
+
+    const deleteOriginalWrap = byId('deleteOriginalAfterApproval')?.closest('label');
+    if (deleteOriginalWrap) deleteOriginalWrap.hidden = !canStandardize || !isDocxStandardCandidate(paper) || normalize(paper.status) !== 'SUBMITTED';
 
     const approve = byId('approvePaperButton');
     if (approve) {
       approve.disabled = normalize(paper.status) !== 'SUBMITTED' || (canStandardize && !standardSaved);
-      approve.title = canStandardize && !standardSaved ? 'Prepare and save the professional A4 preview before approval.' : '';
+      approve.title = canStandardize && !standardSaved ? 'Save the final A4 preview before approval.' : '';
     }
     const edit = byId('editReviewedPaperButton');
     if (edit) edit.hidden = paper.editable !== true;
@@ -827,9 +863,6 @@
       window.BGPS_APP.toast('Paper record was not found.', 'error');
       return;
     }
-    // Always reconcile the selected row with the latest Sheet status before
-    // enabling Approve/Return. This prevents an older tab/list snapshot from
-    // offering review actions after the paper has already been approved.
     try {
       await load(false);
       if (requestId !== reviewOpenRequest) return;
@@ -838,6 +871,7 @@
       console.warn('Using cached paper status because refresh failed:', refreshError);
     }
     if (requestId !== reviewOpenRequest) return;
+    resetUnifiedA4Preview();
     currentPaper = paper;
     setReviewMeta(paper);
     const download = byId('downloadPaperButton');
@@ -845,6 +879,25 @@
     const preview = byId('paperPreviewArea');
     if (preview) preview.innerHTML = '<div class="empty-state"><strong>Opening paper</strong>Please wait while the paper is prepared for review.</div>';
     openModal();
+
+    const useA4 = canOpenProfessionalA4(paper) && normalize(paper.status) === 'SUBMITTED';
+    setUnifiedPreviewMode(useA4 ? 'a4' : 'file');
+    if (useA4) {
+      try {
+        const originalFilePromise = window.BGPS_API.getPaperOriginalFile(paper.paperId).catch(() => null);
+        await openBgpsStandardPreview();
+        const originalFile = await originalFilePromise;
+        if (requestId !== reviewOpenRequest) return;
+        if (originalFile?.fileBase64) {
+          const originalBlob = base64ToBlob(originalFile.fileBase64, originalFile.mimeType || 'application/octet-stream');
+          prepareDownload(originalBlob, originalFile.fileName || 'question-paper.docx');
+        }
+      } catch (error) {
+        const body = byId('bgpsStandardPreviewBody');
+        if (body) body.innerHTML = `<div class="empty-state"><strong>Paper could not be opened</strong>${escapeHtml(error.message || 'Please try again.')}</div>`;
+      }
+      return;
+    }
 
     try {
       const [previewResult, originalFile] = await Promise.all([
@@ -862,8 +915,8 @@
     if (!currentPaper || statusUpdateInFlight) return;
     const professionalA4Required = canOpenProfessionalA4(currentPaper);
     if (status === 'Approved' && professionalA4Required && currentPaper.a4PreviewSaved !== true) {
-      window.BGPS_APP.toast('Prepare and save the professional A4 preview before approval.', 'error');
-      openBgpsStandardPreview();
+      window.BGPS_APP.toast('Save the final A4 preview before approval.', 'error');
+      setUnifiedPreviewMode('a4');
       return;
     }
     if (normalize(currentPaper.status) !== 'SUBMITTED') {
@@ -1014,7 +1067,6 @@
     byId('bgpsA4FitPage')?.addEventListener('click', fitA4Preview);
     byId('bgpsA4ZoomIn')?.addEventListener('click', () => setA4Zoom(a4PreviewZoom + 0.1));
     byId('printBgpsA4Preview')?.addEventListener('click', printA4Preview);
-    byId('savePdfBgpsA4Preview')?.addEventListener('click', printA4Preview);
     byId('refreshPapersButton')?.addEventListener('click', () => load(true));
     byId('deleteAllApprovedOriginalsButton')?.addEventListener('click', bulkDeleteApprovedOriginals);
     byId('paperClassFilter')?.addEventListener('change', render);
@@ -1036,7 +1088,6 @@
     byId('paperReviewModal')?.addEventListener('click', (event) => {
       if (event.target === byId('paperReviewModal')) closeReview();
     });
-    byId('previewBgpsFormatButton')?.addEventListener('click', openBgpsStandardPreview);
     byId('editBgpsStandardPreview')?.addEventListener('click', toggleStandardPreviewEditMode);
     byId('deleteBgpsSelectedContent')?.addEventListener('click', deleteSelectedStandardContent);
     byId('undoBgpsStandardEdit')?.addEventListener('click', undoStandardEdit);
@@ -1048,21 +1099,13 @@
       window.BGPS_PAPER_CREATOR.openAdminEdit(paperId);
     });
     byId('returnPaperButton')?.addEventListener('click', () => updateStatus('Correction Required'));
-    byId('closeBgpsStandardPreview')?.addEventListener('click', closeStandardPreviewModal);
-    byId('backFromBgpsStandardPreview')?.addEventListener('click', closeStandardPreviewModal);
     byId('saveBgpsStandardPreview')?.addEventListener('click', () => saveCurrentBgpsStandardPreview(false));
-    byId('saveAndApproveBgpsStandardPreview')?.addEventListener('click', () => saveCurrentBgpsStandardPreview(true));
-    byId('bgpsStandardPreviewModal')?.addEventListener('click', (event) => {
-      if (event.target === byId('bgpsStandardPreviewModal')) closeStandardPreviewModal();
-    });
+    byId('a4PreviewValidationCard')?.addEventListener('click', () => toggleA4Issues());
+    byId('bgpsStandardPreviewWarnings')?.addEventListener('click', (event) => { if (event.target.closest('[data-close-a4-issues]')) toggleA4Issues(false); });
     byId('deleteReviewedPaperButton')?.addEventListener('click', () => { if (currentPaper) deleteAdminPaper(currentPaper.paperId); });
     byId('downloadPaperButton')?.addEventListener('click', downloadCurrentFile);
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
-      if (byId('bgpsStandardPreviewModal')?.classList.contains('open')) {
-        closeStandardPreviewModal();
-        return;
-      }
       if (byId('paperReviewModal')?.classList.contains('open')) closeReview();
     });
   }

@@ -1,6 +1,6 @@
 window.BGPS_CONFIG = Object.freeze({
   appName: 'BG Public School',
-  displayName: 'Academic Operations Portal · V13 A4 Final',
+  displayName: 'Academic Operations Portal · V13.1 Single Preview',
   webAppUrl: 'https://script.google.com/macros/s/AKfycbynrPG0HfLISVBMuGg1SRjnnwqpXwWm-yx_hcPo2CsmNdH9vOk4TKe3GKEvANdmsskq/exec',
   requestTimeoutMs: 25000,
   rollCount: 50

@@ -706,11 +706,15 @@
     const editor = byId('paperContentEditor');
     if (!editor) return 0;
 
-    // V13.2.3: only marks inside the portal's visible mark boxes count.
-    // Plain [5], bracketed references, answer keys, years and copied hidden text
-    // are deliberately ignored so the browser and backend always agree.
-    const boxedTokens = [...editor.querySelectorAll('.mark-token')];
-    const total = boxedTokens.reduce((sum, token) => sum + markTokenValue(token.textContent), 0);
+    // V13.2.4 single rule: count only visible numeric values written inside
+    // square brackets, for example [5], [2+3], [5 marks] or [5 अंक].
+    // Round brackets, plain numbers, saved fallback totals and HTML attributes
+    // never contribute to the paper total.
+    const text = String(editor.innerText || '').replace(/\u00a0/g, ' ');
+    const regex = /\[\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*(?:marks?|अंक)?\s*\]/gi;
+    let total = 0;
+    let match;
+    while ((match = regex.exec(text))) total += markTokenValue(match[0]);
     return Number(total.toFixed(2));
   }
 

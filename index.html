@@ -585,38 +585,35 @@ Show complete working wherever required." rows="3"></textarea></div>
 <section class="paper-review-workspace">
 <section class="bgps-unified-a4-shell" id="bgpsUnifiedA4Shell" hidden>
 <div class="bgps-unified-preview-heading">
-<div><span class="status-chip" id="bgpsStandardPreviewStatus">Final A4 Preview</span><strong id="bgpsStandardPreviewTitle">Professional A4 Preview</strong><small id="bgpsStandardPreviewMeta">Validated pages, marks and print layout</small></div>
-<span class="bgps-single-preview-note">Single final preview</span>
+<div><span class="status-chip" id="bgpsStandardPreviewStatus">Final A4 Preview</span><strong id="bgpsStandardPreviewTitle">Professional A4 Preview</strong><small id="bgpsStandardPreviewMeta">Validated print-ready paper</small></div>
+<div class="bgps-preview-heading-actions">
+<button aria-controls="bgpsStandardPreviewWarnings" aria-expanded="false" class="bgps-compact-validation" id="a4PreviewValidationCard" type="button"><span>Validation</span><strong id="a4PreviewValidation">Preparing…</strong><small id="a4PreviewValidationHint">Tap for details</small></button>
+<button aria-controls="paperReviewPanel" aria-expanded="false" class="btn primary" id="togglePaperReviewPanel" type="button">Review &amp; Approve</button>
 </div>
-<section aria-label="A4 paper summary" class="bgps-a4-summary" id="bgpsA4Summary">
-<div><span>Teacher</span><strong id="a4PreviewTeacher">—</strong></div>
-<div><span>Questions</span><strong id="a4PreviewQuestions">—</strong></div>
-<div><span>Marks</span><strong id="a4PreviewMarks">—</strong></div>
-<div><span>A4 Pages</span><strong id="a4PreviewPages">—</strong></div>
-<div><span>Version</span><strong id="a4PreviewVersion">—</strong></div>
-<button aria-controls="bgpsStandardPreviewWarnings" aria-expanded="false" class="bgps-a4-summary-card bgps-a4-validation-card" id="a4PreviewValidationCard" type="button"><span>Validation</span><strong id="a4PreviewValidation">Preparing…</strong><small id="a4PreviewValidationHint">Tap to view details</small></button>
-<div><span>Submitted</span><strong id="a4PreviewSubmitted">—</strong></div>
-<div><span>Status</span><strong id="a4PreviewWorkflowStatus">—</strong></div>
-</section>
+</div>
+<div aria-hidden="true" class="bgps-a4-hidden-metrics">
+<span id="a4PreviewTeacher">—</span><span id="a4PreviewQuestions">—</span><span id="a4PreviewMarks">—</span><span id="a4PreviewPages">—</span><span id="a4PreviewVersion">—</span><span id="a4PreviewSubmitted">—</span><span id="a4PreviewWorkflowStatus">—</span>
+</div>
 <div class="bgps-a4-toolbar" id="bgpsA4Toolbar">
 <button aria-label="Zoom out" class="btn" id="bgpsA4ZoomOut" type="button">−</button>
-<button class="btn" id="bgpsA4FitPage" type="button">Fit Page</button>
+<button class="btn" id="bgpsA4FitPage" type="button">Fit</button>
 <button aria-label="Zoom in" class="btn" id="bgpsA4ZoomIn" type="button">+</button>
 <span id="bgpsA4ZoomValue">100%</span>
-<button class="btn primary" id="printBgpsA4Preview" type="button">Print / Save PDF</button>
-</div>
-<div class="bgps-standard-edit-toolbar" id="bgpsStandardEditToolbar">
-<button class="btn" id="editBgpsStandardPreview" type="button">Edit Content</button>
+<strong class="bgps-a4-compact-meta" id="bgpsA4CompactMeta">Preparing paper…</strong>
+<button class="btn" id="editBgpsStandardPreview" type="button">Edit</button>
 <button class="btn danger-outline" hidden id="deleteBgpsSelectedContent" type="button">Delete Selected</button>
 <button class="btn" hidden id="undoBgpsStandardEdit" type="button">Undo</button>
-<span id="bgpsStandardEditHint">Edit only the admin working copy. The teacher source remains unchanged.</span>
+<button class="btn primary" id="printBgpsA4Preview" type="button">Print / PDF</button>
 </div>
+<div class="bgps-standard-edit-hint" id="bgpsStandardEditHint">Final paper preview. Open Review &amp; Approve only when a decision is needed.</div>
 <div aria-live="polite" class="bgps-standard-preview-warnings" hidden id="bgpsStandardPreviewWarnings"></div>
 <div class="teacher-paper-preview-body bgps-unified-a4-body" id="bgpsStandardPreviewBody"><div class="empty-state"><strong>Preparing final A4 preview</strong>Please wait.</div></div>
 </section>
 <div class="paper-preview" id="paperPreviewArea"><div class="empty-state"><strong>Loading paper</strong>Please wait while the paper is opened.</div></div>
 </section>
-<aside class="paper-review-panel">
+<button aria-label="Close review actions" class="paper-review-panel-backdrop" id="paperReviewPanelBackdrop" type="button"></button>
+<aside aria-hidden="true" class="paper-review-panel" id="paperReviewPanel">
+<div class="paper-review-panel-head"><div><strong>Review &amp; Approve</strong><small>Final decision and Principal note</small></div><button aria-label="Close review actions" class="modal-close" id="closePaperReviewPanel" type="button">×</button></div>
 <div class="review-detail"><span>Teacher</span><strong id="reviewTeacher">—</strong></div>
 <div class="review-detail"><span>Class</span><strong id="reviewClass">—</strong></div>
 <div class="review-detail"><span>Subject</span><strong id="reviewSubject">—</strong></div>
@@ -628,9 +625,9 @@ Show complete working wherever required." rows="3"></textarea></div>
 <div class="bgps-standard-review-status" hidden id="bgpsStandardReviewStatus"><span>Final A4 Format</span><strong id="bgpsStandardReviewValue">Not prepared</strong><small id="bgpsStandardReviewHint">The single preview on the left is the approval copy.</small></div>
 <label class="bgps-original-delete-option bgps-review-delete-option" for="deleteOriginalAfterApproval" hidden><input id="deleteOriginalAfterApproval" type="checkbox"/><span><strong>Delete original DOCX after approval</strong><small>Optional. Final approved PDF remains.</small></span></label>
 <div class="paper-review-actions">
-<button class="btn primary" hidden id="saveBgpsStandardPreview" type="button">Save Final Preview</button>
-<button class="btn success" id="approvePaperButton" type="button">Approve Paper</button>
-<button class="btn primary" id="editReviewedPaperButton" type="button">Edit Paper</button>
+<button class="btn" hidden id="saveBgpsStandardPreview" type="button">Save Preview Only</button>
+<button class="btn success" id="approvePaperButton" type="button">Save &amp; Approve Final</button>
+<button class="btn primary" id="editReviewedPaperButton" type="button">Advanced Edit</button>
 <button class="btn danger-outline" id="returnPaperButton" type="button">Return for Correction</button>
 <button class="btn" hidden id="downloadPaperButton" type="button">Download File</button>
 <button class="btn danger-outline" id="deleteReviewedPaperButton" type="button">Delete Paper</button>

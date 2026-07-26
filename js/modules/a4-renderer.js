@@ -82,6 +82,7 @@
       instructions: text(source.instructions),
       contentHtml: sanitizedContent,
       sourceType: text(source.sourceType || 'Legacy'),
+      sourceDetectedMarks: Number(source.detectedMarks || source.a4PreviewDetectedMarks || source.standardPreviewDetectedMarks || 0),
       layoutMode: inferLayoutMode(source),
       sourceChecksum: sourceChecksum(sanitizedContent)
     });
@@ -149,6 +150,108 @@
     });
   }
 
+  function nodeHasVisibleMarks(node) {
+    if (!node) return false;
+    if (node.querySelector('.mark-token')) return true;
+    const value = text(node.textContent);
+    return Boolean(findTrailingMark(value)
+      || /\[\s*\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*\s*(?:marks?|अंक)?\s*\]/i.test(value)
+      || /\(\s*\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*\s*(?:marks?|अंक)\s*\)/i.test(value));
+  }
+
+  function mainQuestionNodes(sourceRoot) {
+    const nodes = structuredQuestionNodes(sourceRoot);
+    const dataNumbered = nodes.filter((node) => text(node?.dataset?.questionNumber));
+    if (dataNumbered.length) return dataNumbered;
+    const named = nodes.filter((node) => isNamedQuestionText(node.textContent));
+    if (named.length) return named;
+    const marked = nodes.filter(nodeHasVisibleMarks);
+    // Imported DOCX files often reset 1,2,3 for subparts. Lines carrying marks
+    // are a much stronger signal for main questions than every numbered line.
+    if (marked.length >= 2) return marked;
+    return nodes;
+  }
+
+  function plainMarkValues(value, questionLike) {
+    const raw = String(value || '');
+    const found = [];
+    const ranges = [];
+    const add = (match, numberText) => {
+      const start = Number(match.index || 0);
+      const end = start + String(match[0] || '').length;
+      if (ranges.some((range) => start < range.end && end > range.start)) return;
+      const amount = markValue(numberText);
+      if (!amount) return;
+      ranges.push({ start, end });
+      found.push(amount);
+    };
+    const square = /\[\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*(?:marks?|अंक)?\s*\]/gi;
+    let match;
+    while ((match = square.exec(raw))) add(match, match[1]);
+    const labelledParen = /\(\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*(?:marks?|अंक)\s*\)/gi;
+    while ((match = labelledParen.exec(raw))) add(match, match[1]);
+    if (questionLike) {
+      const trailing = raw.match(/\(\s*(\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*)\s*\)\s*$/i);
+      if (trailing) {
+        trailing.index = raw.lastIndexOf(trailing[0]);
+        add(trailing, trailing[1]);
+      }
+    }
+    return found;
+  }
+
+  function detectMarkAudit(paper, sourceRoot, questionNodes) {
+    const explicitNodes = Array.from(sourceRoot.querySelectorAll('.mark-token'));
+    const explicitTotal = explicitNodes.reduce((sum, node) => sum + markValue(node.textContent), 0);
+
+    const clone = sourceRoot.cloneNode(true);
+    clone.querySelectorAll('.mark-token').forEach((node) => node.remove());
+    const blocks = Array.from(clone.querySelectorAll('.question-line,[data-question-number],p,h1,h2,h3,h4,h5,h6,li,td'))
+      .filter((node) => !Array.from(node.children).some((child) => child.matches?.('.question-line,[data-question-number],p,h1,h2,h3,h4,h5,h6,li,td')));
+    let supplementalTotal = 0;
+    let supplementalCount = 0;
+    blocks.forEach((node) => {
+      const value = text(node.textContent);
+      if (!value) return;
+      const questionLike = node.matches('.question-line,[data-question-number]')
+        || isNamedQuestionText(value)
+        || Boolean(questionNumberFromNode(node));
+      const values = plainMarkValues(value, questionLike);
+      supplementalTotal += values.reduce((sum, amount) => sum + amount, 0);
+      supplementalCount += values.length;
+    });
+
+    const domTotal = Number((explicitTotal + supplementalTotal).toFixed(2));
+    const sourceTotal = Number(paper.sourceDetectedMarks || 0);
+    const maximum = Number(paper.maximumMarks || 0);
+    const candidates = [...new Set([domTotal, sourceTotal].filter((value) => Number.isFinite(value) && value > 0))];
+    const exact = candidates.find((value) => maximum > 0 && Math.abs(value - maximum) <= 0.01);
+    let detectedMarks = exact || 0;
+    if (!detectedMarks && candidates.length) {
+      const notOver = candidates.filter((value) => !maximum || value <= maximum + 0.01);
+      detectedMarks = Math.max(...(notOver.length ? notOver : candidates));
+    }
+    detectedMarks = Number((detectedMarks || 0).toFixed(2));
+
+    const markedQuestionCount = questionNodes.filter(nodeHasVisibleMarks).length;
+    const highCoverage = questionNodes.length > 0 && markedQuestionCount >= questionNodes.length;
+    const exactMatch = maximum > 0 && detectedMarks > 0 && Math.abs(detectedMarks - maximum) <= 0.01;
+    return {
+      detectedMarks,
+      autoDetectedMarks: domTotal,
+      sourceDetectedMarks: sourceTotal,
+      explicitTotal: Number(explicitTotal.toFixed(2)),
+      supplementalTotal: Number(supplementalTotal.toFixed(2)),
+      explicitCount: explicitNodes.length,
+      supplementalCount,
+      markedQuestionCount,
+      questionCount: questionNodes.length,
+      exactMatch,
+      confidence: exactMatch ? 'high' : (highCoverage ? 'medium' : 'low'),
+      requiresAdminVerification: Boolean(maximum > 0 && (!exactMatch || detectedMarks === 0))
+    };
+  }
+
   function validatePaper(paper, sourceRoot) {
     const critical = [];
     const warnings = [];
@@ -160,43 +263,43 @@
     if (!paper.duration || paper.duration === '—') critical.push('Time duration is missing.');
     if (!(paper.maximumMarks > 0)) critical.push('Maximum Marks must be greater than zero.');
 
-    const questionNodes = structuredQuestionNodes(sourceRoot);
+    const questionNodes = mainQuestionNodes(sourceRoot);
     const numbers = questionNodes.map(questionNumberFromNode).filter(Boolean);
     const duplicates = numbers.filter((number, index) => numbers.indexOf(number) !== index);
-    if (duplicates.length) critical.push(`Duplicate question number${duplicates.length > 1 ? 's' : ''}: ${[...new Set(duplicates)].join(', ')}.`);
+    if (duplicates.length) {
+      const explicitNumbering = questionNodes.some((node) => text(node?.dataset?.questionNumber) || isNamedQuestionText(node.textContent));
+      const message = `Repeated main-question number${duplicates.length > 1 ? 's' : ''}: ${[...new Set(duplicates)].join(', ')}.`;
+      if (explicitNumbering) critical.push(message);
+      else warnings.push(`${message} Imported numbered subparts may be responsible; verify the sequence visually.`);
+    }
     questionNodes.forEach((node, index) => {
       const clone = node.cloneNode(true);
       clone.querySelectorAll('.mark-token').forEach((mark) => mark.remove());
       if (!text(clone.textContent) && !clone.querySelector('img,table')) critical.push(`Question ${numbers[index] || index + 1} is empty.`);
-      if (!node.querySelector('.mark-token') && !findTrailingMark(text(node.textContent))) {
-        warnings.push(`Marks were not detected for question ${numbers[index] || index + 1}.`);
-      }
+      if (!nodeHasVisibleMarks(node)) warnings.push(`Marks were not detected for main question ${numbers[index] || index + 1}.`);
     });
 
-    const markNodes = Array.from(sourceRoot.querySelectorAll('.mark-token'));
-    let detectedMarks = markNodes.reduce((sum, node) => sum + markValue(node.textContent), 0);
-    if (!markNodes.length) {
-      detectedMarks = (bodyText.match(/(?:\[|\()\s*\d+(?:\.\d+)?(?:\s*\+\s*\d+(?:\.\d+)?)*\s*(?:marks?|अंक)?\s*(?:\]|\))/gi) || [])
-        .reduce((sum, token) => sum + markValue(token), 0);
-    }
-    if (detectedMarks > 0 && paper.maximumMarks > 0 && Math.abs(detectedMarks - paper.maximumMarks) > 0.01) {
-      critical.push(`Question marks total is ${detectedMarks}, but Maximum Marks is ${paper.maximumMarks}.`);
-    } else if (detectedMarks === 0) {
-      warnings.push('Question marks could not be calculated automatically; verify them visually.');
+    const markAudit = detectMarkAudit(paper, sourceRoot, questionNodes);
+    const detectedMarks = markAudit.detectedMarks;
+    if (paper.maximumMarks > 0 && markAudit.exactMatch !== true) {
+      const autoLabel = detectedMarks > 0 ? detectedMarks : 'no reliable total';
+      warnings.push(`Automatic marks check found ${autoLabel} while Maximum Marks is ${paper.maximumMarks}. Verify the visible marks before saving; the Principal can confirm the declared total.`);
     }
 
     const images = Array.from(sourceRoot.querySelectorAll('img'));
     images.forEach((image, index) => {
       if (!text(image.getAttribute('src'))) critical.push(`Image ${index + 1} has no valid source.`);
     });
-    if (!questionNodes.length) warnings.push('Legacy paper: structured question blocks were not found; content is preserved as legacy blocks.');
+    if (!questionNodes.length) warnings.push('Legacy paper: main question blocks were not detected; content is preserved and requires visual review.');
 
     return {
       critical: [...new Set(critical)],
       warnings: [...new Set(warnings)],
       detectedMarks,
+      declaredMarks: paper.maximumMarks,
       totalQuestions: questionNodes.length || (bodyText.match(/\b(?:(?:Q|Question|प्रश्न)\s*\.?\s*)\d+/gi) || []).length,
       imageCount: images.length,
+      markAudit,
       valid: critical.length === 0
     };
   }

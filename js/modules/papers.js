@@ -18,6 +18,7 @@
   let a4PreviewState = null;
   let a4PreviewZoom = 1;
   let a4IssuesExpanded = false;
+  let reviewPanelOpen = false;
   let standardPreviewBaseWarnings = [];
   let deleteInFlight = false;
   let statusUpdateInFlight = false;
@@ -323,10 +324,24 @@
     document.body.classList.add('modal-open');
   }
 
+  function setReviewPanelOpen(open) {
+    reviewPanelOpen = Boolean(open);
+    const modal = byId('paperReviewModal')?.querySelector('.paper-review-modal');
+    const panel = byId('paperReviewPanel');
+    const toggle = byId('togglePaperReviewPanel');
+    if (modal) modal.classList.toggle('review-panel-open', reviewPanelOpen);
+    if (panel) panel.setAttribute('aria-hidden', String(!reviewPanelOpen));
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', String(reviewPanelOpen));
+      toggle.textContent = reviewPanelOpen ? 'Hide Review' : 'Review & Approve';
+    }
+  }
+
   function closeReview() {
     reviewOpenRequest += 1;
     revokeObjectUrl();
     resetUnifiedA4Preview();
+    setReviewPanelOpen(false);
     currentPaper = null;
     const modal = byId('paperReviewModal');
     if (modal) {
@@ -375,7 +390,7 @@
     if (editButton) editButton.textContent = 'Edit Content';
     setHidden('deleteBgpsSelectedContent', true);
     setHidden('undoBgpsStandardEdit', true);
-    setText('bgpsStandardEditHint', 'Edit only the admin working copy. The teacher source remains unchanged.');
+    setText('bgpsStandardEditHint', 'Final paper preview. Open Review & Approve only when a decision is needed.');
     updateA4Summary();
   }
 
@@ -390,31 +405,38 @@
 
   function updateA4Summary() {
     const validation = a4PreviewState?.validation;
+    const declaredMarks = Number(currentPaper?.maxMarks || standardPreviewPaperData?.maxMarks || 0);
+    const questions = validation ? validation.totalQuestions : (currentPaper?.a4PreviewTotalQuestions || currentPaper?.totalQuestions || '—');
+    const pages = a4PreviewState?.pageCount || currentPaper?.a4PreviewPageCount || '—';
+    const version = currentPaper?.version || 1;
     setText('a4PreviewTeacher', currentPaper?.teacherName || currentPaper?.teacherId || '—');
-    setText('a4PreviewQuestions', validation ? validation.totalQuestions : (currentPaper?.a4PreviewTotalQuestions || currentPaper?.totalQuestions || '—'));
-    setText('a4PreviewMarks', validation
-      ? `${validation.detectedMarks || '—'} / ${currentPaper?.maxMarks || '—'}`
-      : `${currentPaper?.a4PreviewDetectedMarks || '—'} / ${currentPaper?.maxMarks || '—'}`);
-    setText('a4PreviewPages', a4PreviewState?.pageCount || currentPaper?.a4PreviewPageCount || '—');
-    setText('a4PreviewVersion', currentPaper?.version || 1);
+    setText('a4PreviewQuestions', questions);
+    // The main UI shows the official declared total. Automatic parsing is an
+    // audit aid and is shown only inside Validation details when it differs.
+    setText('a4PreviewMarks', declaredMarks || '—');
+    setText('a4PreviewPages', pages);
+    setText('a4PreviewVersion', version);
     setText('a4PreviewSubmitted', currentPaper?.updatedAt ? window.BGPS_DATA.safeDate(currentPaper.updatedAt) : (currentPaper?.uploadedAt ? window.BGPS_DATA.safeDate(currentPaper.uploadedAt) : '—'));
     setText('a4PreviewWorkflowStatus', currentPaper?.status || '—');
+    setText('bgpsA4CompactMeta', `${questions} question${Number(questions) === 1 ? '' : 's'} · ${declaredMarks || '—'} marks · ${pages} page${Number(pages) === 1 ? '' : 's'} · V${version}`);
     const status = byId('a4PreviewValidation');
     const card = byId('a4PreviewValidationCard');
     const hint = byId('a4PreviewValidationHint');
     const errors = validation?.critical?.length || 0;
     const warnings = (validation?.warnings?.length || 0) + standardPreviewBaseWarnings.length;
+    const markNeedsReview = validation?.markAudit?.requiresAdminVerification === true;
     if (status) {
       status.textContent = !validation
-        ? (currentPaper?.a4PreviewSaved === true ? 'Saved - verify' : 'Preparing…')
-        : (errors ? `${errors} critical issue${errors === 1 ? '' : 's'}` : (warnings ? `Ready · ${warnings} note${warnings === 1 ? '' : 's'}` : 'Ready'));
-      status.className = errors ? 'has-errors' : (validation ? 'is-valid' : '');
+        ? (currentPaper?.a4PreviewSaved === true ? 'Saved - verify' : 'Checking…')
+        : (errors ? `${errors} critical` : ((warnings || markNeedsReview) ? 'Review needed' : 'Ready'));
+      status.className = errors ? 'has-errors' : ((warnings || markNeedsReview) ? 'has-warnings' : (validation ? 'is-valid' : ''));
     }
-    if (hint) hint.textContent = !validation ? 'Validation is running' : (errors || warnings ? 'Tap to view details' : 'No issues found');
+    if (hint) hint.textContent = !validation ? 'Running checks' : (errors || warnings || markNeedsReview ? 'Tap for details' : 'No issues');
     if (card) {
       card.classList.toggle('has-errors', errors > 0);
-      card.classList.toggle('is-valid', Boolean(validation) && errors === 0);
-      card.disabled = !validation || (errors === 0 && warnings === 0);
+      card.classList.toggle('has-warnings', errors === 0 && (warnings > 0 || markNeedsReview));
+      card.classList.toggle('is-valid', Boolean(validation) && errors === 0 && warnings === 0 && !markNeedsReview);
+      card.disabled = !validation || (errors === 0 && warnings === 0 && !markNeedsReview);
       card.setAttribute('aria-expanded', String(a4IssuesExpanded && !card.disabled));
     }
   }
@@ -470,10 +492,15 @@
       updateA4Summary();
       return;
     }
+    const markAudit = a4PreviewState?.validation?.markAudit;
+    const markDetail = markAudit?.requiresAdminVerification
+      ? `<div class="bgps-mark-audit"><strong>Marks check</strong><span>Official total: ${escapeHtml(currentPaper?.maxMarks || '—')}</span><span>Automatic read: ${escapeHtml(markAudit.detectedMarks || 'not reliable')}</span><small>The automatic reader can miss mixed DOCX formatting. Visually verify all visible question marks; confirmation is requested only when saving.</small></div>`
+      : '';
     node.innerHTML = `<div class="bgps-issues-head"><strong>Validation details</strong><button class="bgps-issues-close" data-close-a4-issues type="button">Close</button></div>`
       + (critical.length
         ? `<h4>Critical - fix before saving</h4><ul>${critical.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
-        : '<div class="bgps-no-critical">No critical issue. This preview can be saved.</div>')
+        : '<div class="bgps-no-critical">No structural issue. Continue after reviewing any notes below.</div>')
+      + markDetail
       + (warnings.length ? `<div class="warning-group"><h4>Review notes</h4><ul>${warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>` : '');
     updateA4Summary();
   }
@@ -484,7 +511,6 @@
     if (!hasDetails) return;
     a4IssuesExpanded = typeof force === 'boolean' ? force : !a4IssuesExpanded;
     renderStandardWarnings();
-    if (a4IssuesExpanded) byId('bgpsStandardPreviewWarnings')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
 
@@ -645,7 +671,7 @@
       updateA4Summary();
     } finally {
       standardPreviewInFlight = false;
-      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.a4PreviewSaved ? 'Update Final Preview' : 'Save Final Preview'; }
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.a4PreviewSaved ? 'Update Preview Only' : 'Save Preview Only'; }
     }
   }
 
@@ -673,6 +699,18 @@
         throw new Error('Fix the critical validation issues shown above before saving.');
       }
       standardPreviewEditableHtml = state.sourceHtml;
+      const markAudit = state.validation.markAudit || {};
+      let marksVerified = markAudit.requiresAdminVerification !== true;
+      if (!marksVerified) {
+        const autoRead = markAudit.detectedMarks || 'not reliable';
+        marksVerified = window.confirm(
+          `Marks verification required.\n\nOfficial Maximum Marks: ${currentPaper.maxMarks || '—'}\nAutomatic reader: ${autoRead}\n\nThe DOCX contains mixed formatting, so automatic counting may be incomplete. Have you visually checked every question mark and confirmed that the final paper total is ${currentPaper.maxMarks || '—'}?`
+        );
+        if (!marksVerified) {
+          toggleA4Issues(true);
+          throw new Error('Final preview was not saved because marks verification was not confirmed.');
+        }
+      }
       const result = await window.BGPS_API.saveAdminA4Preview(currentPaper.paperId, {
         renderedHtml: state.documentHtml,
         sourceContentHtml: state.sourceHtml,
@@ -680,14 +718,17 @@
         detectedMarks: state.validation.detectedMarks,
         totalQuestions: state.validation.totalQuestions,
         warnings: [...state.validation.warnings, ...(Array.isArray(standardPreviewResult?.warnings) ? standardPreviewResult.warnings : [])],
-        sourceChecksum: state.sourceChecksum
+        sourceChecksum: state.sourceChecksum,
+        marksVerified,
+        verifiedMaxMarks: Number(currentPaper.maxMarks || 0)
       });
       const savedAt = result.savedAt || new Date().toISOString();
       const savedMetrics = {
         a4PreviewSaved: true,
         a4PreviewSavedAt: savedAt,
         a4PreviewPageCount: Number(result.pageCount || state.pageCount || 0),
-        a4PreviewDetectedMarks: Number(result.detectedMarks || state.validation.detectedMarks || 0),
+        a4PreviewDetectedMarks: Number(result.finalMarks || currentPaper.maxMarks || 0),
+        a4PreviewAutoDetectedMarks: Number(result.autoDetectedMarks || state.validation.detectedMarks || 0),
         a4PreviewTotalQuestions: Number(result.totalQuestions || state.validation.totalQuestions || 0),
         standardPreviewSaved: true,
         standardPreviewSavedAt: savedAt,
@@ -711,7 +752,7 @@
       return false;
     } finally {
       standardPreviewInFlight = false;
-      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.a4PreviewSaved ? 'Update Final Preview' : 'Save Final Preview'; }
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = currentPaper?.a4PreviewSaved ? 'Update Preview Only' : 'Save Preview Only'; }
     }
   }
 
@@ -759,7 +800,7 @@
     if (savePreview) {
       savePreview.hidden = !canStandardize || normalize(paper.status) !== 'SUBMITTED';
       savePreview.disabled = standardPreviewInFlight;
-      savePreview.textContent = standardSaved ? 'Update Final Preview' : 'Save Final Preview';
+      savePreview.textContent = standardSaved ? 'Update Preview Only' : 'Save Preview Only';
     }
 
     const deleteOriginalWrap = byId('deleteOriginalAfterApproval')?.closest('label');
@@ -767,8 +808,11 @@
 
     const approve = byId('approvePaperButton');
     if (approve) {
-      approve.disabled = normalize(paper.status) !== 'SUBMITTED' || (canStandardize && !standardSaved);
-      approve.title = canStandardize && !standardSaved ? 'Save the final A4 preview before approval.' : '';
+      approve.disabled = normalize(paper.status) !== 'SUBMITTED';
+      approve.textContent = canStandardize && !standardSaved ? 'Save & Approve Final' : 'Approve Final Paper';
+      approve.title = canStandardize && !standardSaved
+        ? 'The portal will validate and save this exact A4 preview, then approve it.'
+        : 'Approve the saved final preview.';
     }
     const edit = byId('editReviewedPaperButton');
     if (edit) edit.hidden = paper.editable !== true;
@@ -879,6 +923,7 @@
     const preview = byId('paperPreviewArea');
     if (preview) preview.innerHTML = '<div class="empty-state"><strong>Opening paper</strong>Please wait while the paper is prepared for review.</div>';
     openModal();
+    setReviewPanelOpen(false);
 
     const useA4 = canOpenProfessionalA4(paper) && normalize(paper.status) === 'SUBMITTED';
     setUnifiedPreviewMode(useA4 ? 'a4' : 'file');
@@ -926,15 +971,17 @@
     const note = String(byId('paperReviewNote')?.value || '').trim();
     if (status === 'Correction Required' && !note) {
       window.BGPS_APP.toast('Enter a clear correction note before returning the paper.', 'error');
-      byId('paperReviewNote')?.focus();
+      setReviewPanelOpen(true);
+      window.setTimeout(() => byId('paperReviewNote')?.focus(), 120);
       return;
     }
     if (status === 'Approved') {
-      const marks = currentPaper.a4PreviewDetectedMarks || currentPaper.maxMarks || '—';
+      const marks = currentPaper.maxMarks || '—';
+      const autoMarks = currentPaper.a4PreviewAutoDetectedMarks || a4PreviewState?.validation?.markAudit?.detectedMarks || 0;
       const questions = currentPaper.a4PreviewTotalQuestions || currentPaper.totalQuestions || '—';
       const pagesCount = currentPaper.a4PreviewPageCount || '—';
       const confirmed = window.confirm(
-        `Approve this final paper?\n\nTeacher: ${currentPaper.teacherName || currentPaper.teacherId || '—'}\nClass: ${currentPaper.className || '—'}\nSubject: ${currentPaper.subject || '—'}\nExam: ${currentPaper.exam || '—'}\nMarks: ${marks} / ${currentPaper.maxMarks || '—'}\nQuestions: ${questions}\nA4 pages: ${pagesCount}\n\nThe approved paper will be locked and the final PDF will be created from the saved A4 preview.`
+        `Approve this final paper?\n\nTeacher: ${currentPaper.teacherName || currentPaper.teacherId || '—'}\nClass: ${currentPaper.className || '—'}\nSubject: ${currentPaper.subject || '—'}\nExam: ${currentPaper.exam || '—'}\nMarks: ${marks}\n${autoMarks && Number(autoMarks) !== Number(currentPaper.maxMarks) ? `Auto-check: ${autoMarks} (visually verified)\n` : ''}Questions: ${questions}\nA4 pages: ${pagesCount}\n\nThe approved paper will be locked and the final PDF will be created from the saved A4 preview.`
       );
       if (!confirmed) return;
     }
@@ -1091,7 +1138,11 @@
     byId('editBgpsStandardPreview')?.addEventListener('click', toggleStandardPreviewEditMode);
     byId('deleteBgpsSelectedContent')?.addEventListener('click', deleteSelectedStandardContent);
     byId('undoBgpsStandardEdit')?.addEventListener('click', undoStandardEdit);
-    byId('approvePaperButton')?.addEventListener('click', () => updateStatus('Approved'));
+    byId('approvePaperButton')?.addEventListener('click', async () => {
+      if (!currentPaper) return;
+      if (canOpenProfessionalA4(currentPaper)) await saveCurrentBgpsStandardPreview(true, { quiet: true });
+      else await updateStatus('Approved');
+    });
     byId('editReviewedPaperButton')?.addEventListener('click', () => {
       if (!currentPaper) return;
       const paperId = currentPaper.paperId;
@@ -1101,11 +1152,16 @@
     byId('returnPaperButton')?.addEventListener('click', () => updateStatus('Correction Required'));
     byId('saveBgpsStandardPreview')?.addEventListener('click', () => saveCurrentBgpsStandardPreview(false));
     byId('a4PreviewValidationCard')?.addEventListener('click', () => toggleA4Issues());
+    byId('togglePaperReviewPanel')?.addEventListener('click', () => setReviewPanelOpen(!reviewPanelOpen));
+    byId('closePaperReviewPanel')?.addEventListener('click', () => setReviewPanelOpen(false));
+    byId('paperReviewPanelBackdrop')?.addEventListener('click', () => setReviewPanelOpen(false));
     byId('bgpsStandardPreviewWarnings')?.addEventListener('click', (event) => { if (event.target.closest('[data-close-a4-issues]')) toggleA4Issues(false); });
     byId('deleteReviewedPaperButton')?.addEventListener('click', () => { if (currentPaper) deleteAdminPaper(currentPaper.paperId); });
     byId('downloadPaperButton')?.addEventListener('click', downloadCurrentFile);
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
+      if (reviewPanelOpen) { setReviewPanelOpen(false); return; }
+      if (a4IssuesExpanded) { toggleA4Issues(false); return; }
       if (byId('paperReviewModal')?.classList.contains('open')) closeReview();
     });
   }

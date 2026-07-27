@@ -1926,13 +1926,35 @@
     if (chip) { chip.textContent = status || 'Preview'; chip.className = `status-chip ${statusClass(status)}`; }
   }
 
+  function resetHtmlPreviewScroll(body, frame) {
+    if (body) {
+      body.scrollTop = 0;
+      body.scrollLeft = 0;
+    }
+    if (!frame) return;
+    const resetFrame = () => {
+      try {
+        frame.contentWindow?.scrollTo(0, 0);
+        if (frame.contentDocument?.documentElement) frame.contentDocument.documentElement.scrollTop = 0;
+        if (frame.contentDocument?.body) frame.contentDocument.body.scrollTop = 0;
+      } catch (_) {}
+    };
+    frame.addEventListener('load', () => {
+      resetFrame();
+      requestAnimationFrame(resetFrame);
+    }, { once: true });
+    resetFrame();
+  }
+
   function showHtmlPreview(documentHtml, title, meta, status, allowSubmit = false) {
     revokeObjectUrl();
     setPreviewHeader(title, meta, status);
     const body = byId('teacherPaperPreviewBody');
     if (body) {
       body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Question paper preview" sandbox="allow-modals allow-same-origin"></iframe>';
-      body.querySelector('iframe').srcdoc = documentHtml;
+      const frame = body.querySelector('iframe');
+      resetHtmlPreviewScroll(body, frame);
+      frame.srcdoc = documentHtml;
     }
     setHidden('downloadTeacherPaper', true);
     setHidden('openTeacherPaperPreviewExternal', true);
@@ -2043,7 +2065,9 @@
       if (previewMime.includes('html')) {
         const text = await previewBlob.text();
         body.innerHTML = '<iframe class="teacher-paper-preview-frame" title="Question paper preview" sandbox="allow-modals allow-same-origin"></iframe>';
-        body.querySelector('iframe').srcdoc = text;
+        const frame = body.querySelector('iframe');
+        resetHtmlPreviewScroll(body, frame);
+        frame.srcdoc = text;
         if (byId('printTeacherPaper')) byId('printTeacherPaper').disabled = false;
       } else if (previewMime.includes('pdf')) {
         if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
@@ -2341,8 +2365,8 @@
         position:relative !important;
         display:block !important;
         width:100% !important;
-        height:0 !important;
-        min-height:0 !important;
+        height:var(--bgps-free-print-height,var(--bgps-free-stage-height,24px)) !important;
+        min-height:24px !important;
         margin:0 !important;
         padding:0 !important;
         border:0 !important;
@@ -2516,7 +2540,7 @@
       stage.className = 'bgps-free-stage';
       stage.setAttribute('contenteditable', 'false');
       stage.setAttribute('aria-hidden', 'true');
-      stage.style.setProperty('--bgps-free-stage-height', '0px');
+      stage.style.setProperty('--bgps-free-stage-height', '24px');
       stage.style.setProperty('--bgps-free-print-height', '24px');
       stage.style.height = 'var(--bgps-free-stage-height)';
       host.insertBefore(stage, anchor);
@@ -2553,11 +2577,11 @@
           const height = Math.max(1, box.getBoundingClientRect().height || box.offsetHeight || 1);
           printHeight = Math.max(printHeight, offset.y + height + 12);
         });
-        // Editor stays zero-height so typing is never blocked. The separate
-        // print envelope is used only by preview/PDF pagination.
-        stage.style.setProperty('--bgps-free-stage-height', '0px');
+        // Keep the editor's image envelope identical to preview/PDF so a
+        // freely positioned image never jumps when the paper is previewed.
+        stage.style.setProperty('--bgps-free-stage-height', `${Math.ceil(printHeight)}px`);
         stage.style.setProperty('--bgps-free-print-height', `${Math.ceil(printHeight)}px`);
-        stage.style.height = '0px';
+        stage.style.height = 'var(--bgps-free-stage-height)';
         ensureParagraphAfterImage(boxes[boxes.length - 1]);
       });
   }
@@ -2572,7 +2596,7 @@
     }
 
     // Support both normal teacher-created papers and imported DOCX content.
-    // A zero-height anchor keeps Free Move images out of document flow.
+    // Every free image receives a printable envelope at its document anchor.
     Array.from(editor.querySelectorAll('.diagram-box.has-image.bgps-img-free'))
       .filter((box) => !freeStageForBox(box))
       .forEach((box) => ensureFreeStageForBox(box));

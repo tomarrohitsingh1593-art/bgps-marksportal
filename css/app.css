@@ -1593,3 +1593,25 @@ body.modal-open { overflow: hidden; }
   .paper-review-header{flex-wrap:wrap}.paper-review-header .modal-close{min-width:44px;min-height:44px}
   button,.btn,select,input[type="button"],input[type="submit"]{touch-action:manipulation}
 }
+
+/* V13.3.1 - high-contrast A4 output for clear Hindi and monochrome printing */
+#bgpsStandardPreviewBody .bgps-a4-page,
+.bgps-a4-measurement .bgps-a4-page{color:#000;font-weight:500;-webkit-font-smoothing:auto;text-rendering:optimizeLegibility}
+#bgpsStandardPreviewBody .bgps-a4-page .question-line,
+.bgps-a4-measurement .bgps-a4-page .question-line{color:#000!important;font-weight:700}
+#bgpsStandardPreviewBody .bgps-a4-page .mark-token,
+.bgps-a4-measurement .bgps-a4-page .mark-token{color:#000!important;font-weight:900}
+#bgpsStandardPreviewBody .bgps-a4-header,
+#bgpsStandardPreviewBody .bgps-a4-first-header h2,
+#bgpsStandardPreviewBody .bgps-a4-continuation-header,
+#bgpsStandardPreviewBody .bgps-a4-page .section-heading,
+#bgpsStandardPreviewBody .bgps-a4-footer,
+.bgps-a4-measurement .bgps-a4-header,
+.bgps-a4-measurement .bgps-a4-first-header h2,
+.bgps-a4-measurement .bgps-a4-continuation-header,
+.bgps-a4-measurement .bgps-a4-page .section-heading,
+.bgps-a4-measurement .bgps-a4-footer{color:#000!important}
+#bgpsStandardPreviewBody .bgps-a4-page table td,
+#bgpsStandardPreviewBody .bgps-a4-page table th,
+.bgps-a4-measurement .bgps-a4-page table td,
+.bgps-a4-measurement .bgps-a4-page table th{border-color:#000!important}

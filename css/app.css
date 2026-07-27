@@ -1615,3 +1615,62 @@ body.modal-open { overflow: hidden; }
 #bgpsStandardPreviewBody .bgps-a4-page table th,
 .bgps-a4-measurement .bgps-a4-page table td,
 .bgps-a4-measurement .bgps-a4-page table th{border-color:#000!important}
+
+/* V13.3.3 - paper-first workspace and stable anchored images */
+@media(min-width:821px){
+  body.bgps-paper-editor-active{--sidebar-width:78px}
+  body.bgps-paper-editor-active .sidebar{padding:12px 8px}
+  body.bgps-paper-editor-active .sidebar-brand{padding:7px 2px 14px;text-align:center}
+  body.bgps-paper-editor-active .sidebar-brand strong{font-size:0}
+  body.bgps-paper-editor-active .sidebar-brand strong::after{content:"BG";font-size:18px}
+  body.bgps-paper-editor-active .sidebar-brand span{display:none}
+  body.bgps-paper-editor-active .nav-btn{justify-content:center;min-height:44px;padding:0;font-size:0;border-left:0}
+  body.bgps-paper-editor-active .nav-icon{width:auto;font-size:17px}
+  body.bgps-paper-editor-active .sidebar-footer{padding:12px 0 0}
+  body.bgps-paper-editor-active .logout-btn{font-size:0}
+  body.bgps-paper-editor-active .logout-btn::before{content:"Exit";font-size:11px}
+  body.bgps-paper-editor-active .topbar{min-height:58px;padding:8px 14px}
+  body.bgps-paper-editor-active .page-title span{display:none}
+  body.bgps-paper-editor-active .content{padding:10px 12px}
+  #paperEditorWorkspace .paper-editor-heading{margin-bottom:8px}
+  #paperEditorWorkspace .paper-editor-heading p{display:none}
+  #paperEditorWorkspace .paper-workflow-stepper{margin-bottom:8px;padding:8px 12px}
+  #paperEditorWorkspace .paper-setup-card{padding:10px;border-radius:12px}
+  #paperEditorWorkspace .paper-setup-grid{gap:7px 10px}
+  #paperEditorWorkspace .paper-setup-card .field label{font-size:10px}
+  #paperEditorWorkspace .paper-setup-card .field input,
+  #paperEditorWorkspace .paper-setup-card .field select,
+  #paperEditorWorkspace .paper-setup-card .field textarea{min-height:36px;padding:6px 9px}
+  #paperEditorWorkspace .paper-setup-card .field textarea{height:44px;min-height:44px}
+  #paperEditorWorkspace .paper-editor-layout{grid-template-columns:minmax(0,1fr) 205px;gap:10px;margin-top:10px}
+  #paperEditorWorkspace .paper-editor-sidebar{gap:8px}
+  #paperEditorWorkspace .editor-side-card{padding:10px;border-radius:10px}
+  #paperEditorWorkspace .editor-side-card h2{margin-bottom:7px}
+  #paperEditorWorkspace #paperImageInspector:has(#paperImageControls[hidden]){display:none}
+  #paperEditorWorkspace .marks-gauge{padding:3px 0}
+  #paperEditorWorkspace .marks-gauge strong{font-size:27px}
+  #paperEditorWorkspace .marks-check-row{padding:6px 0}
+  #paperEditorWorkspace .marks-check-message{margin-top:6px}
+  #paperEditorWorkspace .paper-save-card small{display:none}
+  #paperEditorWorkspace .paper-editor-toolbar .toolbar-row{padding:5px 7px}
+  #paperEditorWorkspace .editor-command{min-height:31px;padding:5px 8px}
+  #paperEditorWorkspace .paper-ruler{height:23px}
+  #paperEditorWorkspace .paper-canvas-wrap{padding:10px;max-height:calc(100vh - 112px)}
+  #paperEditorWorkspace .paper-composer-card{border-radius:11px}
+}
+@media(min-width:1181px){
+  #paperEditorWorkspace .paper-setup-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  #paperEditorWorkspace .paper-title-field{grid-column:span 2}
+  #paperEditorWorkspace .paper-chapters-field{grid-column:span 3}
+  #paperEditorWorkspace .paper-instructions-field{grid-column:span 6}
+}
+@media(min-width:1100px){
+  #paperReviewModal .paper-review-body{grid-template-columns:minmax(0,1fr) 305px!important}
+  #paperReviewModal .paper-review-header{min-height:62px;padding:7px 14px}
+  #paperReviewModal .paper-review-header h2{font-size:20px}
+  #paperReviewModal .bgps-unified-preview-heading{min-height:42px;padding:6px 10px}
+  #paperReviewModal .bgps-a4-toolbar{min-height:44px;padding:5px 9px}
+  #paperReviewModal .paper-review-panel{padding:0 12px 12px!important}
+  #paperReviewModal .paper-review-panel-head{margin:0 -12px 8px!important;padding:9px 12px}
+  #paperReviewModal .paper-review-actions{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}
+}

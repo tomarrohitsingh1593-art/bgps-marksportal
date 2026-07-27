@@ -980,11 +980,13 @@
     if (byId('paperExamInput')) byId('paperExamInput').value = draft.exam || window.BGPS_DATA.EXAMS[0];
     const editor = byId('paperContentEditor');
     if (editor) editor.innerHTML = draft.editorHtml || '';
+    const repairedImages = stabilizeFreeImagesInEditor(editor);
     hydrateImages();
     editor?.querySelectorAll('.diagram-box.has-image').forEach(ensureParagraphAfterImage);
     requestAnimationFrame(syncEditorFreeMoveHeight);
     syncDraftDeleteControl();
     markDirty();
+    if (repairedImages) setAutosaveStatus(`${repairedImages} image position${repairedImages === 1 ? '' : 's'} stabilized. Save the paper.`, 'dirty');
     updateChecks();
     if (Number.isFinite(Number(record.scrollTop))) requestAnimationFrame(() => window.scrollTo({ top: Number(record.scrollTop), behavior: 'auto' }));
     return true;
@@ -1087,7 +1089,6 @@
         <div class="bgps-mobile-actions" data-mobile-mode="image" hidden>
           <button type="button" data-mobile-paper-action="smaller">Size −</button>
           <button type="button" data-mobile-paper-action="larger">Size +</button>
-          <button type="button" data-mobile-paper-action="move">Move</button>
           <button type="button" data-mobile-paper-action="rotate">Rotate</button>
           <button type="button" data-mobile-paper-action="crop">Crop</button>
           <button type="button" data-mobile-paper-action="centre">Centre</button>
@@ -1113,7 +1114,6 @@
         else if (action === 'submit') prepareSubmit();
         else if (action === 'smaller' && selectedImage) applyImageWidth(selectedImage, imageWidth(selectedImage) - 5);
         else if (action === 'larger' && selectedImage) applyImageWidth(selectedImage, imageWidth(selectedImage) + 5);
-        else if (action === 'move' && selectedImage) { setImageLayout('free'); toast('Drag the image to place it.'); }
         else if (action === 'rotate') rotateSelectedImage();
         else if (action === 'crop') openImageCropper();
         else if (action === 'centre') setImageLayout('center');
@@ -1140,9 +1140,10 @@
   function syncMobilePaperBar() {
     if (!mobilePaperBar) return;
     const mobile = window.matchMedia('(max-width:820px)').matches;
-    const active = mobile && editorWorkspaceOpen();
+    const editorActive = editorWorkspaceOpen();
+    const active = mobile && editorActive;
     mobilePaperBar.hidden = !active;
-    document.body.classList.toggle('bgps-paper-editor-active', active);
+    document.body.classList.toggle('bgps-paper-editor-active', editorActive);
     if (!active) return;
     const imageMode = Boolean(selectedImage && selectedImage.isConnected);
     mobilePaperBar.querySelector('[data-mobile-mode="normal"]')?.toggleAttribute('hidden', imageMode);
@@ -1654,7 +1655,7 @@
   function setEditorMode(show) {
     setHidden('paperCentreHome', Boolean(show));
     setHidden('paperEditorWorkspace', !show);
-    document.body.classList.toggle('bgps-paper-editor-active', Boolean(show) && window.matchMedia('(max-width:820px)').matches);
+    document.body.classList.toggle('bgps-paper-editor-active', Boolean(show));
     syncMobilePaperBar();
     if (show) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -1752,10 +1753,12 @@
     populateSubjects('paperClassInput', 'paperSubjectInput');
     if (byId('paperSubjectInput')) byId('paperSubjectInput').value = draft.subject || '';
     if (byId('paperExamInput')) byId('paperExamInput').value = draft.exam || window.BGPS_DATA.EXAMS[0];
+    let repairedImages = 0;
     if (byId('paperContentEditor')) {
       byId('paperContentEditor').innerHTML = draft.editorHtml || '';
       byId('paperContentEditor').style.removeProperty('min-height');
       delete byId('paperContentEditor').dataset.bgpsBaseMinHeight;
+      repairedImages = stabilizeFreeImagesInEditor(byId('paperContentEditor'));
     }
     hydrateImages();
     byId('paperContentEditor')?.querySelectorAll('.diagram-box.has-image').forEach(ensureParagraphAfterImage);
@@ -1810,6 +1813,12 @@
       setText('submitPaperForReview', 'Submit for Review');
       setHidden('submitPaperForReview', false);
       markSaved(`Draft loaded · ${safeDate(draft.updatedAt)}`);
+    }
+
+    if (repairedImages) {
+      markDirty();
+      setAutosaveStatus(`${repairedImages} overlapping image position${repairedImages === 1 ? '' : 's'} repaired. Save changes.`, 'dirty');
+      toast(`${repairedImages} image position${repairedImages === 1 ? '' : 's'} stabilized for preview and PDF.`);
     }
 
     syncDraftDeleteControl();
@@ -3176,14 +3185,10 @@
 
   function setImageLayout(layout) {
     if (!selectedImage) return;
-    if (layout === 'free') {
-      enterAbsoluteFreeMode(selectedImage);
-      requestAnimationFrame(() => clampFreeImageOffset(selectedImage));
-    } else {
-      selectedImage.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-free', 'bgps-img-compact');
-      resetFreeImageOffset(selectedImage);
-      selectedImage.classList.add(`bgps-img-${layout}`);
-    }
+    const stableLayout = ['left', 'right', 'inline'].includes(layout) ? layout : 'center';
+    selectedImage.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-free', 'bgps-img-compact');
+    resetFreeImageOffset(selectedImage);
+    selectedImage.classList.add(`bgps-img-${stableLayout}`);
     applyImageWidth(selectedImage, imageWidth(selectedImage));
     updateImageInspector();
     markDirty();
@@ -3192,16 +3197,11 @@
 
   function ensureImageControls(box) {
     if (!box.querySelector('.bgps-image-resize-handle')) box.appendChild(transientHandle());
-    if (!box.querySelector('.bgps-image-drag-handle')) box.appendChild(transientDragHandle());
+    box.querySelectorAll('.bgps-image-drag-handle').forEach((node) => node.remove());
     const resizeHandle = box.querySelector('.bgps-image-resize-handle');
-    const dragHandle = box.querySelector('.bgps-image-drag-handle');
     if (resizeHandle && resizeHandle.dataset.boundPointer !== 'true') {
       resizeHandle.dataset.boundPointer = 'true';
       resizeHandle.addEventListener('pointerdown', startResize);
-    }
-    if (dragHandle && dragHandle.dataset.boundPointer !== 'true') {
-      dragHandle.dataset.boundPointer = 'true';
-      dragHandle.addEventListener('pointerdown', startImageMove);
     }
   }
 
@@ -3277,7 +3277,6 @@
     const width = imageWidth(box);
     box.style.setProperty('--bgps-image-width', `${width}%`);
     box.style.width = `${width}%`;
-    if (box.classList.contains('bgps-img-free')) enterAbsoluteFreeMode(box);
     box.setAttribute('contenteditable', 'false');
     box.removeAttribute('draggable');
     ensureImageControls(box);
@@ -3289,11 +3288,29 @@
     if (box.dataset.editorBound === 'true') return;
     box.dataset.editorBound = 'true';
     box.addEventListener('click', (event) => { event.stopPropagation(); selectImage(box); });
-    box.addEventListener('pointerdown', (event) => {
-      if (event.button !== undefined && event.button !== 0) return;
-      if (event.target.closest('.bgps-image-resize-handle')) return;
-      startImageMove(event);
+  }
+
+  function stabilizeFreeImagesInEditor(editor) {
+    if (!editor) return 0;
+    let repaired = 0;
+    const clearFreeGeometry = (box) => {
+      box.classList.remove('bgps-img-free', 'bgps-img-left', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact', 'is-moving-image');
+      box.classList.add('bgps-img-center');
+      ['--bgps-free-x', '--bgps-free-y', 'position', 'left', 'top', 'transform', 'margin', 'z-index'].forEach((name) => box.style.removeProperty(name));
+      box.querySelectorAll('.bgps-image-drag-handle').forEach((node) => node.remove());
+      repaired += 1;
+    };
+
+    editor.querySelectorAll('.bgps-free-stage').forEach((stage) => {
+      const boxes = Array.from(stage.querySelectorAll('.diagram-box.has-image'));
+      boxes.forEach((box) => {
+        stage.parentNode?.insertBefore(box, stage);
+        clearFreeGeometry(box);
+      });
+      stage.remove();
     });
+    Array.from(editor.querySelectorAll('.diagram-box.has-image.bgps-img-free')).forEach(clearFreeGeometry);
+    return repaired;
   }
 
   function hydrateImages() {

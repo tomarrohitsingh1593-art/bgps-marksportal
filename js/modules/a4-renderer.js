@@ -172,6 +172,24 @@
     return nodes;
   }
 
+  function stabilizeLegacyFreeImages(sourceRoot) {
+    if (!sourceRoot) return;
+    const clearFreeGeometry = (box) => {
+      box.classList.remove('bgps-img-free', 'bgps-img-left', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-compact', 'is-moving-image');
+      box.classList.add('bgps-img-center');
+      ['--bgps-free-x', '--bgps-free-y', 'position', 'left', 'top', 'transform', 'margin', 'z-index'].forEach((name) => box.style.removeProperty(name));
+      box.querySelectorAll('.bgps-image-drag-handle,.bgps-image-resize-handle').forEach((node) => node.remove());
+    };
+    sourceRoot.querySelectorAll('.bgps-free-stage').forEach((stage) => {
+      Array.from(stage.querySelectorAll('.diagram-box.has-image')).forEach((box) => {
+        stage.parentNode?.insertBefore(box, stage);
+        clearFreeGeometry(box);
+      });
+      stage.remove();
+    });
+    sourceRoot.querySelectorAll('.diagram-box.has-image.bgps-img-free').forEach(clearFreeGeometry);
+  }
+
   function plainMarkValues(value, questionLike) {
     const raw = String(value || '');
     const found = [];
@@ -633,6 +651,7 @@
     const sourceRoot = document.createElement('div');
     sourceRoot.className = 'bgps-a4-source';
     sourceRoot.innerHTML = paper.contentHtml;
+    stabilizeLegacyFreeImages(sourceRoot);
     ensureQuestionMarkTokens(sourceRoot);
     sourceRoot.style.cssText = 'position:fixed;left:-100000px;top:0;width:184mm;visibility:hidden;pointer-events:none';
     document.body.appendChild(sourceRoot);

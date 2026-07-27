@@ -11,6 +11,7 @@
   let standardPreviewResult = null;
   let standardPreviewEditableHtml = '';
   let standardPreviewEditMode = false;
+  let standardPreviewDirty = false;
   let standardPreviewSelectedBlock = null;
   let standardPreviewInFlight = false;
   let standardPreviewPageCount = 0;
@@ -371,6 +372,7 @@
     standardPreviewResult = null;
     standardPreviewEditableHtml = '';
     standardPreviewEditMode = false;
+    standardPreviewDirty = false;
     standardPreviewSelectedBlock = null;
     standardPreviewPageCount = 0;
     standardPreviewPaperData = null;
@@ -530,6 +532,18 @@
     return surface ? cleanStandardEditableHtml(surface.innerHTML) : cleanStandardEditableHtml(standardPreviewEditableHtml);
   }
 
+  function markStandardPreviewDirty() {
+    standardPreviewDirty = true;
+    setText('bgpsStandardPreviewStatus', 'Unsaved edits');
+    const save = byId('saveBgpsStandardPreview');
+    if (save) save.textContent = 'Save Preview Only';
+    const approve = byId('approvePaperButton');
+    if (approve) {
+      approve.textContent = 'Save & Approve Final';
+      approve.title = 'The portal will validate and save these edits, then approve the final paper.';
+    }
+  }
+
   function selectStandardEditableBlock(target) {
     const surface = byId('bgpsStandardEditSurface');
     if (!surface || !target) return;
@@ -551,7 +565,7 @@
     surface.addEventListener('click', (event) => selectStandardEditableBlock(event.target));
     surface.addEventListener('input', () => {
       standardPreviewEditableHtml = currentStandardEditableHtml();
-      setText('bgpsStandardPreviewStatus', 'Unsaved edits');
+      markStandardPreviewDirty();
     });
     byId('editBgpsStandardPreview').textContent = 'Regenerate A4 Preview';
     setHidden('deleteBgpsSelectedContent', false);
@@ -593,7 +607,7 @@
       return;
     }
     standardPreviewEditableHtml = currentStandardEditableHtml();
-    setText('bgpsStandardPreviewStatus', 'Unsaved edits');
+    markStandardPreviewDirty();
   }
 
   function undoStandardEdit() {
@@ -602,7 +616,7 @@
     surface.focus();
     document.execCommand('undo');
     standardPreviewEditableHtml = currentStandardEditableHtml();
-    setText('bgpsStandardPreviewStatus', 'Unsaved edits');
+    markStandardPreviewDirty();
   }
 
   async function renderStandardPreviewPdf(result) {
@@ -650,6 +664,7 @@
       standardPreviewEditableHtml = String(result.editableContentHtml || result.paper?.editorHtml || '');
       if (!standardPreviewEditableHtml.trim()) throw new Error('Editable paper content is unavailable. Return this paper for correction or review the uploaded reference file.');
       standardPreviewEditMode = false;
+      standardPreviewDirty = false;
       standardPreviewSelectedBlock = null;
       const deleteOriginalWrap = byId('deleteOriginalAfterApproval')?.closest('label');
       if (deleteOriginalWrap) deleteOriginalWrap.hidden = !isDocxStandardCandidate(currentPaper);
@@ -738,6 +753,7 @@
       const listPaper = papers.find((item) => String(item.paperId) === String(currentPaper.paperId));
       if (listPaper) Object.assign(listPaper, savedMetrics);
       standardPreviewResult = { ...standardPreviewResult, ...result, saved: true };
+      standardPreviewDirty = false;
       setReviewMeta(currentPaper);
       setText('bgpsStandardPreviewStatus', 'Saved A4 Preview · ready for approval');
       updateA4Summary();
@@ -923,7 +939,9 @@
     const preview = byId('paperPreviewArea');
     if (preview) preview.innerHTML = '<div class="empty-state"><strong>Opening paper</strong>Please wait while the paper is prepared for review.</div>';
     openModal();
-    setReviewPanelOpen(false);
+    // Keep review actions visible beside the paper. The previous slide-over
+    // obscured the preview and was especially awkward on phones.
+    setReviewPanelOpen(true);
 
     const useA4 = canOpenProfessionalA4(paper) && normalize(paper.status) === 'SUBMITTED';
     setUnifiedPreviewMode(useA4 ? 'a4' : 'file');
@@ -1140,7 +1158,9 @@
     byId('undoBgpsStandardEdit')?.addEventListener('click', undoStandardEdit);
     byId('approvePaperButton')?.addEventListener('click', async () => {
       if (!currentPaper) return;
-      if (canOpenProfessionalA4(currentPaper)) await saveCurrentBgpsStandardPreview(true, { quiet: true });
+      if (canOpenProfessionalA4(currentPaper) && (currentPaper.a4PreviewSaved !== true || standardPreviewDirty)) {
+        await saveCurrentBgpsStandardPreview(true, { quiet: true });
+      }
       else await updateStatus('Approved');
     });
     byId('editReviewedPaperButton')?.addEventListener('click', () => {
@@ -1160,7 +1180,6 @@
     byId('downloadPaperButton')?.addEventListener('click', downloadCurrentFile);
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
-      if (reviewPanelOpen) { setReviewPanelOpen(false); return; }
       if (a4IssuesExpanded) { toggleA4Issues(false); return; }
       if (byId('paperReviewModal')?.classList.contains('open')) closeReview();
     });

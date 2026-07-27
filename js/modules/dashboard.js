@@ -5,6 +5,7 @@
   let session = null;
   let marksRows = [];
   let papers = [];
+  let principalActivity = [];
   let classProgress = [];
   let teacherProgress = [];
   let initialized = false;
@@ -312,14 +313,8 @@
 
   async function openPendingSummary() {
     if (!session?.isAdmin) return;
-    ensurePendingSummaryUi();
-    const overlay = byId(PENDING_SUMMARY_IDS.overlay);
-    overlay?.classList.add('is-open');
-    overlay?.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('bgps-pending-summary-open');
-    renderPendingSummary();
-    byId(PENDING_SUMMARY_IDS.drawer)?.focus?.({ preventScroll: true });
-    if (!classProgress.length && !pendingSummaryRefreshing) await refreshPendingSummary();
+    const target = byId('paperClassProgressList');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   async function refreshPendingSummary() {
@@ -483,6 +478,22 @@
     select.value = window.BGPS_DATA.EXAMS[0] || '';
   }
 
+  function configureClassFilter() {
+    const select = byId('dashboardClassFilter');
+    if (!select || select.options.length > 1) return;
+    select.innerHTML = '<option value="">All classes</option>' + window.BGPS_DATA.CLASSES
+      .map((className) => `<option value="${escapeHtml(className)}">${escapeHtml(className)}</option>`).join('');
+  }
+
+  function selectedClass() {
+    return String(byId('dashboardClassFilter')?.value || '').trim();
+  }
+
+  function visibleClassProgress() {
+    const selected = normalize(selectedClass());
+    return selected ? classProgress.filter((item) => normalize(item.className) === selected) : classProgress;
+  }
+
   function canonicalSubject(subject, className) {
     return normalize(window.BGPS_DATA.normalizeSubjectForStorage(subject, className));
   }
@@ -500,14 +511,30 @@
     classProgress = window.BGPS_DATA.CLASSES.map((className) => {
       const expected = window.BGPS_DATA.subjectsForClass(className);
       const classRows = examRows.filter((row) => normalize(row.className) === normalize(className));
-      const recordedSubjects = new Set(classRows.map((row) => canonicalSubject(row.subject, className)).filter(Boolean));
       const expectedCanonical = expected.map((subject) => canonicalSubject(subject, className));
-      const completedSubjects = expected.filter((subject, index) => recordedSubjects.has(expectedCanonical[index]));
-      const pendingSubjects = expected.filter((subject, index) => !recordedSubjects.has(expectedCanonical[index]));
+      const expectedRolls = Math.max(1, Number(window.BGPS_CONFIG?.rollCount || 50));
+      const rollsBySubject = new Map();
+      classRows.forEach((row) => {
+        const subjectKey = canonicalSubject(row.subject, className);
+        if (!subjectKey) return;
+        if (!rollsBySubject.has(subjectKey)) rollsBySubject.set(subjectKey, new Set());
+        const roll = window.BGPS_DATA.normalizeRoll(row.rollNo);
+        if (roll) rollsBySubject.get(subjectKey).add(roll);
+      });
+      const completedSubjects = expected.filter((subject, index) => (rollsBySubject.get(expectedCanonical[index])?.size || 0) >= expectedRolls);
+      const pendingSubjects = expected.filter((subject, index) => (rollsBySubject.get(expectedCanonical[index])?.size || 0) < expectedRolls);
+      const missingRollEntries = expectedCanonical.reduce((sum, subjectKey) => {
+        return sum + Math.max(0, expectedRolls - (rollsBySubject.get(subjectKey)?.size || 0));
+      }, 0);
       const classPapers = papers.filter((paper) => normalize(paper.className) === normalize(className) && normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
       const paperSubjects = new Set(classPapers.map((paper) => canonicalSubject(paper.subject, className)).filter(Boolean));
+      const approvedPaperSubjects = new Set(classPapers
+        .filter((paper) => normalize(paper.status) === 'APPROVED')
+        .map((paper) => canonicalSubject(paper.subject, className)).filter(Boolean));
       const submittedPaperSubjects = expected.filter((subject, index) => paperSubjects.has(expectedCanonical[index]));
       const pendingPaperSubjects = expected.filter((subject, index) => !paperSubjects.has(expectedCanonical[index]));
+      const approvedSubjects = expected.filter((subject, index) => approvedPaperSubjects.has(expectedCanonical[index]));
+      const pendingApprovalPaperSubjects = expected.filter((subject, index) => !approvedPaperSubjects.has(expectedCanonical[index]));
       const awaiting = classPapers.filter((paper) => normalize(paper.status) === 'SUBMITTED').length;
       const corrections = classPapers.filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED').length;
       const approved = classPapers.filter((paper) => normalize(paper.status) === 'APPROVED').length;
@@ -520,8 +547,13 @@
         pendingCount: pendingSubjects.length,
         completedSubjects,
         pendingSubjects,
+        missingRollEntries,
+        expectedRolls,
         paperExpectedCount: expected.length,
         paperSubmittedCount: submittedPaperSubjects.length,
+        paperApprovedCount: approvedSubjects.length,
+        approvedSubjects,
+        pendingApprovalPaperSubjects,
         pendingPaperSubjects,
         paperCount: classPapers.length,
         awaiting,
@@ -549,31 +581,27 @@
   }
 
   function renderMetrics() {
-    const expected = classProgress.reduce((sum, item) => sum + item.expectedCount, 0);
-    const completed = classProgress.reduce((sum, item) => sum + item.completedCount, 0);
-    const pending = Math.max(0, expected - completed);
-    const teachersPending = classProgress.filter((item) => item.pendingCount > 0).length;
+    const visibleClasses = visibleClassProgress();
+    const marksCompleteClasses = visibleClasses.filter((item) => item.pendingCount === 0 && item.missingRollEntries === 0).length;
+    const marksPendingClasses = Math.max(0, visibleClasses.length - marksCompleteClasses);
+    const paperCompleteClasses = visibleClasses.filter((item) => item.paperExpectedCount > 0 && item.paperApprovedCount === item.paperExpectedCount).length;
+    const paperPendingClasses = Math.max(0, visibleClasses.length - paperCompleteClasses);
+    const missingPapers = visibleClasses.reduce((sum, item) => sum + item.pendingPaperSubjects.length, 0);
     const exam = normalize(selectedExam());
-    const workflowPapers = papers.filter((paper) => normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
+    const classFilter = normalize(selectedClass());
+    const workflowPapers = papers.filter((paper) => normalize(paper.exam) === exam
+      && matchesSelectedAcademicYear(paper)
+      && (!classFilter || normalize(paper.className) === classFilter));
     const review = workflowPapers.filter((paper) => normalize(paper.status) === 'SUBMITTED').length;
     const correction = workflowPapers.filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED').length;
-    const approved = workflowPapers.filter((paper) => normalize(paper.status) === 'APPROVED').length;
-    const locked = workflowPapers.filter((paper) => normalize(paper.status) === 'LOCKED').length;
-    // Corrected & Resubmitted is a global Principal action queue. Keep this
-    // count identical to the Paper Approval board instead of limiting it to
-    // the currently selected term/year.
-    const resubmitted = papers.filter(isCorrectedSubmission).length;
+    const actionRequired = review + correction + missingPapers + visibleClasses.filter((item) => item.pendingCount > 0).length;
 
-    setText('dashPapersResubmitted', resubmitted);
-    setText('dashMarksPending', pending);
-    setText('dashTeachersPending', teachersPending);
-    setText('dashPapersSubmitted', workflowPapers.length);
-    setText('dashPapersReview', review);
-    setText('dashPapersCorrection', correction);
-    setText('paperStatusSubmitted', review);
-    setText('paperStatusApproved', approved);
-    setText('paperStatusCorrection', correction);
-    setText('paperStatusLocked', locked);
+    setText('dashMarksComplete', `${marksCompleteClasses} ${marksCompleteClasses === 1 ? 'Class' : 'Classes'}`);
+    setText('dashMarksPendingClasses', marksPendingClasses ? `${marksPendingClasses} classes have pending subjects or rolls` : 'All selected classes are complete');
+    setText('dashPapersComplete', `${paperCompleteClasses} ${paperCompleteClasses === 1 ? 'Class' : 'Classes'}`);
+    setText('dashPapersMissing', paperPendingClasses ? `${paperPendingClasses} classes pending · ${missingPapers} papers missing` : 'Every required paper is approved');
+    setText('dashActionRequired', actionRequired);
+    setText('dashActionContext', `${review} review · ${correction} correction · ${missingPapers} missing papers`);
   }
 
   function renderActions() {
@@ -582,7 +610,7 @@
     const actions = [];
     const marksEntryOpen = window.BGPS_STATE.get().paperSettings?.marksEntryEnabled !== false;
 
-    if (marksEntryOpen) classProgress
+    if (marksEntryOpen) visibleClassProgress()
       .filter((item) => item.pendingCount > 0)
       .sort((a, b) => b.pendingCount - a.pendingCount)
       .slice(0, 6)
@@ -597,7 +625,10 @@
       });
 
     const exam = normalize(selectedExam());
-    const examPapers = papers.filter((paper) => normalize(paper.exam) === exam && matchesSelectedAcademicYear(paper));
+    const classFilter = normalize(selectedClass());
+    const examPapers = papers.filter((paper) => normalize(paper.exam) === exam
+      && matchesSelectedAcademicYear(paper)
+      && (!classFilter || normalize(paper.className) === classFilter));
 
     examPapers
       .filter(isCorrectedSubmission)
@@ -663,35 +694,75 @@
   }
 
   function renderClassTracking() {
-    const container = byId('classTrackingList');
-    if (!container) return;
-    const query = normalize(byId('classTrackingSearch')?.value || '');
-    const rows = classProgress.filter((item) => {
-      if (!query) return true;
-      return normalize(item.className).includes(query) || normalize(item.teacherId).includes(query);
-    });
-
+    const marksContainer = byId('marksClassProgressList');
+    const papersContainer = byId('paperClassProgressList');
+    const rows = visibleClassProgress();
     if (!rows.length) {
-      container.innerHTML = '<div class="empty-state"><strong>No matching class</strong>Change the search text and try again.</div>';
+      const empty = '<div class="empty-state"><strong>No matching class</strong>Choose another class filter.</div>';
+      if (marksContainer) marksContainer.innerHTML = empty;
+      if (papersContainer) papersContainer.innerHTML = empty;
       return;
     }
 
-    container.innerHTML = rows.map((item) => {
-      const percent = item.expectedCount ? Math.round((item.completedCount / item.expectedCount) * 100) : 0;
-      const statusClass = item.pendingCount === 0 ? 'success' : item.completedCount ? 'warning' : 'danger';
-      const statusText = item.pendingCount === 0 ? 'Complete' : `${item.pendingCount} pending`;
-      return `
-        <article class="tracking-row">
-          <div class="tracking-class"><strong>${escapeHtml(item.className)}</strong><span>${escapeHtml(item.teacherId)}</span></div>
-          <div class="tracking-progress">
-            <div class="tracking-progress-head"><span>Marks</span><strong>${item.completedCount}/${item.expectedCount} subjects</strong></div>
+    if (marksContainer) {
+      marksContainer.innerHTML = rows.map((item) => {
+        const percent = item.expectedCount ? Math.round((item.completedCount / item.expectedCount) * 100) : 0;
+        const complete = item.pendingCount === 0 && item.missingRollEntries === 0;
+        const statusClass = complete ? 'success' : item.completedCount ? 'warning' : 'danger';
+        const pendingText = item.pendingSubjects.length
+          ? item.pendingSubjects.slice(0, 4).join(', ') + (item.pendingSubjects.length > 4 ? ` +${item.pendingSubjects.length - 4}` : '')
+          : 'None';
+        return `<article class="premium-class-row">
+          <div class="premium-class-identity"><strong>${escapeHtml(item.className)}</strong><span>${escapeHtml(item.teacherId)}</span></div>
+          <div class="premium-class-main">
+            <div class="premium-progress-head"><span>Subjects complete</span><strong>${item.completedCount}/${item.expectedCount}</strong></div>
             <div class="progress-track"><span style="width:${Math.max(0, Math.min(100, percent))}%"></span></div>
-            <small>${item.pendingSubjects.length ? `Pending: ${escapeHtml(item.pendingSubjects.slice(0, 3).join(', '))}${item.pendingSubjects.length > 3 ? '…' : ''}` : 'All subjects recorded'}</small>
+            <div class="premium-detail-line"><span><b>Pending:</b> ${escapeHtml(pendingText)}</span><span><b>Missing roll entries:</b> ${item.missingRollEntries}</span></div>
           </div>
-          <div class="tracking-papers"><span>Question Papers</span><strong>${paperSummary(item)}</strong><small>${item.pendingPaperSubjects.length ? `Pending: ${escapeHtml(item.pendingPaperSubjects.slice(0, 3).join(', '))}${item.pendingPaperSubjects.length > 3 ? '…' : ''}` : 'All applicable subjects submitted'}</small></div>
-          <div class="tracking-status"><span class="status-chip ${statusClass}">${escapeHtml(statusText)}</span></div>
-          <div class="tracking-actions"><button class="btn compact" type="button" data-open-class="${escapeHtml(item.className)}">View</button></div>
+          <span class="status-chip ${statusClass}">${complete ? 'Complete' : 'Action needed'}</span>
+          <button class="btn compact" type="button" data-open-class="${escapeHtml(item.className)}">View Marks</button>
         </article>`;
+      }).join('');
+    }
+
+    if (papersContainer) {
+      papersContainer.innerHTML = rows.map((item) => {
+        const percent = item.paperExpectedCount ? Math.round((item.paperApprovedCount / item.paperExpectedCount) * 100) : 0;
+        const complete = item.paperExpectedCount > 0 && item.paperApprovedCount === item.paperExpectedCount;
+        const statusClass = complete ? 'success' : item.paperApprovedCount ? 'warning' : 'danger';
+        const missingText = item.pendingPaperSubjects.length
+          ? item.pendingPaperSubjects.slice(0, 4).join(', ') + (item.pendingPaperSubjects.length > 4 ? ` +${item.pendingPaperSubjects.length - 4}` : '')
+          : 'None';
+        return `<article class="premium-class-row">
+          <div class="premium-class-identity"><strong>${escapeHtml(item.className)}</strong><span>${escapeHtml(item.teacherId)}</span></div>
+          <div class="premium-class-main">
+            <div class="premium-progress-head"><span>Approved papers</span><strong>${item.paperApprovedCount}/${item.paperExpectedCount}</strong></div>
+            <div class="progress-track paper-progress"><span style="width:${Math.max(0, Math.min(100, percent))}%"></span></div>
+            <div class="premium-detail-line"><span><b>Missing:</b> ${escapeHtml(missingText)}</span><span><b>Workflow:</b> ${item.awaiting} review · ${item.corrections} correction</span></div>
+          </div>
+          <span class="status-chip ${statusClass}">${complete ? 'Complete' : 'Action needed'}</span>
+          <button class="btn compact" type="button" data-open-paper-class="${escapeHtml(item.className)}">View Papers</button>
+        </article>`;
+      }).join('');
+    }
+  }
+
+  function renderRecentActivity() {
+    const container = byId('recentActivityList');
+    if (!container) return;
+    const items = principalActivity.slice(0, 6);
+    if (!items.length) {
+      container.innerHTML = '<div class="empty-state"><strong>No recent activity</strong>Paper decisions and reminders will appear here.</div>';
+      return;
+    }
+    container.innerHTML = items.map((item) => {
+      const type = String(item.type || 'Activity').trim();
+      const message = String(item.message || '').trim();
+      const context = [item.className, item.subjects, item.teacherId].filter(Boolean).join(' · ');
+      return `<article class="premium-activity-item">
+        <span class="premium-activity-marker" aria-hidden="true"></span>
+        <div><strong>${escapeHtml(type)}</strong><span>${escapeHtml(message || context || 'Workflow updated')}</span><small>${escapeHtml(context)}${context ? ' · ' : ''}${escapeHtml(window.BGPS_DATA.safeDate(item.timestamp) || 'Recently')}</small></div>
+      </article>`;
     }).join('');
   }
 
@@ -715,8 +786,7 @@
     renderMetrics();
     renderActions();
     renderClassTracking();
-    renderTeacherProgress();
-    if (byId(PENDING_SUMMARY_IDS.overlay)?.classList.contains('is-open')) renderPendingSummary();
+    renderRecentActivity();
   }
 
   async function refresh(showToast) {
@@ -724,13 +794,16 @@
     const button = byId('refreshPrincipalDashboard');
     if (button) { button.disabled = true; button.textContent = 'Refreshing…'; }
     try {
-      const [marksResult, paperRows] = await Promise.all([
+      const [marksResult, paperRows, activityResult] = await Promise.all([
         window.BGPS_API.getMarks({}),
-        window.BGPS_PAPERS.load(false)
+        window.BGPS_PAPERS.load(false),
+        window.BGPS_API.listPrincipalActivity().catch(() => ({ activity: [] }))
       ]);
       marksRows = dedupeMarks(marksResult.rows || []);
       papers = Array.isArray(paperRows) ? paperRows : [];
+      principalActivity = Array.isArray(activityResult?.activity) ? activityResult.activity : [];
       configureAcademicYearFilter();
+      configureClassFilter();
       renderAll();
       if (showToast) window.BGPS_APP.toast('Dashboard refreshed.');
     } catch (error) {
@@ -764,6 +837,14 @@
       if (search) { search.value = teacherPaperButton.dataset.teacherPapers || ''; window.BGPS_PAPERS.render(); }
       return;
     }
+    const paperClassButton = event.target.closest('[data-open-paper-class]');
+    if (paperClassButton) {
+      window.BGPS_APP.openView('papers');
+      const classFilter = byId('paperClassFilter');
+      if (classFilter) classFilter.value = paperClassButton.dataset.openPaperClass || '';
+      window.BGPS_PAPERS.render();
+      return;
+    }
     const paperButton = event.target.closest('[data-open-paper]');
     if (paperButton) {
       window.BGPS_APP.openView('papers');
@@ -779,6 +860,18 @@
     const kpi = event.target.closest('[data-dashboard-action]');
     if (!kpi) return;
     const action = kpi.dataset.dashboardAction;
+    if (action === 'marks-pending') {
+      byId('marksClassProgressList')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (action === 'papers-all') {
+      byId('paperClassProgressList')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (action === 'action-required') {
+      byId('actionRequiredList')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     if (action.startsWith('papers-')) {
       const status = action === 'papers-review' ? 'Submitted' : action === 'papers-correction' ? 'Correction Required' : '';
       window.BGPS_APP.openView('papers');
@@ -795,7 +888,7 @@
     byId('refreshPrincipalDashboard')?.addEventListener('click', () => refresh(true));
     byId('dashboardAcademicYearFilter')?.addEventListener('change', renderAll);
     byId('dashboardExamFilter')?.addEventListener('change', renderAll);
-    byId('classTrackingSearch')?.addEventListener('input', renderClassTracking);
+    byId('dashboardClassFilter')?.addEventListener('change', renderAll);
     byId('adminHomeContent')?.addEventListener('click', handleDashboardClick);
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && byId(PENDING_SUMMARY_IDS.overlay)?.classList.contains('is-open')) closePendingSummary();
@@ -806,27 +899,23 @@
     session = user;
     configureExamFilter();
     configureAcademicYearFilter();
+    configureClassFilter();
     bind();
-    ensurePendingSummaryUi();
-    const summaryButton = byId(PENDING_SUMMARY_IDS.button);
-    if (summaryButton) summaryButton.style.display = user.isAdmin ? 'flex' : 'none';
     if (user.isAdmin) await refresh(false);
-    else closePendingSummary();
   }
 
   function reset() {
     session = null;
     marksRows = [];
     papers = [];
+    principalActivity = [];
     classProgress = [];
     teacherProgress = [];
     pendingSummaryMode = 'missing';
     pendingSummaryExpandedClass = '';
-    closePendingSummary();
-    const summaryButton = byId(PENDING_SUMMARY_IDS.button);
-    if (summaryButton) summaryButton.style.display = 'none';
-    setText('dashPapersResubmitted', '—');
-    setText('dashMarksPending', '—');
+    setText('dashMarksComplete', '—');
+    setText('dashPapersComplete', '—');
+    setText('dashActionRequired', '—');
   }
 
   window.BGPS_DASHBOARD = Object.freeze({ onAuthenticated, refresh, reset, openClassReport, openPendingSummary });

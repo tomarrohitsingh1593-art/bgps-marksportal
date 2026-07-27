@@ -120,6 +120,7 @@
   let editorRange = null;
   let dirty = false;
   let editRevision = 0;
+  let previewedRevision = -1;
   let currentObjectUrl = '';
   let currentPreviewUrl = '';
   let dragImage = null;
@@ -1018,7 +1019,7 @@
         #bgpsMobilePaperBar{display:none}
         @media(max-width:820px){
           body.bgps-paper-editor-active{overflow-x:hidden}
-          body.bgps-paper-editor-active #bgpsMobilePaperBar:not([hidden]){display:block;position:fixed;left:0;right:0;bottom:0;z-index:5000;background:#fff;border-top:1px solid #c8d5e2;box-shadow:0 -8px 26px rgba(15,42,76,.16);padding:7px 8px calc(7px + env(safe-area-inset-bottom))}
+          body.bgps-paper-editor-active #bgpsMobilePaperBar:not([hidden]){display:block;position:sticky;top:0;z-index:70;margin:0 0 10px;background:#fff;border:1px solid #c8d5e2;border-radius:12px;box-shadow:0 8px 24px rgba(15,42,76,.12);padding:7px 8px}
           #bgpsMobilePaperBar .bgps-mobile-actions{display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding-bottom:2px}
           #bgpsMobilePaperBar .bgps-mobile-actions::-webkit-scrollbar{display:none}
           #bgpsMobilePaperBar button{flex:0 0 auto;min-width:64px;min-height:44px;border:1px solid #b9cad9;border-radius:10px;background:#fff;color:#123e6c;font:700 12px/1.1 inherit;padding:6px 8px;touch-action:manipulation}
@@ -1026,7 +1027,7 @@
           #bgpsMobilePaperBar button.success{background:#176f3e;color:#fff;border-color:#176f3e}
           #bgpsMobilePaperBar button.danger{color:#a52323;border-color:#efb8b8;background:#fff5f5}
           #bgpsMobilePaperSaveState{display:block;margin:4px 2px 0;color:#5d7185;font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-          #paperEditorWorkspace{padding-bottom:96px}
+          #paperEditorWorkspace{padding-bottom:20px}
           #paperEditorWorkspace .paper-editor-heading{gap:8px;margin-bottom:8px}
           #paperEditorWorkspace .paper-editor-heading .view-actions #previewCurrentPaper,
           #paperEditorWorkspace .paper-editor-heading .view-actions #savePaperDraft,
@@ -1037,18 +1038,18 @@
           #paperEditorWorkspace .paper-editor-layout{display:block!important}
           #paperEditorWorkspace .paper-editor-sidebar{display:none!important}
           #paperEditorWorkspace .paper-composer-card{border-radius:10px;overflow:visible}
-          #paperEditorToolbar{position:sticky;top:0;z-index:60;box-shadow:0 4px 13px rgba(15,42,76,.08)}
+          #paperEditorToolbar{position:sticky;top:64px;z-index:60;box-shadow:0 4px 13px rgba(15,42,76,.08)}
           #paperEditorToolbar .toolbar-row{flex-wrap:nowrap!important;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:7px!important}
           #paperEditorToolbar .toolbar-row::-webkit-scrollbar{display:none}
           #paperEditorToolbar .editor-command,#paperEditorToolbar .question-marks-control{flex:0 0 auto;min-height:42px}
           #paperEditorToolbar .editor-command{font-size:12px;padding:7px 10px}
           #paperEditorWorkspace .paper-ruler{display:none!important}
           #paperEditorWorkspace .paper-canvas-wrap{padding:0!important;overflow:visible!important;max-height:none!important;background:#fff}
-          #paperEditorWorkspace .paper-sheet{width:100%!important;min-height:calc(100dvh - 160px)!important;margin:0!important;padding:20px 14px 120px!important;box-shadow:none!important}
+          #paperEditorWorkspace .paper-sheet{width:100%!important;min-height:calc(100dvh - 160px)!important;margin:0!important;padding:20px 14px 40px!important;box-shadow:none!important}
           #paperEditorWorkspace .paper-sheet-header h2{font-size:22px}
           #paperEditorWorkspace .paper-sheet-meta{grid-template-columns:1fr!important;font-size:12px}
           #paperEditorWorkspace .paper-sheet-meta>span:nth-child(even){justify-content:flex-start;text-align:left}
-          #paperContentEditor{min-height:58dvh!important;padding-bottom:120px!important;font-size:16px!important;line-height:1.48!important;overflow-wrap:anywhere}
+          #paperContentEditor{min-height:58dvh!important;padding-bottom:40px!important;font-size:16px!important;line-height:1.48!important;overflow-wrap:anywhere}
           #paperContentEditor .diagram-box.has-image{max-width:100%!important;touch-action:none}
           #paperContentEditor .bgps-image-resize-handle{width:30px!important;height:30px!important;right:-12px!important;bottom:-12px!important;border-radius:50%!important;touch-action:none!important}
           #paperContentEditor .bgps-image-drag-handle{width:34px!important;height:34px!important;touch-action:none!important}
@@ -1095,7 +1096,9 @@
           <button class="primary" type="button" data-mobile-paper-action="done">Done</button>
         </div>
         <small id="bgpsMobilePaperSaveState">Ready</small>`;
-      document.body.appendChild(mobilePaperBar);
+      const editorLayout = byId('paperEditorWorkspace')?.querySelector('.paper-editor-layout');
+      if (editorLayout?.parentNode) editorLayout.parentNode.insertBefore(mobilePaperBar, editorLayout);
+      else document.body.appendChild(mobilePaperBar);
       mobilePaperBar.addEventListener('click', (event) => {
         const button = event.target.closest('[data-mobile-paper-action]');
         if (!button) return;
@@ -1257,10 +1260,24 @@
     if (!mobileViewport() && typeof node.focus === 'function') window.setTimeout(() => node.focus({ preventScroll: true }), 300);
   }
 
+  function setPaperWorkflowStage(stage) {
+    const order = ['compose', 'save', 'preview', 'submit'];
+    const currentIndex = Math.max(0, order.indexOf(stage));
+    const correction = Boolean(currentRevision.parentPaperId);
+    setText('paperWorkflowComposeLabel', correction ? 'Correct' : 'Create');
+    setText('paperWorkflowSubmitLabel', correction ? 'Resubmit' : 'Submit');
+    document.querySelectorAll('[data-paper-workflow-step]').forEach((node) => {
+      const index = order.indexOf(node.dataset.paperWorkflowStep);
+      node.classList.toggle('is-active', index === currentIndex);
+      node.classList.toggle('is-complete', index < currentIndex);
+    });
+  }
+
   function markDirty() {
     clearPaperValidation();
     dirty = true;
     editRevision += 1;
+    setPaperWorkflowStage('compose');
     const message = currentDraftId ? 'Changes not saved' : 'Draft not saved';
     setAutosaveStatus(message, 'dirty');
     scheduleLocalRecovery();
@@ -1270,6 +1287,7 @@
 
   function markSaved(message) {
     dirty = false;
+    setPaperWorkflowStage('save');
     setAutosaveStatus(message || 'Draft saved', 'saved');
     syncMobilePaperBar();
   }
@@ -1654,6 +1672,7 @@
     currentRevision = {};
     dirty = false;
     editRevision = 0;
+    previewedRevision = -1;
     selectedImage = null;
     editorRange = null;
     ['paperTitleInput', 'paperMaxMarksInput', 'paperTimeInput', 'paperDateInput', 'paperChaptersInput', 'paperInstructionsInput'].forEach((id) => { const node = byId(id); if (node) node.value = ''; });
@@ -1675,6 +1694,7 @@
     if (status) { status.textContent = 'Not saved yet'; status.className = 'paper-save-status'; }
     deselectImage();
     syncDraftDeleteControl();
+    setPaperWorkflowStage('compose');
     updateChecks();
   }
 
@@ -2076,6 +2096,8 @@
         const preview = await window.BGPS_API.getPaperDraftPreview(draftId);
         showHtmlPreview(preview.documentHtml, preview.title || draft.title, `${draft.className} · ${draft.subject} · ${draft.exam}`, 'Preview ready', true);
       }
+      previewedRevision = editRevision;
+      setPaperWorkflowStage('preview');
     } catch (error) {
       const body = byId('teacherPaperPreviewBody');
       if (body && byId('teacherPaperPreviewModal')?.classList.contains('open')) {
@@ -2130,6 +2152,11 @@
       clearPaperValidation();
       showSubmitError('');
       pendingPdfUpload = null;
+      if (previewedRevision !== editRevision) {
+        toast('Opening the latest preview. Review it, then choose Continue to Submit.');
+        previewCurrent();
+        return;
+      }
       const resubmitting = Boolean(currentRevision.parentPaperId);
       setText('paperSubmitTitle', resubmitting ? 'Resubmit Corrected Question Paper' : 'Submit Question Paper');
       const draft = collectDraft();
@@ -2142,6 +2169,7 @@
       setText('submitPaperMaxMarks', draft.maxMarks);
       const confirm = byId('confirmPaperSubmit');
       if (confirm) confirm.textContent = resubmitting ? 'Resubmit for Approval' : 'Submit for Approval';
+      setPaperWorkflowStage('submit');
       dismissMobileKeyboard();
       openModal('paperSubmitModal');
     } catch (error) {
@@ -2174,6 +2202,8 @@
       pendingPdfUpload = null;
       openModal('paperUploadModal');
       setUploadProgress('The file was not submitted. Review it again when you are ready.');
+    } else {
+      setPaperWorkflowStage(previewedRevision === editRevision ? 'preview' : (dirty ? 'compose' : 'save'));
     }
   }
 
@@ -2183,6 +2213,7 @@
     setText('submittedPaperId', result?.paperId || 'Recorded');
     setText('submittedPaperStatus', result?.status || 'Submitted');
     setText('submittedPaperVersion', result?.version || 1);
+    setPaperWorkflowStage('submit');
     openModal('paperSubmitSuccessModal');
   }
 
@@ -2964,7 +2995,7 @@
     if (!cropState) return;
     const state = cropState;
     const applyButton = byId('bgpsImageCropModal')?.querySelector('[data-crop-action="apply"]');
-    if (applyButton) { applyButton.disabled = true; applyButton.textContent = 'Croppingâ€¦'; }
+    if (applyButton) { applyButton.disabled = true; applyButton.textContent = 'Cropping…'; }
     try {
       if (!state.box.isConnected) throw new Error('The selected image is no longer available.');
       const sourceX = Math.max(0, Math.min(state.sourceImage.naturalWidth - 1, Math.round(state.rect.x / state.scale)));

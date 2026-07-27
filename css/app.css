@@ -1525,3 +1525,71 @@ body.modal-open { overflow: hidden; }
 .bgps-unified-preview-heading>div:first-child>strong,.bgps-unified-preview-heading>div:first-child>small{display:none}
 .bgps-unified-preview-heading>div:first-child{display:flex;align-items:center}
 .bgps-unified-preview-heading{min-height:48px}
+
+/* ===== V13.3 premium command centre and overlap-free paper workflow ===== */
+.premium-principal-heading{align-items:flex-end;margin-bottom:18px;padding:20px 22px;border:1px solid #d7e3ee;border-radius:18px;background:linear-gradient(135deg,#fff 0%,#f4f8fc 70%,#edf5fb 100%);box-shadow:0 14px 38px rgba(14,45,77,.08)}
+.premium-principal-heading .eyebrow{margin-bottom:5px;color:#2868aa;font-size:11px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
+.premium-principal-heading h1{margin:0;color:#0e355d;font-size:clamp(25px,3vw,36px);letter-spacing:-.035em}
+.premium-principal-heading p{max-width:720px;margin:7px 0 0;color:#5d7288;line-height:1.55}
+.premium-principal-heading .dashboard-controls{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px}
+.premium-principal-heading .dashboard-controls select{min-width:145px;min-height:44px;border-color:#cad9e7;border-radius:11px;background:#fff;color:#183e65;font-weight:750;box-shadow:0 4px 14px rgba(14,53,93,.05)}
+.premium-principal-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.premium-kpi{position:relative;min-height:146px;padding:20px 20px 18px;border:1px solid #d9e4ee;border-radius:18px;background:#fff;text-align:left;overflow:hidden;box-shadow:0 12px 30px rgba(12,43,74,.07);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.premium-kpi::after{content:"";position:absolute;right:-24px;top:-24px;width:96px;height:96px;border-radius:50%;background:currentColor;opacity:.06}
+.premium-kpi:hover{transform:translateY(-2px);border-color:#a8bed2;box-shadow:0 16px 38px rgba(12,43,74,.11)}
+.premium-kpi>span{color:#5b7085;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.premium-kpi>strong{display:block;margin:11px 0 8px;color:#103c69;font-size:30px;line-height:1}
+.premium-kpi>small{display:block;color:#62768a;font-size:12px;line-height:1.45}
+.premium-kpi.marks{color:#177a4c}.premium-kpi.papers{color:#2868aa}.premium-kpi.action{color:#b56510}
+.premium-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.72fr);gap:16px;margin-bottom:16px}
+.premium-progress-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.premium-class-list,.premium-activity-list{display:grid;gap:10px}
+.premium-class-row{display:grid;grid-template-columns:minmax(105px,.6fr) minmax(0,2fr) auto auto;align-items:center;gap:14px;padding:14px;border:1px solid #dce6ef;border-radius:14px;background:#fff;box-shadow:0 5px 16px rgba(14,45,77,.045)}
+.premium-class-identity{display:grid;gap:3px}.premium-class-identity strong{color:#123f70;font-size:15px}.premium-class-identity small{color:#6a7d91}
+.premium-class-main{display:grid;gap:7px;min-width:0}.premium-progress-head{display:flex;justify-content:space-between;gap:10px;color:#425d78;font-size:12px}.premium-progress-head strong{color:#163f67}
+.premium-detail-line{color:#687b8e;font-size:11px;line-height:1.45;overflow-wrap:anywhere}
+.premium-class-row .progress-bar{height:7px;border-radius:999px;background:#e8eef4;overflow:hidden}.premium-class-row .progress-bar>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#177a4c,#39a46f)}
+.premium-class-row.paper-progress .progress-bar>span{background:linear-gradient(90deg,#2868aa,#5c9bd2)}
+.premium-class-row .status-chip{white-space:nowrap}.premium-class-row .btn{min-height:40px;white-space:nowrap}
+.premium-activity-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:11px 12px;border:1px solid #e0e8ef;border-radius:12px;background:#fff}
+.premium-activity-dot{width:9px;height:9px;margin-top:5px;border-radius:50%;background:#2868aa;box-shadow:0 0 0 4px rgba(40,104,170,.1)}
+.premium-activity-item strong{display:block;color:#173f68;font-size:12px}.premium-activity-item small{display:block;margin-top:3px;color:#6d8093;line-height:1.4}
+
+.paper-workflow-stepper{display:grid;grid-template-columns:auto minmax(18px,1fr) auto minmax(18px,1fr) auto minmax(18px,1fr) auto;align-items:center;margin:0 0 14px;padding:11px 16px;border:1px solid #dce6ef;border-radius:14px;background:#fff;box-shadow:0 7px 20px rgba(14,45,77,.05)}
+.paper-workflow-step{display:flex;align-items:center;gap:7px;color:#7a8b9c;font-size:12px}
+.paper-workflow-step>span{display:grid;place-items:center;width:25px;height:25px;border:1px solid #cdd9e4;border-radius:50%;background:#f5f8fb;color:#63788d;font-weight:900}
+.paper-workflow-step.is-active{color:#123f70}.paper-workflow-step.is-active>span{border-color:#2868aa;background:#2868aa;color:#fff;box-shadow:0 0 0 4px rgba(40,104,170,.12)}
+.paper-workflow-step.is-complete{color:#187348}.paper-workflow-step.is-complete>span{border-color:#188f4d;background:#188f4d;color:#fff}
+.paper-workflow-line{height:2px;margin:0 9px;background:#dde6ee}
+.paper-workflow-step.is-complete+.paper-workflow-line{background:#65af82}
+.paper-editor-layout>*{min-width:0}.paper-content-editor,.paper-sheet{overflow-wrap:anywhere}.paper-content-editor img,.paper-sheet img{max-width:100%;height:auto}
+
+/* Review is a full workspace with a permanent action column, never a drawer overlay. */
+#paperReviewModal{padding:0;background:#edf2f6}
+#paperReviewModal>.paper-review-modal{width:100vw;height:100dvh;max-width:none;max-height:none;border-radius:0;box-shadow:none}
+.paper-review-body{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(320px,370px)!important;overflow:hidden!important}
+.paper-review-workspace{height:auto!important;min-width:0;border-right:1px solid #d7e1eb!important}
+.paper-review-panel{position:static!important;z-index:auto!important;width:auto!important;height:auto!important;padding:0 18px 18px!important;transform:none!important;transition:none!important;box-shadow:none!important;overflow:auto!important}
+.paper-review-panel-backdrop,#togglePaperReviewPanel,#closePaperReviewPanel{display:none!important}
+.paper-review-panel-head{margin:0 -18px 12px!important}
+.paper-review-actions{bottom:-18px}
+
+@media(max-width:1100px){
+  .premium-progress-grid{grid-template-columns:minmax(0,1fr)}
+  .premium-class-row{grid-template-columns:minmax(100px,.55fr) minmax(0,2fr) auto auto}
+}
+@media(max-width:820px){
+  .premium-principal-heading{align-items:stretch;padding:16px}.premium-principal-heading .dashboard-controls{justify-content:flex-start}.premium-principal-heading .dashboard-controls select{flex:1 1 150px}
+  .premium-dashboard-grid{grid-template-columns:minmax(0,1fr)}
+  .paper-review-body{display:flex!important;flex-direction:column;overflow:auto!important}
+  .paper-review-workspace{flex:0 0 auto;min-height:68vh;height:68vh!important;border-right:0!important;border-bottom:1px solid #d7e1eb}
+  .paper-review-panel{flex:0 0 auto;width:100%!important;height:auto!important;overflow:visible!important}
+  .paper-review-actions{position:static!important;margin-bottom:0}
+}
+@media(max-width:680px){
+  .premium-principal-kpis{grid-template-columns:minmax(0,1fr)}.premium-kpi{min-height:118px}
+  .premium-class-row{grid-template-columns:minmax(0,1fr);gap:9px}.premium-class-row .status-chip{justify-self:start}.premium-class-row .btn{width:100%}
+  .paper-workflow-stepper{padding:10px 8px}.paper-workflow-step{display:grid;justify-items:center;gap:4px;font-size:10px}.paper-workflow-line{margin:0 4px}
+  .paper-review-header{flex-wrap:wrap}.paper-review-header .modal-close{min-width:44px;min-height:44px}
+  button,.btn,select,input[type="button"],input[type="submit"]{touch-action:manipulation}
+}

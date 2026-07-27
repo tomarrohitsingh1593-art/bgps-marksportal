@@ -7,7 +7,7 @@
 <meta content="light only" name="color-scheme"/>
 <meta content="#0b294a" name="theme-color"/>
 <title>BG Public School | Academic Portal</title>
-<link href="css/app.css" rel="stylesheet"/>
+<link href="css/app.css?v=13.3.0" rel="stylesheet"/>
 <!-- BGPS modular shell: app logic and future fixes are loaded externally. --></head>
 <body>
 <section aria-labelledby="loginTitle" class="login-screen" id="loginScreen">
@@ -132,74 +132,54 @@
 </section>
 </div>
 <div hidden="" id="adminHomeContent">
-<div class="dashboard-title-row principal-title-row">
+<div class="dashboard-title-row principal-title-row premium-principal-heading">
 <div>
-<div class="eyebrow">Principal Dashboard</div>
-<h1>Academic Overview</h1>
-<p>Review marks progress, paper approvals and actions requiring attention.</p>
+<div class="eyebrow">Principal Command Centre</div>
+<h1>Academic Readiness</h1>
+<p>See exactly which classes, subjects and papers need action before the examination.</p>
 </div>
 <div class="dashboard-controls">
 <label class="compact-field" for="dashboardAcademicYearFilter"><span>Academic Year</span><select aria-label="Academic year" id="dashboardAcademicYearFilter"></select></label>
 <label class="compact-field" for="dashboardExamFilter"><span>Exam / Term</span><select id="dashboardExamFilter"></select></label>
+<label class="compact-field" for="dashboardClassFilter"><span>Class</span><select aria-label="Dashboard class" id="dashboardClassFilter"><option value="">All classes</option></select></label>
 <button class="btn primary" id="refreshPrincipalDashboard" type="button">Refresh</button>
 </div>
 </div>
-<section aria-label="Principal summary" class="principal-kpis">
-<button class="principal-kpi resubmitted" data-dashboard-action="papers-resubmitted" type="button">
-<span>Corrected &amp; Resubmitted</span><strong id="dashPapersResubmitted">—</strong><small>Ready for principal re-review</small>
+<section aria-label="Principal summary" class="principal-kpis premium-principal-kpis">
+<button class="principal-kpi premium-kpi marks" data-dashboard-action="marks-pending" type="button">
+<span>Marks Complete</span><strong id="dashMarksComplete">—</strong><small id="dashMarksPendingClasses">Checking class-wise marks…</small>
 </button>
-<button class="principal-kpi warning" data-dashboard-action="marks-pending" type="button">
-<span>Marks Pending</span><strong id="dashMarksPending">—</strong><small>Subjects without records</small>
+<button class="principal-kpi premium-kpi papers" data-dashboard-action="papers-all" type="button">
+<span>Papers Complete</span><strong id="dashPapersComplete">—</strong><small id="dashPapersMissing">Checking class-wise papers…</small>
 </button>
-<button class="principal-kpi" data-dashboard-action="teachers-pending" type="button">
-<span>Teachers Pending</span><strong id="dashTeachersPending">—</strong><small>Classes requiring follow-up</small>
-</button>
-<button class="principal-kpi" data-dashboard-action="papers-all" type="button">
-<span>Papers Submitted</span><strong id="dashPapersSubmitted">—</strong><small>All submitted papers</small>
-</button>
-<button class="principal-kpi warning" data-dashboard-action="papers-review" type="button">
-<span>Review Required</span><strong id="dashPapersReview">—</strong><small>Awaiting principal review</small>
-</button>
-<button class="principal-kpi danger" data-dashboard-action="papers-correction" type="button">
-<span>Corrections Pending</span><strong id="dashPapersCorrection">—</strong><small>Returned to teachers</small>
+<button class="principal-kpi premium-kpi action" data-dashboard-action="action-required" type="button">
+<span>Action Required</span><strong id="dashActionRequired">—</strong><small id="dashActionContext">Review, correction and missing work</small>
 </button>
 </section>
-<section class="principal-dashboard-grid section-gap">
-<article class="page-card teacher-progress-primary">
-<div class="card-head"><div><h2>Teacher Progress</h2><p>Marks and question-paper progress by teacher.</p></div></div>
-<div class="card-body teacher-progress-list" id="teacherProgressList">
-<div class="empty-state"><strong>Loading teacher progress</strong>Please wait.</div>
-</div>
-</article>
-<aside class="admin-side-stack">
-<section class="page-card">
-<div class="card-head"><div><h2>Paper Status</h2><p>Current question-paper workflow.</p></div></div>
-<div class="card-body paper-status-summary">
-<button data-paper-status="Submitted" type="button"><span>Awaiting review</span><strong id="paperStatusSubmitted">—</strong></button>
-<button data-paper-status="Approved" type="button"><span>Approved</span><strong id="paperStatusApproved">—</strong></button>
-<button data-paper-status="Correction Required" type="button"><span>Correction required</span><strong id="paperStatusCorrection">—</strong></button>
-<button data-paper-status="Locked" type="button"><span>Locked</span><strong id="paperStatusLocked">—</strong></button>
-</div>
-</section>
-<section class="page-card action-card action-card-compact">
+<section class="premium-dashboard-grid section-gap">
+<section class="page-card premium-action-card">
 <div class="card-head">
-<div><h2>Action Required</h2><p>Open the exact task requiring attention.</p></div>
+<div><div class="eyebrow">Priority Queue</div><h2>Action Required</h2><p>Corrected papers first, then reviews and incomplete marks.</p></div>
 <span class="count-badge" id="actionRequiredCount">0</span>
 </div>
 <div class="card-body action-list" id="actionRequiredList">
 <div class="empty-state"><strong>Loading actions</strong>Please wait while the latest records are checked.</div>
 </div>
 </section>
+<aside class="page-card premium-activity-card">
+<div class="card-head"><div><div class="eyebrow">Live Updates</div><h2>Recent Activity</h2><p>Latest Principal and teacher workflow events.</p></div></div>
+<div class="card-body premium-activity-list" id="recentActivityList"><div class="empty-state"><strong>Loading activity</strong>Please wait.</div></div>
 </aside>
 </section>
-<section class="page-card section-gap">
-<div class="card-head tracking-head">
-<div><h2>Class Progress</h2><p>Marks and paper completion for every class.</p></div>
-<div class="table-search"><input aria-label="Search class tracking" id="classTrackingSearch" placeholder="Search class or teacher" type="search"/></div>
-</div>
-<div class="card-body class-tracking-list" id="classTrackingList">
-<div class="empty-state"><strong>Loading class progress</strong>Please wait while the dashboard is prepared.</div>
-</div>
+<section class="premium-progress-grid section-gap">
+<article class="page-card premium-progress-card">
+<div class="card-head"><div><div class="eyebrow">Class-wise Marks</div><h2>Marks Completion</h2><p>Pending subjects and missing roll entries for every class.</p></div></div>
+<div class="card-body premium-class-list" id="marksClassProgressList"><div class="empty-state"><strong>Loading marks completion</strong>Please wait.</div></div>
+</article>
+<article class="page-card premium-progress-card">
+<div class="card-head"><div><div class="eyebrow">Class-wise Papers</div><h2>Paper Completion</h2><p>Approved, in review, correction and missing subject papers.</p></div></div>
+<div class="card-body premium-class-list" id="paperClassProgressList"><div class="empty-state"><strong>Loading paper completion</strong>Please wait.</div></div>
+</article>
 </section>
 </div>
 </section>
@@ -395,6 +375,15 @@
 </div>
 <div class="correction-banner" hidden="" id="paperCorrectionBanner"><strong>Principal correction remarks</strong><span id="paperCorrectionNote"></span></div>
 <div aria-live="assertive" class="paper-validation-alert" hidden="" id="paperValidationAlert" role="alert"><div><strong id="paperValidationTitle">Please check the paper</strong><div id="paperValidationMessage"></div></div><button aria-label="Dismiss paper error" id="dismissPaperValidation" type="button">×</button></div>
+<section aria-label="Paper workflow progress" class="paper-workflow-stepper" id="paperWorkflowStepper">
+<div class="paper-workflow-step is-active" data-paper-workflow-step="compose"><span>1</span><strong id="paperWorkflowComposeLabel">Create</strong></div>
+<div class="paper-workflow-line" aria-hidden="true"></div>
+<div class="paper-workflow-step" data-paper-workflow-step="save"><span>2</span><strong>Save</strong></div>
+<div class="paper-workflow-line" aria-hidden="true"></div>
+<div class="paper-workflow-step" data-paper-workflow-step="preview"><span>3</span><strong>Preview</strong></div>
+<div class="paper-workflow-line" aria-hidden="true"></div>
+<div class="paper-workflow-step" data-paper-workflow-step="submit"><span>4</span><strong id="paperWorkflowSubmitLabel">Submit</strong></div>
+</section>
 <section class="paper-setup-card">
 <div class="paper-setup-grid">
 <div class="field paper-title-field"><label for="paperTitleInput">Paper Title</label><input id="paperTitleInput" maxlength="180" placeholder="Class 10 Physics Unit Test 1"/></div>
@@ -685,20 +674,20 @@ Show complete working wherever required." rows="3"></textarea></div>
 </div>
 <div aria-live="polite" class="toast-region" id="toastRegion"></div>
 <!-- BGPS frontend modules: load order is intentional. -->
-<script defer src="js/app-config.js"></script>
-<script defer src="js/modules/state.js"></script>
-<script defer src="js/modules/api.js"></script>
-<script defer src="js/modules/pdf-preview.js"></script>
-<script defer src="js/modules/data.js"></script>
-<script defer src="js/modules/marks.js"></script>
-<script defer src="js/modules/dashboard.js"></script>
-<script defer src="js/modules/a4-renderer.js"></script>
-<script defer src="js/modules/papers.js"></script>
-<script defer src="js/modules/paper-creator.js"></script>
-<script defer src="js/modules/reports.js"></script>
-<script defer src="js/modules/settings.js"></script>
-<script defer src="js/modules/auth.js"></script>
-<script defer src="js/app.js"></script>
-<script defer src="js/hotfix.js"></script>
+<script defer src="js/app-config.js?v=13.3.0"></script>
+<script defer src="js/modules/state.js?v=13.3.0"></script>
+<script defer src="js/modules/api.js?v=13.3.0"></script>
+<script defer src="js/modules/pdf-preview.js?v=13.3.0"></script>
+<script defer src="js/modules/data.js?v=13.3.0"></script>
+<script defer src="js/modules/marks.js?v=13.3.0"></script>
+<script defer src="js/modules/dashboard.js?v=13.3.0"></script>
+<script defer src="js/modules/a4-renderer.js?v=13.3.0"></script>
+<script defer src="js/modules/papers.js?v=13.3.0"></script>
+<script defer src="js/modules/paper-creator.js?v=13.3.0"></script>
+<script defer src="js/modules/reports.js?v=13.3.0"></script>
+<script defer src="js/modules/settings.js?v=13.3.0"></script>
+<script defer src="js/modules/auth.js?v=13.3.0"></script>
+<script defer src="js/app.js?v=13.3.0"></script>
+<script defer src="js/hotfix.js?v=13.3.0"></script>
 </body>
 </html>

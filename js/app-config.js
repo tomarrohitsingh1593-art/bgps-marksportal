@@ -1,6 +1,6 @@
 window.BGPS_CONFIG = Object.freeze({
   appName: 'BG Public School',
-  displayName: 'Academic Operations Portal - V13.3 Premium Workflow',
+  displayName: 'Academic Operations Portal - V13.4 Image Match Studio',
   webAppUrl: 'https://script.google.com/macros/s/AKfycbynrPG0HfLISVBMuGg1SRjnnwqpXwWm-yx_hcPo2CsmNdH9vOk4TKe3GKEvANdmsskq/exec',
   requestTimeoutMs: 25000,
   rollCount: 50

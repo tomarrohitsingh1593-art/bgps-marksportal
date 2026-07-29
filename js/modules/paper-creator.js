@@ -128,6 +128,8 @@
   let adminEditingPaperId = '';
   let dropMarker = null;
   let imageClipboard = null;
+  let floatingImageToolbar = null;
+  let floatingImageToolbarRaf = 0;
   let saveInFlight = false;
   let submitInFlight = false;
   let previewInFlight = false;
@@ -555,6 +557,17 @@
       imageButton.insertAdjacentElement('afterend', button);
       button.addEventListener('click', openWorksheetVectorLibrary);
     }
+    if (imageButton && !byId('openMatchFollowingBuilder')) {
+      const button = document.createElement('button');
+      button.id = 'openMatchFollowingBuilder';
+      button.type = 'button';
+      button.className = 'editor-command';
+      button.textContent = 'Match + Images';
+      button.title = 'Create a print-safe Match the Following question with text and images in locked rows';
+      const anchor = byId('openWorksheetVectors') || imageButton;
+      anchor.insertAdjacentElement('afterend', button);
+      button.addEventListener('click', openMatchFollowingBuilder);
+    }
 
     if (!byId('bgpsVectorLibraryStyles')) {
       const style = document.createElement('style');
@@ -605,6 +618,132 @@
       modal.addEventListener('click', (event) => { if (event.target === modal) closeWorksheetVectorLibrary(); });
       renderWorksheetVectorItems();
     }
+    ensureMatchFollowingBuilder();
+  }
+
+  function matchBuilderRow(index) {
+    const letter = String.fromCharCode(65 + index);
+    return `<div class="bgps-match-builder-row" data-match-builder-row>
+      <span class="bgps-match-row-number">${index + 1}</span>
+      <label><small>Column A statement</small><input data-match-statement type="text" placeholder="Type statement ${index + 1}"></label>
+      <label><small>Column B label</small><input data-match-label type="text" value="${letter}" maxlength="12" placeholder="${letter}"></label>
+      <label class="bgps-match-file-label"><small>Column B image</small><input data-match-image type="file" accept="image/png,image/jpeg,image/webp"><span>Select image</span></label>
+      <button class="bgps-match-remove" data-remove-match-row type="button" aria-label="Remove row">×</button>
+    </div>`;
+  }
+
+  function renumberMatchBuilderRows() {
+    byId('bgpsMatchBuilderRows')?.querySelectorAll('[data-match-builder-row]').forEach((row, index) => {
+      const number = row.querySelector('.bgps-match-row-number');
+      if (number) number.textContent = String(index + 1);
+      const statement = row.querySelector('[data-match-statement]');
+      if (statement) statement.placeholder = `Type statement ${index + 1}`;
+      const label = row.querySelector('[data-match-label]');
+      if (label && !normalize(label.value)) label.value = String.fromCharCode(65 + index);
+    });
+  }
+
+  function addMatchBuilderRow() {
+    const rows = byId('bgpsMatchBuilderRows');
+    if (!rows) return;
+    const count = rows.querySelectorAll('[data-match-builder-row]').length;
+    if (count >= 8) return toast('A maximum of 8 rows keeps the table readable on A4.', 'error');
+    rows.insertAdjacentHTML('beforeend', matchBuilderRow(count));
+    renumberMatchBuilderRows();
+  }
+
+  function openMatchFollowingBuilder() {
+    saveRange();
+    closeWorksheetVectorLibrary();
+    ensureMatchFollowingBuilder();
+    const rows = byId('bgpsMatchBuilderRows');
+    if (rows) rows.innerHTML = Array.from({ length: 4 }, (_, index) => matchBuilderRow(index)).join('');
+    const modal = byId('bgpsMatchBuilderModal');
+    if (!modal) return;
+    modal.hidden = false;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    window.setTimeout(() => rows?.querySelector('[data-match-statement]')?.focus(), 50);
+  }
+
+  function closeMatchFollowingBuilder() {
+    const modal = byId('bgpsMatchBuilderModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    if (!document.querySelector('.modal-backdrop.open,.bgps-vector-modal.open,.bgps-match-builder-modal.open')) document.body.classList.remove('modal-open');
+  }
+
+  async function insertMatchFollowingBlock() {
+    const rows = Array.from(byId('bgpsMatchBuilderRows')?.querySelectorAll('[data-match-builder-row]') || []);
+    if (rows.length < 2) return toast('Add at least two matching rows.', 'error');
+    const buildButton = byId('insertMatchFollowingBlock');
+    if (buildButton) {
+      buildButton.disabled = true;
+      buildButton.textContent = 'Preparing…';
+    }
+    try {
+      const items = await Promise.all(rows.map(async (row, index) => {
+        const statement = normalize(row.querySelector('[data-match-statement]')?.value) || `Statement ${index + 1}`;
+        const label = normalize(row.querySelector('[data-match-label]')?.value) || String.fromCharCode(65 + index);
+        const file = row.querySelector('[data-match-image]')?.files?.[0];
+        const source = file ? await compressImage(file) : '';
+        return { statement, label, source };
+      }));
+      const body = items.map((item, index) => {
+        const image = item.source
+          ? `<div class="diagram-box has-image bgps-img-center bgps-match-image" data-bgps-match-image="true" style="--bgps-image-width:72%;width:72%" contenteditable="false"><img class="diagram-image" src="${item.source}" alt="${escapeHtml(item.label)}"></div>`
+          : '<div class="bgps-match-image-placeholder">Paste / add image</div>';
+        return `<tr class="bgps-match-row"><td><span class="bgps-match-index">${index + 1}.</span><span>${escapeHtml(item.statement)}</span></td><td><span class="bgps-match-label">${escapeHtml(item.label)}.</span>${image}</td></tr>`;
+      }).join('');
+      const token = `bgps-match-${Date.now()}`;
+      insertHtml(`<section class="bgps-match-block" data-bgps-match-block="${token}"><div class="bgps-match-title"><strong>Match the Following</strong></div><table class="bgps-match-table"><thead><tr><th>Column A</th><th>Column B</th></tr></thead><tbody>${body}</tbody></table></section><p><br></p>`);
+      closeMatchFollowingBuilder();
+      hydrateImages();
+      markDirty();
+      updateChecks();
+      const block = byId('paperContentEditor')?.querySelector(`[data-bgps-match-block="${token}"]`);
+      block?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      toast('Match the Following inserted. Each image is locked beside its row text.');
+    } catch (error) {
+      toast(error.message || 'The matching layout could not be created.', 'error');
+    } finally {
+      if (buildButton) {
+        buildButton.disabled = false;
+        buildButton.textContent = 'Insert Match Layout';
+      }
+    }
+  }
+
+  function ensureMatchFollowingBuilder() {
+    if (byId('bgpsMatchBuilderModal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'bgpsMatchBuilderModal';
+    modal.className = 'bgps-match-builder-modal';
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `<section class="bgps-match-builder-panel" role="dialog" aria-modal="true" aria-labelledby="bgpsMatchBuilderTitle">
+      <header class="bgps-vector-head"><div><h2 id="bgpsMatchBuilderTitle">Match the Following</h2><p>Each statement and its picture stays in one locked row in editor, preview and PDF.</p></div><button class="bgps-vector-close" id="closeMatchFollowingBuilder" type="button" aria-label="Close">×</button></header>
+      <div class="bgps-match-builder-columns"><span>Column A</span><span>Column B</span></div>
+      <div class="bgps-match-builder-rows" id="bgpsMatchBuilderRows"></div>
+      <footer class="bgps-match-builder-actions"><button class="btn" id="addMatchBuilderRow" type="button">+ Add Row</button><div><button class="btn" id="cancelMatchFollowingBuilder" type="button">Cancel</button><button class="btn primary" id="insertMatchFollowingBlock" type="button">Insert Match Layout</button></div></footer>
+    </section>`;
+    document.body.appendChild(modal);
+    byId('closeMatchFollowingBuilder')?.addEventListener('click', closeMatchFollowingBuilder);
+    byId('cancelMatchFollowingBuilder')?.addEventListener('click', closeMatchFollowingBuilder);
+    byId('addMatchBuilderRow')?.addEventListener('click', addMatchBuilderRow);
+    byId('insertMatchFollowingBlock')?.addEventListener('click', insertMatchFollowingBlock);
+    byId('bgpsMatchBuilderRows')?.addEventListener('click', (event) => {
+      const remove = event.target.closest('[data-remove-match-row]');
+      if (!remove) return;
+      const rows = byId('bgpsMatchBuilderRows');
+      if ((rows?.querySelectorAll('[data-match-builder-row]').length || 0) <= 2) return toast('At least two rows are required.', 'error');
+      remove.closest('[data-match-builder-row]')?.remove();
+      renumberMatchBuilderRows();
+    });
+    modal.addEventListener('click', (event) => { if (event.target === modal) closeMatchFollowingBuilder(); });
   }
 
   function ensureSubpartControls() {
@@ -1082,6 +1221,7 @@
           <button type="button" data-mobile-paper-action="image">Image</button>
           <button type="button" data-mobile-paper-action="paste" hidden>Paste Image</button>
           <button type="button" data-mobile-paper-action="vectors">Illustrations</button>
+          <button type="button" data-mobile-paper-action="match">Match + Images</button>
           <button type="button" data-mobile-paper-action="preview">Preview</button>
           <button class="primary" type="button" data-mobile-paper-action="save">Save</button>
           <button class="success" type="button" data-mobile-paper-action="submit">Submit</button>
@@ -1109,6 +1249,7 @@
         else if (action === 'image') byId('paperImageFile')?.click();
         else if (action === 'paste') pasteCopiedImage();
         else if (action === 'vectors') openWorksheetVectorLibrary();
+        else if (action === 'match') openMatchFollowingBuilder();
         else if (action === 'preview') previewCurrent();
         else if (action === 'save') saveEditorChanges(true).catch((error) => showPaperValidation(error.message, error.paperIssue));
         else if (action === 'submit') prepareSubmit();
@@ -1925,7 +2066,7 @@
     const instructions = normalize(draft.instructions).split(/\n+/).map(normalize).filter(Boolean);
     const instructionsHtml = instructions.length ? `<div class="instructions"><strong>General Instructions</strong><ol>${instructions.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol></div>` : '';
     const date = draft.examDate || '____________';
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}.or-line{text-align:center;font-weight:900}.content ol.bgps-subparts-alpha,.content ol.bgps-subparts-roman{list-style:none;counter-reset:bgps-subpart;margin:4px 0 6px 28px;padding:0}.content ol.bgps-subparts-alpha>li,.content ol.bgps-subparts-roman>li{counter-increment:bgps-subpart;position:relative;padding-left:28px;margin:3px 0}.content ol.bgps-subparts-alpha>li::before,.content ol.bgps-subparts-roman>li::before{position:absolute;left:0;font-weight:700}.content ol.bgps-subparts-alpha>li::before{content:"(" counter(bgps-subpart,lower-alpha) ")"}.content ol.bgps-subparts-roman>li::before{content:"(" counter(bgps-subpart,lower-roman) ")"}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.bgps-free-stage{position:relative;display:block;width:100%;height:var(--bgps-free-stage-height,0px);min-height:0;margin:0;padding:0;border:0;clear:both}.bgps-free-stage>.diagram-box.bgps-img-free{position:absolute;left:var(--bgps-free-x,0px);top:var(--bgps-free-y,0px);float:none;clear:none;margin:0;transform:none;z-index:4}.content>.diagram-box.bgps-img-free{position:absolute;left:var(--bgps-free-x,0px);top:var(--bgps-free-y,0px);float:none;clear:none;margin:0;transform:none;z-index:4}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{html,body,.paper,.paper *{color:#000!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.header,.meta,.instructions,.content .section-heading,.mark-token,.content td,.content th{border-color:#000!important}body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 portrait;margin:11mm 13mm}*{box-sizing:border-box}html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}body{margin:0;background:#dde5ed;color:#111;font-family:Georgia,"Noto Serif Devanagari","Mangal",serif;font-size:10.8pt;line-height:1.34}.print{position:sticky;top:0;z-index:3;text-align:center;padding:8px;background:#dde5ed}.print button{padding:8px 14px;font-weight:700}.paper{width:184mm;min-height:270mm;max-width:calc(100% - 22px);margin:0 auto 20px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)}.header{text-align:center;border-bottom:1.4px solid #111;padding:0 0 4px;margin-bottom:5px}.header h1{font-size:18pt;margin:0}.exam{font-size:12pt;font-weight:900;text-transform:uppercase}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border-bottom:1px solid #555;padding:4px 0 6px;margin-bottom:7px;font-weight:800;font-size:9.8pt}.meta div:nth-child(even){text-align:right}.instructions{border:1px solid #777;padding:5px 9px;margin-bottom:7px;font-size:9.5pt}.instructions ol{margin:3px 0 0 18px;padding:0}.content{position:relative;min-height:220mm}.content::after{content:"";display:block;clear:both}.content p{margin:3px 0;white-space:pre-wrap;tab-size:4}.content .section-heading{clear:both;display:flex;justify-content:space-between;margin:8px 0 4px;padding:3px 6px;border:1px solid #222;background:#f1f1f1;font-size:10.2pt}.question-line{position:relative;padding-right:12mm;break-inside:avoid}.mark-token{float:right;display:inline-flex;align-items:center;justify-content:center;min-width:11mm;min-height:6mm;margin:-.5mm 0 .5mm 2.5mm;padding:.5mm 1.6mm;border:1px solid #555;border-radius:1.2mm;background:#fff;font-weight:900;line-height:1;white-space:nowrap}.or-line{text-align:center;font-weight:900}.content ol.bgps-subparts-alpha,.content ol.bgps-subparts-roman{list-style:none;counter-reset:bgps-subpart;margin:4px 0 6px 28px;padding:0}.content ol.bgps-subparts-alpha>li,.content ol.bgps-subparts-roman>li{counter-increment:bgps-subpart;position:relative;padding-left:28px;margin:3px 0}.content ol.bgps-subparts-alpha>li::before,.content ol.bgps-subparts-roman>li::before{position:absolute;left:0;font-weight:700}.content ol.bgps-subparts-alpha>li::before{content:"(" counter(bgps-subpart,lower-alpha) ")"}.content ol.bgps-subparts-roman>li::before{content:"(" counter(bgps-subpart,lower-roman) ")"}.content table{clear:both;width:100%;border-collapse:collapse;margin:4px 0}.content td,.content th{border:1px solid #333;padding:3px 4px}.page-break{clear:both;page-break-after:always;height:0;margin:0;border:0}.diagram-box.has-image{box-sizing:border-box;width:var(--bgps-image-width,100%);max-width:100%;padding:1mm;border:0;background:#fff;text-align:center;break-inside:avoid}.diagram-box.has-image>img{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:auto;object-fit:contain}.diagram-box.bgps-img-center{float:none;clear:both;margin:2mm auto 2.6mm}.diagram-box.bgps-img-left{float:left;clear:none;max-width:48%;margin:1mm 3mm 2mm 0}.diagram-box.bgps-img-right{float:right;clear:none;max-width:48%;margin:1mm 0 2mm 3mm}.diagram-box.bgps-img-inline{display:inline-block;float:none;clear:none;vertical-align:middle;max-width:80%;margin:0 2mm 1mm}.bgps-free-stage{position:relative;display:block;width:100%;height:var(--bgps-free-stage-height,0px);min-height:0;margin:0;padding:0;border:0;clear:both}.bgps-free-stage>.diagram-box.bgps-img-free{position:absolute;left:var(--bgps-free-x,0px);top:var(--bgps-free-y,0px);float:none;clear:none;margin:0;transform:none;z-index:4}.content>.diagram-box.bgps-img-free{position:absolute;left:var(--bgps-free-x,0px);top:var(--bgps-free-y,0px);float:none;clear:none;margin:0;transform:none;z-index:4}.diagram-caption{font-size:7.8pt;margin-top:.5mm;text-align:center;font-style:italic}.bgps-match-block,.bgps-match-row{break-inside:avoid;page-break-inside:avoid}.content table.bgps-match-table{table-layout:fixed}.bgps-match-table th,.bgps-match-table td{width:50%;vertical-align:middle}.bgps-match-index,.bgps-match-label{display:inline-block;margin-right:1.5mm;font-weight:900}.bgps-match-image{display:inline-block!important;float:none!important;clear:none!important;max-width:calc(100% - 9mm)!important;margin:1mm auto!important;vertical-align:middle}.bgps-match-image-placeholder{display:inline-flex;align-items:center;justify-content:center;width:calc(100% - 9mm);min-height:18mm;border:.3mm dashed #777}.bgps-image-resize-handle,.q-placeholder{display:none}@media print{html,body,.paper,.paper *{color:#000!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.header,.meta,.instructions,.content .section-heading,.mark-token,.content td,.content th{border-color:#000!important}body{background:#fff}.print{display:none}.paper{width:auto;max-width:none;min-height:0;margin:0;box-shadow:none}}@media(max-width:700px){.paper{max-width:100%;padding:0 12px;min-height:0}.meta{grid-template-columns:1fr}.meta div:nth-child(even){text-align:left}}</style></head><body><main class="paper"><div class="header"><h1>BG PUBLIC SCHOOL</h1><div class="exam">${escapeHtml(draft.exam || 'EXAM / TERM')}</div></div><div class="meta"><div>Class: ${escapeHtml(draft.className)}</div><div>Subject: ${escapeHtml(draft.subject)}</div><div>Time Allotted: ${escapeHtml(draft.timeAllowed || inferTime(draft.maxMarks))}</div><div>Maximum Marks: ${escapeHtml(draft.maxMarks)}</div><div>Reading Time: ${escapeHtml(readingTime(draft.className, draft.maxMarks))}</div><div>Date: ${escapeHtml(date)}</div></div>${instructionsHtml}<div class="content">${draft.editorHtml || ''}</div></main></body></html>`;
   }
 
   function setPreviewHeader(title, meta, status) {
@@ -3106,6 +3247,7 @@
     } else {
       requestAnimationFrame(syncEditorFreeMoveHeight);
     }
+    if (selectedImage === box) scheduleFloatingImageToolbar();
     markDirty();
   }
 
@@ -3185,6 +3327,10 @@
 
   function setImageLayout(layout) {
     if (!selectedImage) return;
+    if (selectedImage.matches('[data-bgps-match-image]') && layout !== 'center') {
+      toast('This image is locked to its Match the Following row. Change its size or replace it instead.');
+      return;
+    }
     const stableLayout = ['left', 'right', 'inline'].includes(layout) ? layout : 'center';
     selectedImage.classList.remove('bgps-img-left', 'bgps-img-center', 'bgps-img-right', 'bgps-img-inline', 'bgps-img-floating', 'bgps-img-free', 'bgps-img-compact');
     resetFreeImageOffset(selectedImage);
@@ -3193,6 +3339,72 @@
     updateImageInspector();
     markDirty();
     placeCaretAfterImage(selectedImage, { scroll: false });
+    scheduleFloatingImageToolbar();
+  }
+
+  function positionFloatingImageToolbar() {
+    floatingImageToolbarRaf = 0;
+    const toolbar = floatingImageToolbar;
+    if (!toolbar || !selectedImage?.isConnected || !editorWorkspaceOpen()) {
+      if (toolbar) toolbar.hidden = true;
+      return;
+    }
+    toolbar.hidden = false;
+    toolbar.classList.toggle('is-row-locked', selectedImage.matches('[data-bgps-match-image]'));
+    const imageRect = selectedImage.getBoundingClientRect();
+    const toolbarRect = toolbar.getBoundingClientRect();
+    const viewportWidth = window.visualViewport?.width || window.innerWidth;
+    const viewportHeight = window.visualViewport?.height || window.innerHeight;
+    const viewportTop = window.visualViewport?.offsetTop || 0;
+    const gap = 9;
+    const left = Math.max(8, Math.min(viewportWidth - toolbarRect.width - 8, imageRect.left + (imageRect.width - toolbarRect.width) / 2));
+    const preferredTop = imageRect.top - toolbarRect.height - gap;
+    const top = preferredTop >= viewportTop + 8
+      ? preferredTop
+      : Math.min(viewportTop + viewportHeight - toolbarRect.height - 8, imageRect.bottom + gap);
+    toolbar.style.left = `${Math.round(left)}px`;
+    toolbar.style.top = `${Math.round(Math.max(viewportTop + 8, top))}px`;
+  }
+
+  function scheduleFloatingImageToolbar() {
+    if (floatingImageToolbarRaf) cancelAnimationFrame(floatingImageToolbarRaf);
+    floatingImageToolbarRaf = requestAnimationFrame(positionFloatingImageToolbar);
+  }
+
+  function ensureFloatingImageToolbar() {
+    if (floatingImageToolbar) return floatingImageToolbar;
+    floatingImageToolbar = document.createElement('div');
+    floatingImageToolbar.id = 'bgpsImageFloatingToolbar';
+    floatingImageToolbar.className = 'bgps-image-floating-toolbar';
+    floatingImageToolbar.hidden = true;
+    floatingImageToolbar.setAttribute('role', 'toolbar');
+    floatingImageToolbar.setAttribute('aria-label', 'Selected image options');
+    floatingImageToolbar.innerHTML = `
+      <button type="button" data-floating-image-action="inline" title="Place image beside text">Text ke bagal mein</button>
+      <button type="button" data-floating-image-action="left" title="Wrap text on the right">Left</button>
+      <button type="button" data-floating-image-action="center">Centre</button>
+      <button type="button" data-floating-image-action="right" title="Wrap text on the left">Right</button>
+      <button type="button" data-floating-image-action="full">Full width</button>
+      <button type="button" data-floating-image-action="replace">Replace</button>
+      <button class="danger" type="button" data-floating-image-action="delete">Delete</button>`;
+    document.body.appendChild(floatingImageToolbar);
+    floatingImageToolbar.addEventListener('pointerdown', (event) => event.preventDefault());
+    floatingImageToolbar.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-floating-image-action]');
+      if (!button || !selectedImage) return;
+      const action = button.dataset.floatingImageAction;
+      if (['inline', 'left', 'center', 'right'].includes(action)) setImageLayout(action);
+      else if (action === 'full') {
+        setImageLayout('center');
+        if (selectedImage) applyImageWidth(selectedImage, 100);
+      } else if (action === 'replace') byId('replacePaperImageFile')?.click();
+      else if (action === 'delete') deleteSelectedImage();
+      scheduleFloatingImageToolbar();
+    });
+    document.addEventListener('scroll', scheduleFloatingImageToolbar, { passive: true, capture: true });
+    window.visualViewport?.addEventListener('resize', scheduleFloatingImageToolbar, { passive: true });
+    window.visualViewport?.addEventListener('scroll', scheduleFloatingImageToolbar, { passive: true });
+    return floatingImageToolbar;
   }
 
   function ensureImageControls(box) {
@@ -3211,13 +3423,16 @@
     selectedImage = box;
     box.classList.add('is-image-selected');
     ensureImageControls(box);
+    ensureFloatingImageToolbar();
     updateImageInspector();
     syncMobilePaperBar();
+    scheduleFloatingImageToolbar();
   }
 
   function deselectImage() {
     if (selectedImage) selectedImage.classList.remove('is-image-selected');
     selectedImage = null;
+    if (floatingImageToolbar) floatingImageToolbar.hidden = true;
     updateImageInspector();
     syncMobilePaperBar();
   }
@@ -3333,7 +3548,8 @@
     handle.setPointerCapture?.(event.pointerId);
     const startX = event.clientX;
     const startWidth = box.getBoundingClientRect().width;
-    const editorWidth = Math.max(1, editor.getBoundingClientRect().width);
+    const widthContainer = box.matches('[data-bgps-match-image]') ? box.parentElement : editor;
+    const editorWidth = Math.max(1, widthContainer.getBoundingClientRect().width);
     let nextWidth = imageWidth(box);
     let raf = 0;
 
@@ -3518,6 +3734,7 @@
       normalizeImageBoxGeometry(selectedImage);
       syncEditorFreeMoveHeight();
       placeCaretAfterImage(selectedImage, { scroll: false });
+      scheduleFloatingImageToolbar();
       markDirty();
       toast('Image replaced.');
     } catch (error) {
@@ -3921,6 +4138,7 @@
         if (!workspace || workspace.hidden) return;
         byId('paperContentEditor')?.querySelectorAll('.diagram-box.has-image.bgps-img-free').forEach(clampFreeImageOffset);
         syncEditorFreeMoveHeight();
+        scheduleFloatingImageToolbar();
       });
     }, { passive: true });
 
@@ -3967,7 +4185,8 @@
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        if (byId('bgpsVectorLibraryModal')?.classList.contains('open')) closeWorksheetVectorLibrary();
+        if (byId('bgpsMatchBuilderModal')?.classList.contains('open')) closeMatchFollowingBuilder();
+        else if (byId('bgpsVectorLibraryModal')?.classList.contains('open')) closeWorksheetVectorLibrary();
         else if (byId('bgpsImageCropModal')?.classList.contains('open')) closeImageCropper();
         else if (byId('teacherPaperPreviewModal')?.classList.contains('open')) closePreview();
         else if (byId('paperUploadModal')?.classList.contains('open')) closeUploadModalSafely();

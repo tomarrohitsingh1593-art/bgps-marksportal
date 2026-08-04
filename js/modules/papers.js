@@ -72,6 +72,71 @@
     return !isRevision(paper) && normalize(paper.status) === 'SUBMITTED';
   }
 
+  function workflowAcademicSession(paper) {
+    const value = paper?.examDate || paper?.uploadedAt || paper?.updatedAt || '';
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return 'CURRENT';
+    const startYear = date.getMonth() >= 3 ? date.getFullYear() : date.getFullYear() - 1;
+    return `${startYear}-${startYear + 1}`;
+  }
+
+  function workflowExamKey(value) {
+    return normalize(value)
+      .replace(/\bII\b/g, '2').replace(/\bI\b/g, '1')
+      .replace(/\bIII\b/g, '3').replace(/\bIV\b/g, '4')
+      .replace(/[^A-Z0-9]+/g, ' ').trim();
+  }
+
+  function workflowFamilyKey(paper) {
+    return [paper?.teacherId, paper?.className, paper?.subject, workflowExamKey(paper?.exam), workflowAcademicSession(paper)]
+      .map(normalize).join('|');
+  }
+
+  function workflowOrder(paper) {
+    const time = new Date(paper?.updatedAt || paper?.uploadedAt || 0).getTime();
+    return (Number.isFinite(time) ? time : 0) * 1000 + Number(paper?.version || 0);
+  }
+
+  function reconcilePaperWorkflow(rows) {
+    const output = (Array.isArray(rows) ? rows : []).map((paper) => ({ ...paper, workflowSuperseded: false }));
+    const groups = new Map();
+    output.forEach((paper) => {
+      const status = normalize(paper.status);
+      if (!['SUBMITTED', 'CORRECTION REQUIRED'].includes(status)) return;
+      const key = workflowFamilyKey(paper);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(paper);
+    });
+    groups.forEach((group) => {
+      const corrections = group.filter((paper) => normalize(paper.status) === 'CORRECTION REQUIRED');
+      const submitted = group.filter((paper) => normalize(paper.status) === 'SUBMITTED');
+      if (!corrections.length || !submitted.length) return;
+      const ordered = group.slice().sort((a, b) => workflowOrder(b) - workflowOrder(a));
+      const winner = ordered[0];
+      ordered.slice(1).forEach((paper) => { paper.workflowSuperseded = true; });
+      if (normalize(winner.status) !== 'SUBMITTED') return;
+      winner.resubmitted = true;
+      const history = [];
+      corrections.forEach((paper) => {
+        (Array.isArray(paper.correctionHistory) ? paper.correctionHistory : []).forEach((entry) => history.push(entry));
+        const note = String(paper.adminNote || '').trim();
+        if (note && !history.some((entry) => String(entry?.note || entry || '').trim() === note)) {
+          history.push({ note, version: Number(paper.version || 0), returnedAt: paper.updatedAt || '' });
+        }
+      });
+      winner.correctionHistory = history;
+      if (!String(winner.adminNote || '').trim()) {
+        const newestCorrection = corrections.slice().sort((a, b) => workflowOrder(b) - workflowOrder(a))[0];
+        winner.adminNote = newestCorrection?.adminNote || '';
+      }
+    });
+    return output;
+  }
+
+  function visibleWorkflowPapers() {
+    return papers.filter((paper) => paper.workflowSuperseded !== true);
+  }
+
   function correctionRemarks(paper) {
     const source = Array.isArray(paper?.correctionHistory) ? paper.correctionHistory : [];
     const remarks = [];
@@ -187,11 +252,12 @@
   }
 
   function renderMetrics() {
-    setText('papersMetricSubmitted', papers.filter(isAwaitingFirstReview).length);
-    setText('papersMetricResubmitted', papers.filter(isReadyForRereview).length);
-    setText('papersMetricApproved', papers.filter((p) => normalize(p.status) === 'APPROVED').length);
-    setText('papersMetricCorrection', papers.filter((p) => normalize(p.status) === 'CORRECTION REQUIRED').length);
-    setText('papersMetricTotal', papers.length);
+    const visible = visibleWorkflowPapers();
+    setText('papersMetricSubmitted', visible.filter(isAwaitingFirstReview).length);
+    setText('papersMetricResubmitted', visible.filter(isReadyForRereview).length);
+    setText('papersMetricApproved', visible.filter((p) => normalize(p.status) === 'APPROVED').length);
+    setText('papersMetricCorrection', visible.filter((p) => normalize(p.status) === 'CORRECTION REQUIRED').length);
+    setText('papersMetricTotal', visible.length);
     syncBulkOriginalDeleteButton();
   }
 
@@ -228,6 +294,7 @@
     const className = normalize(byId('paperClassFilter')?.value || '');
     const query = normalize(byId('paperSearch')?.value || '');
     return papers.filter((paper) => {
+      if (paper.workflowSuperseded === true) return false;
       if (className && normalize(paper.className) !== className) return false;
       if (!matchesBoardFilter(paper)) return false;
       if (query) {
@@ -284,7 +351,7 @@
     if (button) { button.disabled = true; button.textContent = 'Refreshing…'; }
     try {
       const result = await window.BGPS_API.listPapers();
-      papers = Array.isArray(result.papers) ? result.papers : [];
+      papers = reconcilePaperWorkflow(result.papers);
       render();
       if (showToast) window.BGPS_APP.toast('Paper list refreshed.');
       return papers;
